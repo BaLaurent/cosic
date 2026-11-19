@@ -81,7 +81,9 @@ class EditorViewModel(
     var canRedo by mutableStateOf(false)
         private set
 
-    private var evaluating = false
+    // The running evaluation, if any. Stopping cancels it, so a play request that has not been
+    // answered yet can never start playback after the user has already stopped or left.
+    private var evalJob: Job? = null
     private var playRequestedAt = 0L
     private var playRequestedFrames = 0L
 
@@ -126,36 +128,34 @@ class EditorViewModel(
 
     /** Evaluates the text; on success it plays, or swaps in the new pattern when already playing. */
     fun evaluateAndPlay() {
-        if (missing || evaluating) return
-        evaluating = true
+        if (missing || evalJob?.isActive == true) return
         val code = textValue.text
-        viewModelScope.launch {
-            try {
-                when (val report = withContext(Dispatchers.Default) { engine.evaluate(code) }) {
-                    is EvalReport.Ok -> {
-                        highlightMapper = HighlightMapper(code)
-                        evalStatus = EvalStatus.Ok(report.warnings)
-                        if (!playing) {
-                            engine.play()
-                            playing = true
-                            playRequestedAt = SystemClock.uptimeMillis()
-                            playRequestedFrames = engine.snapshot.renderedFrames
-                        }
-                        audioOutput.ensureRunning()
+        evalJob = viewModelScope.launch {
+            // withContext rethrows cancellation instead of returning when stop() cancelled this
+            // job meanwhile, so a late result is discarded and never reaches play().
+            when (val report = withContext(Dispatchers.Default) { engine.evaluate(code) }) {
+                is EvalReport.Ok -> {
+                    highlightMapper = HighlightMapper(code)
+                    evalStatus = EvalStatus.Ok(report.warnings)
+                    if (!playing) {
+                        engine.play()
+                        playing = true
+                        playRequestedAt = SystemClock.uptimeMillis()
+                        playRequestedFrames = engine.snapshot.renderedFrames
                     }
-                    // A failed update leaves whatever is playing playing.
-                    is EvalReport.Failed -> {
-                        errorMapper = HighlightMapper(code)
-                        evalStatus = EvalStatus.Error(report.message, report.range, report.line, report.column)
-                    }
+                    audioOutput.ensureRunning()
                 }
-            } finally {
-                evaluating = false
+                // A failed update leaves whatever is playing playing.
+                is EvalReport.Failed -> {
+                    errorMapper = HighlightMapper(code)
+                    evalStatus = EvalStatus.Error(report.message, report.range, report.line, report.column)
+                }
             }
         }
     }
 
     fun stop() {
+        evalJob?.cancel()
         engine.stop()
         playing = false
         activeRanges = emptyList()

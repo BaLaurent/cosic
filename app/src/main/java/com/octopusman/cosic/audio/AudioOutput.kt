@@ -145,6 +145,8 @@ class AudioOutput(private val engine: CosicEngine, context: Context) {
             val written = track.write(buffer, 0, buffer.size, AudioTrack.WRITE_BLOCKING)
             if (written < 0) {
                 Log.e(TAG, "write failed: $written")
+                // Let the UI see a stopped engine instead of staying in "playing" with no sound.
+                engine.stop()
                 return
             }
         }

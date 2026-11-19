@@ -38,6 +38,7 @@ import com.octopusman.cosic.R
 import com.octopusman.cosic.monetization.AdsController
 import com.octopusman.cosic.monetization.EntitlementRepository
 import com.octopusman.cosic.monetization.PurchaseUiState
+import com.octopusman.cosic.monetization.UnavailableReason
 import com.octopusman.cosic.ui.BackTopBar
 import com.octopusman.cosic.ui.findActivity
 import com.octopusman.cosic.ui.tagged
@@ -75,10 +76,16 @@ fun SettingsScreen(
                     headline = stringResource(R.string.settings_ads_removed),
                     icon = Icons.Filled.Check,
                 )
-                is PurchaseUiState.Unavailable -> {
-                    val headline = stringResource(R.string.settings_store_unavailable)
-                    PurchaseRow(headline, icon = Icons.Filled.CloudOff, supporting = state.message.takeUnless { it == headline })
-                }
+                is PurchaseUiState.Unavailable -> PurchaseRow(
+                    headline = stringResource(R.string.settings_store_unavailable),
+                    icon = Icons.Filled.CloudOff,
+                    supporting = when (state.reason) {
+                        UnavailableReason.STORE_UNREACHABLE -> null
+                        UnavailableReason.PURCHASES_UNREADABLE -> stringResource(R.string.settings_purchases_unreadable)
+                        UnavailableReason.PRODUCT_MISSING -> stringResource(R.string.settings_product_unavailable)
+                        UnavailableReason.PURCHASE_FAILED -> stringResource(R.string.settings_purchase_failed)
+                    },
+                )
             }
 
             SettingsRow(

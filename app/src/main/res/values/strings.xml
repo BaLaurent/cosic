@@ -81,6 +81,9 @@
     <string name="settings_ads_removed">Ads removed</string>
     <string name="settings_purchase_pending">Purchase pending</string>
     <string name="settings_store_unavailable">Store unavailable</string>
+    <string name="settings_purchases_unreadable">Could not read purchases</string>
+    <string name="settings_product_unavailable">Product unavailable</string>
+    <string name="settings_purchase_failed">Purchase failed</string>
     <string name="settings_store_loading">Checking the store…</string>
     <string name="settings_restore_purchase">Restore purchase</string>
     <string name="settings_privacy_options">Privacy options</string>

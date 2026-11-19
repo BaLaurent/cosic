@@ -61,11 +61,11 @@ private sealed interface SampleSource {
     val key: String
 
     data class Asset(val path: String) : SampleSource {
-        override val key get() = "asset:$path"
+        override val key = "asset:$path"
     }
 
     data class Document(val uri: Uri) : SampleSource {
-        override val key get() = uri.toString()
+        override val key = uri.toString()
     }
 }
 

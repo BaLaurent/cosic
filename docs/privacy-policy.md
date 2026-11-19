@@ -4,10 +4,10 @@ Last updated: 2026-11-19
 
 Cosic is a live-coding music app for Android. This policy describes what data the app handles and who processes it.
 
-## What stays on your device
+## What is stored on your device
 
 - Cosic has no accounts, no sign-in and no server run by the developer. The developer receives no data from the app.
-- Your projects (the code you write), your settings and the list of sample folders you imported are stored on your device only.
+- Your projects (the code you write), your settings and the list of sample folders you imported are stored on your device. If you have Android's device backup enabled, Android may include this app data in your Google backup; that backup is handled by Google, not by the developer, and you can turn it off in the Android system settings.
 - Sample folders that you import are read locally to play their sounds. Their files are never uploaded.
 - Whether you bought "Remove ads" is remembered on the device, so that the app keeps working offline.
 

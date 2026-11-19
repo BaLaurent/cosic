@@ -20,6 +20,9 @@ internal data class PurchaseInfo(
 internal fun resolveAdsRemoved(purchases: List<PurchaseInfo>?, cached: Boolean): Boolean =
     purchases?.any { REMOVE_ADS_PRODUCT_ID in it.productIds && it.state == PurchaseStatus.PURCHASED } ?: cached
 
+/** Why the store cannot be used right now; the Settings screen maps each to its own message. */
+enum class UnavailableReason { STORE_UNREACHABLE, PURCHASES_UNREADABLE, PRODUCT_MISSING, PURCHASE_FAILED }
+
 sealed interface PurchaseUiState {
     data object Loading : PurchaseUiState
 
@@ -29,5 +32,5 @@ sealed interface PurchaseUiState {
 
     data object Owned : PurchaseUiState
 
-    data class Unavailable(val message: String) : PurchaseUiState
+    data class Unavailable(val reason: UnavailableReason) : PurchaseUiState
 }

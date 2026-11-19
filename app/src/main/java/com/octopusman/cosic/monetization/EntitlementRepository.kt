@@ -75,8 +75,8 @@ class EntitlementRepository(
     }
 
     private suspend fun sync() {
-        if (!billing.connect()) return unavailable("Store unavailable")
-        val purchases = billing.queryOwned() ?: return unavailable("Could not read purchases")
+        if (!billing.connect()) return unavailable(UnavailableReason.STORE_UNREACHABLE)
+        val purchases = billing.queryOwned() ?: return unavailable(UnavailableReason.PURCHASES_UNREADABLE)
 
         setEntitled(resolveAdsRemoved(purchases, entitled.value))
         val removeAds = purchases.filter { REMOVE_ADS_PRODUCT_ID in it.productIds }
@@ -90,7 +90,7 @@ class EntitlementRepository(
             removeAds.any { it.state == PurchaseStatus.PENDING } -> PurchaseUiState.Pending
             else -> {
                 offer = billing.offer()
-                offer?.let { PurchaseUiState.Available(it.price) } ?: PurchaseUiState.Unavailable("Product unavailable")
+                offer?.let { PurchaseUiState.Available(it.price) } ?: PurchaseUiState.Unavailable(UnavailableReason.PRODUCT_MISSING)
             }
         }
     }
@@ -102,9 +102,9 @@ class EntitlementRepository(
     }
 
     // A paying user offline keeps seeing "owned": the cached entitlement still applies.
-    private fun unavailable(message: String) {
-        Log.w(TAG, message)
-        _purchaseState.value = if (entitled.value) PurchaseUiState.Owned else PurchaseUiState.Unavailable(message)
+    private fun unavailable(reason: UnavailableReason) {
+        Log.w(TAG, "store unavailable: $reason")
+        _purchaseState.value = if (entitled.value) PurchaseUiState.Owned else PurchaseUiState.Unavailable(reason)
     }
 
     private fun onBillingUpdate(update: BillingUpdate) {
@@ -112,7 +112,8 @@ class EntitlementRepository(
             BillingUpdate.PurchasesChanged, BillingUpdate.AlreadyOwned -> refresh()
             BillingUpdate.Canceled -> offer?.let { _purchaseState.value = PurchaseUiState.Available(it.price) } ?: refresh()
             is BillingUpdate.Failed -> {
-                _purchaseState.value = PurchaseUiState.Unavailable(update.message)
+                Log.w(TAG, "purchase failed: ${update.message}")
+                _purchaseState.value = PurchaseUiState.Unavailable(UnavailableReason.PURCHASE_FAILED)
                 scope.launch {
                     delay(RETRY_AFTER_FAILURE_MS)
                     refresh()

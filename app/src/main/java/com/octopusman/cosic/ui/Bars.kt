@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.octopusman.cosic.BuildConfig
@@ -45,16 +46,27 @@ fun BackButton(onBack: () -> Unit) {
 }
 
 /**
- * The ad banner for a Scaffold's bottom bar: nothing while ads are off, and nothing while the
- * keyboard is up, so the banner never covers what is being typed.
+ * The ad banner for a Scaffold's bottom bar: nothing while ads are off, and no space taken while
+ * the keyboard is up, so the banner never covers what is being typed. The banner stays composed
+ * while hidden: tearing the AdView down and rebuilding it would request a new ad every time the
+ * keyboard closes.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AdBannerBar(ads: AdsController) {
     val adsEnabled by ads.adsEnabled.collectAsStateWithLifecycle()
-    if (adsEnabled && !WindowInsets.isImeVisible) {
-        Box(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).navigationBarsPadding()) {
-            BannerAd(BuildConfig.ADMOB_BANNER_ID)
-        }
+    if (!adsEnabled) return
+    val hidden = WindowInsets.isImeVisible
+    Box(
+        Modifier
+            .layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints)
+                if (hidden) layout(0, 0) {} else layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+            }
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .navigationBarsPadding(),
+    ) {
+        BannerAd(BuildConfig.ADMOB_BANNER_ID)
     }
 }
