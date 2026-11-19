@@ -1,4 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Cosic</string>
+
+    <!-- Shared actions -->
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_duplicate">Duplicate</string>
+    <string name="action_share">Share</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_more">More options</string>
+    <string name="share_chooser_title">Share code</string>
+    <string name="dialog_name_label">Name</string>
+    <string name="dialog_rename_title">Rename project</string>
+
+    <!-- Library -->
+    <string name="library_remove_ads">Remove ads</string>
+    <string name="library_new_project">New project</string>
+    <string name="library_projects">Projects</string>
+    <string name="library_examples">Examples</string>
+    <string name="library_empty">No projects yet. Tap + to start a sketch, or open an example below.</string>
+    <string name="library_project_options">Project options</string>
+    <string name="library_open_example">Open example: %1$s</string>
+    <string name="library_delete_title">Delete project?</string>
+    <string name="library_delete_message">“%1$s” will be deleted. This can\'t be undone.</string>
+    <string name="time_just_now">Just now</string>
+    <string name="time_minutes_ago">%1$d min ago</string>
+    <string name="time_hours_ago">%1$d h ago</string>
+    <string name="time_days_ago">%1$d d ago</string>
+
+    <!-- Editor -->
+    <string name="editor_play">Play</string>
+    <string name="editor_update">Update</string>
+    <string name="editor_stop">Stop</string>
+    <string name="editor_undo">Undo</string>
+    <string name="editor_redo">Redo</string>
+    <string name="editor_tab">Tab</string>
+    <string name="editor_code">Code editor</string>
+    <string name="editor_rename_project">Rename project</string>
+    <string name="editor_menu_sounds">Sounds</string>
+    <string name="editor_menu_reference">Reference</string>
+    <string name="editor_status_error">Line %1$d:%2$d — %3$s</string>
+    <string name="editor_status_playing">%1$s cpm · cycle %2$d</string>
+
+    <!-- Sounds -->
+    <string name="sounds_title">Sounds</string>
+    <string name="sounds_synths">Synths</string>
+    <string name="sounds_drums">Drum kit</string>
+    <string name="sounds_instruments">Instruments</string>
+    <string name="sounds_percussion">Percussion</string>
+    <string name="sounds_imported">Imported</string>
+    <string name="sounds_drum_variants">Variants, picked with n from 0 to 3</string>
+    <string name="sounds_preview">Preview %1$s</string>
+    <string name="sounds_copied">Copied \'%1$s\'</string>
+    <string name="sounds_import_folder">Import folder</string>
+    <string name="sounds_imported_empty">Pick a folder of audio files. Every folder that holds audio files becomes a sound named after it.</string>
+    <string name="sounds_remove_title">Remove imported folder?</string>
+    <string name="sounds_remove_message">All sounds imported from this folder are removed from Cosic. The files stay where they are.</string>
+    <string name="sounds_remove_bank">Remove %1$s</string>
+    <plurals name="sounds_sample_count">
+        <item quantity="one">%1$d sample</item>
+        <item quantity="other">%1$d samples</item>
+    </plurals>
+
+    <!-- Reference -->
+    <string name="reference_title">Reference</string>
+    <string name="reference_search">Search functions</string>
+    <string name="reference_clear_search">Clear search</string>
+    <string name="reference_aliases">Also: %1$s</string>
+    <string name="reference_copy_example">Copy example</string>
+    <string name="reference_example_copied">Example copied</string>
+    <string name="reference_empty">No matching functions</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_remove_ads_price">Remove ads — %1$s</string>
+    <string name="settings_ads_removed">Ads removed</string>
+    <string name="settings_purchase_pending">Purchase pending</string>
+    <string name="settings_store_unavailable">Store unavailable</string>
+    <string name="settings_store_loading">Checking the store…</string>
+    <string name="settings_restore_purchase">Restore purchase</string>
+    <string name="settings_privacy_options">Privacy options</string>
+    <string name="settings_credits">Credits &amp; licenses</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_simulate_ads_removed">Simulate ads removed</string>
+    <string name="settings_simulate_ads_removed_summary">Debug builds only</string>
+
+    <!-- Credits -->
+    <string name="credits_title">Credits &amp; licenses</string>
 </resources>

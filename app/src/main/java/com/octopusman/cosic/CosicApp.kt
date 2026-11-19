@@ -9,9 +9,11 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.octopusman.cosic.audio.AudioOutput
 import com.octopusman.cosic.audio.SampleRepository
+import com.octopusman.cosic.library.ProjectRepository
 import com.octopusman.cosic.monetization.AdsController
 import com.octopusman.cosic.monetization.EntitlementRepository
 import cosic.CosicEngine
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,6 +29,7 @@ class CosicApp : Application() {
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     val sampleRepository by lazy { SampleRepository(this, cosicPrefs) }
+    val projects by lazy { ProjectRepository(File(filesDir, "projects"), System::currentTimeMillis) }
     val engine by lazy { CosicEngine(AudioOutput.nativeSampleRate(this), sampleRepository) }
     val audioOutput by lazy { AudioOutput(engine, this) }
     val entitlements by lazy { EntitlementRepository(this, cosicPrefs, appScope) }
