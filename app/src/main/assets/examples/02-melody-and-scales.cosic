@@ -1,0 +1,14 @@
+// Melody and scales
+setcpm(26)
+
+// scale degrees become notes in C minor
+$: n("0 2 4 7 4 2 <9 11> 7")
+  .scale("C:minor")
+  .s("triangle")
+  .release(0.2)
+
+// a slow bass line, one note per cycle
+$: note("<c2 eb2 g1 bb1>")
+  .s("sawtooth")
+  .lpf(400)
+  .gain(0.7)

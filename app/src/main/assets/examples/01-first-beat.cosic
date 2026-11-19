@@ -1,0 +1,6 @@
+// First beat
+setcpm(30)
+
+$: s("bd ~ sd ~")
+$: s("hh*8").gain(0.6)
+$: s("~ ~ ~ rim").gain(0.8)

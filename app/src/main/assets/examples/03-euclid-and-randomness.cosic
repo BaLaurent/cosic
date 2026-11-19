@@ -1,0 +1,7 @@
+// Euclid and randomness
+setcpm(32)
+
+$: s("bd(3,8)")
+$: s("hh*8").degradeBy(0.3).gain(0.5)
+$: s("cp(2,5,1)").sometimes(x => x.speed(1.5))
+$: s("<rim lt>*4").pan("0.2 0.8").gain(0.7)
