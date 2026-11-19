@@ -1,0 +1,147 @@
+{
+  "commit": "c1ea7bcc3c7309650ab0da9d15c9cd1fbc4a4c7e",
+  "pitched": [
+    {
+      "name": "piano",
+      "regex": "^Chordophones/Zithers/Grand Piano, Kawai/Sustains/GPiano_sus_([A-G]#?-?\\d)_v3_rr1_Player\\.wav$",
+      "octave_offset": null
+    },
+    {
+      "name": "fmpiano",
+      "regex": "^Electrophones/TX81Z/FM Piano/FMPiano_([A-G]#?-?\\d)_vl2\\.wav$",
+      "octave_offset": null
+    },
+    {
+      "name": "vibraphone",
+      "regex": "^Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_([A-G]#?-?\\d)_v2_rr1_Main\\.wav$",
+      "octave_offset": null
+    },
+    {
+      "name": "glockenspiel",
+      "regex": "^Idiophones/Struck Idiophones/Glockenspiel/glock_medium_([A-G]#?-?\\d)_01\\.wav$",
+      "octave_offset": 12
+    },
+    {
+      "name": "marimba",
+      "regex": "^Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_([A-G]#?-?\\d)_med_01\\.wav$",
+      "octave_offset": null
+    },
+    {
+      "name": "xylophone",
+      "regex": "^Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_([A-G]#?-?\\d)_ff_01_far\\.wav$",
+      "octave_offset": 12
+    },
+    {
+      "name": "kalimba",
+      "regex": "^Idiophones/Plucked Idiophones/Kalimba, Tanzania/MBira3_pluck_Main_([A-G]#?-?\\d)_k\\w+_50_100_rr2\\.wav$",
+      "octave_offset": 12
+    },
+    {
+      "name": "organ",
+      "regex": "^Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_([A-G]#?-?\\d)_rr1\\.wav$",
+      "octave_offset": null
+    },
+    {
+      "name": "harp",
+      "regex": "^Chordophones/Composite Chordophones/Folk Harp/EWHarp_Normal_([A-G]#?-?\\d)_v2_RR1\\.wav$",
+      "octave_offset": null
+    },
+    {
+      "name": "sax",
+      "regex": "^Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_([A-G]#?-?\\d)_vl2_rr1\\.wav$",
+      "octave_offset": null
+    }
+  ],
+  "unpitched": [
+    {
+      "name": "kick",
+      "folder": "Membranophones/Struck Membranophones/Bass Drum 2",
+      "max_seconds": 3
+    },
+    {
+      "name": "snare",
+      "folder": "Membranophones/Struck Membranophones/Snare Drum, Modern 1",
+      "max_seconds": 3
+    },
+    {
+      "name": "tom",
+      "folder": "Membranophones/Struck Membranophones/Tom 1",
+      "max_seconds": 3
+    },
+    {
+      "name": "conga",
+      "folder": "Membranophones/Struck Membranophones/Conga",
+      "max_seconds": 3
+    },
+    {
+      "name": "bongo",
+      "folder": "Membranophones/Struck Membranophones/Bongos",
+      "max_seconds": 3
+    },
+    {
+      "name": "cajon",
+      "folder": "Idiophones/Struck Idiophones/Cajon",
+      "max_seconds": 3
+    },
+    {
+      "name": "hihat",
+      "folder": "Idiophones/Struck Idiophones/Hi-Hat Cymbal",
+      "max_seconds": 3
+    },
+    {
+      "name": "cymbal",
+      "folder": "Idiophones/Struck Idiophones/Suspended Cymbal 1",
+      "max_seconds": 5
+    },
+    {
+      "name": "clap",
+      "folder": "Idiophones/Struck Idiophones/Claps",
+      "max_seconds": 3
+    },
+    {
+      "name": "cowbell",
+      "folder": "Idiophones/Struck Idiophones/Cowbells",
+      "max_seconds": 3
+    },
+    {
+      "name": "claves",
+      "folder": "Idiophones/Struck Idiophones/Claves",
+      "max_seconds": 3
+    },
+    {
+      "name": "woodblock",
+      "folder": "Idiophones/Struck Idiophones/Woodblock",
+      "max_seconds": 3
+    },
+    {
+      "name": "tambourine",
+      "folder": "Idiophones/Struck Idiophones/Tambourine 1",
+      "max_seconds": 3
+    },
+    {
+      "name": "shaker",
+      "folder": "Idiophones/Struck Idiophones/Shaker, Small",
+      "max_seconds": 3
+    },
+    {
+      "name": "triangle",
+      "folder": "Idiophones/Struck Idiophones/Triangles",
+      "max_seconds": 3
+    },
+    {
+      "name": "agogo",
+      "folder": "Idiophones/Struck Idiophones/Agogo Bells",
+      "max_seconds": 3
+    },
+    {
+      "name": "guiro",
+      "folder": "Idiophones/Struck Idiophones/Guiro",
+      "max_seconds": 3
+    },
+    {
+      "name": "gong",
+      "folder": "Idiophones/Struck Idiophones/Gong 1",
+      "max_seconds": 5
+    }
+  ]
+}
