@@ -67,6 +67,6 @@ fun AdBannerBar(ads: AdsController) {
             .background(MaterialTheme.colorScheme.surface)
             .navigationBarsPadding(),
     ) {
-        BannerAd(BuildConfig.ADMOB_BANNER_ID)
+        BannerAd(BuildConfig.ADMOB_BANNER_ID, paused = hidden)
     }
 }

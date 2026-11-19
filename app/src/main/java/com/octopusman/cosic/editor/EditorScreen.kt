@@ -151,16 +151,18 @@ fun EditorScreen(
         },
         bottomBar = {
             // The keyboard takes the place of the banner, and the symbol bar sits right above it.
-            if (WindowInsets.isImeVisible) {
-                SymbolBar(
-                    canUndo = vm.canUndo,
-                    canRedo = vm.canRedo,
-                    onUndo = vm::undo,
-                    onRedo = vm::redo,
-                    onSymbol = vm::insertSymbol,
-                    modifier = Modifier.navigationBarsPadding().imePadding(),
-                )
-            } else {
+            // The banner stays composed (collapsed and paused) so it is not reloaded on every edit.
+            Column {
+                if (WindowInsets.isImeVisible) {
+                    SymbolBar(
+                        canUndo = vm.canUndo,
+                        canRedo = vm.canRedo,
+                        onUndo = vm::undo,
+                        onRedo = vm::redo,
+                        onSymbol = vm::insertSymbol,
+                        modifier = Modifier.navigationBarsPadding().imePadding(),
+                    )
+                }
                 AdBannerBar(ads)
             }
         },
