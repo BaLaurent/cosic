@@ -1,0 +1,12 @@
+.gradle/
+build/
+*/build/
+local.properties
+keystore.properties
+monetization.properties
+*.jks
+.idea/
+.kotlin/
+tools/samplepack/.cache/
+.omp/
+.superpowers/
