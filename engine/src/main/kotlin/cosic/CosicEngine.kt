@@ -1,6 +1,7 @@
 package cosic
 
 import cosic.audio.DRUM_NAMES
+import cosic.audio.DrumKit
 import cosic.audio.Mixer
 import cosic.audio.SYNTH_NAMES
 import cosic.audio.VoiceParams
@@ -13,11 +14,10 @@ import cosic.player.SoundLookup
 import cosic.player.SoundResolver
 import cosic.player.dryRun
 import cosic.player.errorMessage
-import cosic.player.sendsToEffects
 import cosic.script.DEFAULT_CPS
 import cosic.script.evaluateProgram
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.math.abs
+import kotlin.concurrent.thread
 import kotlin.math.floor
 import kotlin.math.max
 
@@ -26,6 +26,9 @@ internal const val PLAY_START_DELAY_SECONDS = 0.05
 
 private const val STOP_FADE_MS = 20
 private const val PREVIEW_SECONDS = 0.5
+
+/** A preview waits this long for a sample that is still being decoded before it gives up. */
+private const val PREVIEW_WAIT_SECONDS = 1
 private const val SNAPSHOT_INTERVAL_FRAMES = 256
 
 /** What a pattern event may be highlighted for after it has ended. */
@@ -54,7 +57,8 @@ private sealed interface Command {
  * whose sample is not decoded yet, is skipped; an unknown name is also reported as a warning.
  */
 class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
-    private val sounds = SoundResolver(sampleRate, library)
+    internal val drums = DrumKit(sampleRate)
+    private val sounds = SoundResolver(sampleRate, library, drums)
     private val mixer = Mixer(sampleRate)
     private val scheduler = Scheduler(sampleRate, sounds)
     private val idleTracker = IdleTracker(sampleRate)
@@ -64,8 +68,15 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
     // Audio thread only from here on.
     private var renderedFrames = 0L
     private var startedVoice = false
-    private var voicesWereActive = false
+    private var voicesWereSounding = false
+    private var waitingPreview: Command.Preview? = null
+    private var previewGivesUpAt = 0L
     private var publishedAt = 0L
+
+    init {
+        // Rendering a drum sound takes milliseconds, which the audio thread must not spend on one it meets first.
+        thread(name = "cosic-drum-warm-up", isDaemon = true, priority = Thread.MIN_PRIORITY, block = drums::warmUp)
+    }
 
     /** The engine's state as of a moment ago; republished at most every 256 rendered frames. */
     @Volatile
@@ -88,8 +99,6 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
         failed(code, e.message, e.range)
     } catch (e: Exception) {
         failed(code, "Error while playing: ${errorMessage(e)}", null)
-    } catch (e: StackOverflowError) {
-        failed(code, errorMessage(e), null)
     }
 
     /** Starts the program at cycle 0 if it is not playing yet. */
@@ -97,12 +106,15 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
         commands.add(Command.Play)
     }
 
-    /** Stops the program: voices fade out over 20 ms, while delay and reverb tails ring on until they have died. */
+    /** Stops the program: voices and effect tails fade out over 20 ms, and the delay and reverb are emptied after it. */
     fun stop() {
         commands.add(Command.Stop)
     }
 
-    /** Plays one sample or note of [sound] at the next block, for trying sounds out; [index] is the sample number. */
+    /**
+     * Plays one sample or note of [sound] at the next block, for trying sounds out; [index] is the sample number. A
+     * sample that is still being decoded is waited for, up to a second. A newer preview replaces one still waiting.
+     */
     fun preview(sound: String, index: Int = 0, note: Double? = null) {
         sounds.resolve(sound, index.toDouble(), note) // loads or renders the sound here, off the audio thread
         commands.add(Command.Preview(sound, index, note))
@@ -113,18 +125,19 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
         require(frames >= 0 && out.size >= frames * 2) { "a buffer of ${out.size} samples cannot hold $frames stereo frames" }
         startedVoice = false
         var changed = drainCommands()
+        startWaitingPreview()
         scheduler.schedule(renderedFrames + frames)
         renderSegments(out, frames)
         renderedFrames += frames
         scheduler.highlights.expire(renderedFrames - HIGHLIGHT_KEEP_SECONDS * sampleRate)
 
-        val active = mixer.activeVoices
+        val sounding = mixer.isSounding
         val wasIdle = idleTracker.idle
-        val busy = scheduler.playing || startedVoice || voicesWereActive || active > 0
-        voicesWereActive = active > 0
-        if (idleTracker.blockRendered(renderedFrames, busy, peakOf(out, frames * 2))) mixer.clearBuses()
+        val voices = startedVoice || voicesWereSounding || sounding || waitingPreview != null
+        voicesWereSounding = sounding
+        if (idleTracker.blockRendered(renderedFrames, scheduler.playing, voices)) mixer.clearBuses()
         changed = changed || idleTracker.idle != wasIdle
-        if (changed || renderedFrames - publishedAt >= SNAPSHOT_INTERVAL_FRAMES) publish(active)
+        if (changed || renderedFrames - publishedAt >= SNAPSHOT_INTERVAL_FRAMES) publish()
     }
 
     private fun drainCommands(): Boolean {
@@ -137,13 +150,27 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
                 Command.Play -> if (!scheduler.playing) scheduler.play(renderedFrames + startDelayFrames)
                 Command.Stop -> {
                     scheduler.stop()
-                    mixer.fadeAll(STOP_FADE_MS)
+                    mixer.stopAll(STOP_FADE_MS)
+                    waitingPreview = null
                 }
                 is Command.Preview -> {
-                    val lookup = sounds.resolve(command.sound, command.index.toDouble(), command.note)
-                    if (lookup is SoundLookup.Ready) start(VoiceParams(lookup.source, PREVIEW_SECONDS, note = command.note))
+                    waitingPreview = command
+                    previewGivesUpAt = renderedFrames + PREVIEW_WAIT_SECONDS * sampleRate
                 }
             }
+        }
+    }
+
+    /** Starts the waiting preview as soon as its sound is ready, giving a sample that is still being decoded its time. */
+    private fun startWaitingPreview() {
+        val preview = waitingPreview ?: return
+        when (val lookup = sounds.resolve(preview.sound, preview.index.toDouble(), preview.note)) {
+            is SoundLookup.Ready -> {
+                waitingPreview = null
+                start(VoiceParams(lookup.source, PREVIEW_SECONDS, note = preview.note))
+            }
+            SoundLookup.Loading -> if (renderedFrames >= previewGivesUpAt) waitingPreview = null
+            is SoundLookup.Unknown -> waitingPreview = null
         }
     }
 
@@ -163,16 +190,14 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
     }
 
     private fun start(voice: VoiceParams) {
-        if (!mixer.startVoice(voice)) return
-        startedVoice = true
-        if (voice.sendsToEffects) idleTracker.effectsUsed()
+        if (mixer.startVoice(voice)) startedVoice = true
     }
 
-    private fun publish(activeVoices: Int) {
+    private fun publish() {
         publishedAt = renderedFrames
         snapshot = EngineSnapshot(
             sampleRate, scheduler.playing, idleTracker.idle, scheduler.cps,
-            scheduler.anchor.frame, scheduler.anchor.cycle.toDouble(), renderedFrames, activeVoices,
+            scheduler.anchor.frame, scheduler.anchor.cycle.toDouble(), renderedFrames, mixer.activeVoices,
             scheduler.highlights.snapshot(), scheduler.runtimeError, scheduler.warnings,
         )
     }
@@ -181,12 +206,6 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
     private fun currentCycle(): Long {
         val now = snapshot
         return if (now.playing) max(0L, floor(now.cycleAt(now.renderedFrames)).toLong()) else 0L
-    }
-
-    private fun peakOf(samples: FloatArray, count: Int): Float {
-        var peak = 0f
-        for (i in 0 until count) peak = max(peak, abs(samples[i]))
-        return peak
     }
 
     private fun failed(code: String, message: String, range: SourceRange?): EvalReport.Failed {

@@ -1,5 +1,6 @@
 package cosic.audio
 
+import kotlin.math.max
 import kotlin.math.min
 
 /** Voices that may sound at once; a new voice beyond this steals the oldest. */
@@ -31,9 +32,13 @@ internal class Mixer(val sampleRate: Int) {
     private val limiter = Limiter(sampleRate)
     private var started = 0L
 
+    /** How long the stop begun by [stopAll] lasts, in frames, and how many of them are left; 0 when none is under way. */
+    private var stopFrames = 0
+    private var stopFramesLeft = 0
+
     /**
      * Voices that are sounding and have not been told to fade out. Voices fading after a cut, a steal or
-     * [fadeAll] are not counted, so this is zero right after [fadeAll] even though their tails still sound.
+     * [stopAll] are not counted, so this is zero right after [stopAll] even though their tails still sound.
      */
     val activeVoices: Int
         get() {
@@ -42,15 +47,23 @@ internal class Mixer(val sampleRate: Int) {
             return count
         }
 
+    /** Whether any voice still makes sound, those fading out included. When it is false only the buses can ring on. */
+    val isSounding: Boolean
+        get() {
+            for (voice in voices) if (voice.isActive) return true
+            return false
+        }
+
     /**
      * Starts a voice from raw [params] (clamped here, see [VoiceParams]). Returns false when the event cannot sound
-     * (empty sample, `end <= begin`, zero speed) and nothing starts, so it cuts nothing and sets no bus settings.
+     * (see [canSound]), in which case nothing happens at all: no voice is stolen or cut and no bus is configured.
      * With 64 voices already sounding, the oldest is faded out over 5 ms to make room.
      */
     fun startVoice(params: VoiceParams): Boolean {
+        if (!params.canSound()) return false
         val voice = claimVoice()
         started++
-        if (!voice.start(params, started, (started.toInt() * -1640531527) or 1)) return false
+        voice.start(params, started, (started.toInt() * -1640531527) or 1)
         if (voice.hasCut) {
             for (other in voices) {
                 if (other !== voice && other.isActive && !other.isFading && other.hasCut && other.cutGroup == voice.cutGroup) {
@@ -64,9 +77,15 @@ internal class Mixer(val sampleRate: Int) {
         return true
     }
 
-    /** Fades every voice out over [ms] milliseconds (what stopping playback does). */
-    fun fadeAll(ms: Int) {
-        for (voice in voices) if (voice.isActive) voice.fade(ms)
+    /**
+     * Stops everything, which is what stopping playback does: every voice fades out over [fadeMs] milliseconds, the
+     * output fades out with them, so that the delay and reverb tails do too, and once that is over the delay and
+     * reverb buffers are emptied. Nothing rings on after it, and nothing is cut off while it is still loud.
+     */
+    fun stopAll(fadeMs: Int) {
+        for (voice in voices) if (voice.isActive) voice.fade(fadeMs)
+        stopFrames = max(1, fadeMs * sampleRate / 1000)
+        stopFramesLeft = stopFrames
     }
 
     /** Empties the delay and reverb buffers and resets the limiter; call when going idle so old tails cannot return. */
@@ -83,7 +102,8 @@ internal class Mixer(val sampleRate: Int) {
     fun render(out: FloatArray, frames: Int, frameOffset: Int = 0) {
         var done = 0
         while (done < frames) {
-            val n = min(BLOCK, frames - done)
+            var n = min(BLOCK, frames - done)
+            if (stopFramesLeft > 0) n = min(n, stopFramesLeft)
             val dry = buffers.dry
             dry.clear(n)
             buffers.delaySend.clear(n)
@@ -94,9 +114,12 @@ internal class Mixer(val sampleRate: Int) {
 
             val left = dry.left
             val right = dry.right
+            val stopping = stopFramesLeft > 0
+            val stopStep = if (stopping) MASTER_GAIN / stopFrames else 0f // the gain falls to 0 over the frames left
             for (i in 0 until n) {
-                left[i] *= MASTER_GAIN
-                right[i] *= MASTER_GAIN
+                val gain = if (stopping) stopStep * (stopFramesLeft - i) else MASTER_GAIN
+                left[i] *= gain
+                right[i] *= gain
             }
             limiter.process(left, right, n)
             var o = (frameOffset + done) * 2
@@ -105,6 +128,10 @@ internal class Mixer(val sampleRate: Int) {
                 out[o++] = right[i]
             }
             done += n
+            if (stopFramesLeft > 0) {
+                stopFramesLeft -= n
+                if (stopFramesLeft == 0) clearBuses()
+            }
         }
     }
 

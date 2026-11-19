@@ -34,6 +34,22 @@ private fun valueOr(v: Double?, default: Double): Double = if (v == null || v.is
 /** [valueOr] clamped to [lo]..[hi]. */
 private fun clamped(v: Double?, default: Double, lo: Double, hi: Double): Double = valueOr(v, default).coerceIn(lo, hi)
 
+private fun regionBegin(params: VoiceParams): Double = clamped(params.begin, 0.0, 0.0, 1.0)
+
+private fun regionEnd(params: VoiceParams): Double = clamped(params.end, 1.0, 0.0, 1.0)
+
+private fun playbackSpeed(params: VoiceParams): Double = clamped(params.speed, 1.0, -MAX_SPEED, MAX_SPEED)
+
+/**
+ * Whether an event can sound at all. A sample cannot when it is empty, when its `begin..end` region is empty or when
+ * `speed` is zero; a synth always can. Checking this before a voice is chosen keeps an event that cannot sound from
+ * disturbing the voices that do.
+ */
+internal fun VoiceParams.canSound(): Boolean {
+    val sample = source as? VoiceSource.Sample ?: return true
+    return sample.data.samples.isNotEmpty() && regionEnd(this) > regionBegin(this) && playbackSpeed(this) != 0.0
+}
+
 /**
  * One sounding note: source (oscillator or sample), then the optional filter, waveshaper, bit-crusher and
  * sample-and-hold stages, then envelope, gain and pan, mixed into the dry bus and the two send buses.
@@ -81,12 +97,8 @@ internal class Voice(private val sampleRate: Int) {
     var cutGroup = 0
         private set
 
-    /**
-     * Resolves [params] (clamping everything) and starts sounding. Returns false and stays idle when the event
-     * cannot sound: an empty sample, an empty `begin..end` region, or zero `speed`.
-     */
-    fun start(params: VoiceParams, order: Long, seed: Int): Boolean {
-        isActive = false
+    /** Resolves [params] (clamping everything) and starts sounding. [params] must be able to sound, see [canSound]. */
+    fun start(params: VoiceParams, order: Long, seed: Int) {
         val duration = if (params.durationSec > 0.0) params.durationSec else 0.0 // NaN becomes 0 too
         val clip = clamped(params.clip, Double.NaN, 0.0, MAX_CLIP)
         val gateSeconds: Double
@@ -109,10 +121,6 @@ internal class Voice(private val sampleRate: Int) {
             }
             is VoiceSource.Sample -> {
                 val data = source.data
-                val begin = clamped(params.begin, 0.0, 0.0, 1.0)
-                val end = clamped(params.end, 1.0, 0.0, 1.0)
-                val speed = clamped(params.speed, 1.0, -MAX_SPEED, MAX_SPEED)
-                if (end <= begin || speed == 0.0 || data.samples.isEmpty()) return false
                 val note = clamped(params.note, Double.NaN, MIN_NOTE, MAX_NOTE)
                 val root = source.rootNote
                 val pitchRatio = when {
@@ -120,7 +128,9 @@ internal class Voice(private val sampleRate: Int) {
                     note.isNaN() -> 1.0
                     else -> 2.0.pow((note - DEFAULT_NOTE) / 12.0)
                 }
-                player.start(data.samples, begin, end, speed * data.sampleRate / sampleRate * pitchRatio)
+                player.start(
+                    data.samples, regionBegin(params), regionEnd(params), playbackSpeed(params) * data.sampleRate / sampleRate * pitchRatio,
+                )
                 isSynth = false
                 gateSeconds = if (clip.isNaN()) Double.POSITIVE_INFINITY else duration * clip
                 defaultAttack = 0.001
@@ -170,7 +180,6 @@ internal class Voice(private val sampleRate: Int) {
         cutGroup = if (hasCut) floor(clamped(params.cut, 0.0, -MAX_CUT_GROUP, MAX_CUT_GROUP)).toInt() else 0
         this.order = order
         isActive = true
-        return true
     }
 
     /** Fades this voice out over [ms] milliseconds. */

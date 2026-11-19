@@ -76,6 +76,7 @@ internal fun <T, R> Pattern<T>.splitWholes(n: Int, f: (T, Int) -> R): Pattern<R>
             }
             val first = ((hap.part.begin - whole.begin) / width).floor().coerceIn(0L, n - 1L)
             val last = maxOf(first, (-((whole.begin - hap.part.end) / width).floor()) - 1).coerceIn(0L, n - 1L)
+            chargeQuery(last - first + 1)
             for (i in first..last) {
                 val piece = TimeSpan(whole.begin + width * Rational(i), whole.begin + width * Rational(i + 1))
                 val part = hap.part.intersect(piece) ?: continue

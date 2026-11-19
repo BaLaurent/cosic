@@ -6,8 +6,6 @@ import cosic.audio.Waveform
 import cosic.pattern.ControlMap
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class SoundEventTest {
     private val source = VoiceSource.Synth(Waveform.SQUARE)
@@ -46,17 +44,5 @@ class SoundEventTest {
     fun aValueThatIsNotANumberCountsAsNotSetInsteadOfCrashingTheAudioThread() {
         val controls: ControlMap = mapOf("gain" to "loud", "lpf" to true)
         assertEquals(VoiceParams(source, 1.0), voiceParams(controls, source, 1.0))
-    }
-
-    @Test
-    fun aVoiceSendsToTheEffectsOnlyWithAPositiveDelayOrRoomLevel() {
-        fun sends(vararg controls: Pair<String, Double>) = voiceParams(mapOf(*controls), source, 1.0).sendsToEffects
-
-        assertFalse(sends())
-        assertFalse(sends("delay" to 0.0, "room" to 0.0))
-        assertFalse(sends("delay" to Double.NaN, "room" to -1.0))
-        assertTrue(sends("delay" to 0.1))
-        assertTrue(sends("room" to 0.1))
-        assertTrue(sends("room" to 5.0), "the voice clamps this to 1, which still sends")
     }
 }

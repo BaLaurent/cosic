@@ -30,6 +30,13 @@ internal fun xorshift32(state: Int): Int {
 internal fun Int.toBipolar(): Float = this * (1f / 2_147_483_648f)
 
 /**
+ * The triangle wave at [phase], a fraction of a period in `[0, 1)`: 0 at the start, 1 a quarter period in, -1 at
+ * three quarters, and back to 0 at the end.
+ */
+internal fun triangleWave(phase: Double): Double =
+    if (phase < 0.25) 4.0 * phase else if (phase < 0.75) 2.0 - 4.0 * phase else 4.0 * phase - 4.0
+
+/**
  * The built-in synth sources. [soundName] is the name patterns use (`s("sawtooth")`); `saw` and `tri` are
  * accepted as aliases by [byName]. [baseLevel] is the nominal peak level of a voice before `gain`.
  */
@@ -130,7 +137,7 @@ internal class Oscillator(private val sampleRate: Int) {
     private fun fillTriangle(out: FloatArray, n: Int) {
         var p = phase
         for (i in 0 until n) {
-            out[i] = (if (p < 0.25) 4.0 * p else if (p < 0.75) 2.0 - 4.0 * p else 4.0 * p - 4.0).toFloat()
+            out[i] = triangleWave(p).toFloat()
             p += increment
             if (p >= 1.0) p -= 1.0
         }

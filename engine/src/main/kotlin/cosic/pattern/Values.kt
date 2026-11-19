@@ -23,12 +23,13 @@ internal fun soundControl(name: String): ControlMap {
     val colon = name.lastIndexOf(':')
     if (colon > 0) {
         val suffix = name.substring(colon + 1)
-        if (NUMBER_SUFFIX.matches(suffix)) return mapOf("s" to name.substring(0, colon), "n" to suffix.toDouble())
+        if (NUMBER_TEXT.matches(suffix)) return mapOf("s" to name.substring(0, colon), "n" to suffix.toDouble())
     }
     return mapOf("s" to name)
 }
 
-private val NUMBER_SUFFIX = Regex("-?(\\d+\\.?\\d*|\\.\\d+)")
+/** A number as it is written in a program's text: `3`, `-0.5`, `.5` or `2.`. */
+internal val NUMBER_TEXT = Regex("-?(\\d+\\.?\\d*|\\.\\d+)")
 
 /** A pattern value as a control map: maps stay as they are, numbers become notes and strings sounds. */
 @Suppress("UNCHECKED_CAST")

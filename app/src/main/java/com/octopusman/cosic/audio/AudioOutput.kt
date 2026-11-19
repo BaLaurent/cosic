@@ -121,7 +121,7 @@ class AudioOutput(private val engine: CosicEngine, context: Context) {
         }
     }
 
-    /** Renders and writes blocks until this thread has been idle long enough to end. */
+    /** Renders and writes blocks until this thread has been idle long enough to end, or rendering or writing fails. */
     private fun pump(track: AudioTrack) {
         val lowLatency = track.performanceMode == AudioTrack.PERFORMANCE_MODE_LOW_LATENCY
         Log.i(TAG, "start sr=${engine.sampleRate} bufferFrames=${track.bufferSizeInFrames} lowLatency=$lowLatency")
@@ -141,14 +141,18 @@ class AudioOutput(private val engine: CosicEngine, context: Context) {
                 Log.i(TAG, "frames=${snapshot.renderedFrames} underruns=${track.underrunCount} voices=${snapshot.activeVoices}")
             }
 
-            engine.render(buffer, BLOCK_FRAMES)
-            val written = track.write(buffer, 0, buffer.size, AudioTrack.WRITE_BLOCKING)
-            if (written < 0) {
+            try {
+                engine.render(buffer, BLOCK_FRAMES)
+                val written = track.write(buffer, 0, buffer.size, AudioTrack.WRITE_BLOCKING)
+                if (written >= 0) continue
                 Log.e(TAG, "write failed: $written")
-                // Let the UI see a stopped engine instead of staying in "playing" with no sound.
-                engine.stop()
-                return
+            } catch (e: Throwable) {
+                // An engine bug or an out-of-memory error here would otherwise take the whole app down.
+                Log.e(TAG, "audio failed", e)
             }
+            // Let the UI see a stopped engine instead of staying in "playing" with no sound.
+            engine.stop()
+            return
         }
     }
 

@@ -15,7 +15,7 @@ private const val WAV_HEADER_BYTES = 44
 private const val WAV_CHUNK_SAMPLES = 8192
 
 /** A library without banks: programs can use the synths and the drum kit only. */
-object EmptyLibrary : SoundLibrary {
+internal object EmptyLibrary : SoundLibrary {
     override fun bank(name: String): BankInfo? = null
 
     override fun sample(name: String, index: Int): SampleData? = null

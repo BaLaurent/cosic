@@ -363,6 +363,18 @@ class DspTest {
     }
 
     @Test
+    fun warmUpRendersEverySoundInEveryVariantExactlyOnce() {
+        val kit = DrumKit(SR)
+        assertEquals(0, kit.renderedCount, "nothing is rendered before it is asked for")
+        kit.warmUp()
+        assertEquals(DRUM_NAMES.size * 4, kit.renderedCount)
+        val snare = kit.sample("sd", 3)
+        kit.warmUp()
+        assertEquals(DRUM_NAMES.size * 4, kit.renderedCount)
+        assertSame(snare, kit.sample("sd", 3), "warming up again renders nothing twice")
+    }
+
+    @Test
     fun drumRenderingIsDeterministicAndFollowsTheEngineSampleRate() {
         val a = DrumKit(SR)
         val b = DrumKit(SR)

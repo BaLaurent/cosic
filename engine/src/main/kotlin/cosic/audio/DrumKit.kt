@@ -25,7 +25,7 @@ private const val TWO_PI = 2.0 * PI
  * peak and cached per (name, variant); rendering is deterministic, so the same name and variant always give the
  * same samples. The sounds are unpitched samples: play them through [VoiceSource.Sample] with a null root note.
  * Safe to call from any thread. A first call renders on the calling thread (a few milliseconds for the longest
- * sound), so warm the cache from a non-audio thread when evaluating a pattern.
+ * sound), which the audio thread must not spend: [warmUp] renders them all from another thread beforehand.
  */
 internal class DrumKit(private val sampleRate: Int) {
     private val cache = ConcurrentHashMap<Int, SampleData>()
@@ -36,6 +36,14 @@ internal class DrumKit(private val sampleRate: Int) {
         if (id < 0) return null
         val v = Math.floorMod(variant, VARIANTS)
         return cache.getOrPut(id * VARIANTS + v) { SampleData(normalised(render(name, v, ((id * VARIANTS + v + 1) * 0x2545F491) or 1)), sampleRate) }
+    }
+
+    /** How many of the kit's sounds (every name in every variant) are rendered and cached so far. */
+    val renderedCount: Int get() = cache.size
+
+    /** Renders every sound in every variant that is not rendered yet, so that no lookup has to do it later. */
+    fun warmUp() {
+        for (name in DRUM_NAMES) for (variant in 0 until VARIANTS) sample(name, variant)
     }
 
     private fun render(name: String, v: Int, seed: Int): FloatArray = when (name) {
@@ -126,8 +134,7 @@ internal class DrumKit(private val sampleRate: Int) {
         val click = whiteNoise(frames(0.001), seed)
         for (i in out.indices) {
             val t = time(i)
-            val p = (800.0 * t) % 1.0
-            val triangle = if (p < 0.25) 4.0 * p else if (p < 0.75) 2.0 - 4.0 * p else 4.0 * p - 4.0
+            val triangle = triangleWave((800.0 * t) % 1.0)
             val noise = if (i < click.size) click[i] * 0.3 * (1.0 - i.toDouble() / click.size) else 0.0
             out[i] = ((sin(TWO_PI * 1700.0 * t) + 0.6 * triangle) * exp(-t / 0.012) + noise).toFloat()
         }

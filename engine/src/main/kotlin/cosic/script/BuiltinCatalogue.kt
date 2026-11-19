@@ -221,11 +221,10 @@ internal fun constructorBuiltins(): List<Builtin> = buildList {
     }
 }
 
-/** The tempo in cycles per second given as the only argument, after dividing it by [divisor]. */
+/** The tempo in cycles per second given as the only argument, a plain number, after dividing it by [divisor]. */
 private fun Call.tempo(divisor: Double): Double {
-    val given = args[0] as? Value.Num ?: fail("'$name' expects a number, got ${describe(args[0])}")
-    val cps = given.value / divisor
-    if (!(cps > 0.0 && cps <= 10.0)) fail("Tempo out of range")
+    val cps = (args[0] as? Value.Num)?.let { it.value / divisor }
+    if (cps == null || !(cps > 0.0 && cps <= 10.0)) fail("Tempo out of range")
     return cps
 }
 

@@ -1,6 +1,7 @@
 package cosic
 
 import cosic.audio.SR
+import cosic.audio.constantSample
 
 /**
  * A [SoundLibrary] with fixed banks. A sample that is not in [samples] stays "not decoded yet" (null) for ever,
@@ -18,6 +19,21 @@ internal class FakeLibrary(
         requested += name to index
         return samples[name to index]
     }
+}
+
+/**
+ * A library with one bank, `kit`, whose only sample (a short constant 0.5) is "not decoded yet" until the
+ * [readyOnRequest]-th time it is asked for, like a file that is still being decoded. [requests] counts the asks.
+ */
+internal class SlowLibrary(private val readyOnRequest: Int) : SoundLibrary {
+    private val data = constantSample(0.05, 0.5f)
+
+    var requests = 0
+        private set
+
+    override fun bank(name: String): BankInfo? = if (name == "kit") BankInfo("kit", 1, null) else null
+
+    override fun sample(name: String, index: Int): SampleData? = if (++requests >= readyOnRequest) data else null
 }
 
 /** A library with one fully decoded bank. [roots] makes it a pitched bank. */

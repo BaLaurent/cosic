@@ -316,6 +316,24 @@ class MixerTest {
         assertTrue(out[2399] > 0.5f)
     }
 
+    @Test
+    fun aSkippedEventStealsNoVoiceAndChangesNothingEvenWithAFullPool() {
+        val dc = VoiceSource.Sample(constantSample(5.0), null)
+        fun crowd() = Mixer(SR).also { mixer ->
+            // 64 voices sounding on the right, and the 64 older ones that they stole their places from still fading on
+            // the left: all 128 slots are busy
+            repeat(64) { mixer.startVoice(VoiceParams(dc, 5.0, gain = 0.01, pan = 0.0)) }
+            repeat(64) { mixer.startVoice(VoiceParams(dc, 5.0, gain = 0.01, pan = 1.0)) }
+        }
+        val reference = crowd()
+        val mixer = crowd()
+        assertEquals(64, mixer.activeVoices)
+
+        assertFalse(mixer.startVoice(VoiceParams(dc, 5.0, cut = 1.0, delaytime = 0.5, begin = 0.9, end = 0.1)))
+        assertEquals(64, mixer.activeVoices, "no sounding voice was faded to make room for it")
+        assertContentEquals(reference.renderFrames(2400), mixer.renderFrames(2400), "and none of the fading ones was dropped")
+    }
+
     // ------------------------------------------------------- pool and cut groups
 
     @Test
@@ -361,17 +379,69 @@ class MixerTest {
     }
 
     @Test
-    fun fadeAllSilencesEveryVoiceWithinTheRequestedTime() {
+    fun stopAllSilencesEveryVoiceWithinTheRequestedTime() {
         val mixer = Mixer(SR)
         val dc = VoiceSource.Sample(constantSample(5.0), null)
         repeat(3) { mixer.startVoice(VoiceParams(dc, 5.0, gain = 0.1)) }
         mixer.renderFrames(4800)
-        mixer.fadeAll(20)
+        mixer.stopAll(20)
         assertEquals(0, mixer.activeVoices)
         val left = channel(mixer.renderFrames(2400), 0)
-        assertEquals(3 * 0.1 * centerGain / 2, left[479].toDouble(), 0.01) // halfway through the 960-frame fade
+        // halfway through the 960-frame fade the voices are at half level, and so is the output they are heard through
+        assertEquals(3 * 0.1 * centerGain / 4, left[479].toDouble(), 0.005)
         assertTrue(peak(left, 961) < 1e-6f)
         assertTrue(mixer.startVoice(flat()), "voices can start again after a fade")
+    }
+
+    @Test
+    fun stopAllEmptiesTheBusesWhenTheFadeIsOverSoNothingRingsOn() {
+        val mixer = Mixer(SR)
+        val dc = VoiceSource.Sample(constantSample(5.0), null)
+        mixer.startVoice(VoiceParams(dc, 5.0, gain = 0.3, delay = 1.0, delaytime = 0.3, delayfeedback = 0.9, room = 1.0, size = 1.0))
+        mixer.renderFrames(SR / 2)
+        mixer.stopAll(20)
+        val out = mixer.renderFrames(3 * SR) // echoes would come back every 0.3 s
+        assertTrue(rms(out, 0, 480 * 2) > 0.01, "the voice and its effects are heard while it fades")
+        assertTrue(peak(out, 961 * 2) < 1e-6f, "silent as soon as the fade is over")
+        assertTrue(mixer.startVoice(VoiceParams(dc, 0.1, gain = 0.3)), "voices can start again")
+        assertTrue(peak(mixer.renderFrames(2400)) > 0.1f)
+    }
+
+    @Test
+    fun stopAllFadesTheEffectTailsOutWithTheVoicesSoEmptyingTheBusesDoesNotClick() {
+        val mixer = Mixer(SR)
+        val dc = VoiceSource.Sample(constantSample(5.0), null)
+        mixer.startVoice(VoiceParams(dc, 5.0, gain = 0.3, room = 1.0, size = 1.0, delay = 1.0, delaytime = 0.05, delayfeedback = 0.8))
+        val before = channel(mixer.renderFrames(SR / 2), 0)
+        assertTrue(peak(before, SR / 2 - 480) > 0.3f, "the effects are loud when it is stopped")
+        mixer.stopAll(20)
+        val left = channel(mixer.renderFrames(2400), 0)
+        for (frame in 958..959) assertTrue(abs(left[frame]) < 0.005f, "frame $frame is still ${left[frame]} just before the buses are emptied")
+        assertTrue(abs(left[0]) > 0.3f, "and it starts from the level it had: ${left[0]}")
+    }
+
+    @Test
+    fun stopAllEmptiesTheBusesAtTheSameFrameHoweverTheBlocksAreSplit() {
+        val playing = 2000
+        val stopped = 4000
+        fun run(parts: IntArray): FloatArray {
+            val mixer = Mixer(SR).also { busyPatch(it) }
+            val out = FloatArray((playing + stopped) * 2)
+            mixer.render(out, playing)
+            mixer.stopAll(20)
+            var offset = playing
+            for (n in parts) {
+                mixer.render(out, n, offset)
+                offset += n
+            }
+            assertEquals(playing + stopped, offset)
+            return out
+        }
+        val whole = run(intArrayOf(stopped))
+        val split = run(intArrayOf(1, 700, 258, 3, 1000, 2038))
+        assertContentEquals(whole, split)
+        assertTrue(peak(whole, playing * 2, (playing + 960) * 2) > 0.01f, "the voices and their effects sound while they fade")
+        assertTrue(peak(whole, (playing + 961) * 2) < 1e-6f, "the buses were emptied after the 960 frame fade")
     }
 
     // -------------------------------------------------------------------- buses

@@ -3,6 +3,7 @@ package cosic.mini
 import cosic.SourceRange
 import cosic.pattern.CosicError
 import cosic.pattern.MAX_COUNT
+import cosic.pattern.NUMBER_TEXT
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
 import cosic.pattern.degradeBy
@@ -42,7 +43,6 @@ internal fun parseMini(src: String, baseOffset: Int): Pattern<Any> = MiniParser(
 private const val PIPE_SEED_BASE = 1000
 private const val SEQUENCE_END = ",|]>})"
 private const val ATOM_SYMBOLS = "#.-_:^'"
-private val NUMBER = Regex("-?(\\d+\\.?\\d*|\\.\\d+)")
 
 /** One step of a sequence; [number] is set while the step is still a bare numeric atom. */
 private class Step(val pattern: Pattern<Any>, val weight: Rational, val number: Double?)
@@ -78,6 +78,9 @@ private fun timecatSteps(steps: List<Step>): Pattern<Any> = when (steps.size) {
 }
 
 private fun isAtomChar(c: Char): Boolean = c in 'a'..'z' || c in 'A'..'Z' || c in '0'..'9' || c in ATOM_SYMBOLS
+
+/** Whether [value] may be a count of steps, copies or events (see [MAX_COUNT]); false for NaN too. */
+private fun isCount(value: Double): Boolean = Math.abs(value) <= MAX_COUNT
 
 private class MiniParser(private val src: String, private val base: Int) {
     private var pos = 0
@@ -239,7 +242,7 @@ private class MiniParser(private val src: String, private val base: Int) {
         pos = atomEnd(start)
         val text = src.substring(start, pos)
         if (text.all { it == '-' }) return Term(silence)
-        val number = if (NUMBER.matches(text)) text.toDouble() else null
+        val number = if (NUMBER_TEXT.matches(text)) text.toDouble() else null
         val value: Any = number ?: text
         val at = listOf(SourceRange(base + start, base + pos))
         return Term(pure(value).withLocations(at), number)
@@ -254,13 +257,9 @@ private class MiniParser(private val src: String, private val base: Int) {
         if (!isAtomChar(c)) unexpected(pos)
         val start = pos
         val text = src.substring(start, atomEnd(start))
-        if (!NUMBER.matches(text)) fail("unexpected '$text'", start, text.length)
+        if (!NUMBER_TEXT.matches(text)) fail("unexpected '$text'", start, text.length)
         val value = text.toDouble()
-        try {
-            Rational.of(value)
-        } catch (e: IllegalArgumentException) {
-            fail("number out of range", start, text.length)
-        }
+        if (!isCount(value)) fail("number out of range", start, text.length)
         pos += text.length
         return Arg.Constant(value)
     }
@@ -309,9 +308,12 @@ private class MiniParser(private val src: String, private val base: Int) {
     }
 
     private fun parseArg(): Arg {
+        skipSpace()
+        val start = pos
         val steps = parseSequence()
-        val number = steps.singleOrNull()?.number
-        return if (number != null) Arg.Constant(number) else Arg.Patterned(timecatSteps(steps))
+        val number = steps.singleOrNull()?.number ?: return Arg.Patterned(timecatSteps(steps))
+        if (!isCount(number)) fail("number out of range", start, atomEnd(start) - start)
+        return Arg.Constant(number)
     }
 
     // ---- scanning -----------------------------------------------------------------------
@@ -336,7 +338,7 @@ private class MiniParser(private val src: String, private val base: Int) {
     }
 
     private fun count(value: Double): Int {
-        if (!(Math.abs(value) <= MAX_COUNT)) throw CosicError("Mini-notation: number out of range")
+        if (!isCount(value)) throw CosicError("Mini-notation: number out of range")
         return value.roundToInt()
     }
 

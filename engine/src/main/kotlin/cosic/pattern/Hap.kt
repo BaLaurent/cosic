@@ -5,8 +5,12 @@ import cosic.SourceRange
 /** A half-open stretch of time `[begin, end)` in cycles. Zero-width spans (`begin == end`) are allowed. */
 internal data class TimeSpan(val begin: Rational, val end: Rational) {
 
-    /** Splits the span at every integer cycle boundary. A zero-width span is returned as is. */
+    /**
+     * Splits the span at every integer cycle boundary. A zero-width span is returned as is. Counts the pieces against
+     * the query budget first, so a span of millions of cycles is refused before they are built.
+     */
     fun spanCycles(): List<TimeSpan> {
+        chargeQuery(if (begin < end) Math.subtractExact(end.floor(), begin.floor()) + 1 else 1)
         if (begin >= end) return listOf(this)
         var next = Rational(begin.floor() + 1)
         if (next >= end) return listOf(this)

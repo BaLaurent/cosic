@@ -358,4 +358,30 @@ class MiniTest {
         assertEquals("Mini-notation: number out of range", error("bd(3,1000000)").message)
         assertEquals("Mini-notation: number out of range", assertFailsWith<CosicError> { mini("bd(<3 1000000>,8)").shownCycle(1) }.message)
     }
+
+    @Test
+    fun hugeFactorsAndEuclidArgumentsPointAtTheNumber() {
+        fun assertOutOfRange(src: String, start: Int, end: Int) {
+            val e = error(src, 10)
+            assertEquals("Mini-notation: number out of range", e.message, src)
+            assertEquals(SourceRange(10 + start, 10 + end), e.range, src)
+        }
+        assertOutOfRange("bd*20000", 3, 8)
+        assertOutOfRange("bd*-20000", 3, 9)
+        assertOutOfRange("bd/20000", 3, 8)
+        assertOutOfRange("{a b c}%20000", 8, 13)
+        assertOutOfRange("x(20000,8)", 2, 7)
+        assertOutOfRange("x(3,20000)", 4, 9)
+        assertOutOfRange("x(3, 8, 20000)", 8, 13)
+        assertOutOfRange("bd*99999999999999999999", 3, 23)
+        assertOutOfRange("x(3,99999999999999999999)", 4, 24)
+    }
+
+    @Test
+    fun theLargestAllowedFactorsAndEuclidArgumentsAreAccepted() {
+        assertEquals(10_000, mini("bd*10000").query(cycleSpan(0)).size)
+        assertEquals(1, mini("bd/10000").query(cycleSpan(0)).size)
+        assertEquals(10_000, mini("x(10000,10000)").query(cycleSpan(0)).size)
+        assertEquals(10_000, mini("{a b c}%10000").query(cycleSpan(0)).size)
+    }
 }

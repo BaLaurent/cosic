@@ -27,6 +27,3 @@ internal fun voiceParams(controls: ControlMap, source: VoiceSource, durationSec:
 )
 
 private fun ControlMap.number(key: String): Double? = this[key] as? Double
-
-/** Whether the voice feeds the delay or reverb bus. A level that is absent, zero, negative or NaN does not. */
-internal val VoiceParams.sendsToEffects: Boolean get() = (delay ?: 0.0) > 0.0 || (room ?: 0.0) > 0.0

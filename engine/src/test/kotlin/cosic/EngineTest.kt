@@ -6,6 +6,7 @@ import cosic.audio.constantSample
 import cosic.audio.estimateFrequency
 import cosic.audio.peak
 import cosic.script.reference
+import java.lang.management.ManagementFactory
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 import kotlin.test.Test
@@ -22,6 +23,8 @@ private const val BLOCK = 256
 
 /** The engine facade: evaluate, play, stop, preview, the published snapshot, and when it is idle. */
 class EngineTest {
+    private val threads = ManagementFactory.getThreadMXBean() as com.sun.management.ThreadMXBean
+
     // ------------------------------------------------------------------------------ evaluate
 
     @Test
@@ -79,6 +82,33 @@ class EngineTest {
         val starts = engine.highlightStarts(2 * CYCLE)
         assertTrue(starts.size >= 8, "the kicks go on: $starts")
         assertNull(engine.snapshot.runtimeError)
+    }
+
+    @Test
+    fun aProgramThatSplitsEventsIntoMillionsOfPiecesIsRejectedWithoutExhaustingMemory() {
+        for (code in listOf(
+            """s("bd").ply(10000).ply(10000)""",
+            """s("bd").fast(10000).fast(10000)""",
+            """s("bd").chop(10000).chop(10000)""",
+        )) {
+            val before = threads.currentThreadAllocatedBytes
+            val report = assertIs<EvalReport.Failed>(engineOf().evaluate(code), code)
+            val allocated = threads.currentThreadAllocatedBytes - before
+            assertEquals("Pattern too dense", report.message, code)
+            assertTrue(allocated < 100_000_000, "refusing $code built $allocated bytes of events first")
+        }
+    }
+
+    @Test
+    fun denseButReasonableProgramsAreStillAccepted() {
+        for (code in listOf(
+            """s("hh*64")""",
+            """s("bd").ply(8).fast(4)""",
+            """s("hh*64").ply(4).fast(2).room(0.2)""",
+            """s("bd*16, hh*64, cp*8").every(2, x => x.fast(2)).jux(rev)""",
+        )) {
+            assertIs<EvalReport.Ok>(engineOf().evaluate(code), code)
+        }
     }
 
     @Test
@@ -230,6 +260,18 @@ class EngineTest {
     }
 
     @Test
+    fun aCycleThatTurnsTooDenseAfterTheDryRunIsSkippedAndReportedAndPlaybackGoesOn() {
+        val engine = engineOf()
+        // the dry run looks at cycles 0 and 1 only; cycle 2 would split one event into millions of pieces
+        engine.evaluateOk("""cat(s("sine"), s("sine"), s("sine").ply(10000).ply(10000))""")
+        engine.play()
+        val starts = engine.highlightStarts(4 * CYCLE)
+        assertEquals("Runtime error: Pattern too dense", engine.snapshot.runtimeError)
+        assertTrue(2400L + 3 * CYCLE in starts, "cycle 3 plays again: $starts")
+        assertTrue(2400L + 2 * CYCLE !in starts)
+    }
+
+    @Test
     fun highlightsCarryTheSourceRangesAndExpireAfterOneSecond() {
         val engine = engineOf()
         engine.evaluateOk("""s("bd sd")""")
@@ -261,14 +303,21 @@ class EngineTest {
     }
 
     @Test
-    fun stoppingDoesNotCutAnEffectTail() {
-        val engine = engineOf()
-        engine.evaluateOk("""s("bd*4").room(1).size(1)""")
-        engine.play()
-        engine.renderFrames(CYCLE)
-        engine.stop()
-        val out = engine.renderFrames(CYCLE / 2)
-        assertTrue(peak(out, 2400 * 2) > 0.01f, "the reverb rings on after the voices have faded")
+    fun stoppingSilencesTheDelayAndReverbTailsToo() {
+        for (code in listOf(
+            """s("bd*4").room(1).size(1)""",
+            """s("sd").delay(1).delaytime(4).delayfeedback(0.95)""",
+        )) {
+            val engine = engineOf()
+            engine.evaluateOk(code)
+            engine.play()
+            engine.renderFrames(SR / 8) // the first voice is still sounding
+            engine.stop()
+            val out = engine.renderFrames(6 * SR) // outlasts the four second delay
+            assertTrue(peak(out, 0, 480 * 2) > 0f, "$code: the voices fade out over 20 ms instead of cutting off")
+            assertTrue(peak(out, 950 * 2, 960 * 2) < 0.01f, "$code: everything has faded out by the time the buses are emptied")
+            assertEquals(0f, peak(out, 2400 * 2), "$code: silent from 50 ms on, no echo or tail comes back")
+        }
     }
 
     @Test
@@ -314,64 +363,84 @@ class EngineTest {
         assertContains(library.requested, "kit" to 0)
     }
 
+    @Test
+    fun aPreviewWaitsForASampleThatIsStillBeingDecoded() {
+        val library = SlowLibrary(readyOnRequest = 40) // asked once by preview() and then once per block: ready in block 38
+        val engine = engineOf(library)
+        engine.preview("kit")
+        val out = engine.renderFrames(SR / 2)
+        assertEquals(0f, peak(out, 0, 38 * BLOCK * 2), "nothing to play while the sample is not there")
+        assertTrue(peak(out, 38 * BLOCK * 2, (38 * BLOCK + 480) * 2) > 0.1f, "it sounds as soon as the sample is there")
+    }
+
+    @Test
+    fun aPreviewGivesUpOnASampleThatDoesNotComeWithinAboutASecond() {
+        val library = SlowLibrary(readyOnRequest = 1000)
+        val engine = engineOf(library)
+        engine.preview("kit")
+        assertEquals(0f, peak(engine.renderFrames(5 * SR)))
+        assertTrue(library.requests in 150..230, "it asks once per block for a second, then stops: ${library.requests} requests")
+    }
+
+    @Test
+    fun aNewPreviewReplacesOneThatIsStillWaiting() {
+        val library = FakeLibrary(banks = mapOf("kit" to BankInfo("kit", 1, null)))
+        val engine = engineOf(library)
+        engine.preview("kit")
+        engine.preview("bd")
+        assertTrue(peak(engine.renderFrames(2400)) > 0.1f, "the kick sounds")
+        assertEquals(1, library.requested.count { it == "kit" to 0 }, "only preview() asked, the replaced one was never retried")
+    }
+
+    @Test
+    fun stopCancelsAPreviewThatIsStillWaiting() {
+        val library = SlowLibrary(readyOnRequest = 20)
+        val engine = engineOf(library)
+        engine.preview("kit")
+        engine.renderFrames(BLOCK)
+        engine.stop()
+        assertEquals(0f, peak(engine.renderFrames(SR / 2)), "it does not sound after the stop")
+        assertTrue(library.requests < 20, "and it is not asked for any more: ${library.requests}")
+    }
+
     // --------------------------------------------------------------------------------- idle
 
     @Test
-    fun aPatternWithoutEffectsGoesIdleTwoSecondsAfterStop() {
+    fun theEngineGoesIdleTwoSecondsAfterTheLastVoiceHasEndedWhateverTheEffects() {
+        for (code in listOf(
+            """s("bd*4")""",
+            """s("sd").room(1).size(1)""",
+            """s("sd").delay(1).delaytime(4).delayfeedback(0.95)""",
+        )) {
+            val engine = engineOf()
+            engine.evaluateOk(code)
+            engine.play()
+            engine.renderFrames(SR / 8) // the first voice is still sounding
+            engine.stop()
+            var lastSound = 0L
+            var idleAt = -1L
+            val buffer = FloatArray(BLOCK * 2)
+            while (idleAt < 0 && engine.snapshot.renderedFrames < 20L * SR) {
+                engine.render(buffer, BLOCK)
+                val now = engine.snapshot.renderedFrames
+                if (peak(buffer) > 0f) lastSound = now
+                if (engine.snapshot.idle) idleAt = now
+            }
+            assertTrue(idleAt > 0, "$code never went idle")
+            assertTrue(idleAt - lastSound in 2L * SR..2L * SR + BLOCK, "$code: idle ${idleAt - lastSound} frames after the last sound")
+        }
+    }
+
+    @Test
+    fun stoppingLongAfterTheLastVoiceEndedGoesIdleAtOnce() {
         val engine = engineOf()
-        engine.evaluateOk("""s("bd*4")""")
+        engine.evaluateOk("""s("sd").room(1).slow(100)""") // one snare, over after 0.35 s, then silence
         engine.play()
-        engine.renderFrames(2 * CYCLE)
+        engine.renderFrames(3 * SR)
+        assertFalse(engine.snapshot.idle, "still playing, if only silence")
         engine.stop()
         engine.renderFrames(BLOCK)
-        val stopped = engine.snapshot.renderedFrames
-        engine.renderFrames(2 * SR - 2 * BLOCK)
-        assertFalse(engine.snapshot.idle, "less than two seconds since the last voice")
-        engine.renderFrames(4 * BLOCK)
-        assertTrue(engine.snapshot.idle)
-        assertTrue(engine.snapshot.renderedFrames - stopped >= 2 * SR)
-    }
-
-    @Test
-    fun anEchoOnItsWayRoundTheDelayKeepsTheEngineAwake() {
-        val engine = engineOf()
-        engine.evaluateOk("""s("sd").delay(1).delaytime(2).delayfeedback(0.6)""")
-        engine.play()
-        val stoppedAt = SR / 2
-        engine.renderFrames(stoppedAt)
-        engine.stop()
-        val out = engine.renderFrames(7 * SR)
-        assertFalse(engine.snapshot.idle, "the echoes are still coming")
-        // the snare hits at frame 2400 and its echoes come every two seconds, the first one after the voice has ended
-        fun echo(k: Int) = peak(out, (2400 + 2 * SR * k - stoppedAt) * 2, (2400 + 2 * SR * k - stoppedAt + 4800) * 2)
-        assertTrue(echo(1) > 0.1f, "first echo ${echo(1)}")
-        assertTrue(echo(2) > 0.05f, "second echo ${echo(2)}, which a two second grace would have cut off")
-        assertTrue(echo(3) > 0.02f, "third echo ${echo(3)}")
-    }
-
-    @Test
-    fun theEngineGoesIdleOnlyOnceTheTailHasDied() {
-        val engine = engineOf()
-        engine.evaluateOk("""s("sd").room(1).size(1)""")
-        engine.play()
-        engine.renderFrames(SR / 2)
-        engine.stop()
-        engine.renderFrames(SR / 2)
-
-        val peaks = ArrayList<Float>() // per block
-        var idleAt = -1
-        val buffer = FloatArray(BLOCK * 2)
-        for (block in 0 until 60 * SR / BLOCK) {
-            engine.render(buffer, BLOCK)
-            peaks.add(peak(buffer))
-            if (engine.snapshot.idle) {
-                idleAt = block
-                break
-            }
-        }
-        assertTrue(idleAt > 3 * SR / BLOCK, "a size 1 reverb outlasts the two second grace")
-        val window = (4.1 * SR / BLOCK).toInt()
-        assertTrue(peaks.subList(idleAt - window, idleAt).all { it < 1e-4f }, "nothing audible is cut off")
+        assertTrue(engine.snapshot.idle, "it is not playing, and no voice has sounded for more than two seconds")
     }
 
     // ------------------------------------------------------------------------------- misc
@@ -380,6 +449,15 @@ class EngineTest {
     fun theSoundListsForTheSoundsScreen() {
         assertEquals(listOf("sine", "sawtooth", "square", "triangle", "white", "pink", "brown"), CosicEngine.SYNTHS)
         assertEquals(listOf("bd", "sd", "hh", "oh", "cp", "rim", "lt", "mt", "ht", "cr"), CosicEngine.DRUMS)
+    }
+
+    @Test
+    fun theWholeDrumKitIsRenderedInTheBackgroundOnceTheEngineExists() {
+        val engine = engineOf()
+        val expected = CosicEngine.DRUMS.size * 4 // four variants of every sound
+        val deadline = System.nanoTime() + 10_000_000_000L
+        while (engine.drums.renderedCount < expected && System.nanoTime() < deadline) Thread.sleep(5)
+        assertEquals(expected, engine.drums.renderedCount)
     }
 
     @Test

@@ -5,8 +5,11 @@ import cosic.pattern.ControlMap
 import cosic.pattern.Hap
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
+import cosic.pattern.TOO_DENSE
 import cosic.pattern.TimeSpan
+import cosic.pattern.reportingExhaustion
 import cosic.pattern.silence
+import cosic.pattern.withQueryBudget
 import cosic.script.DEFAULT_CPS
 
 /** The pattern is queried in pieces of this many cycles. */
@@ -16,15 +19,10 @@ private const val MAX_HAPS_PER_CHUNK = 2000
 private const val LOOKAHEAD_SECONDS = 0.1
 private const val DRY_RUN_CYCLES = 2L
 
-private const val TOO_DENSE_WARNING = "Pattern too dense"
-
 private fun unknownSoundWarning(key: String) = "Unknown sound '$key'"
 
 /** What to tell the user about an exception thrown while a pattern was queried. */
-internal fun errorMessage(error: Throwable): String = when (error) {
-    is StackOverflowError -> "The program nests or calls itself too deeply"
-    else -> error.message ?: error.toString()
-}
+internal fun errorMessage(error: Throwable): String = error.message ?: error.toString()
 
 /** Warnings without repeats, in the order they came up. [list] is replaced, never changed, when one is added. */
 private class Warnings(initial: List<String> = emptyList()) {
@@ -40,27 +38,29 @@ private class Warnings(initial: List<String> = emptyList()) {
 
 /**
  * The haps of [pattern] that start inside the chunk beginning at [begin]: those with an onset whose whole begins in
- * it. Beyond [MAX_HAPS_PER_CHUNK] the rest is dropped and [warnings] told.
+ * it. Beyond [MAX_HAPS_PER_CHUNK] the rest is dropped and [warnings] told. Querying runs under a budget (see
+ * [withQueryBudget]) and throws a [cosic.pattern.CosicError] when the chunk is too dense to build.
  */
 private fun onsets(pattern: Pattern<ControlMap>, begin: Rational, warnings: Warnings): List<Hap<ControlMap>> {
     val end = begin + CHUNK
+    val haps = withQueryBudget { pattern.query(TimeSpan(begin, end)) }
     val starting = ArrayList<Hap<ControlMap>>()
-    for (hap in pattern.query(TimeSpan(begin, end))) {
-        val whole = hap.whole ?: continue
-        if (whole.begin == hap.part.begin && whole.begin >= begin && whole.begin < end) starting.add(hap)
+    for (hap in haps) {
+        if (hap.hasOnset() && hap.part.begin >= begin && hap.part.begin < end) starting.add(hap)
     }
     if (starting.size <= MAX_HAPS_PER_CHUNK) return starting
-    warnings.add(TOO_DENSE_WARNING)
+    warnings.add(TOO_DENSE)
     return starting.subList(0, MAX_HAPS_PER_CHUNK)
 }
 
 /**
  * Looks ahead the way the [Scheduler] will, over two cycles from [fromCycle], without making a sound. Returns the
- * warnings playing those cycles would raise (unknown sounds, a pattern too dense), and throws whatever querying the
- * pattern throws, so a program that would fail is rejected when it is evaluated. Resolving each sound also makes the
- * library start loading the samples and renders the drum sounds, which keeps that work off the audio thread.
+ * warnings playing those cycles would raise (unknown sounds, a pattern too dense), and throws a
+ * [cosic.pattern.CosicError] or other exception for whatever would fail, so a program that would fail is rejected when
+ * it is evaluated. Resolving each sound also makes the library start loading the samples and renders the drum sounds,
+ * which keeps that work off the audio thread.
  */
-internal fun dryRun(pattern: Pattern<ControlMap>, fromCycle: Long, sounds: SoundResolver): List<String> {
+internal fun dryRun(pattern: Pattern<ControlMap>, fromCycle: Long, sounds: SoundResolver): List<String> = reportingExhaustion {
     val warnings = Warnings()
     var begin = Rational(fromCycle)
     val end = begin + Rational(DRY_RUN_CYCLES)
@@ -71,7 +71,7 @@ internal fun dryRun(pattern: Pattern<ControlMap>, fromCycle: Long, sounds: Sound
         }
         begin += CHUNK
     }
-    return warnings.list
+    warnings.list
 }
 
 /**
@@ -154,33 +154,35 @@ internal class Scheduler(private val sampleRate: Int, private val sounds: SoundR
         while (anchor.frameAt(horizon) < until) scheduleChunk()
     }
 
-    /** Queues one chunk. When querying it throws, the chunk is skipped and the error recorded; scheduling goes on. */
+    /** Queues one chunk. When that throws, the chunk is skipped and the error recorded; scheduling goes on. */
     private fun scheduleChunk() {
         val begin = horizon
         horizon = begin + CHUNK
         try {
-            val events = ArrayList<SoundEvent>()
-            val marks = ArrayList<HighlightEvent>()
-            for (hap in onsets(pattern, begin, warningLog)) {
-                when (val lookup = sounds.resolve(hap.value)) {
-                    is SoundLookup.Ready -> {
-                        val whole = checkNotNull(hap.whole)
-                        val start = anchor.frameAt(whole.begin)
-                        val seconds = (whole.end - whole.begin).toDouble() / anchor.cps
-                        events.add(SoundEvent(start, voiceParams(hap.value, lookup.source, seconds)))
-                        if (hap.locations.isNotEmpty()) marks.add(HighlightEvent(start, anchor.frameAt(whole.end), hap.locations))
-                    }
-                    is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))
-                    SoundLookup.Loading -> Unit
-                }
-            }
-            events.sortBy { it.startFrame }
-            pending.addAll(events)
-            for (mark in marks) highlights.add(mark)
+            reportingExhaustion { queueChunk(begin) }
         } catch (e: Exception) {
             runtimeError = "Runtime error: ${errorMessage(e)}"
-        } catch (e: StackOverflowError) {
-            runtimeError = "Runtime error: ${errorMessage(e)}"
         }
+    }
+
+    private fun queueChunk(begin: Rational) {
+        val events = ArrayList<SoundEvent>()
+        val marks = ArrayList<HighlightEvent>()
+        for (hap in onsets(pattern, begin, warningLog)) {
+            when (val lookup = sounds.resolve(hap.value)) {
+                is SoundLookup.Ready -> {
+                    val whole = checkNotNull(hap.whole)
+                    val start = anchor.frameAt(whole.begin)
+                    val seconds = (whole.end - whole.begin).toDouble() / anchor.cps
+                    events.add(SoundEvent(start, voiceParams(hap.value, lookup.source, seconds)))
+                    if (hap.locations.isNotEmpty()) marks.add(HighlightEvent(start, anchor.frameAt(whole.end), hap.locations))
+                }
+                is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))
+                SoundLookup.Loading -> Unit
+            }
+        }
+        events.sortBy { it.startFrame }
+        pending.addAll(events)
+        for (mark in marks) highlights.add(mark)
     }
 }

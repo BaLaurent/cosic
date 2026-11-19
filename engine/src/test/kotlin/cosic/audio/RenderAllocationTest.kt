@@ -24,7 +24,7 @@ class RenderAllocationTest {
         fun workload() {
             for (i in voices.indices) mixer.startVoice(voices[i])
             for (block in 0 until 200) mixer.render(out, 256)
-            mixer.fadeAll(5)
+            mixer.stopAll(5)
             mixer.render(out, 256)
         }
 

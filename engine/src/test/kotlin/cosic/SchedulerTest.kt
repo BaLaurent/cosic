@@ -3,8 +3,12 @@ package cosic
 import cosic.audio.SR
 import cosic.audio.VoiceSource
 import cosic.audio.Waveform
+import cosic.pattern.ControlMap
 import cosic.pattern.CosicError
+import cosic.pattern.Pattern
 import cosic.pattern.Rational
+import cosic.pattern.TimeSpan
+import cosic.pattern.pure
 import cosic.player.Scheduler
 import cosic.player.SoundEvent
 import cosic.player.SoundResolver
@@ -271,6 +275,55 @@ class SchedulerTest {
         scheduler.schedule(0)
         assertEquals(2000, scheduler.drain().size)
         assertEquals(listOf("Pattern too dense"), scheduler.warnings)
+    }
+
+    @Test
+    fun aCycleThatWouldBuildMillionsOfEventsIsSkippedAndTheErrorRecorded() {
+        // cycles 0 and 1 are plain; cycle 2 splits its one event into millions of pieces
+        val scheduler = scheduler("""cat(s("sine"), s("sine"), s("sine").ply(10000).ply(10000))""")
+        scheduler.play(0)
+        scheduler.schedule(4 * CYCLE)
+        assertEquals(listOf(0L, CYCLE, 3 * CYCLE, 4 * CYCLE), scheduler.drain().map { it.startFrame }, "cycle 2 is missing")
+        assertEquals("Runtime error: Pattern too dense", scheduler.runtimeError)
+    }
+
+    /** What the dry run throws, and what the scheduler records, when querying [pattern] fails on every chunk. */
+    private fun queryFailureOf(pattern: Pattern<ControlMap>): Pair<String?, String?> {
+        val sounds = SoundResolver(SR, FakeLibrary())
+        val thrown = assertFailsWith<CosicError> { dryRun(pattern, 0, sounds) }
+        val scheduler = Scheduler(SR, sounds)
+        scheduler.setProgram(pattern, 0.5, emptyList())
+        scheduler.play(0)
+        scheduler.schedule(0)
+        return thrown.message to scheduler.runtimeError
+    }
+
+    @Test
+    fun runningOutOfMemoryWhileQueryingIsReportedAsATooDensePattern() {
+        val (thrown, recorded) = queryFailureOf(Pattern { throw OutOfMemoryError("Java heap space") })
+        assertEquals("Pattern too dense", thrown)
+        assertEquals("Runtime error: Pattern too dense", recorded)
+    }
+
+    @Test
+    fun aPatternNestedTooDeeplyToQueryIsReportedInsteadOfCrashing() {
+        var nested: Pattern<ControlMap> = pure(mapOf("s" to "sine"))
+        repeat(200_000) { nested = nested.withQueryTime { it } }
+        val (thrown, recorded) = queryFailureOf(nested)
+        assertEquals("The program nests or calls itself too deeply", thrown)
+        assertEquals("Runtime error: The program nests or calls itself too deeply", recorded)
+    }
+
+    @Test
+    fun aChunkWhoseQueryDoesMoreWorkThanTheBudgetAllowsIsRefused() {
+        // cutting a span into 100 000 cycles costs next to nothing, but is far more than a chunk of playback needs
+        val busy = Pattern<ControlMap> {
+            TimeSpan(Rational.ZERO, Rational(100_000)).spanCycles()
+            emptyList()
+        }
+        val (thrown, recorded) = queryFailureOf(busy)
+        assertEquals("Pattern too dense", thrown)
+        assertEquals("Runtime error: Pattern too dense", recorded)
     }
 
     @Test

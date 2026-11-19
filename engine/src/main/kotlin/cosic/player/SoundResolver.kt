@@ -24,11 +24,10 @@ private val DEFAULT_SOUND = SoundLookup.Ready(VoiceSource.Synth(Waveform.TRIANGL
 /**
  * Finds what to play for the sound an event names: a synth waveform first, then a bank of the [library], then the
  * built-in drum kit. A user bank may thus replace a drum, but never a synth. Lookups ask the library for the sample
- * and render drum sounds on first use, so doing one off the audio thread (see [dryRun]) warms everything up.
+ * and render drum sounds on first use (unless [drums] has been warmed up), so doing one off the audio thread (see
+ * [dryRun]) warms up what it needs.
  */
-internal class SoundResolver(sampleRate: Int, private val library: SoundLibrary) {
-    private val drums = DrumKit(sampleRate)
-
+internal class SoundResolver(sampleRate: Int, private val library: SoundLibrary, private val drums: DrumKit = DrumKit(sampleRate)) {
     /** The sound of an event's controls: `s`, prefixed with `bank_` when `bank` is set, with `n` and `note` choosing the sample. */
     fun resolve(controls: ControlMap): SoundLookup {
         val name = controls["s"] as? String ?: return DEFAULT_SOUND

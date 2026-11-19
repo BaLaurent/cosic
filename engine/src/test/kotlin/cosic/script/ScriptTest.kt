@@ -106,10 +106,21 @@ class ScriptTest {
 
     @Test
     fun tempoMustBeAPlainNumber() {
-        val e = failure("setcpm(\"30\")")
-        assertEquals("'setcpm' expects a number, got a pattern", e.message)
-        assertEquals(SourceRange(0, 12), e.range)
-        assertEquals("'setcps' expects a number, got 'fast'", failure("setcps('fast')").message)
+        val notNumbers = listOf(
+            "\"30\"", "\"0.5\"", "'x'", "'fast'", "true", "sine", "[1, 2]", "s(\"bd\")", "rev", "1 + \"2\"",
+        )
+        for (setting in listOf("setcps", "setcpm")) {
+            for (argument in notNumbers) {
+                assertEquals("Tempo out of range", failure("$setting($argument)").message, "$setting($argument)")
+            }
+        }
+        assertEquals(SourceRange(0, 12), failure("setcpm(\"30\")").range)
+    }
+
+    @Test
+    fun tempoTakesExactlyOneArgument() {
+        assertEquals("'setcps' expects 1 arguments, got 0", failure("setcps()").message)
+        assertEquals("'setcpm' expects 1 arguments, got 2", failure("setcpm(30, 60)").message)
     }
 
     // ---- variables and functions ------------------------------------------------------
@@ -433,8 +444,8 @@ class ScriptTest {
         assertEquals(emptyList(), run("s(\"bd\").slow(0.000001)"))
         assertEquals("Too fast: at most 10000 events per cycle", failure("s(\"bd\").segment(1000000)").message)
         val mini = failure("s(\"bd*1000000\")")
-        assertEquals("Too fast: at most 10000 events per cycle", mini.message)
-        assertEquals(SourceRange(2, 14), mini.range)
+        assertEquals("Mini-notation: number out of range", mini.message)
+        assertEquals(SourceRange(6, 13), mini.range)
         assertEquals("Too fast: at most 10000 events per cycle", queryFailure("s(\"bd\").fast(\"<1 1000000>\")", 1).message)
         assertEquals(10_000, run("s(\"bd\").fast(10000)").size)
     }

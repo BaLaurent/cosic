@@ -8,6 +8,7 @@ import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.pattern.arith
 import cosic.pattern.asControlMap
+import cosic.pattern.reportingExhaustion
 import cosic.pattern.silence
 import cosic.pattern.stack
 
@@ -25,10 +26,8 @@ internal class ProgramResult(val pattern: Pattern<ControlMap>, val cps: Double)
  * word where a number is needed, are thrown later by the pattern when it is queried, also as [CosicError]
  * with the range of the call that caused them.
  */
-internal fun evaluateProgram(code: String): ProgramResult = try {
+internal fun evaluateProgram(code: String): ProgramResult = reportingExhaustion {
     Evaluator().run(parseProgram(code))
-} catch (e: StackOverflowError) {
-    throw CosicError("The program nests or calls itself too deeply")
 }
 
 private class Scope(private val parent: Scope?) {
@@ -245,17 +244,23 @@ private class Evaluator {
     private fun arityError(name: String, expected: Int, got: Int) =
         CosicError("'$name' expects $expected arguments, got $got")
 
-    /** Checks every argument against the kind of its parameter. */
-    private fun checked(builtin: Builtin, name: String, args: List<Value>): List<Value> = args.mapIndexed { i, value ->
-        when (builtin.params.getOrNull(i) ?: builtin.variadic) {
-            ParamKind.NUM_PAT ->
-                if (value is Value.Num || value is Value.Pat || value is Value.Arr) value else throw wrongKind(name, "a number", value)
-            ParamKind.STR_PAT ->
-                if (value is Value.Str || value is Value.Num || value is Value.Pat || value is Value.Arr) value
-                else throw wrongKind(name, "a string", value)
-            ParamKind.PAT -> if (value is Value.Pat) value else Value.Pat(toPattern(value))
-            ParamKind.FN -> if (value is Value.Fn) value else throw wrongKind(name, "a function", value)
-            ParamKind.ANY, null -> value
+    /**
+     * Checks every argument against the kind of its parameter. A setting is the exception: it takes plain values and
+     * words its own complaint about a bad one, like `Tempo out of range` for `setcps('x')`.
+     */
+    private fun checked(builtin: Builtin, name: String, args: List<Value>): List<Value> {
+        if (builtin.kind == BuiltinKind.SETTING) return args
+        return args.mapIndexed { i, value ->
+            when (builtin.params.getOrNull(i) ?: builtin.variadic) {
+                ParamKind.NUM_PAT ->
+                    if (value is Value.Num || value is Value.Pat || value is Value.Arr) value else throw wrongKind(name, "a number", value)
+                ParamKind.STR_PAT ->
+                    if (value is Value.Str || value is Value.Num || value is Value.Pat || value is Value.Arr) value
+                    else throw wrongKind(name, "a string", value)
+                ParamKind.PAT -> if (value is Value.Pat) value else Value.Pat(toPattern(value))
+                ParamKind.FN -> if (value is Value.Fn) value else throw wrongKind(name, "a function", value)
+                ParamKind.ANY, null -> value
+            }
         }
     }
 
