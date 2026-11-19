@@ -136,7 +136,11 @@ internal object Builtins {
     fun lookup(name: String): Builtin? = byName[name]
 }
 
-/** One documented function for the reference screen. */
+/**
+ * One documented function for the reference screen. [example] is a program that runs on its own;
+ * [snippet] is the same line prepared for pasting into an existing program: a pattern needs a `$:`
+ * label there, because a program with labels ignores unlabelled expressions.
+ */
 public data class ReferenceEntry(
     val name: String,
     val aliases: List<String>,
@@ -144,11 +148,17 @@ public data class ReferenceEntry(
     val signature: String,
     val doc: String,
     val example: String,
+    val snippet: String,
 )
 
 /** Every documented function, grouped by category, each with a one-line example that runs as a program. */
 public fun reference(): List<ReferenceEntry> = Builtins.all.filter { it.listed }.map {
-    ReferenceEntry(it.name, it.aliases, it.category, signature(it), it.doc, it.example)
+    ReferenceEntry(it.name, it.aliases, it.category, signature(it), it.doc, it.example, snippet(it))
+}
+
+private fun snippet(builtin: Builtin): String {
+    val alreadyLabelled = tokenize(builtin.example).any { it.kind == TokenKind.LABEL }
+    return if (builtin.kind == BuiltinKind.SETTING || alreadyLabelled) builtin.example else "\$: ${builtin.example}"
 }
 
 private fun signature(builtin: Builtin): String {

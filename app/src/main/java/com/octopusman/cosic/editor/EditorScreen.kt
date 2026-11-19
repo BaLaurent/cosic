@@ -10,10 +10,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import android.content.res.Configuration
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -23,6 +27,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -33,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
@@ -48,6 +54,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -56,6 +63,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.octopusman.cosic.R
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.octopusman.cosic.monetization.AdsController
 import com.octopusman.cosic.ui.AdBannerBar
 import com.octopusman.cosic.ui.BackButton
@@ -63,6 +71,7 @@ import com.octopusman.cosic.ui.CosicColors
 import com.octopusman.cosic.ui.RenameDialog
 import com.octopusman.cosic.ui.findActivity
 import com.octopusman.cosic.ui.shareText
+import com.octopusman.cosic.reference.ReferencePanel
 import com.octopusman.cosic.ui.tagged
 
 /**
@@ -76,7 +85,6 @@ fun EditorScreen(
     ads: AdsController,
     onBack: () -> Unit,
     onOpenSounds: () -> Unit,
-    onOpenReference: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     if (vm.missing) {
@@ -101,6 +109,8 @@ fun EditorScreen(
         }
     }
     BackHandler(onBack = leave)
+
+    var showReference by rememberSaveable { mutableStateOf(false) }
 
     // Nothing keeps playing in the background. A rotation restarts the activity but is not leaving.
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
@@ -140,9 +150,9 @@ fun EditorScreen(
                     IconButton(onClick = vm::stop, modifier = Modifier.tagged("stop", stringResource(R.string.editor_stop))) {
                         Icon(Icons.Filled.Stop, contentDescription = null)
                     }
+                    ReferenceToggle(shown = showReference, onClick = { showReference = !showReference })
                     OverflowMenu(
                         onSounds = onOpenSounds,
-                        onReference = onOpenReference,
                         onShare = { context.shareText(vm.textValue.text) },
                         onSettings = onOpenSettings,
                     )
@@ -172,12 +182,34 @@ fun EditorScreen(
                 vm.selectError()
                 focusRequester.requestFocus()
             })
-            CodeEditor(
-                value = vm.textValue,
-                onValueChange = vm::onTextChange,
-                activeRanges = { vm.activeRanges },
-                modifier = Modifier.weight(1f).fillMaxWidth().focusRequester(focusRequester),
-            )
+            // Movable, so opening or closing the reference (or a rotation) keeps the editor's focus and keyboard.
+            val editor = remember {
+                movableContentOf<Modifier> { modifier ->
+                    CodeEditor(
+                        value = vm.textValue,
+                        onValueChange = vm::onTextChange,
+                        activeRanges = { vm.activeRanges },
+                        modifier = modifier.focusRequester(focusRequester),
+                    )
+                }
+            }
+            val reference = remember {
+                movableContentOf<Modifier> { modifier ->
+                    ReferencePanel(onInsert = vm::insertSnippet, onClose = { showReference = false }, modifier = modifier)
+                }
+            }
+            val sideBySide = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+            when {
+                !showReference -> editor(Modifier.weight(1f).fillMaxWidth())
+                sideBySide -> Row(Modifier.weight(1f).fillMaxWidth()) {
+                    editor(Modifier.weight(1f).fillMaxHeight())
+                    reference(Modifier.weight(1f).fillMaxHeight())
+                }
+                else -> Column(Modifier.weight(1f).fillMaxWidth()) {
+                    editor(Modifier.weight(1f).fillMaxWidth())
+                    reference(Modifier.weight(1f).fillMaxWidth())
+                }
+            }
         }
     }
 
@@ -203,7 +235,15 @@ private fun PlayButton(playing: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun OverflowMenu(onSounds: () -> Unit, onReference: () -> Unit, onShare: () -> Unit, onSettings: () -> Unit) {
+private fun ReferenceToggle(shown: Boolean, onClick: () -> Unit) {
+    val label = stringResource(if (shown) R.string.editor_reference_hide else R.string.editor_reference_show)
+    IconButton(onClick = onClick, modifier = Modifier.tagged("reference", label)) {
+        Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = if (shown) MaterialTheme.colorScheme.primary else LocalContentColor.current)
+    }
+}
+
+@Composable
+private fun OverflowMenu(onSounds: () -> Unit, onShare: () -> Unit, onSettings: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { expanded = true }, modifier = Modifier.tagged("editor_menu", stringResource(R.string.action_more))) {
@@ -211,7 +251,6 @@ private fun OverflowMenu(onSounds: () -> Unit, onReference: () -> Unit, onShare:
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             MenuItem("menu_sounds", stringResource(R.string.editor_menu_sounds)) { expanded = false; onSounds() }
-            MenuItem("menu_reference", stringResource(R.string.editor_menu_reference)) { expanded = false; onReference() }
             MenuItem("menu_share", stringResource(R.string.action_share)) { expanded = false; onShare() }
             MenuItem("menu_settings", stringResource(R.string.action_settings)) { expanded = false; onSettings() }
         }

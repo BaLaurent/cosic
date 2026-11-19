@@ -12,9 +12,6 @@ data class Editor(val projectId: String)
 data object Sounds
 
 @Serializable
-data object Reference
-
-@Serializable
 data object Settings
 
 @Serializable

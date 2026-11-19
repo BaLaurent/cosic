@@ -6,7 +6,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ReferenceSearchTest {
-    private val entry = ReferenceEntry("seq", listOf("sequence", "fastcat"), "Constructors", "seq(...xs)", "Plays the items in turn.", "seq(1, 2)")
+    private val entry = ReferenceEntry("seq", listOf("sequence", "fastcat"), "Constructors", "seq(...xs)", "Plays the items in turn.", "seq(1, 2)", "\$: seq(1, 2)")
 
     @Test
     fun aBlankQueryMatchesEverything() {

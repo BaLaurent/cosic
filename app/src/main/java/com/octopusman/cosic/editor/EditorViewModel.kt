@@ -110,6 +110,9 @@ class EditorViewModel(
     /** Inserts a symbol from the symbol bar at the cursor, as an ordinary edit. */
     fun insertSymbol(symbol: String) = onTextChange(textValue.withSymbol(symbol))
 
+    /** Inserts a reference example at the cursor, on a line of its own, as an ordinary edit. */
+    fun insertSnippet(snippet: String) = onTextChange(textValue.withSnippet(snippet))
+
     fun undo() {
         undoStack.undo(textValue)?.let(::restore)
     }

@@ -42,7 +42,8 @@
     <string name="editor_code">Code editor</string>
     <string name="editor_rename_project">Rename project</string>
     <string name="editor_menu_sounds">Sounds</string>
-    <string name="editor_menu_reference">Reference</string>
+    <string name="editor_reference_show">Show reference</string>
+    <string name="editor_reference_hide">Hide reference</string>
     <string name="editor_status_error">Line %1$d:%2$d — %3$s</string>
     <string name="editor_status_playing">%1$s cpm · cycle %2$d</string>
 
@@ -67,12 +68,11 @@
     </plurals>
 
     <!-- Reference -->
-    <string name="reference_title">Reference</string>
+    <string name="reference_close">Close reference</string>
     <string name="reference_search">Search functions</string>
     <string name="reference_clear_search">Clear search</string>
     <string name="reference_aliases">Also: %1$s</string>
-    <string name="reference_copy_example">Copy example</string>
-    <string name="reference_example_copied">Example copied</string>
+    <string name="reference_insert_example">Insert</string>
     <string name="reference_empty">No matching functions</string>
 
     <!-- Settings -->

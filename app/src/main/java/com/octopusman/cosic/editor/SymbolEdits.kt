@@ -19,3 +19,19 @@ fun TextFieldValue.withSymbol(symbol: String): TextFieldValue {
     val cursor = if (closing == null || start == end) start + symbol.length else start + inserted.length
     return TextFieldValue(text.replaceRange(start, end, inserted), TextRange(cursor))
 }
+
+/**
+ * This value after a reference example [snippet] was inserted at the cursor, replacing the selection.
+ * Code is line based, so the snippet gets a line of its own: a line break is added before it when
+ * the cursor follows code on its line, and after it when code follows the cursor.
+ */
+fun TextFieldValue.withSnippet(snippet: String): TextFieldValue {
+    val start = selection.min
+    val end = selection.max
+    val lineStart = text.lastIndexOf('\n', start - 1) + 1
+    val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it }
+    val before = if (text.substring(lineStart, start).isBlank()) "" else "\n"
+    val after = if (text.substring(end, lineEnd).isBlank()) "" else "\n"
+    val cursor = start + before.length + snippet.length
+    return TextFieldValue(text.replaceRange(start, end, before + snippet + after), TextRange(cursor))
+}

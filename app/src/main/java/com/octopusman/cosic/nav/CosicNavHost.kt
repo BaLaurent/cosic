@@ -21,7 +21,6 @@ import com.octopusman.cosic.editor.EditorViewModel
 import com.octopusman.cosic.library.LibraryScreen
 import com.octopusman.cosic.library.LibraryViewModel
 import com.octopusman.cosic.monetization.PurchaseUiState
-import com.octopusman.cosic.reference.ReferenceScreen
 import com.octopusman.cosic.settings.CreditsScreen
 import com.octopusman.cosic.settings.SettingsScreen
 import com.octopusman.cosic.sounds.SoundsScreen
@@ -65,15 +64,11 @@ fun CosicNavHost(app: CosicApp, modifier: Modifier = Modifier) {
                 // The screen has already checked that it is the one being shown.
                 onBack = { navController.popBackStack() },
                 onOpenSounds = { navController.open(Sounds) },
-                onOpenReference = { navController.open(Reference) },
                 onOpenSettings = { navController.open(Settings) },
             )
         }
         composable<Sounds> {
             SoundsScreen(app.engine, app.audioOutput, app.sampleRepository, onBack = { navController.back() })
-        }
-        composable<Reference> {
-            ReferenceScreen(onBack = { navController.back() })
         }
         composable<Settings> {
             SettingsScreen(
