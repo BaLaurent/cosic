@@ -20,13 +20,23 @@ internal enum class PanelTab { REFERENCE, SOUNDS }
 internal data class ValuesLink(val category: String, val label: String)
 
 /** One line of the reference: a function of the language, a sound that `s("name")` can play, a drum machine `bank("name")` can pick, or a scale. */
+/** Text the Insert button puts at the cursor, and where the cursor lands inside it. */
+data class InsertText(val text: String, val cursor: Int)
+
+/** The call of a function with the cursor between its parentheses, or the bare name of a signal. */
+internal fun callEntry(name: String, signature: String): InsertText {
+    if ('(' !in signature) return InsertText(name, name.length)
+    val call = (if (signature.startsWith(".")) "." else "") + "$name()"
+    return InsertText(call, call.length - 1)
+}
+
 internal data class ReferenceItem(
     val name: String,
     val aliases: List<String>,
     val category: String,
     val signature: String,
     val doc: String,
-    /** What the Insert button adds to the code: a line that plays when it is evaluated. */
+    /** What the Insert example button adds to the code: a line that plays when it is evaluated. */
     val snippet: String,
     /** Set for sounds only. */
     val sound: SoundTarget? = null,
@@ -36,6 +46,8 @@ internal data class ReferenceItem(
     val members: List<String> = emptyList(),
     /** Set for sounds imported from a folder: that folder, which the Remove button takes away. */
     val folder: Uri? = null,
+    /** What the Insert button puts at the cursor: the function call, or the name of the sound, kit or scale. */
+    val entry: InsertText = InsertText(name, name.length),
 )
 
 /** The heading and the one-line description of one group of names. */
@@ -110,7 +122,7 @@ internal fun referenceItems(
     )
 
     val functionItems = functions.map {
-        ReferenceItem(it.name, it.aliases, it.category, it.signature, it.doc, it.snippet, values = links[it.name])
+        ReferenceItem(it.name, it.aliases, it.category, it.signature, it.doc, it.snippet, values = links[it.name], entry = callEntry(it.name, it.signature))
     }
     // The sounds of a kit are listed with the kit, not again as banks of their own.
     val samples = banks.filter { it.kit == null }

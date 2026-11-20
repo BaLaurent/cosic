@@ -102,7 +102,8 @@ internal fun ReferencePanel(
     tab: PanelTab,
     onTabChange: (PanelTab) -> Unit,
     openOn: OpenOn?,
-    onInsert: (String) -> Unit,
+    onInsert: (InsertText) -> Unit,
+    onInsertExample: (String) -> Unit,
     onPreview: (name: String, index: Int, pitched: Boolean) -> Unit,
     onImportFolder: (Uri) -> Unit,
     onRemoveFolder: (Uri) -> Unit,
@@ -143,7 +144,7 @@ internal fun ReferencePanel(
                     onTargetReached = { target = null },
                     onPickGroup = { target = OpenOn.Group(it) },
                     chips = { categories -> chipOrder(categories, reference().map { it.category }.toSet()) },
-                ) { item, selected -> FunctionCard(item, selected, onInsert, onShowValues = ::showGroup) }
+                ) { item, selected -> FunctionCard(item, selected, onInsert, onInsertExample, onShowValues = ::showGroup) }
                 PanelTab.SOUNDS -> TabContent(
                     items = items.inTab(PanelTab.SOUNDS),
                     query = soundQuery,
@@ -155,7 +156,7 @@ internal fun ReferencePanel(
                     chips = { it },
                     importCategory = stringResource(R.string.sounds_imported),
                     importRow = { ImportRow(onImport = { folderPicker.launch(null) }) },
-                ) { item, selected -> SoundRow(item, selected, onInsert, onPreview, onRemove = { removing = it }) }
+                ) { item, selected -> SoundRow(item, selected, onInsert, onInsertExample, onPreview, onRemove = { removing = it }) }
             }
         }
     }
@@ -371,13 +372,13 @@ private fun ImportRow(onImport: () -> Unit) {
 private fun SoundRow(
     item: ReferenceItem,
     isSelected: Boolean,
-    onInsert: (String) -> Unit,
+    onInsert: (InsertText) -> Unit,
+    onInsertExample: (String) -> Unit,
     onPreview: (name: String, index: Int, pitched: Boolean) -> Unit,
     onRemove: (Uri) -> Unit,
 ) {
     val sound = item.sound ?: return
     val previewLabel = stringResource(R.string.sounds_preview, item.name)
-    val insertLabel = stringResource(R.string.reference_insert_example)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -418,10 +419,7 @@ private fun SoundRow(
                     modifier = Modifier.tagged("remove_${item.name}", stringResource(R.string.sounds_remove_bank, item.name)),
                 ) { Text(stringResource(R.string.action_remove)) }
             }
-            TextButton(
-                onClick = { onInsert(item.snippet) },
-                modifier = Modifier.tagged("insert_example_${item.category}_${item.name}", insertLabel),
-            ) { Text(insertLabel) }
+            InsertButtons(item, onInsert, onInsertExample, exampleLabel = R.string.reference_example_short)
         }
         if (item.members.isNotEmpty()) {
             Text(
@@ -454,7 +452,8 @@ private fun SoundRow(
 private fun FunctionCard(
     item: ReferenceItem,
     isSelected: Boolean,
-    onInsert: (String) -> Unit,
+    onInsert: (InsertText) -> Unit,
+    onInsertExample: (String) -> Unit,
     onShowValues: (category: String) -> Unit,
 ) {
     val insertLabel = stringResource(R.string.reference_insert_example)
@@ -474,10 +473,7 @@ private fun FunctionCard(
                     )
                     Text(text = item.signature, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
                 }
-                TextButton(
-                    onClick = { onInsert(item.snippet) },
-                    modifier = Modifier.tagged("insert_example_${item.category}_${item.name}", insertLabel),
-                ) { Text(insertLabel) }
+                InsertButtons(item, onInsert, onInsertExample, exampleLabel = R.string.reference_insert_example)
             }
             if (item.aliases.isNotEmpty()) {
                 Text(
@@ -495,7 +491,7 @@ private fun FunctionCard(
                     .padding(end = 8.dp)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background, RoundedCornerShape(8.dp))
-                    .clickable(onClickLabel = insertLabel) { onInsert(item.snippet) }
+                    .clickable(onClickLabel = insertLabel) { onInsertExample(item.snippet) }
                     .padding(8.dp),
             )
             item.values?.let { link ->
@@ -506,4 +502,19 @@ private fun FunctionCard(
             }
         }
     }
+}
+
+/** Insert puts the entry itself at the cursor; the example button adds a whole line that plays it. */
+@Composable
+private fun InsertButtons(item: ReferenceItem, onInsert: (InsertText) -> Unit, onInsertExample: (String) -> Unit, exampleLabel: Int) {
+    val insertLabel = stringResource(R.string.reference_insert)
+    val exampleDescription = stringResource(R.string.reference_insert_example)
+    TextButton(
+        onClick = { onInsert(item.entry) },
+        modifier = Modifier.tagged("insert_${item.category}_${item.name}", insertLabel),
+    ) { Text(insertLabel) }
+    TextButton(
+        onClick = { onInsertExample(item.snippet) },
+        modifier = Modifier.tagged("insert_example_${item.category}_${item.name}", exampleDescription),
+    ) { Text(stringResource(exampleLabel)) }
 }

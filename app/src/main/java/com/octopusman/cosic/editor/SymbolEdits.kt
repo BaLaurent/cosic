@@ -2,6 +2,7 @@ package com.octopusman.cosic.editor
 
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import com.octopusman.cosic.reference.InsertText
 
 /** The closing symbol that goes with each opening symbol of the symbol bar. */
 private val CLOSING = mapOf("\"" to "\"", "(" to ")", "[" to "]", "{" to "}", "<" to ">")
@@ -37,4 +38,16 @@ fun TextFieldValue.withSnippet(snippet: String): TextFieldValue {
     }
     val inserted = "\n" + snippet
     return TextFieldValue(text.replaceRange(lineEnd, lineEnd, inserted), TextRange(lineEnd + inserted.length))
+}
+
+/**
+ * This value after a reference entry was put at the cursor, replacing the selection, with the cursor
+ * where [entry] says (between the parentheses of a call). A method typed right after a dot keeps one dot.
+ */
+fun TextFieldValue.withEntry(entry: InsertText): TextFieldValue {
+    val start = selection.min
+    val dropDot = entry.text.startsWith(".") && start > 0 && text[start - 1] == '.'
+    val inserted = if (dropDot) entry.text.drop(1) else entry.text
+    val cursor = start + entry.cursor - (if (dropDot) 1 else 0)
+    return TextFieldValue(text.replaceRange(start, selection.max, inserted), TextRange(cursor))
 }

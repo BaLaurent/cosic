@@ -22,12 +22,12 @@ class ReferenceItemsTest {
         showDrumMachines = "Show drum machines",
         showScales = "Show scales",
     )
-    private fun function(name: String, category: String = "Time", aliases: List<String> = emptyList()) =
-        ReferenceEntry(name, aliases, category, ".$name()", "doc", "x", "\$: x")
+    private fun function(name: String, category: String = "Time", aliases: List<String> = emptyList(), signature: String = ".$name(number)") =
+        ReferenceEntry(name, aliases, category, signature, "doc", "x", "\$: x")
 
     private val functions = listOf(
         function("fast", aliases = listOf("density")),
-        function("s", "Sound", listOf("sound")),
+        function("s", "Sound", listOf("sound"), signature = "s(string)"),
         function("bank", "Sound"),
         function("scale", "Values"),
     )
@@ -322,5 +322,19 @@ class ReferenceItemsTest {
 
         assertTrue(rows.none { it is ListRow.Doc || it is ListRow.Import })
         assertEquals(listOf("Time", "Sound", "Values", "Scales"), rows.filterIsInstance<ListRow.Heading>().map { it.category })
+    }
+
+    @Test
+    fun insertingAnEntryInsertsJustItsName() {
+        assertEquals(InsertText("piano", 5), item("piano").entry)
+        assertEquals(InsertText("bd", 2), item("bd").entry)
+        assertEquals(InsertText("minor", 5), item("minor").entry)
+        assertEquals(InsertText("cosic808", 8), item("cosic808").entry)
+    }
+
+    @Test
+    fun insertingAFunctionInsertsTheCallWithTheCursorInside() {
+        assertEquals(InsertText(".fast()", 6), item("fast").entry)
+        assertEquals(InsertText("s()", 2), item("s").entry)
     }
 }

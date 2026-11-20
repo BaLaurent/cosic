@@ -73,7 +73,9 @@
     <string name="reference_search">Search</string>
     <string name="reference_clear_search">Clear search</string>
     <string name="reference_aliases">Also: %1$s</string>
-    <string name="reference_insert_example">Insert</string>
+    <string name="reference_insert">Insert</string>
+    <string name="reference_insert_example">Insert example</string>
+    <string name="reference_example_short">Example</string>
     <string name="reference_handle">Resize reference</string>
     <string name="reference_doc_drum_machines">A set of drum sounds. Pick one with bank() and play its sounds by name, as in s(\"bd sd\").bank(\"name\").</string>
     <string name="reference_doc_synth">A synth waveform. Give it pitch with note().</string>

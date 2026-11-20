@@ -18,6 +18,7 @@ import com.octopusman.cosic.audio.BankSummary
 import com.octopusman.cosic.audio.SampleRepository
 import com.octopusman.cosic.audio.playPreview
 import com.octopusman.cosic.library.Project
+import com.octopusman.cosic.reference.InsertText
 import com.octopusman.cosic.library.ProjectRepository
 import cosic.CosicEngine
 import cosic.EvalReport
@@ -130,6 +131,9 @@ class EditorViewModel(
 
     /** Inserts a reference example at the cursor, on a line of its own, as an ordinary edit. */
     fun insertSnippet(snippet: String) = onTextChange(textValue.withSnippet(snippet))
+
+    /** Puts a reference entry (a call, a sound or scale name) at the cursor, as an ordinary edit. */
+    fun insertEntry(entry: InsertText) = onTextChange(textValue.withEntry(entry))
 
     fun undo() {
         undoStack.undo(textValue)?.let(::restore)
