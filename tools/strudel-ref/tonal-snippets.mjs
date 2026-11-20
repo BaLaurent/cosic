@@ -338,6 +338,32 @@ add('arpWith.methodChain', `${chords}.arpWith(haps => haps[2]).fast(2)`, 2);
 add('arpWith.struct', `${chords}.arpWith(haps => haps[1]).struct("x*2")`, 2);
 add('arpWith.chordControl', `chord("<Am C>").voicing().arpWith(haps => haps[0])`, 2);
 
+// ---- the functions called as globals (curried), and their plain methods -------------------------------------------------------------------
+
+add('global.scale.1', `n("0 2").layer(scale('C major'), scale('D minor'))`);
+add('global.scale.2', `n("0 2 4").superimpose(scale('C:major'))`);
+add('global.scale.3', `scale('C major', n("0 2 4"))`);
+add('global.scale.4', `n("0 2 4").scale("<C:major D:minor>").layer(x => x, scaleTranspose(1))`, 2);
+add('global.transpose.1', `scale('C major', n("0 2 4")).layer(x => x, transpose(7))`);
+add('global.voicing.1', `resetVoicings(); chord("<C Am>").layer(x => x.voicing(), voicing)`, 2);
+add('global.voicing.2', `resetVoicings(); voicing(chord("<C Am>"))`, 2);
+add('global.arp.1', `note("[c,e,g]").layer(arp("0 1 2"), arp("2 1 0"))`);
+add('global.arp.2', `arp("0 1 2", note("[c,e,g]"))`);
+add('global.arpWith.1', `note("[c,e,g]").layer(arpWith(haps => haps[0]), arpWith(haps => haps[2]))`);
+add('global.arpWith.2', `arpWith(haps => haps[1], note("[c,e,g]"))`);
+add('global.rootNotes.1', `rootNotes(2, "<C^7 A7>").note()`, 2);
+add('plain.scale', `n("0 2 4")._scale('C major')`);
+add('plain.transpose', `note("c3 e3")._transpose(7)`);
+add('plain.arp', `note("[c,e,g]")._arp(reify("0 1 2"))`);
+add('plain.arpWith', `note("[c,e,g]")._arpWith(haps => haps[1])`);
+add('plain.rootNotes', `"<C^7 A7>"._rootNotes(2).note()`, 2);
+add('plain.voicings', `${first} "<C^7 A7>"._voicings('lefthand').note()`, 2);
+add('plain.scaleTranspose', `n("0 2 4").scale('C major')._scaleTranspose(2)`);
+add('arity.voicing', `chord("C").voicing(1)`);
+add('arity.scale', `n("0 2").scale()`);
+add('arity.scale.sequence', `n("0 2").scale('C major', 'D minor')`);
+add('arity.rootNotes', `"C".rootNotes()`);
+
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, JSON.stringify(snippets, null, 1) + '\n');
 console.log(`${snippets.length} snippets (${typeNames.length} scale names, ${miniNames.length} of them as mini-notation)`);

@@ -2813,5 +2813,120 @@
   "name": "arpWith.chordControl",
   "code": "chord(\"<Am C>\").voicing().arpWith(haps => haps[0])",
   "cycles": 2
+ },
+ {
+  "name": "global.scale.1",
+  "code": "n(\"0 2\").layer(scale('C major'), scale('D minor'))",
+  "cycles": 1
+ },
+ {
+  "name": "global.scale.2",
+  "code": "n(\"0 2 4\").superimpose(scale('C:major'))",
+  "cycles": 1
+ },
+ {
+  "name": "global.scale.3",
+  "code": "scale('C major', n(\"0 2 4\"))",
+  "cycles": 1
+ },
+ {
+  "name": "global.scale.4",
+  "code": "n(\"0 2 4\").scale(\"<C:major D:minor>\").layer(x => x, scaleTranspose(1))",
+  "cycles": 2
+ },
+ {
+  "name": "global.transpose.1",
+  "code": "scale('C major', n(\"0 2 4\")).layer(x => x, transpose(7))",
+  "cycles": 1
+ },
+ {
+  "name": "global.voicing.1",
+  "code": "resetVoicings(); chord(\"<C Am>\").layer(x => x.voicing(), voicing)",
+  "cycles": 2
+ },
+ {
+  "name": "global.voicing.2",
+  "code": "resetVoicings(); voicing(chord(\"<C Am>\"))",
+  "cycles": 2
+ },
+ {
+  "name": "global.arp.1",
+  "code": "note(\"[c,e,g]\").layer(arp(\"0 1 2\"), arp(\"2 1 0\"))",
+  "cycles": 1
+ },
+ {
+  "name": "global.arp.2",
+  "code": "arp(\"0 1 2\", note(\"[c,e,g]\"))",
+  "cycles": 1
+ },
+ {
+  "name": "global.arpWith.1",
+  "code": "note(\"[c,e,g]\").layer(arpWith(haps => haps[0]), arpWith(haps => haps[2]))",
+  "cycles": 1
+ },
+ {
+  "name": "global.arpWith.2",
+  "code": "arpWith(haps => haps[1], note(\"[c,e,g]\"))",
+  "cycles": 1
+ },
+ {
+  "name": "global.rootNotes.1",
+  "code": "rootNotes(2, \"<C^7 A7>\").note()",
+  "cycles": 2
+ },
+ {
+  "name": "plain.scale",
+  "code": "n(\"0 2 4\")._scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "plain.transpose",
+  "code": "note(\"c3 e3\")._transpose(7)",
+  "cycles": 1
+ },
+ {
+  "name": "plain.arp",
+  "code": "note(\"[c,e,g]\")._arp(reify(\"0 1 2\"))",
+  "cycles": 1
+ },
+ {
+  "name": "plain.arpWith",
+  "code": "note(\"[c,e,g]\")._arpWith(haps => haps[1])",
+  "cycles": 1
+ },
+ {
+  "name": "plain.rootNotes",
+  "code": "\"<C^7 A7>\"._rootNotes(2).note()",
+  "cycles": 2
+ },
+ {
+  "name": "plain.voicings",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 A7>\"._voicings('lefthand').note()",
+  "cycles": 2
+ },
+ {
+  "name": "plain.scaleTranspose",
+  "code": "n(\"0 2 4\").scale('C major')._scaleTranspose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "arity.voicing",
+  "code": "chord(\"C\").voicing(1)",
+  "cycles": 1
+ },
+ {
+  "name": "arity.scale",
+  "code": "n(\"0 2\").scale()",
+  "cycles": 1
+ },
+ {
+  "name": "arity.scale.sequence",
+  "code": "n(\"0 2\").scale('C major', 'D minor')",
+  "cycles": 1
+ },
+ {
+  "name": "arity.rootNotes",
+  "code": "\"C\".rootNotes()",
+  "cycles": 1
  }
 ]
