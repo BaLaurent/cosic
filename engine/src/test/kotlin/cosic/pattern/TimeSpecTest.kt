@@ -373,4 +373,23 @@ class TimeSpecTest {
         assertEquals(1, (applyN("x", doubleSpeed, p) as Pattern).lines(0, 1).size)
         assertEquals(1, (applyN(-1.0, doubleSpeed, p) as Pattern).lines(0, 1).size)
     }
+
+    @Test
+    fun withoutStepsTheFunctionsLeaveTheStepsOutToo() {
+        val ab = fastcat("a", "b")
+        val repeat = jsFn(2) { it[0] }
+        assertEquals("4/1", ab._ply(2.0).steps?.show())
+        assertEquals("1/1", ab._zoom(0.0, 0.5).steps?.show())
+        val before = Steps.enabled
+        Steps.enabled = false
+        try {
+            assertNull(ab._ply(2.0).steps)
+            assertNull(ab._zoom(0.0, 0.5).steps)
+            assertNull(ab._plyWith(2.0, identity).steps)
+            assertNull(ab._plyForEach(2.0, repeat).steps)
+            assertNull(pure(linkedMapOf<String, Any?>("s" to "bd"))._juxBy(1.0, identity).steps)
+        } finally {
+            Steps.enabled = before
+        }
+    }
 }
