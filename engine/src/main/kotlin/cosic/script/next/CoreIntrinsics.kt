@@ -2,7 +2,6 @@ package cosic.script.next
 
 import cosic.pattern.JsFn
 import cosic.pattern.Undefined
-import cosic.pattern.jsToString
 import cosic.script.next.js.BoundFunction
 import cosic.script.next.js.ErrorKind
 import cosic.script.next.js.JsArray
@@ -190,6 +189,3 @@ private fun errorToString(realm: Realm, e: JsObject): String {
         else -> "$name: $message"
     }
 }
-
-/** The text `String(v)` gives for the value a program threw, used by tests and the host to show it. */
-internal fun errorText(realm: Realm, v: Any?): String = if (v is JsObject) errorToString(realm, v) else jsToString(v)
