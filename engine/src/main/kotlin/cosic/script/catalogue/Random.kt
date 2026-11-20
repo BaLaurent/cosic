@@ -5,13 +5,17 @@ import cosic.pattern.Pattern
 import cosic.pattern.Registry
 import cosic.pattern.Undefined
 import cosic.pattern._brandBy
+import cosic.pattern._degrade
 import cosic.pattern._degradeBy
 import cosic.pattern._degradeByWith
 import cosic.pattern._irand
 import cosic.pattern._scramble
 import cosic.pattern._shuffle
+import cosic.pattern._someCycles
 import cosic.pattern._someCyclesBy
+import cosic.pattern._sometimes
 import cosic.pattern._sometimesBy
+import cosic.pattern._undegrade
 import cosic.pattern._undegradeBy
 import cosic.pattern.berlin
 import cosic.pattern.brand
@@ -98,13 +102,13 @@ internal fun registerRandom() {
     // dropping events and applying functions at random
     Registry.reg3("degradeByWith") { withPat, x, pat -> pat._degradeByWith(withPat, x) }
     Registry.reg2("degradeBy", keep = true) { x, pat -> pat._degradeBy(x) }
-    Registry.reg1("degrade", keep = true) { pat -> pat._degradeBy(0.5) }
+    Registry.reg1("degrade", keep = true) { pat -> pat._degrade() }
     Registry.reg2("undegradeBy", keep = true) { x, pat -> pat._undegradeBy(x) }
-    Registry.reg1("undegrade", keep = true) { pat -> pat._undegradeBy(0.5) }
+    Registry.reg1("undegrade", keep = true) { pat -> pat._undegrade() }
     Registry.reg3("sometimesBy") { patx, func, pat -> pat._sometimesBy(patx, func) }
-    Registry.reg2("sometimes") { func, pat -> pat._sometimesBy(0.5, func) }
+    Registry.reg2("sometimes") { func, pat -> pat._sometimes(func) }
     Registry.reg3("someCyclesBy") { patx, func, pat -> pat._someCyclesBy(patx, func) }
-    Registry.reg2("someCycles") { func, pat -> pat._someCyclesBy(0.5, func) }
+    Registry.reg2("someCycles") { func, pat -> pat._someCycles(func) }
     Registry.reg2("often") { func, pat -> pat._sometimesBy(0.75, func) }
     Registry.reg2("rarely") { func, pat -> pat._sometimesBy(0.25, func) }
     Registry.reg2("almostNever") { func, pat -> pat._sometimesBy(0.1, func) }
