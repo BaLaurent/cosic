@@ -368,14 +368,15 @@ internal object Tonal {
 
     /**
      * The names a scale can be called after its tonic in a program, with the spaces written as colons (`melodic:minor`), which is
-     * how a scale reads in mini-notation: every name and alias of every scale type that has only characters a step of the notation can hold.
+     * how a scale reads in mini-notation: every name and alias of every scale type that has only characters a step of the notation can
+     * hold and that tonal finds again (`Scale.get` looks the type up in lower case, so the two names with a capital letter in them are lost).
      */
     fun scaleModeNames(): List<String> {
         val allowed = Regex("[\\p{L}0-9\\-#.^_]+")
         val names = LinkedHashSet<String>()
         for (type in ScaleTypes.all) {
             for (n in listOf(type.name) + type.aliases) {
-                if (allowed.matches(n.replace(" ", ""))) names.add(n.replace(' ', ':'))
+                if (allowed.matches(n.replace(" ", "")) && !scaleGet("C $n").empty) names.add(n.replace(' ', ':'))
             }
         }
         return names.toList()
@@ -426,15 +427,16 @@ internal fun tonalResource(file: String): List<String> {
 
 // ---- the functions of tonal.mjs ---------------------------------------------------------------------------------------------
 
-/** `getScale(name)`: the named scale, with colons read as spaces; throws the errors of the original for a name that is no scale. */
+/**
+ * `getScale(name)`: the named scale, with colons read as spaces. Every name that is no scale is reported as incomplete, as in the
+ * original, whose check for an invalid name comes after a condition that is true for every empty scale (a scale that is not one has no tonic).
+ */
 private fun getScale(scaleName: Any?): TScale {
     if (scaleName !is String) throw CosicError("scaleName.replaceAll is not a function")
     val name = scaleName.replace(':', ' ')
     val scale = Tonal.scaleGet(name)
-    if ((scale.empty && isNote(name)) || (scale.empty && scale.tonic.isEmpty())) {
+    if (scale.empty) {
         throw CosicError("Scale name $name is incomplete. Make sure to use \":\" instead of spaces, example: .scale(\"C:major\")")
-    } else if (scale.empty) {
-        throw CosicError("Invalid scale name \"$name\"")
     }
     return scale
 }

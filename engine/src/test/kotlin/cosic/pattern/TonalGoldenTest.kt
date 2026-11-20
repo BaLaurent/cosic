@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -21,6 +22,12 @@ import kotlin.test.fail
  * (tools/strudel-ref/tonal-data.mjs).
  */
 class TonalGoldenTest {
+    // the registry is global, and the parity cases that run before this one add dictionaries to it and change its ranges
+    @BeforeTest
+    fun freshRegistry() {
+        Voicings.restore()
+    }
+
     private fun resource(name: String): JsonObject =
         Json.parseToJsonElement(checkNotNull(javaClass.getResourceAsStream("/tonal/$name")) { "missing $name" }.use { it.readBytes().toString(Charsets.UTF_8) }).jsonObject
 

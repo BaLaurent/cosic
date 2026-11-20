@@ -253,17 +253,29 @@ private fun minTopNoteDiff(voicings: List<List<String>>, last: List<String>?): L
 /**
  * The voicing dictionaries a program can use by name and what the voicing functions remember (`voicingRegistry`, the default
  * dictionary and the last voicing of `voicings`). Like the originals they are global to the program that uses them: a
- * dictionary added by one evaluation is there for the next, until [reset].
+ * dictionary added by one evaluation is there for the next, and `setDefaultVoicings` stays, until [reset].
+ *
+ * The last voicing is the exception: `voicings` picks the voicing nearest to the one it picked before, and that only means something
+ * along one run of queries, so each thread keeps its own (the audio thread plays a program from the start, whatever a check of the
+ * program on another thread did before) and [resetLast] makes every thread start again (a new program, `resetVoicings()`).
  */
 internal object Voicings {
     private val lock = Any()
     private val entries = LinkedHashMap<String, MutableMap<String, Any?>>()
     private var defaultName: Any? = "ireal"
 
-    @Volatile
-    private var last: List<String>? = null
+    /** The last voicing `voicings` picked on one thread, with the [generation] of [resetLast] it belongs to. */
+    private class Last(var generation: Long, var voicing: List<String>?)
+
+    private val generation = java.util.concurrent.atomic.AtomicLong()
+    private val last = ThreadLocal.withInitial { Last(generation.get(), null) }
 
     init {
+        loadBuiltIns()
+    }
+
+    /** Puts the six dictionaries of Strudel in the registry, with the aliases `voicings.mjs` adds to the two of ireal. */
+    private fun loadBuiltIns() {
         val simple = parseSections("ireal.txt")
         val ireal = simple.getValue("simple")
         val complex = simple.getValue("complex")
@@ -281,6 +293,13 @@ internal object Voicings {
         put("legacy", linkedMapOf("dictionary" to classic.getValue("legacy"), "mode" to "below", "anchor" to "a4"))
         put("ireal", linkedMapOf("dictionary" to ireal))
         put("ireal-ext", linkedMapOf("dictionary" to complex))
+    }
+
+    /** Back to what Strudel starts with: only its six dictionaries, as they were, the `ireal` default and no last voicing. */
+    fun restore() {
+        synchronized(lock) { entries.clear() }
+        loadBuiltIns()
+        reset()
     }
 
     private fun parseSections(file: String): Map<String, LinkedHashMap<String, Any?>> {
@@ -366,8 +385,13 @@ internal object Voicings {
 
     /** `resetVoicings()`: forgets the last voicing and goes back to the `ireal` dictionary. */
     fun reset() {
-        last = null
+        resetLast()
         setDefault("ireal")
+    }
+
+    /** Makes `voicings` start from the first voicing again, on every thread: what a program evaluation does. */
+    fun resetLast() {
+        generation.incrementAndGet()
     }
 
     /**
@@ -379,8 +403,14 @@ internal object Voicings {
             ?: throw CosicError("Cannot destructure property 'dictionary' of 'voicingRegistry[dictionaryName]' as it is undefined.")
         @Suppress("UNCHECKED_CAST")
         val range = entry["range"] as? List<Any?>
-        val picked = bestVoicing(chord, entry["dictionary"], range, last)
-        last = picked
+        val state = last.get()
+        val now = generation.get()
+        if (state.generation != now) {
+            state.generation = now
+            state.voicing = null
+        }
+        val picked = bestVoicing(chord, entry["dictionary"], range, state.voicing)
+        state.voicing = picked
         return picked
     }
 }
@@ -434,7 +464,8 @@ private fun voicingOf(input: Any?): Pattern {
         val dictionaryOfEntry = if (dictionary is String) Voicings.entry(dictionary)?.get("dictionary") else dictionary
         val notes = renderVoicing(chord, dictionaryOfEntry, property("offset"), property("n"), property("mode"), property("anchor"), property("octaves"))
         return stack(notes).setNote().setWith(pure(rest))
-    } catch (e: CosicError) {
+    } catch (e: Exception) {
+        // whatever goes wrong with a chord (an unknown symbol, a chord that is no string, a mode that does not exist) makes it a chord that plays nothing
         logger("[voicing]: unknown chord \"${jsToString(chord)}\"", null, null)
         return silence
     }

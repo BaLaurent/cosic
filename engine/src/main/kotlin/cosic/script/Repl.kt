@@ -7,6 +7,7 @@ import cosic.pattern.Pattern
 import cosic.pattern.Registered
 import cosic.pattern.Rng
 import cosic.pattern.Undefined
+import cosic.pattern.Voicings
 import cosic.pattern._fast
 import cosic.pattern.jsKeyOrder
 import cosic.pattern.jsNumberToString
@@ -78,6 +79,8 @@ internal class ReplSession(val host: SessionHost = SessionHost(), val realm: Rea
         Rng.reset()
         // `setDefaultJoin` is global in Strudel and leaks from one evaluation into the next; here every program starts with the default alignment
         Alignment.reset()
+        // `voicings` remembers its last voicing in a module-level variable in Strudel; here every program starts from the first voicing
+        Voicings.resetLast()
         installReplFunctions()
         allTransforms.clear()
         if (shouldHush) hush()
