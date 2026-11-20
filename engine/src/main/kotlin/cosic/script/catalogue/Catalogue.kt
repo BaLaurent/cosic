@@ -160,6 +160,8 @@ internal object Catalogue {
             registerControls()
             registerTime()
             registerStepwise()
+            registerSampleFunctions()
+            registerGenerators()
             registerTonal()
             registerXen()
             registerTidal()
