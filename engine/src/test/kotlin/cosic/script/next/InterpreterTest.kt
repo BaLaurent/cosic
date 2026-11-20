@@ -4,6 +4,7 @@ import cosic.SourceRange
 import cosic.pattern.CosicError
 import cosic.pattern.JsFn
 import cosic.pattern.Undefined
+import cosic.script.next.js.JsUndefined
 import cosic.script.next.js.JsArray
 import cosic.script.next.js.JsFunction
 import cosic.script.next.js.JsObject
@@ -239,6 +240,18 @@ class InterpreterTest {
         val f = run("return function  named ( x ) { return x }") as JsFunction
         assertEquals("function  named ( x ) { return x }", f.sourceText())
         assertEquals("function max() { [native code] }", testRealm().function("max", 2) { _, _ -> Undefined }.sourceText())
+    }
+
+    @Test
+    fun theValueModelIsTheKernelsUndefinedKotlinNullDoublesAndStrings() {
+        assertSame(Undefined, JsUndefined)
+        assertSame(Undefined, run("return undefined"))
+        assertSame(Undefined, run("return void 0"))
+        assertSame(Undefined, run("return [][0]"))
+        assertNull(run("return null"))
+        assertEquals(listOf<Any?>(1.0, "s", true, null, Undefined), (run("return [1, 's', true, null, undefined]") as JsArray).items)
+        // A number is always a Double, whatever way it was made.
+        assertEquals(listOf(true, true, true), (run("return [1, 0x10 + 1, 7 / 2 * 2]") as JsArray).items.map { it is Double })
     }
 
     @Test
