@@ -22,7 +22,7 @@ import cosic.pattern.chooseCycles
 import cosic.pattern.chooseIn
 import cosic.pattern.chooseInWith
 import cosic.pattern.chooseWith
-import cosic.pattern.fromBipolarValues
+import cosic.pattern.fromBipolar
 import cosic.pattern.irand
 import cosic.pattern.jsGetRandsAtTime
 import cosic.pattern.patternOf
@@ -87,7 +87,7 @@ internal fun registerRandom() {
     catalogue("Random") {
         // pat.choose2(...xs): like choose, for a pattern in -1..1
         method(listOf("choose2"), 0) { ctx ->
-            chooseWith(ctx.bridge.receiverOf(ctx.self, "choose2").fromBipolarValues(), ctx.args.indices.map { ctx.kernelArg(it) })
+            chooseWith(ctx.bridge.receiverOf(ctx.self, "choose2").fromBipolar(), ctx.args.indices.map { ctx.kernelArg(it) })
         }
     }
 

@@ -22,31 +22,25 @@ internal fun signal(func: (t: Rational, controls: Map<String, Any?>) -> Any?): P
 /** A continuous pattern of one constant value (`steady`). */
 internal fun steady(value: Any?): Pattern = Pattern { state -> listOf(Hap(null, state.span, value)) }
 
-/** `pat.toBipolar()`: numbers in 0..1 become numbers in -1..1. */
-internal fun Pattern.toBipolarValues(): Pattern = fmap { jsToNumber(it) * 2.0 - 1.0 }
-
-/** `pat.fromBipolar()`: numbers in -1..1 become numbers in 0..1. */
-internal fun Pattern.fromBipolarValues(): Pattern = fmap { (jsToNumber(it) + 1.0) / 2.0 }
-
 // ---- waves -------------------------------------------------------------------------------------------------------------
 
 /** A sawtooth between 0 and 1. It is `_mod(t, 1)`, which is not the position in the cycle: `1/3` gives `0.33333333333333326`. */
 internal val saw: Pattern = signal { t, _ -> jsMod(t.toDouble(), 1.0) }
 
 /** A sawtooth between -1 and 1. */
-internal val saw2: Pattern = saw.toBipolarValues()
+internal val saw2: Pattern = saw.toBipolar()
 
 /** A sawtooth between 1 and 0. */
 internal val isaw: Pattern = signal { t, _ -> 1.0 - jsMod(t.toDouble(), 1.0) }
 
 /** A sawtooth between 1 and -1. */
-internal val isaw2: Pattern = isaw.toBipolarValues()
+internal val isaw2: Pattern = isaw.toBipolar()
 
 /** A sine between -1 and 1. */
 internal val sine2: Pattern = signal { t, _ -> StrictMath.sin(Math.PI * 2 * t.toDouble()) }
 
 /** A sine between 0 and 1: `(sin + 1) / 2`, not `0.5 + 0.5 * sin`, which differs in the last digits. */
-internal val sine: Pattern = sine2.fromBipolarValues()
+internal val sine: Pattern = sine2.fromBipolar()
 
 /** A cosine between 0 and 1: the sine a quarter of a cycle earlier. */
 internal val cosine: Pattern = sine._early(Rational(1, 4))
@@ -58,13 +52,13 @@ internal val cosine2: Pattern = sine2._early(Rational(1, 4))
 internal val square: Pattern = signal { t, _ -> Math.floor(jsMod(t.toDouble() * 2.0, 2.0)) }
 
 /** A square wave between -1 and 1. */
-internal val square2: Pattern = square.toBipolarValues()
+internal val square2: Pattern = square.toBipolar()
 
 /** A square wave between 1 and 0. */
 internal val isquare: Pattern = signal { t, _ -> 1.0 - Math.floor(jsMod(t.toDouble() * 2.0, 2.0)) }
 
 /** A square wave between 1 and -1. */
-internal val isquare2: Pattern = isquare.toBipolarValues()
+internal val isquare2: Pattern = isquare.toBipolar()
 
 /** A triangle between 0 and 1: a rising saw for the first half of each cycle and a falling one for the second (a two-step sequence of signals). */
 internal val tri: Pattern = fastcat(saw, isaw)

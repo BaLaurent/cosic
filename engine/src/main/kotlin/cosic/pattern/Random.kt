@@ -151,7 +151,7 @@ internal fun jsGetRandsAtTime(t: Any?, n: Any?, seed: Any?): Any {
 internal val rand: Pattern = signal { t, c -> getRandAtTime(t.toDouble(), c[RAND_SEED_KEY]) }
 
 /** Random numbers between -1 and 1. */
-internal val rand2: Pattern = rand.toBipolarValues()
+internal val rand2: Pattern = rand.toBipolar()
 
 /** `1 - rand`: what `undegradeBy` tests against. */
 private val randInverse: Pattern = rand.fmap { 1.0 - jsToNumber(it) }
