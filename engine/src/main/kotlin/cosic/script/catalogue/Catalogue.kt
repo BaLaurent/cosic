@@ -158,6 +158,7 @@ internal object Catalogue {
             registerLegacyDocs()
             registerKernel()
             registerControls()
+            registerXen()
             registerLanguage()
         }
     }
