@@ -13,6 +13,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.octopusman.cosic.CosicApp
 import com.octopusman.cosic.audio.AudioOutput
+import com.octopusman.cosic.audio.BankSummary
+import com.octopusman.cosic.audio.SampleRepository
+import com.octopusman.cosic.audio.playPreview
 import com.octopusman.cosic.library.Project
 import com.octopusman.cosic.library.ProjectRepository
 import cosic.CosicEngine
@@ -23,6 +26,7 @@ import kotlin.math.floor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -48,6 +52,7 @@ class EditorViewModel(
     private val projects: ProjectRepository,
     private val engine: CosicEngine,
     private val audioOutput: AudioOutput,
+    sampleRepository: SampleRepository,
 ) : ViewModel() {
     private val loaded: Project? = projects.load(projectId)
     private val undoStack = UndoStack(SystemClock::uptimeMillis)
@@ -97,6 +102,12 @@ class EditorViewModel(
     private var savedVersion = 0L
     private val saveLock = Any()
     private var saveJob: Job? = null
+
+    /** The sample banks the reference lists next to the built-in sounds. */
+    val banks: StateFlow<List<BankSummary>> = sampleRepository.banks
+
+    /** Plays a sound once from the reference, without touching the music that is playing. */
+    fun previewSound(name: String, pitched: Boolean) = engine.playPreview(audioOutput, name, 0, pitched)
 
     fun onTextChange(value: TextFieldValue) {
         val before = textValue
@@ -264,7 +275,7 @@ class EditorViewModel(
 
     companion object {
         fun factory(app: CosicApp, projectId: String) = viewModelFactory {
-            initializer { EditorViewModel(projectId, app.projects, app.engine, app.audioOutput) }
+            initializer { EditorViewModel(projectId, app.projects, app.engine, app.audioOutput, app.sampleRepository) }
         }
     }
 }

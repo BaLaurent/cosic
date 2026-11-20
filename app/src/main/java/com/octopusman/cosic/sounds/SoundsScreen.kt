@@ -53,9 +53,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.octopusman.cosic.R
 import com.octopusman.cosic.audio.AudioOutput
-import com.octopusman.cosic.audio.BankOrigin
+import com.octopusman.cosic.audio.BankKind
 import com.octopusman.cosic.audio.BankSummary
 import com.octopusman.cosic.audio.SampleRepository
+import com.octopusman.cosic.audio.playPreview
 import com.octopusman.cosic.ui.BackTopBar
 import com.octopusman.cosic.ui.ConfirmDialog
 import com.octopusman.cosic.ui.copyWithConfirmation
@@ -63,8 +64,6 @@ import com.octopusman.cosic.ui.tagged
 import cosic.CosicEngine
 import kotlinx.coroutines.launch
 
-/** Middle C: what a pitched sound is previewed at. */
-private const val PREVIEW_NOTE = 60.0
 private const val DRUM_VARIANTS = 4
 
 /**
@@ -80,9 +79,9 @@ fun SoundsScreen(
     onBack: () -> Unit,
 ) {
     val banks by sampleRepository.banks.collectAsStateWithLifecycle()
-    val instruments = remember(banks) { banks.filter { it.origin == BankOrigin.BUNDLED && it.pitched } }
-    val percussion = remember(banks) { banks.filter { it.origin == BankOrigin.BUNDLED && !it.pitched } }
-    val imported = remember(banks) { banks.filter { it.origin == BankOrigin.IMPORTED } }
+    val instruments = remember(banks) { banks.filter { it.kind == BankKind.INSTRUMENT } }
+    val percussion = remember(banks) { banks.filter { it.kind == BankKind.PERCUSSION } }
+    val imported = remember(banks) { banks.filter { it.kind == BankKind.IMPORTED } }
 
     val context = LocalContext.current
     val clipboard = LocalClipboard.current
@@ -98,10 +97,7 @@ fun SoundsScreen(
         scope.launch { clipboard.copyWithConfirmation(name, snackbar, context.getString(R.string.sounds_copied, name)) }
     }
 
-    fun preview(name: String, index: Int, pitched: Boolean) {
-        engine.preview(name, index, if (pitched) PREVIEW_NOTE else null)
-        audioOutput.ensureRunning()
-    }
+    fun preview(name: String, index: Int, pitched: Boolean) = engine.playPreview(audioOutput, name, index, pitched)
 
     Scaffold(
         topBar = { BackTopBar(stringResource(R.string.sounds_title), onBack) },

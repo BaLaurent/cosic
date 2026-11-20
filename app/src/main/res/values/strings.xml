@@ -69,11 +69,17 @@
 
     <!-- Reference -->
     <string name="reference_close">Close reference</string>
-    <string name="reference_search">Search functions</string>
+    <string name="reference_search">Search functions and sounds</string>
     <string name="reference_clear_search">Clear search</string>
     <string name="reference_aliases">Also: %1$s</string>
     <string name="reference_insert_example">Insert</string>
-    <string name="reference_empty">No matching functions</string>
+    <string name="reference_handle">Resize reference</string>
+    <string name="reference_doc_synth">A synth waveform. Give it pitch with note().</string>
+    <string name="reference_doc_drum">A built-in drum sound. Pick one of four variants with a number, as in bd:2.</string>
+    <string name="reference_doc_instrument">A sampled instrument. Play it with note(); each note uses the nearest recorded one.</string>
+    <string name="reference_doc_percussion">A set of recorded percussion hits. Pick one with a number, as in kick:3.</string>
+    <string name="reference_doc_imported">A sound from a folder you imported. Pick a sample with a number, as in mine:1.</string>
+    <string name="reference_empty">No matching functions or sounds</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

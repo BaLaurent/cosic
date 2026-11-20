@@ -47,6 +47,9 @@ private class IndexFile(val file: String, val root: Int? = null)
 
 enum class BankOrigin { BUNDLED, IMPORTED }
 
+/** How a bank is grouped wherever sounds are listed. */
+enum class BankKind { INSTRUMENT, PERCUSSION, IMPORTED }
+
 /** A sample bank as listed on the Sounds screen; [treeUri] is the imported folder it came from. */
 data class BankSummary(
     val name: String,
@@ -54,7 +57,14 @@ data class BankSummary(
     val pitched: Boolean,
     val origin: BankOrigin,
     val treeUri: Uri?,
-)
+) {
+    val kind: BankKind
+        get() = when {
+            origin == BankOrigin.IMPORTED -> BankKind.IMPORTED
+            pitched -> BankKind.INSTRUMENT
+            else -> BankKind.PERCUSSION
+        }
+}
 
 private sealed interface SampleSource {
     /** Sources with the same key share one decoded copy in the cache. */

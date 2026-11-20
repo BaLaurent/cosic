@@ -36,6 +36,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.movableContentOf
@@ -55,6 +58,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -111,6 +115,8 @@ fun EditorScreen(
     BackHandler(onBack = leave)
 
     var showReference by rememberSaveable { mutableStateOf(false) }
+    var referenceShare by rememberSaveable { mutableFloatStateOf(ReferenceSplit.DEFAULT) }
+    var splitHeight by remember { mutableIntStateOf(0) }
 
     // Nothing keeps playing in the background. A rotation restarts the activity but is not leaving.
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
@@ -193,9 +199,18 @@ fun EditorScreen(
                     )
                 }
             }
+            val banks by vm.banks.collectAsStateWithLifecycle()
             val reference = remember {
                 movableContentOf<Modifier> { modifier ->
-                    ReferencePanel(onInsert = vm::insertSnippet, onClose = { showReference = false }, modifier = modifier)
+                    ReferencePanel(
+                        banks = banks,
+                        // What the cursor was on when the panel opened: the panel opens on that function or sound.
+                        codeAtOpen = remember { vm.textValue },
+                        onInsert = vm::insertSnippet,
+                        onPreview = vm::previewSound,
+                        onClose = { showReference = false },
+                        modifier = modifier,
+                    )
                 }
             }
             val sideBySide = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -205,9 +220,14 @@ fun EditorScreen(
                     editor(Modifier.weight(1f).fillMaxHeight())
                     reference(Modifier.weight(1f).fillMaxHeight())
                 }
-                else -> Column(Modifier.weight(1f).fillMaxWidth()) {
-                    editor(Modifier.weight(1f).fillMaxWidth())
-                    reference(Modifier.weight(1f).fillMaxWidth())
+                // Portrait: the reference grows upwards when its handle is dragged.
+                else -> Column(Modifier.weight(1f).fillMaxWidth().onSizeChanged { splitHeight = it.height }) {
+                    editor(Modifier.weight(1f - referenceShare).fillMaxWidth())
+                    ReferenceHandle(
+                        onDrag = { referenceShare = ReferenceSplit.dragged(referenceShare, it, splitHeight.toFloat()) },
+                        onTap = { referenceShare = ReferenceSplit.toggled(referenceShare) },
+                    )
+                    reference(Modifier.weight(referenceShare).fillMaxWidth())
                 }
             }
         }
