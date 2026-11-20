@@ -4,6 +4,7 @@ import cosic.mini.getLeafLocations
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
+import cosic.pattern.Rng
 import cosic.pattern.TOO_DEEP
 import cosic.pattern.TOO_DENSE
 import cosic.pattern.Undefined
@@ -68,8 +69,17 @@ internal class ParityWorld private constructor(val host: SessionHost, val realm:
     }
 
     companion object {
+        /**
+         * Strudel's modules keep state of their own that a program can change (which random number generator is in use, ...):
+         * a case must not see what the one before it did.
+         */
+        private fun resetProcessState() {
+            Rng.reset()
+        }
+
         /** A world for `queryCode`: `cpm` divides by 1 (test/runtime.mjs has no REPL). */
         fun plain(): ParityWorld {
+            resetProcessState()
             val host = SessionHost()
             val realm = Realm(host)
             Catalogue.install(realm)
@@ -80,6 +90,7 @@ internal class ParityWorld private constructor(val host: SessionHost, val realm:
 
         /** A world for a REPL case: the session installs the REPL's own `p`, `setcps` ... over the mocks on every run. */
         fun repl(): ParityWorld {
+            resetProcessState()
             val session = ReplSession()
             applyMocks(session.realm)
             return ParityWorld(session.host, session.realm, session)

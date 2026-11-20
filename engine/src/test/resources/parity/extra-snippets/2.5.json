@@ -1,0 +1,1160 @@
+[
+{
+"name": "saw.1",
+"code": "s(\"bd*8\").pan(saw)",
+"cycles": 4
+},
+{
+"name": "saw.2",
+"code": "s(\"bd hh\").pan(saw.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "saw.3",
+"code": "note(\"c e g\").gain(saw.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "saw2.1",
+"code": "s(\"bd*8\").pan(saw2)",
+"cycles": 4
+},
+{
+"name": "saw2.2",
+"code": "s(\"bd hh\").pan(saw2.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "saw2.3",
+"code": "note(\"c e g\").gain(saw2.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "isaw.1",
+"code": "s(\"bd*8\").pan(isaw)",
+"cycles": 4
+},
+{
+"name": "isaw.2",
+"code": "s(\"bd hh\").pan(isaw.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "isaw.3",
+"code": "note(\"c e g\").gain(isaw.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "isaw2.1",
+"code": "s(\"bd*8\").pan(isaw2)",
+"cycles": 4
+},
+{
+"name": "isaw2.2",
+"code": "s(\"bd hh\").pan(isaw2.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "isaw2.3",
+"code": "note(\"c e g\").gain(isaw2.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "sine.1",
+"code": "s(\"bd*8\").pan(sine)",
+"cycles": 4
+},
+{
+"name": "sine.2",
+"code": "s(\"bd hh\").pan(sine.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "sine.3",
+"code": "note(\"c e g\").gain(sine.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "sine2.1",
+"code": "s(\"bd*8\").pan(sine2)",
+"cycles": 4
+},
+{
+"name": "sine2.2",
+"code": "s(\"bd hh\").pan(sine2.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "sine2.3",
+"code": "note(\"c e g\").gain(sine2.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "cosine.1",
+"code": "s(\"bd*8\").pan(cosine)",
+"cycles": 4
+},
+{
+"name": "cosine.2",
+"code": "s(\"bd hh\").pan(cosine.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "cosine.3",
+"code": "note(\"c e g\").gain(cosine.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "cosine2.1",
+"code": "s(\"bd*8\").pan(cosine2)",
+"cycles": 4
+},
+{
+"name": "cosine2.2",
+"code": "s(\"bd hh\").pan(cosine2.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "cosine2.3",
+"code": "note(\"c e g\").gain(cosine2.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "square.1",
+"code": "s(\"bd*8\").pan(square)",
+"cycles": 4
+},
+{
+"name": "square.2",
+"code": "s(\"bd hh\").pan(square.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "square.3",
+"code": "note(\"c e g\").gain(square.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "square2.1",
+"code": "s(\"bd*8\").pan(square2)",
+"cycles": 4
+},
+{
+"name": "square2.2",
+"code": "s(\"bd hh\").pan(square2.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "square2.3",
+"code": "note(\"c e g\").gain(square2.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "isquare.1",
+"code": "s(\"bd*8\").pan(isquare)",
+"cycles": 4
+},
+{
+"name": "isquare.2",
+"code": "s(\"bd hh\").pan(isquare.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "isquare.3",
+"code": "note(\"c e g\").gain(isquare.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "isquare2.1",
+"code": "s(\"bd*8\").pan(isquare2)",
+"cycles": 4
+},
+{
+"name": "isquare2.2",
+"code": "s(\"bd hh\").pan(isquare2.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "isquare2.3",
+"code": "note(\"c e g\").gain(isquare2.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "tri.1",
+"code": "s(\"bd*8\").pan(tri)",
+"cycles": 4
+},
+{
+"name": "tri.2",
+"code": "s(\"bd hh\").pan(tri.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "tri.3",
+"code": "note(\"c e g\").gain(tri.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "tri2.1",
+"code": "s(\"bd*8\").pan(tri2)",
+"cycles": 4
+},
+{
+"name": "tri2.2",
+"code": "s(\"bd hh\").pan(tri2.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "tri2.3",
+"code": "note(\"c e g\").gain(tri2.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "itri.1",
+"code": "s(\"bd*8\").pan(itri)",
+"cycles": 4
+},
+{
+"name": "itri.2",
+"code": "s(\"bd hh\").pan(itri.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "itri.3",
+"code": "note(\"c e g\").gain(itri.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "itri2.1",
+"code": "s(\"bd*8\").pan(itri2)",
+"cycles": 4
+},
+{
+"name": "itri2.2",
+"code": "s(\"bd hh\").pan(itri2.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "itri2.3",
+"code": "note(\"c e g\").gain(itri2.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "rand.1",
+"code": "s(\"bd*8\").pan(rand)",
+"cycles": 4
+},
+{
+"name": "rand.2",
+"code": "s(\"bd hh\").pan(rand.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "rand.3",
+"code": "note(\"c e g\").gain(rand.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "rand2.1",
+"code": "s(\"bd*8\").pan(rand2)",
+"cycles": 4
+},
+{
+"name": "rand2.2",
+"code": "s(\"bd hh\").pan(rand2.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "rand2.3",
+"code": "note(\"c e g\").gain(rand2.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "perlin.1",
+"code": "s(\"bd*8\").pan(perlin)",
+"cycles": 4
+},
+{
+"name": "perlin.2",
+"code": "s(\"bd hh\").pan(perlin.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "perlin.3",
+"code": "note(\"c e g\").gain(perlin.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "berlin.1",
+"code": "s(\"bd*8\").pan(berlin)",
+"cycles": 4
+},
+{
+"name": "berlin.2",
+"code": "s(\"bd hh\").pan(berlin.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "berlin.3",
+"code": "note(\"c e g\").gain(berlin.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "mousex.1",
+"code": "s(\"bd*8\").pan(mousex)",
+"cycles": 4
+},
+{
+"name": "mousex.2",
+"code": "s(\"bd hh\").pan(mousex.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "mousex.3",
+"code": "note(\"c e g\").gain(mousex.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "mouseX.1",
+"code": "s(\"bd*8\").pan(mouseX)",
+"cycles": 4
+},
+{
+"name": "mouseX.2",
+"code": "s(\"bd hh\").pan(mouseX.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "mouseX.3",
+"code": "note(\"c e g\").gain(mouseX.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "mousey.1",
+"code": "s(\"bd*8\").pan(mousey)",
+"cycles": 4
+},
+{
+"name": "mousey.2",
+"code": "s(\"bd hh\").pan(mousey.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "mousey.3",
+"code": "note(\"c e g\").gain(mousey.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "mouseY.1",
+"code": "s(\"bd*8\").pan(mouseY)",
+"cycles": 4
+},
+{
+"name": "mouseY.2",
+"code": "s(\"bd hh\").pan(mouseY.segment(4).add(0))",
+"cycles": 4
+},
+{
+"name": "mouseY.3",
+"code": "note(\"c e g\").gain(mouseY.slow(3).range(0.25, 1))",
+"cycles": 4
+},
+{
+"name": "brand.1",
+"code": "s(\"hh*10\").pan(brand)",
+"cycles": 4
+},
+{
+"name": "brand.2",
+"code": "s(\"hh*8\").pan(brand.fast(2))",
+"cycles": 4
+},
+{
+"name": "time.1",
+"code": "s(\"bd sd [bd bd] sd*4 [- sd] [bd [bd bd]]\").pan(time.mul(0.05))",
+"cycles": 4
+},
+{
+"name": "time.2",
+"code": "s(\"bd*8\").pan(time.add(1).mul(0.1))",
+"cycles": 4
+},
+{
+"name": "time.3",
+"code": "s(\"bd sd\").pan(time.fast(2).range(0, 1))",
+"cycles": 4
+},
+{
+"name": "cyclesPer.1",
+"code": "s(\"bd sd [bd bd] sd*4 [- sd] [bd [bd bd]]\").pan(cyclesPer.mul(0.05))",
+"cycles": 4
+},
+{
+"name": "cyclesPer.2",
+"code": "s(\"bd*8\").pan(cyclesPer.add(1).mul(0.1))",
+"cycles": 4
+},
+{
+"name": "cyclesPer.3",
+"code": "s(\"bd sd\").pan(cyclesPer.fast(2).range(0, 1))",
+"cycles": 4
+},
+{
+"name": "per.1",
+"code": "s(\"bd sd [bd bd] sd*4 [- sd] [bd [bd bd]]\").pan(per.mul(0.05))",
+"cycles": 4
+},
+{
+"name": "per.2",
+"code": "s(\"bd*8\").pan(per.add(1).mul(0.1))",
+"cycles": 4
+},
+{
+"name": "per.3",
+"code": "s(\"bd sd\").pan(per.fast(2).range(0, 1))",
+"cycles": 4
+},
+{
+"name": "perCycle.1",
+"code": "s(\"bd sd [bd bd] sd*4 [- sd] [bd [bd bd]]\").pan(perCycle.mul(0.05))",
+"cycles": 4
+},
+{
+"name": "perCycle.2",
+"code": "s(\"bd*8\").pan(perCycle.add(1).mul(0.1))",
+"cycles": 4
+},
+{
+"name": "perCycle.3",
+"code": "s(\"bd sd\").pan(perCycle.fast(2).range(0, 1))",
+"cycles": 4
+},
+{
+"name": "perx.1",
+"code": "s(\"bd sd [bd bd] sd*4 [- sd] [bd [bd bd]]\").pan(perx.mul(0.05))",
+"cycles": 4
+},
+{
+"name": "perx.2",
+"code": "s(\"bd*8\").pan(perx.add(1).mul(0.1))",
+"cycles": 4
+},
+{
+"name": "perx.3",
+"code": "s(\"bd sd\").pan(perx.fast(2).range(0, 1))",
+"cycles": 4
+},
+{
+"name": "open.1",
+"code": "s(\"bd sd [bd bd] sd*4 [- sd] [bd [bd bd]]\").pan(open.mul(0.05))",
+"cycles": 4
+},
+{
+"name": "open.2",
+"code": "s(\"bd*8\").pan(open.add(1).mul(0.1))",
+"cycles": 4
+},
+{
+"name": "open.3",
+"code": "s(\"bd sd\").pan(open.fast(2).range(0, 1))",
+"cycles": 4
+},
+{
+"name": "close.1",
+"code": "s(\"bd sd [bd bd] sd*4 [- sd] [bd [bd bd]]\").pan(close.mul(0.05))",
+"cycles": 4
+},
+{
+"name": "close.2",
+"code": "s(\"bd*8\").pan(close.add(1).mul(0.1))",
+"cycles": 4
+},
+{
+"name": "close.3",
+"code": "s(\"bd sd\").pan(close.fast(2).range(0, 1))",
+"cycles": 4
+},
+{
+"name": "signal.3",
+"code": "s(\"bd*8\").pan(signal(t => (t * 2) % 1))",
+"cycles": 4
+},
+{
+"name": "signal.4",
+"code": "s(\"bd*4\").pan(signal((t, c) => typeof c).segment(4).fmap(x => x === \"object\" ? 1 : 0))",
+"cycles": 4
+},
+{
+"name": "signal.5",
+"code": "s(\"bd*4\").pan(signal(t => t.floor ? t.floor() : 0).segment(4).mul(1))",
+"cycles": 4
+},
+{
+"name": "steady.1",
+"code": "s(\"bd*4\").pan(steady(0.3))",
+"cycles": 4
+},
+{
+"name": "steady.2",
+"code": "s(\"bd*4\").pan(steady(0.7).segment(2).add(0.1))",
+"cycles": 4
+},
+{
+"name": "steady.3",
+"code": "steady(5).segment(2).fmap(x => ({ n: x })).s(\"bd\")",
+"cycles": 4
+},
+{
+"name": "useRNG.1",
+"code": "useRNG('precise'); s(\"bd*8\").pan(rand)",
+"cycles": 4
+},
+{
+"name": "useRNG.2",
+"code": "useRNG('precise'); s(\"hh*8\").degradeBy(0.5)",
+"cycles": 4
+},
+{
+"name": "useRNG.3",
+"code": "useRNG(); s(\"hh*8\").degradeBy(0.5)",
+"cycles": 4
+},
+{
+"name": "useRNG.4",
+"code": "useRNG('anything'); s(\"hh*8\").pan(rand).seed(2)",
+"cycles": 4
+},
+{
+"name": "useRNG.5",
+"code": "useRNG('precise'); s(\"hh*8\").pan(perlin)",
+"cycles": 4
+},
+{
+"name": "useRNG.6",
+"code": "useRNG('precise'); s(\"hh*8\").shuffle(4)",
+"cycles": 4
+},
+{
+"name": "useRNG.7",
+"code": "useRNG('precise'); s(\"hh*8\").n(irand(8))",
+"cycles": 4
+},
+{
+"name": "getRandsAtTime.1",
+"code": "s(\"bd*4\").pan(getRandsAtTime(0.25))",
+"cycles": 4
+},
+{
+"name": "getRandsAtTime.2",
+"code": "s(\"bd\").partials(getRandsAtTime(0.5, 4, 1))",
+"cycles": 4
+},
+{
+"name": "getRandsAtTime.3",
+"code": "s(\"bd\").partials(getRandsAtTime(3, 3, 2))",
+"cycles": 4
+},
+{
+"name": "getRandsAtTime.4",
+"code": "useRNG('precise'); s(\"bd\").partials(getRandsAtTime(0.5, 3, 2))",
+"cycles": 4
+},
+{
+"name": "withSeed.1",
+"code": "stack(s(\"hh*8\").pan(rand), withSeed(() => 2, s(\"hh*8\").pan(rand)))",
+"cycles": 4
+},
+{
+"name": "withSeed.2",
+"code": "withSeed(x => 3, s(\"hh*8\").pan(rand))",
+"cycles": 4
+},
+{
+"name": "withSeed.3",
+"code": "withSeed(x => (x ?? 0) + 1, s(\"hh*8\").pan(rand)).seed(5)",
+"cycles": 4
+},
+{
+"name": "withSeed.4",
+"code": "withSeed(x => x === undefined ? 1 : 2, s(\"hh*8\").degrade())",
+"cycles": 4
+},
+{
+"name": "seed.2",
+"code": "s(\"hh*8\").pan(rand).seed(\"<1 2>\")",
+"cycles": 4
+},
+{
+"name": "seed.3",
+"code": "s(\"hh*8\").pan(rand).seed(1)",
+"cycles": 4
+},
+{
+"name": "seed.4",
+"code": "s(\"hh*8\").pan(rand).seed(0.5)",
+"cycles": 4
+},
+{
+"name": "seed.5",
+"code": "s(\"hh*8\").shuffle(4).seed(7)",
+"cycles": 4
+},
+{
+"name": "seed.6",
+"code": "s(\"hh*8\").pan(perlin).seed(2)",
+"cycles": 4
+},
+{
+"name": "_brandBy.1",
+"code": "s(\"bd*8\").pan(_brandBy(0.3))",
+"cycles": 4
+},
+{
+"name": "_brandBy.2",
+"code": "s(\"bd*8\").pan(_brandBy(0.7).fast(2))",
+"cycles": 4
+},
+{
+"name": "brandBy.1",
+"code": "s(\"hh*8\").pan(brandBy(\"<0.2 0.8>\"))",
+"cycles": 4
+},
+{
+"name": "brandBy.2",
+"code": "s(\"hh*8\").pan(brandBy(0.5))",
+"cycles": 4
+},
+{
+"name": "brandBy.3",
+"code": "s(\"hh*8\").pan(brandBy(\"0.1 0.9\"))",
+"cycles": 4
+},
+{
+"name": "_irand.1",
+"code": "s(\"bd*8\").n(_irand(8))",
+"cycles": 4
+},
+{
+"name": "_irand.2",
+"code": "s(\"bd*8\").n(_irand(3).segment(2))",
+"cycles": 4
+},
+{
+"name": "irand.2",
+"code": "s(\"bd*8\").n(irand(\"<4 16>\"))",
+"cycles": 4
+},
+{
+"name": "irand.3",
+"code": "s(\"bd*8\").n(irand(8).seed(4))",
+"cycles": 4
+},
+{
+"name": "irand.4",
+"code": "s(\"bd*4\").n(irand(\"2 8\"))",
+"cycles": 4
+},
+{
+"name": "randL.2",
+"code": "s(\"saw*2\").partials(randL(3))",
+"cycles": 4
+},
+{
+"name": "randL.3",
+"code": "s(\"saw*2\").partials(randL(\"<2 3>\"))",
+"cycles": 4
+},
+{
+"name": "randL.4",
+"code": "s(\"saw*2\").partials(randL(1))",
+"cycles": 4
+},
+{
+"name": "randL.5",
+"code": "s(\"saw*2\").partials(randL(2)).seed(3)",
+"cycles": 4
+},
+{
+"name": "randrun.1",
+"code": "s(\"bd*8\").n(randrun(4))",
+"cycles": 4
+},
+{
+"name": "randrun.2",
+"code": "s(\"bd*6\").n(randrun(6))",
+"cycles": 4
+},
+{
+"name": "randrun.3",
+"code": "s(\"bd*8\").n(randrun(4)).seed(2)",
+"cycles": 4
+},
+{
+"name": "randrun.4",
+"code": "s(\"bd*2\").n(randrun(1))",
+"cycles": 4
+},
+{
+"name": "randrun.5",
+"code": "s(\"bd*5\").n(randrun(5).late(3))",
+"cycles": 4
+},
+{
+"name": "choose.1",
+"code": "s(\"bd*8\").n(choose(0, 1, 2))",
+"cycles": 4
+},
+{
+"name": "choose.2",
+"code": "s(\"bd*8\").n(choose(\"0 1\", \"2 3\"))",
+"cycles": 4
+},
+{
+"name": "choose.3",
+"code": "s(\"bd*8\").n(choose(5))",
+"cycles": 4
+},
+{
+"name": "choose.4",
+"code": "s(\"bd*8\").n(choose())",
+"cycles": 4
+},
+{
+"name": "choose.5",
+"code": "s(\"bd*8\").n(sine.fast(2).choose(0, 1, 2, 3))",
+"cycles": 4
+},
+{
+"name": "choose2.1",
+"code": "s(\"bd*8\").n(sine2.choose2(0, 1, 2, 3))",
+"cycles": 4
+},
+{
+"name": "choose2.2",
+"code": "s(\"bd*8\").n(rand2.choose2(0, 1))",
+"cycles": 4
+},
+{
+"name": "choose2.3",
+"code": "s(\"bd*8\").n(saw2.slow(2).choose2(\"0 1\", 5, 6))",
+"cycles": 4
+},
+{
+"name": "chooseIn.1",
+"code": "s(\"bd*4\").n(chooseIn(\"0*2\", \"1*3\"))",
+"cycles": 4
+},
+{
+"name": "chooseIn.2",
+"code": "s(\"bd*4\").n(chooseIn(0, 1, 2))",
+"cycles": 4
+},
+{
+"name": "chooseIn.3",
+"code": "s(\"bd*4\").n(chooseIn())",
+"cycles": 4
+},
+{
+"name": "chooseWith.2",
+"code": "s(\"bd*4\").n(chooseWith(saw, [0, 1, 2, 3]))",
+"cycles": 4
+},
+{
+"name": "chooseWith.3",
+"code": "s(\"bd*4\").n(chooseWith(rand, [\"0 1\", 2, \"3*2\"]))",
+"cycles": 4
+},
+{
+"name": "chooseWith.4",
+"code": "s(\"bd*4\").n(chooseWith(sine.slow(4), []))",
+"cycles": 4
+},
+{
+"name": "chooseWith.5",
+"code": "s(\"bd*4\").n(chooseWith(isaw, [0, 1, 2]).seed(1))",
+"cycles": 4
+},
+{
+"name": "chooseInWith.2",
+"code": "s(\"bd*4\").n(chooseInWith(saw, [0, 1, 2, 3]))",
+"cycles": 4
+},
+{
+"name": "chooseInWith.3",
+"code": "s(\"bd*4\").n(chooseInWith(rand.segment(2), [\"0 1\", 2, \"3*2\"]))",
+"cycles": 4
+},
+{
+"name": "__chooseWith.1",
+"code": "__chooseWith(saw, [\"a\", \"b\", \"c\"]).outerJoin().segment(6)",
+"cycles": 4
+},
+{
+"name": "__chooseWith.2",
+"code": "__chooseWith(rand, [0, 1]).innerJoin().segment(4)",
+"cycles": 4
+},
+{
+"name": "__chooseWith.3",
+"code": "__chooseWith(rand, []).segment(4)",
+"cycles": 4
+},
+{
+"name": "chooseCycles.2",
+"code": "chooseCycles(\"bd*2\", \"hh*3\").s().fast(4)",
+"cycles": 4
+},
+{
+"name": "chooseCycles.3",
+"code": "chooseCycles(\"bd\", \"hh\", \"sd\", \"cp\").s().fast(8).seed(3)",
+"cycles": 4
+},
+{
+"name": "randcat.1",
+"code": "randcat(\"bd\", \"hh\", \"sd\").s().fast(8)",
+"cycles": 4
+},
+{
+"name": "randcat.2",
+"code": "randcat(\"bd*2\", \"hh*3\", \"cp\").s().fast(4)",
+"cycles": 4
+},
+{
+"name": "wchoose.2",
+"code": "s(\"bd*8\").n(wchoose([0, 1], [1, 3], [2, 1]))",
+"cycles": 4
+},
+{
+"name": "wchoose.3",
+"code": "s(\"bd*8\").n(wchoose([\"0 1\", \"<5 0>\"], [3, 2]))",
+"cycles": 4
+},
+{
+"name": "wchoose.4",
+"code": "s(\"bd*8\").n(wchoose([4, 1]))",
+"cycles": 4
+},
+{
+"name": "wchooseCycles.3",
+"code": "wchooseCycles([\"bd\", 1], [\"hh\", 1]).s().fast(8)",
+"cycles": 4
+},
+{
+"name": "wchooseCycles.4",
+"code": "wchooseCycles([\"bd*2\", \"<1 4>\"], [\"hh*3\", 2], [\"cp\", 0]).s().fast(4)",
+"cycles": 4
+},
+{
+"name": "wrandcat.1",
+"code": "wrandcat([\"bd\", 10], [\"hh\", 1], [\"sd\", 1]).s().fast(8)",
+"cycles": 4
+},
+{
+"name": "wrandcat.2",
+"code": "wrandcat([\"bd*2\", 3], [\"hh*3\", \"<1 5>\"]).s().fast(4)",
+"cycles": 4
+},
+{
+"name": "degradeBy.3",
+"code": "s(\"hh*8\").degradeBy(\"<0.2 0.8>\")",
+"cycles": 4
+},
+{
+"name": "degradeBy.4",
+"code": "s(\"hh*8\").degradeBy(0).seed(1)",
+"cycles": 4
+},
+{
+"name": "degradeBy.5",
+"code": "s(\"hh*8\").degradeBy(1)",
+"cycles": 4
+},
+{
+"name": "degradeBy.6",
+"code": "s(\"hh*8\").degradeBy(\"0.2 0.9\")",
+"cycles": 4
+},
+{
+"name": "degradeBy.7",
+"code": "s(\"hh*8\").degradeBy(0.5).seed(9)",
+"cycles": 4
+},
+{
+"name": "degradeBy.8",
+"code": "s(\"hh*8\").degradeBy(0)",
+"cycles": 4
+},
+{
+"name": "degradeBy.9",
+"code": "s(\"hh*8\").degradeBy(-1)",
+"cycles": 4
+},
+{
+"name": "undegradeBy.2",
+"code": "s(\"hh*8\").undegradeBy(\"<0.2 0.8>\")",
+"cycles": 4
+},
+{
+"name": "undegradeBy.3",
+"code": "s(\"hh*8\").undegradeBy(0.5).seed(2)",
+"cycles": 4
+},
+{
+"name": "undegradeBy.4",
+"code": "s(\"hh*8\").undegradeBy(\"0.1 0.9\")",
+"cycles": 4
+},
+{
+"name": "degrade.2",
+"code": "s(\"hh*8\").degrade().seed(1)",
+"cycles": 4
+},
+{
+"name": "degrade.3",
+"code": "n(\"0 1 2 3 4 5 6 7\").degrade()",
+"cycles": 4
+},
+{
+"name": "undegrade.2",
+"code": "s(\"hh*8\").undegrade().seed(1)",
+"cycles": 4
+},
+{
+"name": "degradeByWith.3",
+"code": "s(\"hh*8\").degradeByWith(0.5, 0.2)",
+"cycles": 4
+},
+{
+"name": "degradeByWith.4",
+"code": "s(\"hh*8\").degradeByWith(0.1, 0.2)",
+"cycles": 4
+},
+{
+"name": "degradeByWith.5",
+"code": "s(\"hh*8\").degradeByWith(rand, \"<0.2 0.8>\")",
+"cycles": 4
+},
+{
+"name": "degradeByWith.6",
+"code": "s(\"hh*8\").degradeByWith(saw, 0.5)",
+"cycles": 4
+},
+{
+"name": "degradeByWith.7",
+"code": "s(\"hh*8\").degradeByWith(\"0.1 0.9\", 0.5)",
+"cycles": 4
+},
+{
+"name": "degradeByWith.8",
+"code": "s(\"hh*8\").degradeByWith(rand.fast(2), 0.5).seed(3)",
+"cycles": 4
+},
+{
+"name": "degradeByWith.9",
+"code": "s(\"hh*8\").degradeByWith(sine, 0.2)",
+"cycles": 4
+},
+{
+"name": "degradeByWith.10",
+"code": "s(\"hh*8\").degradeByWith(sine, \"<0.2 0.8>\")",
+"cycles": 4
+},
+{
+"name": "degradeByWith.11",
+"code": "s(\"hh*8\").degradeByWith(sine.late(0.1), 0.5)",
+"cycles": 4
+},
+{
+"name": "sometimesBy.2",
+"code": "s(\"hh*8\").sometimesBy(\"<0.2 0.8>\", x => x.speed(2))",
+"cycles": 4
+},
+{
+"name": "sometimesBy.3",
+"code": "s(\"hh*8\").sometimesBy(0, x => x.speed(2))",
+"cycles": 4
+},
+{
+"name": "sometimesBy.4",
+"code": "s(\"hh*8\").sometimesBy(1, x => x.speed(2))",
+"cycles": 4
+},
+{
+"name": "sometimesBy.5",
+"code": "s(\"hh*8\").sometimesBy(\"0.3 0.7\", x => x.speed(2)).seed(2)",
+"cycles": 4
+},
+{
+"name": "sometimes.2",
+"code": "s(\"hh*8\").sometimes(x => x.speed(2)).seed(3)",
+"cycles": 4
+},
+{
+"name": "someCyclesBy.2",
+"code": "s(\"hh*8\").someCyclesBy(\"<0.2 0.8>\", x => x.speed(2))",
+"cycles": 4
+},
+{
+"name": "someCyclesBy.3",
+"code": "s(\"bd*4,hh*8\").someCyclesBy(0.5, x => x.speed(2)).seed(5)",
+"cycles": 4
+},
+{
+"name": "someCyclesBy.4",
+"code": "s(\"hh*8\").someCyclesBy(0, x => x.speed(2))",
+"cycles": 4
+},
+{
+"name": "someCycles.2",
+"code": "s(\"bd*4,hh*8\").someCycles(x => x.speed(2)).seed(2)",
+"cycles": 4
+},
+{
+"name": "often.2",
+"code": "s(\"hh*16\").often(x => x.speed(2)).seed(4)",
+"cycles": 4
+},
+{
+"name": "rarely.2",
+"code": "s(\"hh*16\").rarely(x => x.speed(2)).seed(4)",
+"cycles": 4
+},
+{
+"name": "almostNever.2",
+"code": "s(\"hh*16\").almostNever(x => x.speed(2)).seed(4)",
+"cycles": 4
+},
+{
+"name": "almostAlways.2",
+"code": "s(\"hh*16\").almostAlways(x => x.speed(2)).seed(4)",
+"cycles": 4
+},
+{
+"name": "never.2",
+"code": "s(\"hh*4\").never(x => x.speed(2)).seed(4)",
+"cycles": 4
+},
+{
+"name": "always.2",
+"code": "s(\"hh*4\").always(x => x.speed(2)).seed(4)",
+"cycles": 4
+},
+{
+"name": "sometimesBy.6",
+"code": "s(\"hh*8\").sometimesBy(0.5, x => x.fast(2))",
+"cycles": 4
+},
+{
+"name": "sometimesBy.7",
+"code": "s(\"hh*4\").sometimesBy(0.5, x => s(\"cp*2\"))",
+"cycles": 4
+},
+{
+"name": "shuffle.2",
+"code": "s(\"bd sd hh cp\").shuffle(\"<2 4>\")",
+"cycles": 4
+},
+{
+"name": "shuffle.3",
+"code": "n(\"0 1 2 3 4 5 6 7\").shuffle(8)",
+"cycles": 4
+},
+{
+"name": "shuffle.4",
+"code": "n(\"0 1 2 3\").shuffle(1)",
+"cycles": 4
+},
+{
+"name": "shuffle.5",
+"code": "n(\"0 1 2 3\").shuffle(2).seed(4)",
+"cycles": 4
+},
+{
+"name": "shuffle.6",
+"code": "n(\"0 1 2 3 4 5\").shuffle(3)",
+"cycles": 4
+},
+{
+"name": "shuffle.7",
+"code": "n(\"0 1 2 3\").shuffle(0)",
+"cycles": 4
+},
+{
+"name": "shuffle.8",
+"code": "n(\"0 1 2 3\").shuffle(2.5)",
+"cycles": 4
+},
+{
+"name": "scramble.2",
+"code": "s(\"bd sd hh cp\").scramble(\"<2 4>\")",
+"cycles": 4
+},
+{
+"name": "scramble.3",
+"code": "n(\"0 1 2 3 4 5 6 7\").scramble(8)",
+"cycles": 4
+},
+{
+"name": "scramble.4",
+"code": "n(\"0 1 2 3\").scramble(1)",
+"cycles": 4
+},
+{
+"name": "scramble.5",
+"code": "n(\"0 1 2 3\").scramble(4).seed(2)",
+"cycles": 4
+},
+{
+"name": "scramble.6",
+"code": "n(\"0 1 2 3\").scramble(0)",
+"cycles": 4
+},
+{
+"name": "keyDown.2",
+"code": "s(\"bd*4\").gain(keyDown(\"shift\"))",
+"cycles": 4
+},
+{
+"name": "keyDown.3",
+"code": "keyDown(\"Control:j\")",
+"cycles": 4
+},
+{
+"name": "keyDown.4",
+"code": "keyDown()",
+"cycles": 4
+},
+{
+"name": "whenKey.2",
+"code": "s(\"bd*4\").whenKey(\"shift\", x => x.fast(2))",
+"cycles": 4
+},
+{
+"name": "whenKey.3",
+"code": "s(\"bd(3,8)\").whenKey(\"Control:j\", x => x.segment(16))",
+"cycles": 4
+},
+{
+"name": "_keyDown.1",
+"code": "s(\"bd*2\").gain(_keyDown([]) ? 1 : 0)",
+"cycles": 4
+},
+{
+"name": "_keyDown.2",
+"code": "s(\"bd*2\").gain(_keyDown(['shift']) ? 1 : 0)",
+"cycles": 4,
+"exactMessage": true
+},
+{
+"name": "_keyDown.3",
+"code": "s(\"bd*2\").gain(_keyDown('a') ? 1 : 0)",
+"cycles": 4,
+"exactMessage": true
+},
+{
+"name": "_keyDown.4",
+"code": "s(\"bd*2\").gain(_keyDown(['ctrl', 'j']) ? 1 : 0)",
+"cycles": 4,
+"exactMessage": true
+}
+]

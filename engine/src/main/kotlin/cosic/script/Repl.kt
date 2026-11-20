@@ -5,6 +5,7 @@ import cosic.pattern.Alignment
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.pattern.Registered
+import cosic.pattern.Rng
 import cosic.pattern.Undefined
 import cosic.pattern._fast
 import cosic.pattern.jsKeyOrder
@@ -73,6 +74,8 @@ internal class ReplSession(val host: SessionHost = SessionHost(), val realm: Rea
 
     private fun evaluateHere(code: String, shouldHush: Boolean): ProgramResult {
         routeKernelLogsTo(host)
+        // `useRNG` is global in Strudel and leaks from one evaluation into the next; here every program starts with the default generator
+        Rng.reset()
         // `setDefaultJoin` is global in Strudel and leaks from one evaluation into the next; here every program starts with the default alignment
         Alignment.reset()
         installReplFunctions()

@@ -18,7 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterAll, describe, it } from 'vitest';
-import { evalScope, Pattern, repl } from '@strudel/core';
+import { evalScope, Pattern, repl, useRNG } from '@strudel/core';
 import { transpiler } from '@strudel/transpiler';
 import { queryCode } from './runtime.mjs';
 
@@ -54,6 +54,8 @@ const identityMethods = [
   'midi', '_scope', '_spiral', '_pitchwheel', '_pianoroll', '_spectrum', '_print', 'markcss', 'p', 'dough',
 ];
 const applyOracleMocks = () => {
+  // module state of Strudel that a snippet can change (`useRNG('precise')`) must not reach the next snippet
+  useRNG('legacy');
   identityMethods.forEach((name) => {
     Pattern.prototype[name] = function () {
       return this;

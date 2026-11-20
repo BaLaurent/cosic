@@ -163,6 +163,8 @@ internal object Catalogue {
             registerStepwise()
             registerSampleFunctions()
             registerGenerators()
+            registerSignals()
+            registerRandom()
             registerTonal()
             registerXen()
             registerTidal()
