@@ -58,6 +58,7 @@ class HsOracleTest {
         "generated.455" to "the where block of a declaration goes on over the indented lines after a blank line",
         "generated.1013" to "a stray `)` after an error in a lambda: tree-sitter makes the whole declaration an ERROR, this parser keeps the lambda",
         "generated.1310" to "`if`, `then` and `else` are variables in the head of a function, which an indented line after a blank line can make of a statement",
+        "generated.1862" to "the where block of a declaration goes on over the indented lines after a blank line (`f p = x where y = 1`, a blank line, an indented `d1 $ d2` is an error for tree-sitter)",
     )
 
     @Test
