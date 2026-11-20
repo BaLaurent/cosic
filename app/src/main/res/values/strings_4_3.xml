@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Content descriptions of the inline visuals (the picture of what plays) -->
+    <string name="visual_pianoroll">Piano roll</string>
+    <string name="visual_punchcard">Punch card</string>
+    <string name="visual_spiral">Spiral</string>
+    <string name="visual_scope">Scope</string>
+    <string name="visual_pitchwheel">Pitch wheel</string>
+    <string name="visual_spectrum">Spectrum</string>
+    <!-- The output widget: the lines the program printed -->
+    <string name="visual_print">Printed output</string>
+    <string name="visual_print_empty">Nothing printed yet</string>
+</resources>
