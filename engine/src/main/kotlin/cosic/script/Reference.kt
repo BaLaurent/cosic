@@ -1,6 +1,6 @@
 package cosic.script
 
-import cosic.pattern.legacy.SCALE_MODES
+import cosic.pattern.Tonal
 import cosic.script.catalogue.Catalogue
 
 /**
@@ -24,8 +24,8 @@ public fun reference(): List<ReferenceEntry> = Catalogue.docEntries().filter { i
     ReferenceEntry(entry.names[0], entry.names.drop(1), doc.category, doc.signature, doc.text, doc.example, doc.snippet ?: labelled(doc.example))
 }
 
-/** The modes a scale name can use after its root note, as in `C:minor`. */
-public fun scaleModes(): List<String> = SCALE_MODES
+/** The scale names that can follow a root note, as in `C:minor` (spaces written as colons: `C:harmonic:minor`): every scale of the tonal library. */
+public fun scaleModes(): List<String> = Tonal.scaleModeNames()
 
 /** [example] ready to paste into a program that has labels: it gets a `$: ` label unless it is labelled already. */
 private fun labelled(example: String): String =

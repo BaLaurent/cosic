@@ -1,0 +1,3363 @@
+{
+ "scaleTypes": [
+  {
+   "name": "major pentatonic",
+   "aliases": [
+    "pentatonic"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "5P",
+    "6M"
+   ],
+   "setNum": 2708,
+   "chroma": "101010010100",
+   "normalized": "100101001010"
+  },
+  {
+   "name": "major",
+   "aliases": [
+    "ionian"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "5P",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2773,
+   "chroma": "101011010101",
+   "normalized": "101010110101"
+  },
+  {
+   "name": "minor",
+   "aliases": [
+    "aeolian"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4P",
+    "5P",
+    "6m",
+    "7m"
+   ],
+   "setNum": 2906,
+   "chroma": "101101011010",
+   "normalized": "101010110101"
+  },
+  {
+   "name": "major blues",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "3M",
+    "5P",
+    "6M"
+   ],
+   "setNum": 2964,
+   "chroma": "101110010100",
+   "normalized": "100101001011"
+  },
+  {
+   "name": "minor blues",
+   "aliases": [
+    "blues"
+   ],
+   "intervals": [
+    "1P",
+    "3m",
+    "4P",
+    "5d",
+    "5P",
+    "7m"
+   ],
+   "setNum": 2418,
+   "chroma": "100101110010",
+   "normalized": "100101001011"
+  },
+  {
+   "name": "melodic minor",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4P",
+    "5P",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2901,
+   "chroma": "101101010101",
+   "normalized": "101010101101"
+  },
+  {
+   "name": "harmonic minor",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4P",
+    "5P",
+    "6m",
+    "7M"
+   ],
+   "setNum": 2905,
+   "chroma": "101101011001",
+   "normalized": "100110110101"
+  },
+  {
+   "name": "bebop",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "5P",
+    "6M",
+    "7m",
+    "7M"
+   ],
+   "setNum": 2775,
+   "chroma": "101011010111",
+   "normalized": "101011010111"
+  },
+  {
+   "name": "diminished",
+   "aliases": [
+    "whole-half diminished"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4P",
+    "5d",
+    "6m",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2925,
+   "chroma": "101101101101",
+   "normalized": "101101101101"
+  },
+  {
+   "name": "dorian",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4P",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 2902,
+   "chroma": "101101010110",
+   "normalized": "101010110101"
+  },
+  {
+   "name": "lydian",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4A",
+    "5P",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2741,
+   "chroma": "101010110101",
+   "normalized": "101010110101"
+  },
+  {
+   "name": "mixolydian",
+   "aliases": [
+    "dominant"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 2774,
+   "chroma": "101011010110",
+   "normalized": "101010110101"
+  },
+  {
+   "name": "phrygian",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "4P",
+    "5P",
+    "6m",
+    "7m"
+   ],
+   "setNum": 3418,
+   "chroma": "110101011010",
+   "normalized": "101010110101"
+  },
+  {
+   "name": "locrian",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "4P",
+    "5d",
+    "6m",
+    "7m"
+   ],
+   "setNum": 3434,
+   "chroma": "110101101010",
+   "normalized": "101010110101"
+  },
+  {
+   "name": "ionian pentatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3M",
+    "4P",
+    "5P",
+    "7M"
+   ],
+   "setNum": 2257,
+   "chroma": "100011010001",
+   "normalized": "100011000110"
+  },
+  {
+   "name": "mixolydian pentatonic",
+   "aliases": [
+    "indian"
+   ],
+   "intervals": [
+    "1P",
+    "3M",
+    "4P",
+    "5P",
+    "7m"
+   ],
+   "setNum": 2258,
+   "chroma": "100011010010",
+   "normalized": "100011010010"
+  },
+  {
+   "name": "ritusen",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "4P",
+    "5P",
+    "6M"
+   ],
+   "setNum": 2644,
+   "chroma": "101001010100",
+   "normalized": "100101001010"
+  },
+  {
+   "name": "egyptian",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "4P",
+    "5P",
+    "7m"
+   ],
+   "setNum": 2642,
+   "chroma": "101001010010",
+   "normalized": "100101001010"
+  },
+  {
+   "name": "neopolitan major pentatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3M",
+    "4P",
+    "5d",
+    "7m"
+   ],
+   "setNum": 2274,
+   "chroma": "100011100010",
+   "normalized": "100010100011"
+  },
+  {
+   "name": "vietnamese 1",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3m",
+    "4P",
+    "5P",
+    "6m"
+   ],
+   "setNum": 2392,
+   "chroma": "100101011000",
+   "normalized": "100010010101"
+  },
+  {
+   "name": "pelog",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "5P",
+    "6m"
+   ],
+   "setNum": 3352,
+   "chroma": "110100011000",
+   "normalized": "100011000110"
+  },
+  {
+   "name": "kumoijoshi",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "4P",
+    "5P",
+    "6m"
+   ],
+   "setNum": 3160,
+   "chroma": "110001011000",
+   "normalized": "100010110001"
+  },
+  {
+   "name": "hirajoshi",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "5P",
+    "6m"
+   ],
+   "setNum": 2840,
+   "chroma": "101100011000",
+   "normalized": "100010110001"
+  },
+  {
+   "name": "iwato",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "4P",
+    "5d",
+    "7m"
+   ],
+   "setNum": 3170,
+   "chroma": "110001100010",
+   "normalized": "100010110001"
+  },
+  {
+   "name": "in-sen",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "4P",
+    "5P",
+    "7m"
+   ],
+   "setNum": 3154,
+   "chroma": "110001010010",
+   "normalized": "100010100101"
+  },
+  {
+   "name": "lydian pentatonic",
+   "aliases": [
+    "chinese"
+   ],
+   "intervals": [
+    "1P",
+    "3M",
+    "4A",
+    "5P",
+    "7M"
+   ],
+   "setNum": 2225,
+   "chroma": "100010110001",
+   "normalized": "100010110001"
+  },
+  {
+   "name": "malkos raga",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3m",
+    "4P",
+    "6m",
+    "7m"
+   ],
+   "setNum": 2378,
+   "chroma": "100101001010",
+   "normalized": "100101001010"
+  },
+  {
+   "name": "locrian pentatonic",
+   "aliases": [
+    "minor seven flat five pentatonic"
+   ],
+   "intervals": [
+    "1P",
+    "3m",
+    "4P",
+    "5d",
+    "7m"
+   ],
+   "setNum": 2402,
+   "chroma": "100101100010",
+   "normalized": "100010100101"
+  },
+  {
+   "name": "minor pentatonic",
+   "aliases": [
+    "vietnamese 2"
+   ],
+   "intervals": [
+    "1P",
+    "3m",
+    "4P",
+    "5P",
+    "7m"
+   ],
+   "setNum": 2386,
+   "chroma": "100101010010",
+   "normalized": "100101001010"
+  },
+  {
+   "name": "minor six pentatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3m",
+    "4P",
+    "5P",
+    "6M"
+   ],
+   "setNum": 2388,
+   "chroma": "100101010100",
+   "normalized": "100100101010"
+  },
+  {
+   "name": "flat three pentatonic",
+   "aliases": [
+    "kumoi"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "5P",
+    "6M"
+   ],
+   "setNum": 2836,
+   "chroma": "101100010100",
+   "normalized": "100010100101"
+  },
+  {
+   "name": "flat six pentatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "5P",
+    "6m"
+   ],
+   "setNum": 2712,
+   "chroma": "101010011000",
+   "normalized": "100010101001"
+  },
+  {
+   "name": "scriabin",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "5P",
+    "6M"
+   ],
+   "setNum": 3220,
+   "chroma": "110010010100",
+   "normalized": "100100101001"
+  },
+  {
+   "name": "whole tone pentatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3M",
+    "5d",
+    "6m",
+    "7m"
+   ],
+   "setNum": 2218,
+   "chroma": "100010101010",
+   "normalized": "100010101010"
+  },
+  {
+   "name": "lydian #5P pentatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3M",
+    "4A",
+    "5A",
+    "7M"
+   ],
+   "setNum": 2217,
+   "chroma": "100010101001",
+   "normalized": "100010101001"
+  },
+  {
+   "name": "lydian dominant pentatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3M",
+    "4A",
+    "5P",
+    "7m"
+   ],
+   "setNum": 2226,
+   "chroma": "100010110010",
+   "normalized": "100010110010"
+  },
+  {
+   "name": "minor #7M pentatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3m",
+    "4P",
+    "5P",
+    "7M"
+   ],
+   "setNum": 2385,
+   "chroma": "100101010001",
+   "normalized": "100011001010"
+  },
+  {
+   "name": "super locrian pentatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3m",
+    "4d",
+    "5d",
+    "7m"
+   ],
+   "setNum": 2466,
+   "chroma": "100110100010",
+   "normalized": "100010100110"
+  },
+  {
+   "name": "minor hexatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4P",
+    "5P",
+    "7M"
+   ],
+   "setNum": 2897,
+   "chroma": "101101010001",
+   "normalized": "100011011010"
+  },
+  {
+   "name": "augmented",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2A",
+    "3M",
+    "5P",
+    "5A",
+    "7M"
+   ],
+   "setNum": 2457,
+   "chroma": "100110011001",
+   "normalized": "100110011001"
+  },
+  {
+   "name": "piongio",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "4P",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 2646,
+   "chroma": "101001010110",
+   "normalized": "100101011010"
+  },
+  {
+   "name": "prometheus neopolitan",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "4A",
+    "6M",
+    "7m"
+   ],
+   "setNum": 3238,
+   "chroma": "110010100110",
+   "normalized": "100101001101"
+  },
+  {
+   "name": "prometheus",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4A",
+    "6M",
+    "7m"
+   ],
+   "setNum": 2726,
+   "chroma": "101010100110",
+   "normalized": "100110101010"
+  },
+  {
+   "name": "mystery #1",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "5d",
+    "6m",
+    "7m"
+   ],
+   "setNum": 3242,
+   "chroma": "110010101010",
+   "normalized": "100101010101"
+  },
+  {
+   "name": "six tone symmetric",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "4P",
+    "5A",
+    "6M"
+   ],
+   "setNum": 3276,
+   "chroma": "110011001100",
+   "normalized": "100110011001"
+  },
+  {
+   "name": "whole tone",
+   "aliases": [
+    "messiaen's mode #1"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4A",
+    "5A",
+    "6A"
+   ],
+   "setNum": 2730,
+   "chroma": "101010101010",
+   "normalized": "101010101010"
+  },
+  {
+   "name": "messiaen's mode #5",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "4P",
+    "4A",
+    "5P",
+    "7M"
+   ],
+   "setNum": 3185,
+   "chroma": "110001110001",
+   "normalized": "100011100011"
+  },
+  {
+   "name": "locrian major",
+   "aliases": [
+    "arabian"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "5d",
+    "6m",
+    "7m"
+   ],
+   "setNum": 2794,
+   "chroma": "101011101010",
+   "normalized": "101010101011"
+  },
+  {
+   "name": "double harmonic lydian",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "4A",
+    "5P",
+    "6m",
+    "7M"
+   ],
+   "setNum": 3257,
+   "chroma": "110010111001",
+   "normalized": "100101110011"
+  },
+  {
+   "name": "altered",
+   "aliases": [
+    "super locrian",
+    "diminished whole tone",
+    "pomeroy"
+   ],
+   "intervals": [
+    "1P",
+    "2m",
+    "2A",
+    "3M",
+    "4A",
+    "6m",
+    "7m"
+   ],
+   "setNum": 3498,
+   "chroma": "110110101010",
+   "normalized": "101010101101"
+  },
+  {
+   "name": "locrian #2",
+   "aliases": [
+    "half-diminished",
+    "aeolian b5"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4P",
+    "5d",
+    "6m",
+    "7m"
+   ],
+   "setNum": 2922,
+   "chroma": "101101101010",
+   "normalized": "101010101101"
+  },
+  {
+   "name": "mixolydian b6",
+   "aliases": [
+    "melodic minor fifth mode",
+    "hindu"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "5P",
+    "6m",
+    "7m"
+   ],
+   "setNum": 2778,
+   "chroma": "101011011010",
+   "normalized": "101010101101"
+  },
+  {
+   "name": "lydian dominant",
+   "aliases": [
+    "lydian b7",
+    "overtone"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4A",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 2742,
+   "chroma": "101010110110",
+   "normalized": "101010101101"
+  },
+  {
+   "name": "lydian augmented",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4A",
+    "5A",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2733,
+   "chroma": "101010101101",
+   "normalized": "101010101101"
+  },
+  {
+   "name": "dorian b2",
+   "aliases": [
+    "phrygian #6",
+    "melodic minor second mode"
+   ],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "4P",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 3414,
+   "chroma": "110101010110",
+   "normalized": "101010101101"
+  },
+  {
+   "name": "ultralocrian",
+   "aliases": [
+    "superlocrian bb7",
+    "superlocrian diminished"
+   ],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "4d",
+    "5d",
+    "6m",
+    "7d"
+   ],
+   "setNum": 3500,
+   "chroma": "110110101100",
+   "normalized": "100110110101"
+  },
+  {
+   "name": "locrian 6",
+   "aliases": [
+    "locrian natural 6",
+    "locrian sharp 6"
+   ],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "4P",
+    "5d",
+    "6M",
+    "7m"
+   ],
+   "setNum": 3430,
+   "chroma": "110101100110",
+   "normalized": "100110110101"
+  },
+  {
+   "name": "augmented heptatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2A",
+    "3M",
+    "4P",
+    "5P",
+    "5A",
+    "7M"
+   ],
+   "setNum": 2521,
+   "chroma": "100111011001",
+   "normalized": "100110011101"
+  },
+  {
+   "name": "dorian #4",
+   "aliases": [
+    "ukrainian dorian",
+    "romanian minor",
+    "altered dorian"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4A",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 2870,
+   "chroma": "101100110110",
+   "normalized": "100110110101"
+  },
+  {
+   "name": "lydian diminished",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4A",
+    "5P",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2869,
+   "chroma": "101100110101",
+   "normalized": "100110101101"
+  },
+  {
+   "name": "leading whole tone",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4A",
+    "5A",
+    "7m",
+    "7M"
+   ],
+   "setNum": 2731,
+   "chroma": "101010101011",
+   "normalized": "101010101011"
+  },
+  {
+   "name": "lydian minor",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4A",
+    "5P",
+    "6m",
+    "7m"
+   ],
+   "setNum": 2746,
+   "chroma": "101010111010",
+   "normalized": "101010101011"
+  },
+  {
+   "name": "phrygian dominant",
+   "aliases": [
+    "spanish",
+    "phrygian major"
+   ],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "4P",
+    "5P",
+    "6m",
+    "7m"
+   ],
+   "setNum": 3290,
+   "chroma": "110011011010",
+   "normalized": "100110110101"
+  },
+  {
+   "name": "balinese",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "4P",
+    "5P",
+    "6m",
+    "7M"
+   ],
+   "setNum": 3417,
+   "chroma": "110101011001",
+   "normalized": "100111010101"
+  },
+  {
+   "name": "neopolitan major",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "4P",
+    "5P",
+    "6M",
+    "7M"
+   ],
+   "setNum": 3413,
+   "chroma": "110101010101",
+   "normalized": "101010101011"
+  },
+  {
+   "name": "harmonic major",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "5P",
+    "6m",
+    "7M"
+   ],
+   "setNum": 2777,
+   "chroma": "101011011001",
+   "normalized": "100110101101"
+  },
+  {
+   "name": "double harmonic major",
+   "aliases": [
+    "gypsy"
+   ],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "4P",
+    "5P",
+    "6m",
+    "7M"
+   ],
+   "setNum": 3289,
+   "chroma": "110011011001",
+   "normalized": "100110110011"
+  },
+  {
+   "name": "hungarian minor",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4A",
+    "5P",
+    "6m",
+    "7M"
+   ],
+   "setNum": 2873,
+   "chroma": "101100111001",
+   "normalized": "100110110011"
+  },
+  {
+   "name": "hungarian major",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2A",
+    "3M",
+    "4A",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 2486,
+   "chroma": "100110110110",
+   "normalized": "100110110110"
+  },
+  {
+   "name": "oriental",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "4P",
+    "5d",
+    "6M",
+    "7m"
+   ],
+   "setNum": 3302,
+   "chroma": "110011100110",
+   "normalized": "100110110011"
+  },
+  {
+   "name": "flamenco",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "3M",
+    "4A",
+    "5P",
+    "7m"
+   ],
+   "setNum": 3506,
+   "chroma": "110110110010",
+   "normalized": "100101101101"
+  },
+  {
+   "name": "todi raga",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "4A",
+    "5P",
+    "6m",
+    "7M"
+   ],
+   "setNum": 3385,
+   "chroma": "110100111001",
+   "normalized": "100111001110"
+  },
+  {
+   "name": "persian",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "4P",
+    "5d",
+    "6m",
+    "7M"
+   ],
+   "setNum": 3305,
+   "chroma": "110011101001",
+   "normalized": "100111001110"
+  },
+  {
+   "name": "enigmatic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "5d",
+    "6m",
+    "7m",
+    "7M"
+   ],
+   "setNum": 3243,
+   "chroma": "110010101011",
+   "normalized": "100101010111"
+  },
+  {
+   "name": "major augmented",
+   "aliases": [
+    "major #5",
+    "ionian augmented",
+    "ionian #5"
+   ],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "5A",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2765,
+   "chroma": "101011001101",
+   "normalized": "100110110101"
+  },
+  {
+   "name": "lydian #9",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2A",
+    "3M",
+    "4A",
+    "5P",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2485,
+   "chroma": "100110110101",
+   "normalized": "100110110101"
+  },
+  {
+   "name": "messiaen's mode #4",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "2M",
+    "4P",
+    "4A",
+    "5P",
+    "6m",
+    "7M"
+   ],
+   "setNum": 3705,
+   "chroma": "111001111001",
+   "normalized": "100111100111"
+  },
+  {
+   "name": "purvi raga",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3M",
+    "4P",
+    "4A",
+    "5P",
+    "6m",
+    "7M"
+   ],
+   "setNum": 3321,
+   "chroma": "110011111001",
+   "normalized": "100111001111"
+  },
+  {
+   "name": "spanish heptatonic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "3M",
+    "4P",
+    "5P",
+    "6m",
+    "7m"
+   ],
+   "setNum": 3546,
+   "chroma": "110111011010",
+   "normalized": "101011011101"
+  },
+  {
+   "name": "bebop minor",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "3M",
+    "4P",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 3030,
+   "chroma": "101111010110",
+   "normalized": "101011010111"
+  },
+  {
+   "name": "bebop major",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "5P",
+    "5A",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2781,
+   "chroma": "101011011101",
+   "normalized": "101011011101"
+  },
+  {
+   "name": "bebop locrian",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "4P",
+    "5d",
+    "5P",
+    "6m",
+    "7m"
+   ],
+   "setNum": 3450,
+   "chroma": "110101111010",
+   "normalized": "101011010111"
+  },
+  {
+   "name": "minor bebop",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4P",
+    "5P",
+    "6m",
+    "7m",
+    "7M"
+   ],
+   "setNum": 2907,
+   "chroma": "101101011011",
+   "normalized": "101011011101"
+  },
+  {
+   "name": "ichikosucho",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "5d",
+    "5P",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2805,
+   "chroma": "101011110101",
+   "normalized": "101011010111"
+  },
+  {
+   "name": "minor six diminished",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "4P",
+    "5P",
+    "6m",
+    "6M",
+    "7M"
+   ],
+   "setNum": 2909,
+   "chroma": "101101011101",
+   "normalized": "101011101101"
+  },
+  {
+   "name": "half-whole diminished",
+   "aliases": [
+    "dominant diminished",
+    "messiaen's mode #2"
+   ],
+   "intervals": [
+    "1P",
+    "2m",
+    "3m",
+    "3M",
+    "4A",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 3510,
+   "chroma": "110110110110",
+   "normalized": "101101101101"
+  },
+  {
+   "name": "kafi raga",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "3m",
+    "3M",
+    "4P",
+    "5P",
+    "6M",
+    "7m",
+    "7M"
+   ],
+   "setNum": 2519,
+   "chroma": "100111010111",
+   "normalized": "100111010111"
+  },
+  {
+   "name": "messiaen's mode #6",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3M",
+    "4P",
+    "4A",
+    "5A",
+    "6A",
+    "7M"
+   ],
+   "setNum": 2795,
+   "chroma": "101011101011",
+   "normalized": "101011101011"
+  },
+  {
+   "name": "composite blues",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "3M",
+    "4P",
+    "5d",
+    "5P",
+    "6M",
+    "7m"
+   ],
+   "setNum": 3062,
+   "chroma": "101111110110",
+   "normalized": "101011111101"
+  },
+  {
+   "name": "messiaen's mode #3",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2M",
+    "3m",
+    "3M",
+    "4A",
+    "5P",
+    "6m",
+    "7m",
+    "7M"
+   ],
+   "setNum": 3003,
+   "chroma": "101110111011",
+   "normalized": "101110111011"
+  },
+  {
+   "name": "messiaen's mode #7",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "2M",
+    "3m",
+    "4P",
+    "4A",
+    "5P",
+    "6m",
+    "6M",
+    "7M"
+   ],
+   "setNum": 3965,
+   "chroma": "111101111101",
+   "normalized": "101111101111"
+  },
+  {
+   "name": "chromatic",
+   "aliases": [],
+   "intervals": [
+    "1P",
+    "2m",
+    "2M",
+    "3m",
+    "3M",
+    "4P",
+    "5d",
+    "5P",
+    "6m",
+    "6M",
+    "7m",
+    "7M"
+   ],
+   "setNum": 4095,
+   "chroma": "111111111111",
+   "normalized": "111111111111"
+  }
+ ],
+ "scaleTypeKeys": [
+  "2217",
+  "2218",
+  "2225",
+  "2226",
+  "2257",
+  "2258",
+  "2274",
+  "2378",
+  "2385",
+  "2386",
+  "2388",
+  "2392",
+  "2402",
+  "2418",
+  "2457",
+  "2466",
+  "2485",
+  "2486",
+  "2519",
+  "2521",
+  "2642",
+  "2644",
+  "2646",
+  "2708",
+  "2712",
+  "2726",
+  "2730",
+  "2731",
+  "2733",
+  "2741",
+  "2742",
+  "2746",
+  "2765",
+  "2773",
+  "2774",
+  "2775",
+  "2777",
+  "2778",
+  "2781",
+  "2794",
+  "2795",
+  "2805",
+  "2836",
+  "2840",
+  "2869",
+  "2870",
+  "2873",
+  "2897",
+  "2901",
+  "2902",
+  "2905",
+  "2906",
+  "2907",
+  "2909",
+  "2922",
+  "2925",
+  "2964",
+  "3003",
+  "3030",
+  "3062",
+  "3154",
+  "3160",
+  "3170",
+  "3185",
+  "3220",
+  "3238",
+  "3242",
+  "3243",
+  "3257",
+  "3276",
+  "3289",
+  "3290",
+  "3302",
+  "3305",
+  "3321",
+  "3352",
+  "3385",
+  "3413",
+  "3414",
+  "3417",
+  "3418",
+  "3430",
+  "3434",
+  "3450",
+  "3498",
+  "3500",
+  "3506",
+  "3510",
+  "3546",
+  "3705",
+  "3965",
+  "4095",
+  "major pentatonic",
+  "101010010100",
+  "pentatonic",
+  "major",
+  "101011010101",
+  "ionian",
+  "minor",
+  "101101011010",
+  "aeolian",
+  "major blues",
+  "101110010100",
+  "minor blues",
+  "100101110010",
+  "blues",
+  "melodic minor",
+  "101101010101",
+  "harmonic minor",
+  "101101011001",
+  "bebop",
+  "101011010111",
+  "diminished",
+  "101101101101",
+  "whole-half diminished",
+  "dorian",
+  "101101010110",
+  "lydian",
+  "101010110101",
+  "mixolydian",
+  "101011010110",
+  "dominant",
+  "phrygian",
+  "110101011010",
+  "locrian",
+  "110101101010",
+  "ionian pentatonic",
+  "100011010001",
+  "mixolydian pentatonic",
+  "100011010010",
+  "indian",
+  "ritusen",
+  "101001010100",
+  "egyptian",
+  "101001010010",
+  "neopolitan major pentatonic",
+  "100011100010",
+  "vietnamese 1",
+  "100101011000",
+  "pelog",
+  "110100011000",
+  "kumoijoshi",
+  "110001011000",
+  "hirajoshi",
+  "101100011000",
+  "iwato",
+  "110001100010",
+  "in-sen",
+  "110001010010",
+  "lydian pentatonic",
+  "100010110001",
+  "chinese",
+  "malkos raga",
+  "100101001010",
+  "locrian pentatonic",
+  "100101100010",
+  "minor seven flat five pentatonic",
+  "minor pentatonic",
+  "100101010010",
+  "vietnamese 2",
+  "minor six pentatonic",
+  "100101010100",
+  "flat three pentatonic",
+  "101100010100",
+  "kumoi",
+  "flat six pentatonic",
+  "101010011000",
+  "scriabin",
+  "110010010100",
+  "whole tone pentatonic",
+  "100010101010",
+  "lydian #5P pentatonic",
+  "100010101001",
+  "lydian dominant pentatonic",
+  "100010110010",
+  "minor #7M pentatonic",
+  "100101010001",
+  "super locrian pentatonic",
+  "100110100010",
+  "minor hexatonic",
+  "101101010001",
+  "augmented",
+  "100110011001",
+  "piongio",
+  "101001010110",
+  "prometheus neopolitan",
+  "110010100110",
+  "prometheus",
+  "101010100110",
+  "mystery #1",
+  "110010101010",
+  "six tone symmetric",
+  "110011001100",
+  "whole tone",
+  "101010101010",
+  "messiaen's mode #1",
+  "messiaen's mode #5",
+  "110001110001",
+  "locrian major",
+  "101011101010",
+  "arabian",
+  "double harmonic lydian",
+  "110010111001",
+  "altered",
+  "110110101010",
+  "super locrian",
+  "diminished whole tone",
+  "pomeroy",
+  "locrian #2",
+  "101101101010",
+  "half-diminished",
+  "aeolian b5",
+  "mixolydian b6",
+  "101011011010",
+  "melodic minor fifth mode",
+  "hindu",
+  "lydian dominant",
+  "101010110110",
+  "lydian b7",
+  "overtone",
+  "lydian augmented",
+  "101010101101",
+  "dorian b2",
+  "110101010110",
+  "phrygian #6",
+  "melodic minor second mode",
+  "ultralocrian",
+  "110110101100",
+  "superlocrian bb7",
+  "superlocrian diminished",
+  "locrian 6",
+  "110101100110",
+  "locrian natural 6",
+  "locrian sharp 6",
+  "augmented heptatonic",
+  "100111011001",
+  "dorian #4",
+  "101100110110",
+  "ukrainian dorian",
+  "romanian minor",
+  "altered dorian",
+  "lydian diminished",
+  "101100110101",
+  "leading whole tone",
+  "101010101011",
+  "lydian minor",
+  "101010111010",
+  "phrygian dominant",
+  "110011011010",
+  "spanish",
+  "phrygian major",
+  "balinese",
+  "110101011001",
+  "neopolitan major",
+  "110101010101",
+  "harmonic major",
+  "101011011001",
+  "double harmonic major",
+  "110011011001",
+  "gypsy",
+  "hungarian minor",
+  "101100111001",
+  "hungarian major",
+  "100110110110",
+  "oriental",
+  "110011100110",
+  "flamenco",
+  "110110110010",
+  "todi raga",
+  "110100111001",
+  "persian",
+  "110011101001",
+  "enigmatic",
+  "110010101011",
+  "major augmented",
+  "101011001101",
+  "major #5",
+  "ionian augmented",
+  "ionian #5",
+  "lydian #9",
+  "100110110101",
+  "messiaen's mode #4",
+  "111001111001",
+  "purvi raga",
+  "110011111001",
+  "spanish heptatonic",
+  "110111011010",
+  "bebop minor",
+  "101111010110",
+  "bebop major",
+  "101011011101",
+  "bebop locrian",
+  "110101111010",
+  "minor bebop",
+  "101101011011",
+  "ichikosucho",
+  "101011110101",
+  "minor six diminished",
+  "101101011101",
+  "half-whole diminished",
+  "110110110110",
+  "dominant diminished",
+  "messiaen's mode #2",
+  "kafi raga",
+  "100111010111",
+  "messiaen's mode #6",
+  "101011101011",
+  "composite blues",
+  "101111110110",
+  "messiaen's mode #3",
+  "101110111011",
+  "messiaen's mode #7",
+  "111101111101",
+  "chromatic",
+  "111111111111"
+ ],
+ "registry": {
+  "lefthand": {
+   "symbols": [
+    "7",
+    "69",
+    "m7",
+    "^7",
+    "m7b5",
+    "7b9",
+    "7b13",
+    "o7",
+    "7#11",
+    "7#9",
+    "mM7",
+    "m6"
+   ],
+   "range": [
+    "F3",
+    "A4"
+   ],
+   "mode": "below",
+   "anchor": "a4"
+  },
+  "triads": {
+   "symbols": [
+    "",
+    "M",
+    "m",
+    "o",
+    "aug"
+   ],
+   "range": null,
+   "mode": "below",
+   "anchor": "a4"
+  },
+  "guidetones": {
+   "symbols": [
+    "6",
+    "7",
+    "69",
+    "m7",
+    "m9",
+    "^7",
+    "^9",
+    "m7b5",
+    "7b9",
+    "7b13",
+    "o7",
+    "7#11",
+    "7#9",
+    "mM7",
+    "m6"
+   ],
+   "range": null,
+   "mode": "above",
+   "anchor": "a4"
+  },
+  "legacy": {
+   "symbols": [
+    "7",
+    "69",
+    "",
+    "M",
+    "m",
+    "o",
+    "aug",
+    "m7",
+    "^7",
+    "m7b5",
+    "7b9",
+    "7b13",
+    "o7",
+    "7#11",
+    "7#9",
+    "mM7",
+    "m6"
+   ],
+   "range": null,
+   "mode": "below",
+   "anchor": "a4"
+  },
+  "ireal": {
+   "symbols": [
+    "2",
+    "5",
+    "6",
+    "7",
+    "9",
+    "11",
+    "13",
+    "69",
+    "add9",
+    "+",
+    "o",
+    "h",
+    "sus",
+    "^",
+    "-",
+    "^7",
+    "-7",
+    "7sus",
+    "h7",
+    "o7",
+    "^9",
+    "^13",
+    "^7#11",
+    "^9#11",
+    "^7#5",
+    "-6",
+    "-69",
+    "-^7",
+    "-^9",
+    "-9",
+    "-add9",
+    "-11",
+    "-7b5",
+    "h9",
+    "-b6",
+    "-#5",
+    "7b9",
+    "7#9",
+    "7#11",
+    "7b5",
+    "7#5",
+    "9#11",
+    "9b5",
+    "9#5",
+    "7b13",
+    "7#9#5",
+    "7#9b5",
+    "7#9#11",
+    "7b9#11",
+    "7b9b5",
+    "7b9#5",
+    "7b9#9",
+    "7b9b13",
+    "7alt",
+    "13#11",
+    "13b9",
+    "13#9",
+    "7b9sus",
+    "7susadd3",
+    "9sus",
+    "13sus",
+    "7b13sus",
+    "",
+    "aug",
+    "M",
+    "m",
+    "M7",
+    "m7",
+    "M9",
+    "M13",
+    "M7#11",
+    "M9#11",
+    "M7#5",
+    "m6",
+    "m69",
+    "m^7",
+    "-M7",
+    "m^9",
+    "-M9",
+    "m9",
+    "madd9",
+    "m11",
+    "m7b5",
+    "mb6",
+    "m#5"
+   ],
+   "range": null,
+   "mode": null,
+   "anchor": null
+  },
+  "ireal-ext": {
+   "symbols": [
+    "2",
+    "5",
+    "6",
+    "7",
+    "9",
+    "11",
+    "13",
+    "69",
+    "add9",
+    "+",
+    "o",
+    "h",
+    "sus",
+    "^",
+    "-",
+    "^7",
+    "-7",
+    "7sus",
+    "h7",
+    "o7",
+    "^9",
+    "^13",
+    "^7#11",
+    "^9#11",
+    "^7#5",
+    "-6",
+    "-69",
+    "-^7",
+    "-^9",
+    "-9",
+    "-add9",
+    "-11",
+    "-7b5",
+    "h9",
+    "-b6",
+    "-#5",
+    "7b9",
+    "7#9",
+    "7#11",
+    "7b5",
+    "7#5",
+    "9#11",
+    "9b5",
+    "9#5",
+    "7b13",
+    "7#9#5",
+    "7#9b5",
+    "7#9#11",
+    "7b9#11",
+    "7b9b5",
+    "7b9#5",
+    "7b9#9",
+    "7b9b13",
+    "7alt",
+    "13#11",
+    "13b9",
+    "13#9",
+    "7b9sus",
+    "7susadd3",
+    "9sus",
+    "13sus",
+    "7b13sus",
+    "",
+    "aug",
+    "M",
+    "m",
+    "M7",
+    "m7",
+    "M9",
+    "M13",
+    "M7#11",
+    "M9#11",
+    "M7#5",
+    "m6",
+    "m69",
+    "m^7",
+    "-M7",
+    "m^9",
+    "-M9",
+    "m9",
+    "madd9",
+    "m11",
+    "m7b5",
+    "mb6",
+    "m#5"
+   ],
+   "range": null,
+   "mode": null,
+   "anchor": null
+  }
+ },
+ "iRealAliased": {
+  "simple": {
+   "2": [
+    "1P 5P 8P 9M",
+    "1P 5P 8P 9M 12P",
+    "5P 8P 9M 12P"
+   ],
+   "5": [
+    "1P 5P 8P 12P",
+    "5P 8P 12P 15P"
+   ],
+   "6": [
+    "1P 5P 6M 8P 10M",
+    "1P 5P 8P 10M 13M",
+    "3M 5P 8P 10M 13M",
+    "5P 8P 10M 12P 13M"
+   ],
+   "7": [
+    "1P 5P 7m 8P 10M",
+    "1P 7m 8P 10M 12P",
+    "3M 7m 8P 10M 12P",
+    "3M 7m 8P 10M 14m",
+    "3M 7m 10M 12P 15P",
+    "7m 10M 12P 14m 15P",
+    "7m 10M 12P 15P 17M"
+   ],
+   "9": [
+    "1P 5P 7m 9M 10M",
+    "1P 7m 9M 10M 12P",
+    "3M 7m 8P 9M 12P",
+    "7m 9M 10M 14m 15P",
+    "3M 7m 8P 12P 16M",
+    "7m 10M 12P 15P 16M"
+   ],
+   "11": [
+    "1P 5P 7m 9M 11P",
+    "5P 7m 8P 9M 11P",
+    "7m 8P 9M 11P 12P",
+    "7m 8P 11P 12P 16M"
+   ],
+   "13": [
+    "1P 6M 7m 9M 10M",
+    "1P 7m 9M 10M 13M",
+    "3M 7m 8P 9M 13M",
+    "7m 8P 9M 10M 13M",
+    "7m 9M 10M 13M 15P"
+   ],
+   "69": [
+    "1P 5P 6M 9M 10M",
+    "1P 5P 9M 10M 13M",
+    "3M 5P 8P 9M 13M",
+    "5P 8P 9M 10M 13M"
+   ],
+   "add9": [
+    "1P 5P 8P 9M 10M",
+    "1P 5P 9M 10M 12P",
+    "3M 8P 9M 10M 12P",
+    "3M 8P 9M 12P 15P",
+    "5P 8P 9M 12P 17M"
+   ],
+   "+": [
+    "1P 3M 6m 8P 10M",
+    "1P 6m 8P 10M 13m",
+    "3M 6m 8P 10M 13m",
+    "3M 8P 10M 13m 15P",
+    "6m 8P 10M 13m 15P",
+    "6m 10M 13m 15P 17M"
+   ],
+   "o": [
+    "1P 5d 8P 10m 12d",
+    "3m 8P 10m 12d 15P",
+    "5d 8P 10m 12d 15P"
+   ],
+   "h": [
+    "3m 5d 7m 8P 10m",
+    "1P 5d 7m 10m 12d",
+    "3m 7m 8P 10m 12d",
+    "3m 7m 8P 12d 14m",
+    "5d 7m 8P 10m 14m",
+    "5d 8P 10m 12d 14m",
+    "7m 10m 12d 14m 15P",
+    "5d 8P 10m 14m 17m"
+   ],
+   "sus": [
+    "1P 4P 5P 8P",
+    "1P 4P 5P 8P 11P",
+    "5P 8P 11P 12P",
+    "5P 8P 11P 12P 15P"
+   ],
+   "^": [
+    "1P 5P 8P 10M",
+    "1P 5P 8P 10M 12P",
+    "3M 5P 8P 10M 12P",
+    "3M 8P 10M 12P 15P",
+    "5P 8P 10M 12P 15P"
+   ],
+   "-": [
+    "1P 3m 5P 8P 10m",
+    "1P 5P 8P 10m 12P",
+    "3m 5P 8P 10m 12P",
+    "5P 8P 10m 12P 15P"
+   ],
+   "^7": [
+    "1P 5P 7M 10M 12P",
+    "1P 10M 12P 14M",
+    "3M 8P 10M 12P 14M",
+    "5P 8P 10M 12P 14M",
+    "5P 8P 10M 14M 17M"
+   ],
+   "-7": [
+    "1P 3m 5P 7m 10m",
+    "1P 5P 7m 10m 12P",
+    "3m 7m 8P 10m 12P",
+    "3m 7m 8P 10m 14m",
+    "5P 7m 8P 10m 14m",
+    "7m 10m 12P 14m 15P",
+    "5P 8P 10m 14m 17m",
+    "7m 10m 12P 15P 17m"
+   ],
+   "7sus": [
+    "1P 5P 7m 8P 11P",
+    "5P 8P 11P 12P 14m",
+    "7m 8P 11P 12P 14m",
+    "7m 11P 12P 14m 18P"
+   ],
+   "h7": [
+    "3m 5d 7m 8P 10m",
+    "1P 5d 7m 10m 12d",
+    "1P 7m 10m 12d",
+    "3m 7m 8P 10m 12d",
+    "3m 7m 8P 12d 14m",
+    "5d 7m 8P 10m 14m",
+    "5d 8P 10m 12d 14m",
+    "7m 10m 12d 14m 15P",
+    "5d 8P 10m 14m 17m"
+   ],
+   "o7": [
+    "1P 6M 8P 10m 12d",
+    "1P 6M 10m 12d 13M",
+    "3m 8P 10m 12d 13M",
+    "3m 8P 12d 13M 15P",
+    "5d 10m 12d 13M 15P",
+    "5d 10m 13M 15P 17m",
+    "6M 12d 13M 15P 17m",
+    "6M 12d 15P 17m 19d"
+   ],
+   "^9": [
+    "1P 5P 7M 9M 10M",
+    "1P 7M 9M 10M 12P",
+    "3M 7M 8P 9M 12P",
+    "3M 7M 8P 12P 16M",
+    "5P 8P 10M 14M 16M",
+    "7M 8P 10M 12P 16M"
+   ],
+   "^13": [
+    "1P 6M 7M 9M 10M",
+    "1P 7M 9M 10M 13M",
+    "3M 7M 8P 9M 13M",
+    "3M 7M 8P 13M 16M",
+    "7M 8P 10M 13M 16M"
+   ],
+   "^7#11": [
+    "1P 5P 7M 10M 12d",
+    "3M 7M 8P 10M 12d",
+    "1P 7M 10M 12d 14M",
+    "3M 7M 8P 12d 14M",
+    "5P 8P 10M 12d 14M"
+   ],
+   "^9#11": [
+    "1P 3M 5d 7M 9M",
+    "1P 7M 9M 10M 12d",
+    "3M 7M 8P 9M 12d",
+    "3M 8P 9M 12d 14M"
+   ],
+   "^7#5": [
+    "1P 6m 7M 10M 13m",
+    "3M 7M 8P 10M 13m",
+    "6m 7M 8P 10M 13m"
+   ],
+   "-6": [
+    "1P 3m 5P 6M 8P",
+    "1P 5P 6M 8P 10m",
+    "3m 5P 6M 8P 10m",
+    "1P 5P 8P 10m 13M",
+    "3m 5P 8P 10m 13M",
+    "5P 8P 10m 12P 13M",
+    "5P 8P 10m 13M 15P"
+   ],
+   "-69": [
+    "1P 3m 5P 6M 9M",
+    "3m 5P 6M 8P 9M",
+    "3m 6M 9M 10m 12P",
+    "1P 5P 9M 10m 13M",
+    "3m 5P 8P 9M 13M",
+    "5P 8P 9M 10m 13M",
+    "5P 8P 10m 13M 16M"
+   ],
+   "-^7": [
+    "1P 3m 5P 7M 10m",
+    "1P 5P 7M 10m 12P",
+    "3m 7M 8P 10m 12P",
+    "5P 7M 8P 10m 14M",
+    "5P 8P 10m 14M 17m"
+   ],
+   "-^9": [
+    "1P 3m 5P 7M 9M",
+    "1P 7M 9M 10m 12P",
+    "3m 7M 8P 9M 12P",
+    "5P 8P 9M 10m 14M"
+   ],
+   "-9": [
+    "1P 3m 5P 7m 9M",
+    "3m 5P 7m 8P 9M",
+    "3m 7m 8P 9M 12P",
+    "5P 8P 9M 10m 14m",
+    "3m 7m 9M 12P 15P",
+    "7m 10m 12P 15P 16M"
+   ],
+   "-add9": [
+    "1P 2M 3m 5P 8P",
+    "1P 3m 5P 9M",
+    "3m 5P 8P 9M 12P",
+    "5P 8P 9M 10m 12P"
+   ],
+   "-11": [
+    "1P 3m 7m 9M 11P",
+    "3m 7m 8P 9M 11P",
+    "1P 4P 7m 10m 12P",
+    "5P 8P 11P 14m",
+    "3m 7m 9M 11P 15P",
+    "5P 8P 11P 14m 16M",
+    "7m 10m 12P 15P 18P"
+   ],
+   "-7b5": [
+    "3m 5d 7m 8P 10m",
+    "1P 7m 10m 12d",
+    "1P 5d 7m 10m 12d",
+    "3m 7m 8P 10m 12d",
+    "3m 7m 8P 12d 14m",
+    "5d 7m 8P 10m 14m",
+    "5d 8P 10m 12d 14m",
+    "7m 10m 12d 14m 15P",
+    "5d 8P 10m 14m 17m"
+   ],
+   "h9": [
+    "1P 7m 9M 10m 12d",
+    "3m 7m 8P 9M 12d",
+    "5d 8P 9M 10m 14m",
+    "7m 10m 12d 15P 16M"
+   ],
+   "-b6": [
+    "1P 5P 6m 8P 10m",
+    "1P 5P 8P 10m 13m",
+    "3m 5P 8P 10m 13m",
+    "5P 8P 10m 13m",
+    "5P 8P 10m 13m 15P"
+   ],
+   "-#5": [
+    "1P 6m 8P 10m 13m",
+    "3m 6m 8P 10m 13m",
+    "6m 8P 10m 13m 15P"
+   ],
+   "7b9": [
+    "1P 3M 7m 9m 10M",
+    "3M 7m 8P 9m 10M",
+    "3M 7m 8P 9m 14m",
+    "7m 9m 10M 14m 15P"
+   ],
+   "7#9": [
+    "1P 3M 7m 10m",
+    "3M 7m 8P 10m 14m",
+    "7m 10m 10M 14m 15P"
+   ],
+   "7#11": [
+    "1P 3M 7m 10M 12d",
+    "3M 7m 8P 10M 12d",
+    "7m 10M 12d 14m 15P"
+   ],
+   "7b5": [
+    "1P 3M 7m 10M 12d",
+    "3M 7m 8P 10M 12d",
+    "7m 10M 12d 14m 15P"
+   ],
+   "7#5": [
+    "1P 3M 7m 10M 13m",
+    "3M 7m 8P 10M 13m",
+    "3M 7m 8P 13m 14m",
+    "7m 10M 13m 14m 15P"
+   ],
+   "9#11": [
+    "1P 7m 9M 10M 12d",
+    "3M 7m 8P 9M 12d",
+    "7m 10M 12d 15P 16M"
+   ],
+   "9b5": [
+    "1P 7m 9M 10M 12d",
+    "3M 7m 8P 9M 12d",
+    "7m 10M 12d 15P 16M"
+   ],
+   "9#5": [
+    "1P 7m 9M 10M 13m",
+    "3M 7m 9M 10M 13m",
+    "3M 7m 9M 13m 14m",
+    "7m 10M 13m 14m 16M",
+    "7m 10M 13m 16M 17M"
+   ],
+   "7b13": [
+    "1P 3M 7m 10M 13m",
+    "3M 7m 8P 10M 13m",
+    "3M 7m 8P 13m 14m",
+    "7m 10M 13m 14m 15P"
+   ],
+   "7#9#5": [
+    "1P 3M 7m 10m 13m",
+    "3M 7m 10m 13m 15P",
+    "7m 10M 13m 15P 17m"
+   ],
+   "7#9b5": [
+    "1P 3M 7m 10m 12d",
+    "3M 7m 10m 12d 15P",
+    "7m 10M 12d 15P 17m"
+   ],
+   "7#9#11": [
+    "1P 3M 7m 10m 12d",
+    "3M 7m 10m 12d 15P",
+    "7m 10M 12d 15P 17m"
+   ],
+   "7b9#11": [
+    "1P 7m 9m 10M 12d",
+    "3M 7m 8P 9m 12d",
+    "7m 8P 10M 12d 16m"
+   ],
+   "7b9b5": [
+    "1P 7m 9m 10M 12d",
+    "3M 7m 8P 9m 12d",
+    "7m 8P 10M 12d 16m"
+   ],
+   "7b9#5": [
+    "1P 7m 9m 10M 13m",
+    "3M 7m 8P 9m 13m",
+    "7m 9m 10M 13m 15P"
+   ],
+   "7b9#9": [
+    "1P 3M 7m 9m 10m",
+    "3M 7m 8P 9m 10m",
+    "7m 8P 10M 16m 17m"
+   ],
+   "7b9b13": [
+    "1P 7m 9m 10M 13m",
+    "3M 7m 8P 9m 13m",
+    "7m 9m 10M 13m 15P"
+   ],
+   "7alt": [
+    "3M 7m 8P 9m 12d",
+    "1P 7m 10m 10M 13m",
+    "3M 7m 8P 10m 13m",
+    "3M 7m 9m 12d 15P",
+    "3M 7m 10m 13m 15P",
+    "7m 10M 12d 15P 17m",
+    "7m 10M 13m 15P 17m"
+   ],
+   "13#11": [
+    "1P 6M 7m 10M 12d",
+    "3M 7m 9M 12d 13M",
+    "7m 10M 12d 13M 16M"
+   ],
+   "13b9": [
+    "1P 3M 6M 7m 9m",
+    "1P 6M 7m 9m 10M",
+    "3M 7m 9m 10M 13M",
+    "3M 7m 10M 13M 16m",
+    "7m 10M 13M 16m 17M"
+   ],
+   "13#9": [
+    "1P 3M 6M 7m 10m",
+    "3M 7m 8P 10m 13M",
+    "7m 10M 13M 14m 17m"
+   ],
+   "7b9sus": [
+    "1P 5P 7m 9m 11P",
+    "5P 7m 8P 9m 11P",
+    "7m 8P 11P 14m 16m"
+   ],
+   "7susadd3": [
+    "1P 4P 5P 7m 10M",
+    "5P 8P 10M 11P 14m",
+    "7m 11P 12P 15P 17M"
+   ],
+   "9sus": [
+    "1P 5P 7m 9M 11P",
+    "5P 7m 8P 9M 11P",
+    "7m 8P 9M 11P 12P",
+    "7m 8P 11P 12P 16M"
+   ],
+   "13sus": [
+    "1P 4P 6M 7m 9M",
+    "1P 7m 9M 11P 13M",
+    "5P 7m 9M 11P 13M",
+    "7m 9M 11P 13M 15P"
+   ],
+   "7b13sus": [
+    "1P 5P 7m 11P 13m",
+    "5P 7m 8P 11P 13m",
+    "7m 11P 13m 14m 15P"
+   ],
+   "": [
+    "1P 5P 8P 10M",
+    "1P 5P 8P 10M 12P",
+    "3M 5P 8P 10M 12P",
+    "3M 8P 10M 12P 15P",
+    "5P 8P 10M 12P 15P"
+   ],
+   "aug": [
+    "1P 3M 6m 8P 10M",
+    "1P 6m 8P 10M 13m",
+    "3M 6m 8P 10M 13m",
+    "3M 8P 10M 13m 15P",
+    "6m 8P 10M 13m 15P",
+    "6m 10M 13m 15P 17M"
+   ],
+   "M": [
+    "1P 5P 8P 10M",
+    "1P 5P 8P 10M 12P",
+    "3M 5P 8P 10M 12P",
+    "3M 8P 10M 12P 15P",
+    "5P 8P 10M 12P 15P"
+   ],
+   "m": [
+    "1P 3m 5P 8P 10m",
+    "1P 5P 8P 10m 12P",
+    "3m 5P 8P 10m 12P",
+    "5P 8P 10m 12P 15P"
+   ],
+   "M7": [
+    "1P 5P 7M 10M 12P",
+    "1P 10M 12P 14M",
+    "3M 8P 10M 12P 14M",
+    "5P 8P 10M 12P 14M",
+    "5P 8P 10M 14M 17M"
+   ],
+   "m7": [
+    "1P 3m 5P 7m 10m",
+    "1P 5P 7m 10m 12P",
+    "3m 7m 8P 10m 12P",
+    "3m 7m 8P 10m 14m",
+    "5P 7m 8P 10m 14m",
+    "7m 10m 12P 14m 15P",
+    "5P 8P 10m 14m 17m",
+    "7m 10m 12P 15P 17m"
+   ],
+   "M9": [
+    "1P 5P 7M 9M 10M",
+    "1P 7M 9M 10M 12P",
+    "3M 7M 8P 9M 12P",
+    "3M 7M 8P 12P 16M",
+    "5P 8P 10M 14M 16M",
+    "7M 8P 10M 12P 16M"
+   ],
+   "M13": [
+    "1P 6M 7M 9M 10M",
+    "1P 7M 9M 10M 13M",
+    "3M 7M 8P 9M 13M",
+    "3M 7M 8P 13M 16M",
+    "7M 8P 10M 13M 16M"
+   ],
+   "M7#11": [
+    "1P 5P 7M 10M 12d",
+    "3M 7M 8P 10M 12d",
+    "1P 7M 10M 12d 14M",
+    "3M 7M 8P 12d 14M",
+    "5P 8P 10M 12d 14M"
+   ],
+   "M9#11": [
+    "1P 3M 5d 7M 9M",
+    "1P 7M 9M 10M 12d",
+    "3M 7M 8P 9M 12d",
+    "3M 8P 9M 12d 14M"
+   ],
+   "M7#5": [
+    "1P 6m 7M 10M 13m",
+    "3M 7M 8P 10M 13m",
+    "6m 7M 8P 10M 13m"
+   ],
+   "m6": [
+    "1P 3m 5P 6M 8P",
+    "1P 5P 6M 8P 10m",
+    "3m 5P 6M 8P 10m",
+    "1P 5P 8P 10m 13M",
+    "3m 5P 8P 10m 13M",
+    "5P 8P 10m 12P 13M",
+    "5P 8P 10m 13M 15P"
+   ],
+   "m69": [
+    "1P 3m 5P 6M 9M",
+    "3m 5P 6M 8P 9M",
+    "3m 6M 9M 10m 12P",
+    "1P 5P 9M 10m 13M",
+    "3m 5P 8P 9M 13M",
+    "5P 8P 9M 10m 13M",
+    "5P 8P 10m 13M 16M"
+   ],
+   "m^7": [
+    "1P 3m 5P 7M 10m",
+    "1P 5P 7M 10m 12P",
+    "3m 7M 8P 10m 12P",
+    "5P 7M 8P 10m 14M",
+    "5P 8P 10m 14M 17m"
+   ],
+   "-M7": [
+    "1P 3m 5P 7M 10m",
+    "1P 5P 7M 10m 12P",
+    "3m 7M 8P 10m 12P",
+    "5P 7M 8P 10m 14M",
+    "5P 8P 10m 14M 17m"
+   ],
+   "m^9": [
+    "1P 3m 5P 7M 9M",
+    "1P 7M 9M 10m 12P",
+    "3m 7M 8P 9M 12P",
+    "5P 8P 9M 10m 14M"
+   ],
+   "-M9": [
+    "1P 3m 5P 7M 9M",
+    "1P 7M 9M 10m 12P",
+    "3m 7M 8P 9M 12P",
+    "5P 8P 9M 10m 14M"
+   ],
+   "m9": [
+    "1P 3m 5P 7m 9M",
+    "3m 5P 7m 8P 9M",
+    "3m 7m 8P 9M 12P",
+    "5P 8P 9M 10m 14m",
+    "3m 7m 9M 12P 15P",
+    "7m 10m 12P 15P 16M"
+   ],
+   "madd9": [
+    "1P 2M 3m 5P 8P",
+    "1P 3m 5P 9M",
+    "3m 5P 8P 9M 12P",
+    "5P 8P 9M 10m 12P"
+   ],
+   "m11": [
+    "1P 3m 7m 9M 11P",
+    "3m 7m 8P 9M 11P",
+    "1P 4P 7m 10m 12P",
+    "5P 8P 11P 14m",
+    "3m 7m 9M 11P 15P",
+    "5P 8P 11P 14m 16M",
+    "7m 10m 12P 15P 18P"
+   ],
+   "m7b5": [
+    "3m 5d 7m 8P 10m",
+    "1P 7m 10m 12d",
+    "1P 5d 7m 10m 12d",
+    "3m 7m 8P 10m 12d",
+    "3m 7m 8P 12d 14m",
+    "5d 7m 8P 10m 14m",
+    "5d 8P 10m 12d 14m",
+    "7m 10m 12d 14m 15P",
+    "5d 8P 10m 14m 17m"
+   ],
+   "mb6": [
+    "1P 5P 6m 8P 10m",
+    "1P 5P 8P 10m 13m",
+    "3m 5P 8P 10m 13m",
+    "5P 8P 10m 13m",
+    "5P 8P 10m 13m 15P"
+   ],
+   "m#5": [
+    "1P 6m 8P 10m 13m",
+    "3m 6m 8P 10m 13m",
+    "6m 8P 10m 13m 15P"
+   ]
+  },
+  "complex": {
+   "2": [
+    "1P 5P 6M 8P 9M",
+    "1P 5P 8P 9M 12P",
+    "5P 8P 9M 12P 13M",
+    "5P 8P 9M 12P 15P"
+   ],
+   "5": [
+    "1P 5P 8P 12P",
+    "1P 5P 8P 9M 12P",
+    "5P 8P 12P 15P",
+    "5P 8P 12P 15P 16M"
+   ],
+   "6": [
+    "1P 5P 6M 9M 10M",
+    "1P 5P 9M 10M 13M",
+    "3M 5P 9M 10M 13M",
+    "5P 8P 9M 10M 13M",
+    "3M 6M 9M 12P 15P"
+   ],
+   "7": [
+    "1P 5P 7m 8P 10M",
+    "1P 7m 8P 10M 12P",
+    "3M 7m 8P 10M 12P",
+    "3M 7m 8P 10M 14m",
+    "3M 7m 10M 12P 15P",
+    "7m 10M 12P 14m 15P",
+    "7m 10M 12P 15P 17M",
+    "7m 10M 14m 17M 19P"
+   ],
+   "9": [
+    "1P 6M 7m 9M 10M",
+    "3M 7m 9M 10M 12P",
+    "1P 7m 9M 10M 13M",
+    "3M 7m 9M 10M 13M",
+    "3M 7m 9M 12P 15P",
+    "7m 10M 12P 13M 16M",
+    "7m 10M 13M 16M 17M",
+    "7m 10M 13M 16M 19P"
+   ],
+   "11": [
+    "1P 4P 6M 7m 9M",
+    "1P 5P 7m 9M 11P",
+    "4P 6M 7m 9M 11P",
+    "5P 8P 9M 11P 14m",
+    "7m 9M 11P 13M 15P",
+    "7m 11P 12P 14m 18P"
+   ],
+   "13": [
+    "3M 7m 9M 10M 13M",
+    "3M 7m 9M 13M 15P",
+    "3M 7m 10M 13M 16M",
+    "7m 10M 12P 13M 16M",
+    "7m 10M 13M 16M 17M",
+    "7m 10M 13M 16M 19P"
+   ],
+   "69": [
+    "1P 5P 6M 9M 10M",
+    "1P 5P 9M 10M 13M",
+    "3M 5P 9M 10M 13M",
+    "5P 8P 9M 10M 13M",
+    "3M 6M 9M 12P 15P"
+   ],
+   "add9": [
+    "1P 5P 8P 9M 10M",
+    "1P 5P 9M 10M 12P",
+    "3M 8P 9M 10M 12P",
+    "3M 8P 9M 12P 15P",
+    "5P 8P 9M 10M 15P",
+    "5P 8P 9M 12P 17M"
+   ],
+   "+": [
+    "1P 6m 8P 9M 10M",
+    "1P 6m 8P 10M 13m",
+    "3M 8P 9M 10M 13m",
+    "3M 8P 10M 13m 15P",
+    "6m 10M 13m 15P 16M",
+    "6m 10M 13m 15P 17M"
+   ],
+   "o": [
+    "1P 6M 8P 10m 12d",
+    "1P 6M 10m 12d 13M",
+    "3m 8P 10m 12d 13M",
+    "3m 8P 12d 13M 15P",
+    "5d 10m 12d 13M 15P",
+    "5d 10m 13M 15P 17m",
+    "6M 12d 13M 15P 17m",
+    "6M 12d 15P 17m 19d"
+   ],
+   "h": [
+    "1P 5d 7m 10m 11P",
+    "3m 5d 7m 8P 11P",
+    "5d 7m 8P 10m 11P",
+    "1P 7m 10m 12d",
+    "3m 7m 8P 12d 14m",
+    "5d 8P 10m 11P 14m",
+    "7m 10m 11P 12d 14m",
+    "7m 10m 12d 14m 15P",
+    "5d 8P 10m 14m 17m"
+   ],
+   "sus": [
+    "1P 4P 5P 8P 9M",
+    "1P 4P 5P 8P 11P",
+    "1P 5P 8P 9M 11P",
+    "5P 8P 9M 11P 12P",
+    "5P 8P 11P 12P 13M",
+    "5P 8P 11P 13M 15P"
+   ],
+   "^": [
+    "1P 3M 5P 6M 9M",
+    "1P 5P 8P 10M 12P",
+    "3M 5P 9M 10M 12P",
+    "1P 5P 8P 10M 13M",
+    "3M 8P 10M 13M 15P",
+    "5P 9M 10M 12P 15P"
+   ],
+   "-": [
+    "1P 3m 5P 8P 10m",
+    "1P 3m 5P 9M 11P",
+    "3m 5P 8P 9M 11P",
+    "5P 8P 9M 10m 11P",
+    "1P 5P 9M 10m 12P",
+    "3m 5P 8P 10m 12P",
+    "5P 8P 10m 12P 15P"
+   ],
+   "^7": [
+    "1P 6M 7M 9M 10M",
+    "3M 7M 9M 10M 12P",
+    "1P 7M 9M 10M 13M",
+    "3M 7M 9M 10M 13M",
+    "3M 7M 9M 12P 13M",
+    "3M 7M 9M 13M 14M",
+    "3M 7M 10M 13M 16M",
+    "7M 10M 13M 14M 16M",
+    "7M 10M 13M 16M 17M",
+    "7M 10M 13M 16M 19P"
+   ],
+   "-7": [
+    "1P 3m 5P 7m 9M",
+    "1P 3m 5P 7m 10m",
+    "1P 5P 7m 10m 11P",
+    "3m 7m 8P 10m 11P",
+    "1P 5P 7m 10m 12P",
+    "3m 7m 9M 10m 12P",
+    "3m 7m 8P 10m 14m",
+    "5P 7m 9M 10m 14m",
+    "7m 10m 11P 14m 15P",
+    "7m 10m 12P 15P 16M",
+    "5P 8P 11P 14m 17m",
+    "7m 10m 12P 15P 17m"
+   ],
+   "7sus": [
+    "1P 4P 6M 7m 9M",
+    "1P 5P 7m 9M 11P",
+    "4P 6M 7m 9M 11P",
+    "5P 8P 9M 11P 14m",
+    "7m 9M 11P 13M 15P",
+    "7m 11P 12P 14m 18P"
+   ],
+   "h7": [
+    "1P 5d 7m 10m 11P",
+    "3m 5d 7m 8P 11P",
+    "5d 7m 8P 10m 11P",
+    "1P 7m 10m 12d",
+    "3m 7m 8P 10m 12d",
+    "3m 7m 8P 12d 14m",
+    "5d 8P 10m 11P 14m",
+    "7m 10m 11P 12d 14m",
+    "7m 10m 12d 14m 15P",
+    "5d 8P 10m 14m 17m"
+   ],
+   "o7": [
+    "1P 6M 8P 10m 12d",
+    "1P 6M 10m 12d 13M",
+    "3m 8P 10m 12d 13M",
+    "3m 8P 12d 13M 15P",
+    "5d 10m 12d 13M 15P",
+    "5d 10m 13M 15P 17m",
+    "6M 12d 13M 15P 17m",
+    "6M 12d 15P 17m 19d"
+   ],
+   "^9": [
+    "1P 6M 7M 9M 10M",
+    "1P 7M 9M 10M 13M",
+    "3M 7M 9M 10M 13M",
+    "3M 7M 9M 12P 13M",
+    "3M 7M 8P 9M 13M",
+    "3M 7M 9M 13M 14M",
+    "3M 7M 10M 13M 16M",
+    "7M 10M 13M 14M 16M",
+    "7M 10M 13M 16M 17M",
+    "7M 10M 13M 16M 19P"
+   ],
+   "^13": [
+    "1P 6M 7M 9M 10M",
+    "1P 7M 9M 10M 13M",
+    "3M 7M 9M 12P 13M",
+    "3M 7M 9M 10M 13M",
+    "3M 7M 8P 9M 13M",
+    "3M 7M 9M 13M 14M",
+    "3M 7M 10M 13M 16M",
+    "7M 10M 13M 14M 16M",
+    "7M 10M 13M 16M 17M",
+    "7M 10M 13M 16M 19P"
+   ],
+   "^7#11": [
+    "1P 3M 5d 7M 9M",
+    "1P 7M 9M 10M 12d",
+    "3M 7M 9M 10M 12d",
+    "3M 7M 9M 12d 13M",
+    "3M 7M 10M 12d 14M",
+    "7M 10M 12d 13M 14M",
+    "7M 10M 12d 13M 16M",
+    "7M 10M 12d 14M 17M"
+   ],
+   "^9#11": [
+    "1P 3M 5d 7M 9M",
+    "1P 7M 9M 10M 12d",
+    "3M 7M 9M 10M 12d",
+    "3M 7M 9M 12d 13M",
+    "3M 7M 9M 12d 14M",
+    "7M 10M 12d 14M 16M",
+    "7M 10M 12d 13M 16M"
+   ],
+   "^7#5": [
+    "1P 6m 7M 10M 13m",
+    "3M 7M 9M 10M 13m",
+    "3M 7M 10M 13m 14M",
+    "7M 10M 13m 14M 16M",
+    "7M 10M 13m 14M 17M"
+   ],
+   "-6": [
+    "1P 3m 5P 6M 9M",
+    "3m 5P 6M 8P 9M",
+    "1P 5P 6M 10m 11P",
+    "3m 5P 6M 8P 11P",
+    "1P 5P 9M 10m 13M",
+    "3m 5P 8P 9M 13M",
+    "5P 8P 10m 11P 13M",
+    "5P 8P 10m 13M 16M"
+   ],
+   "-69": [
+    "1P 3m 5P 6M 9M",
+    "3m 5P 6M 8P 9M",
+    "3m 6M 9M 10m 12P",
+    "1P 5P 9M 10m 13M",
+    "3m 5P 8P 9M 13M",
+    "5P 8P 9M 10m 13M",
+    "5P 8P 10m 13M 16M"
+   ],
+   "-^7": [
+    "1P 3m 5P 7M 9M",
+    "1P 5P 7M 10m 11P",
+    "3m 7M 9M 10m 11P",
+    "3m 7M 9M 10m 12P",
+    "3m 7M 9M 12P 14M",
+    "7M 10m 11P 12P 14M",
+    "7M 10m 12P 14M 16M"
+   ],
+   "-^9": [
+    "1P 3m 5P 7M 9M",
+    "1P 5P 7M 10m 11P",
+    "3m 7M 9M 10m 11P",
+    "3m 7M 9M 10m 12P",
+    "3m 7M 9M 12P 14M",
+    "7M 10m 11P 12P 14M",
+    "7M 10m 12P 14M 16M"
+   ],
+   "-9": [
+    "1P 3m 5P 7m 9M",
+    "1P 3m 7m 9M 11P",
+    "3m 7m 9M 10m 11P",
+    "3m 7m 9M 10m 12P",
+    "3m 7m 9M 10m 14m",
+    "3m 7m 9M 12P 15P",
+    "7m 10m 11P 14m 16M",
+    "7m 10m 12P 16M 18P"
+   ],
+   "-add9": [
+    "1P 2M 3m 5P 8P",
+    "1P 3m 5P 9M",
+    "3m 5P 8P 9M 12P",
+    "5P 8P 9M 10m 12P"
+   ],
+   "-11": [
+    "3m 5P 7m 9M 11P",
+    "7m 9M 10m 11P",
+    "1P 4P 7m 10m 12P",
+    "3m 7m 9M 11P 12P",
+    "7m 9M 10m 11P 12P",
+    "3m 7m 9M 11P 14m",
+    "4P 10m 12P 14m",
+    "5P 8P 11P 14m",
+    "5P 8P 11P 14m 16M",
+    "7m 10m 12P 16M 18P",
+    "7m 10m 11P 16M 21m"
+   ],
+   "-7b5": [
+    "1P 5d 7m 10m 11P",
+    "3m 5d 7m 8P 11P",
+    "5d 7m 8P 10m 11P",
+    "1P 7m 10m 12d",
+    "3m 7m 8P 10m 12d",
+    "3m 7m 8P 12d 14m",
+    "5d 8P 10m 11P 14m",
+    "7m 10m 11P 12d 14m",
+    "7m 10m 12d 14m 15P",
+    "5d 8P 10m 14m 17m"
+   ],
+   "h9": [
+    "3m 5d 7m 9M 11P",
+    "1P 7m 9M 10m 12d",
+    "3m 7m 9M 12d 14m",
+    "5d 8P 9M 10m 14m",
+    "7m 10m 11P 12d 14m",
+    "7m 10m 12d 14m 16M"
+   ],
+   "-b6": [
+    "1P 3m 5P 6m 8P",
+    "3m 5P 8P 11P 13m",
+    "5P 8P 10m 11P 13m"
+   ],
+   "-#5": [
+    "1P 6m 8P 10m 13m",
+    "3m 6m 8P 11P 13m",
+    "6m 8P 10m 13m 15P"
+   ],
+   "7b9": [
+    "1P 3M 7m 9m 10M",
+    "3M 7m 8P 9m 10M",
+    "3M 7m 8P 9m 14m",
+    "7m 9m 10M 14m 15P"
+   ],
+   "7#9": [
+    "1P 3M 7m 10m",
+    "3M 7m 10m 10M 12P",
+    "3M 7m 10m 12P 14m",
+    "7m 10M 12P 14m 17m"
+   ],
+   "7#11": [
+    "1P 3M 7m 9M 12d",
+    "3M 7m 9M 12d 13M",
+    "7m 10M 12d 13M 16M"
+   ],
+   "7b5": [
+    "1P 3M 7m 9M 12d",
+    "3M 7m 9M 12d 13M",
+    "7m 10M 12d 13M 16M"
+   ],
+   "7#5": [
+    "1P 3M 7m 10M 13m",
+    "3M 7m 8P 10M 13m",
+    "3M 7m 8P 13m 14m",
+    "7m 10M 13m 14m 15P",
+    "7m 10M 13m 14m 17M"
+   ],
+   "9#11": [
+    "1P 7m 9M 10M 12d",
+    "3M 7m 8P 9M 12d",
+    "7m 10M 12d 15P 16M"
+   ],
+   "9b5": [
+    "1P 7m 9M 10M 12d",
+    "3M 7m 8P 9M 12d",
+    "7m 10M 12d 15P 16M"
+   ],
+   "9#5": [
+    "1P 7m 9M 10M 13m",
+    "3M 7m 9M 10M 13m",
+    "3M 7m 9M 13m 14m",
+    "7m 10M 13m 14m 16M",
+    "7m 10M 13m 16M 17M"
+   ],
+   "7b13": [
+    "1P 3M 7m 10M 13m",
+    "3M 7m 8P 10M 13m",
+    "3M 7m 8P 13m 14m",
+    "7m 10M 13m 14m 15P",
+    "7m 10M 13m 14m 17M"
+   ],
+   "7#9#5": [
+    "3M 7m 10m 10M 13m",
+    "3M 7m 10m 13m 14m",
+    "7m 10M 13m 14m 17m"
+   ],
+   "7#9b5": [
+    "3M 7m 10m 10M 12d",
+    "3M 7m 10m 12d 14m",
+    "7m 10M 12d 14m 17m"
+   ],
+   "7#9#11": [
+    "3M 7m 10m 10M 12d",
+    "3M 7m 10m 12d 14m",
+    "7m 10M 12d 14m 17m"
+   ],
+   "7b9#11": [
+    "3M 7m 9m 10M 12d",
+    "3M 7m 9m 12d 14m",
+    "7m 8P 10M 12d 16m",
+    "7m 10M 12d 14m 16m"
+   ],
+   "7b9b5": [
+    "3M 7m 9m 10M 12d",
+    "3M 7m 9m 12d 14m",
+    "7m 8P 10M 12d 16m",
+    "7m 10M 12d 14m 16m"
+   ],
+   "7b9#5": [
+    "1P 7m 9m 10M 13m",
+    "3M 7m 9m 10M 13m",
+    "3M 7m 10M 13m 16m",
+    "7m 10M 13m 14m 16m",
+    "7m 10M 13m 16m 17M"
+   ],
+   "7b9#9": [
+    "1P 3M 7m 9m 10m",
+    "3M 7m 10m 13m 16m",
+    "7m 10M 13m 16m 17m"
+   ],
+   "7b9b13": [
+    "1P 7m 9m 10M 13m",
+    "3M 7m 9m 10M 13m",
+    "3M 7m 10M 13m 16m",
+    "7m 10M 13m 14m 16m",
+    "7m 10M 13m 16m 17M"
+   ],
+   "7alt": [
+    "3M 7m 8P 10m 13m",
+    "3M 7m 9m 12d 13m",
+    "3M 7m 9m 10m 13m",
+    "3M 7m 10m 13m 14m",
+    "3M 7m 9m 12d 14m",
+    "3M 7m 10m 13m 15P",
+    "3M 7m 10m 13m 16m",
+    "7m 10M 12d 14m 16m",
+    "7m 10M 12d 13m 16m",
+    "7m 10M 13m 15P 17m",
+    "7m 10M 13m 16m 17m",
+    "7m 10M 13m 16m 19d"
+   ],
+   "13#11": [
+    "3M 7m 9M 12d 13M",
+    "7m 10M 12d 13M 16M"
+   ],
+   "13b9": [
+    "3M 7m 9m 10M 13M",
+    "3M 7m 10M 13M 16m",
+    "7m 10M 13M 16m 17M"
+   ],
+   "13#9": [
+    "3M 7m 10m 10M 13M",
+    "7m 10M 13M 14m 17m"
+   ],
+   "7b9sus": [
+    "1P 5P 7m 9m 11P",
+    "5P 7m 8P 9m 11P",
+    "7m 8P 11P 14m 16m"
+   ],
+   "7susadd3": [
+    "1P 4P 5P 7m 10M",
+    "5P 8P 10M 11P 14m",
+    "7m 11P 12P 15P 17M"
+   ],
+   "9sus": [
+    "1P 4P 6M 7m 9M",
+    "1P 5P 7m 9M 11P",
+    "4P 6M 7m 9M 11P",
+    "5P 8P 9M 11P 14m",
+    "7m 9M 11P 13M 15P",
+    "7m 11P 12P 14m 18P"
+   ],
+   "13sus": [
+    "1P 4P 6M 7m 9M",
+    "1P 7m 9M 11P 13M",
+    "4P 7m 9M 11P 13M",
+    "7m 9M 11P 13M 15P",
+    "7m 11P 13M 14m 16M",
+    "7m 11P 13M 16M 18P"
+   ],
+   "7b13sus": [
+    "1P 5P 7m 11P 13m",
+    "5P 7m 8P 11P 13m",
+    "7m 11P 13m 14m 15P"
+   ],
+   "": [
+    "1P 3M 5P 6M 9M",
+    "1P 5P 8P 10M 12P",
+    "3M 5P 9M 10M 12P",
+    "1P 5P 8P 10M 13M",
+    "3M 8P 10M 13M 15P",
+    "5P 9M 10M 12P 15P"
+   ],
+   "aug": [
+    "1P 6m 8P 9M 10M",
+    "1P 6m 8P 10M 13m",
+    "3M 8P 9M 10M 13m",
+    "3M 8P 10M 13m 15P",
+    "6m 10M 13m 15P 16M",
+    "6m 10M 13m 15P 17M"
+   ],
+   "M": [
+    "1P 3M 5P 6M 9M",
+    "1P 5P 8P 10M 12P",
+    "3M 5P 9M 10M 12P",
+    "1P 5P 8P 10M 13M",
+    "3M 8P 10M 13M 15P",
+    "5P 9M 10M 12P 15P"
+   ],
+   "m": [
+    "1P 3m 5P 8P 10m",
+    "1P 3m 5P 9M 11P",
+    "3m 5P 8P 9M 11P",
+    "5P 8P 9M 10m 11P",
+    "1P 5P 9M 10m 12P",
+    "3m 5P 8P 10m 12P",
+    "5P 8P 10m 12P 15P"
+   ],
+   "M7": [
+    "1P 6M 7M 9M 10M",
+    "3M 7M 9M 10M 12P",
+    "1P 7M 9M 10M 13M",
+    "3M 7M 9M 10M 13M",
+    "3M 7M 9M 12P 13M",
+    "3M 7M 9M 13M 14M",
+    "3M 7M 10M 13M 16M",
+    "7M 10M 13M 14M 16M",
+    "7M 10M 13M 16M 17M",
+    "7M 10M 13M 16M 19P"
+   ],
+   "m7": [
+    "1P 3m 5P 7m 9M",
+    "1P 3m 5P 7m 10m",
+    "1P 5P 7m 10m 11P",
+    "3m 7m 8P 10m 11P",
+    "1P 5P 7m 10m 12P",
+    "3m 7m 9M 10m 12P",
+    "3m 7m 8P 10m 14m",
+    "5P 7m 9M 10m 14m",
+    "7m 10m 11P 14m 15P",
+    "7m 10m 12P 15P 16M",
+    "5P 8P 11P 14m 17m",
+    "7m 10m 12P 15P 17m"
+   ],
+   "M9": [
+    "1P 6M 7M 9M 10M",
+    "1P 7M 9M 10M 13M",
+    "3M 7M 9M 10M 13M",
+    "3M 7M 9M 12P 13M",
+    "3M 7M 8P 9M 13M",
+    "3M 7M 9M 13M 14M",
+    "3M 7M 10M 13M 16M",
+    "7M 10M 13M 14M 16M",
+    "7M 10M 13M 16M 17M",
+    "7M 10M 13M 16M 19P"
+   ],
+   "M13": [
+    "1P 6M 7M 9M 10M",
+    "1P 7M 9M 10M 13M",
+    "3M 7M 9M 12P 13M",
+    "3M 7M 9M 10M 13M",
+    "3M 7M 8P 9M 13M",
+    "3M 7M 9M 13M 14M",
+    "3M 7M 10M 13M 16M",
+    "7M 10M 13M 14M 16M",
+    "7M 10M 13M 16M 17M",
+    "7M 10M 13M 16M 19P"
+   ],
+   "M7#11": [
+    "1P 3M 5d 7M 9M",
+    "1P 7M 9M 10M 12d",
+    "3M 7M 9M 10M 12d",
+    "3M 7M 9M 12d 13M",
+    "3M 7M 10M 12d 14M",
+    "7M 10M 12d 13M 14M",
+    "7M 10M 12d 13M 16M",
+    "7M 10M 12d 14M 17M"
+   ],
+   "M9#11": [
+    "1P 3M 5d 7M 9M",
+    "1P 7M 9M 10M 12d",
+    "3M 7M 9M 10M 12d",
+    "3M 7M 9M 12d 13M",
+    "3M 7M 9M 12d 14M",
+    "7M 10M 12d 14M 16M",
+    "7M 10M 12d 13M 16M"
+   ],
+   "M7#5": [
+    "1P 6m 7M 10M 13m",
+    "3M 7M 9M 10M 13m",
+    "3M 7M 10M 13m 14M",
+    "7M 10M 13m 14M 16M",
+    "7M 10M 13m 14M 17M"
+   ],
+   "m6": [
+    "1P 3m 5P 6M 9M",
+    "3m 5P 6M 8P 9M",
+    "1P 5P 6M 10m 11P",
+    "3m 5P 6M 8P 11P",
+    "1P 5P 9M 10m 13M",
+    "3m 5P 8P 9M 13M",
+    "5P 8P 10m 11P 13M",
+    "5P 8P 10m 13M 16M"
+   ],
+   "m69": [
+    "1P 3m 5P 6M 9M",
+    "3m 5P 6M 8P 9M",
+    "3m 6M 9M 10m 12P",
+    "1P 5P 9M 10m 13M",
+    "3m 5P 8P 9M 13M",
+    "5P 8P 9M 10m 13M",
+    "5P 8P 10m 13M 16M"
+   ],
+   "m^7": [
+    "1P 3m 5P 7M 9M",
+    "1P 5P 7M 10m 11P",
+    "3m 7M 9M 10m 11P",
+    "3m 7M 9M 10m 12P",
+    "3m 7M 9M 12P 14M",
+    "7M 10m 11P 12P 14M",
+    "7M 10m 12P 14M 16M"
+   ],
+   "-M7": [
+    "1P 3m 5P 7M 9M",
+    "1P 5P 7M 10m 11P",
+    "3m 7M 9M 10m 11P",
+    "3m 7M 9M 10m 12P",
+    "3m 7M 9M 12P 14M",
+    "7M 10m 11P 12P 14M",
+    "7M 10m 12P 14M 16M"
+   ],
+   "m^9": [
+    "1P 3m 5P 7M 9M",
+    "1P 5P 7M 10m 11P",
+    "3m 7M 9M 10m 11P",
+    "3m 7M 9M 10m 12P",
+    "3m 7M 9M 12P 14M",
+    "7M 10m 11P 12P 14M",
+    "7M 10m 12P 14M 16M"
+   ],
+   "-M9": [
+    "1P 3m 5P 7M 9M",
+    "1P 5P 7M 10m 11P",
+    "3m 7M 9M 10m 11P",
+    "3m 7M 9M 10m 12P",
+    "3m 7M 9M 12P 14M",
+    "7M 10m 11P 12P 14M",
+    "7M 10m 12P 14M 16M"
+   ],
+   "m9": [
+    "1P 3m 5P 7m 9M",
+    "1P 3m 7m 9M 11P",
+    "3m 7m 9M 10m 11P",
+    "3m 7m 9M 10m 12P",
+    "3m 7m 9M 10m 14m",
+    "3m 7m 9M 12P 15P",
+    "7m 10m 11P 14m 16M",
+    "7m 10m 12P 16M 18P"
+   ],
+   "madd9": [
+    "1P 2M 3m 5P 8P",
+    "1P 3m 5P 9M",
+    "3m 5P 8P 9M 12P",
+    "5P 8P 9M 10m 12P"
+   ],
+   "m11": [
+    "3m 5P 7m 9M 11P",
+    "7m 9M 10m 11P",
+    "1P 4P 7m 10m 12P",
+    "3m 7m 9M 11P 12P",
+    "7m 9M 10m 11P 12P",
+    "3m 7m 9M 11P 14m",
+    "4P 10m 12P 14m",
+    "5P 8P 11P 14m",
+    "5P 8P 11P 14m 16M",
+    "7m 10m 12P 16M 18P",
+    "7m 10m 11P 16M 21m"
+   ],
+   "m7b5": [
+    "1P 5d 7m 10m 11P",
+    "3m 5d 7m 8P 11P",
+    "5d 7m 8P 10m 11P",
+    "1P 7m 10m 12d",
+    "3m 7m 8P 10m 12d",
+    "3m 7m 8P 12d 14m",
+    "5d 8P 10m 11P 14m",
+    "7m 10m 11P 12d 14m",
+    "7m 10m 12d 14m 15P",
+    "5d 8P 10m 14m 17m"
+   ],
+   "mb6": [
+    "1P 3m 5P 6m 8P",
+    "3m 5P 8P 11P 13m",
+    "5P 8P 10m 11P 13m"
+   ],
+   "m#5": [
+    "1P 6m 8P 10m 13m",
+    "3m 6m 8P 11P 13m",
+    "6m 8P 10m 13m 15P"
+   ]
+  }
+ }
+}
