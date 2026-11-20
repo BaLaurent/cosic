@@ -2,7 +2,6 @@ package cosic.mini
 
 import cosic.pattern.CosicError
 import cosic.pattern.Rational
-import cosic.pattern.lines
 import cosic.script.catalogue.Catalogue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -13,6 +12,7 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import org.junit.Assume.assumeTrue
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -45,19 +45,24 @@ class MiniOracleTest {
     @BeforeTest
     fun registerTheFunctions() = Catalogue.installAll()
 
-    private val cases: List<Case> by lazy {
-        val text = javaClass.getResourceAsStream("/mini/oracle.json")?.bufferedReader()?.readText()
-            ?: error("/mini/oracle.json is missing: run `node tools/strudel-ref/mini-oracle.mjs`")
+    private fun parseCases(text: String): List<Case> =
         Json.parseToJsonElement(text).jsonArray.map { Case(it.jsonObject["src"]!!.jsonPrimitive.content, it.jsonObject) }
+
+    private val cases: List<Case> by lazy {
+        parseCases(
+            javaClass.getResourceAsStream("/mini/oracle.json")?.bufferedReader()?.readText()
+                ?: error("/mini/oracle.json is missing: run `node tools/strudel-ref/mini-oracle.mjs`"),
+        )
     }
 
     /** `m(src, 10)`, the call the transpiler writes for a string that starts at offset 10, and the haps of its cycles. */
     private fun evaluate(c: Case): Result<Evaluated> = try {
         val pat = m(c.src, OFFSET)
-        val haps = pat.sortHapsByPart().queryArc(Rational(c.begin.toLong()), Rational((c.begin + c.cycles).toLong()))
+        // like Strudel's queryArc, which logs an error of the query and answers nothing
+        val haps = pat.sortHapsByPart().queryArcLogged(Rational(c.begin.toLong()), Rational((c.begin + c.cycles).toLong()))
         Result.success(
             Evaluated(
-                pat.lines(c.begin.toLong(), (c.begin + c.cycles).toLong()),
+                haps.map { it.show(true) },
                 haps.map { h -> h.context.locations.map { listOf(it.start, it.end) }.sortedWith(compareBy({ it[0] }, { it[1] })) },
                 pat.steps?.show(),
             ),
@@ -106,8 +111,8 @@ class MiniOracleTest {
         PROBES.all { probe -> cases.firstOrNull { it.src == probe }?.let { mismatch(it) == null } ?: true }
     }
 
-    @Test
-    fun theCorpusComesOutAsInStrudel() {
+    /** Compares [cases] with Strudel's output; returns how many were compared. */
+    private fun compare(cases: List<Case>): Int {
         val failures = ArrayList<String>()
         var skipped = 0
         for (c in cases) {
@@ -122,7 +127,20 @@ class MiniOracleTest {
             fail("${failures.size} of ${cases.size - skipped} cases differ from Strudel" + failures.take(25).joinToString("\n  ", "\n  "))
         }
         println("mini oracle: compared ${cases.size - skipped} of ${cases.size} cases, ${cases.count { it.error != null }} of them errors; euclid is Strudel's: $euclidIsStrudels")
-        assertTrue(cases.size - skipped > 800, "only ${cases.size - skipped} cases were compared")
+        return cases.size - skipped
+    }
+
+    @Test
+    fun theCorpusComesOutAsInStrudel() {
+        assertTrue(compare(cases) > 800, "fewer than 800 cases were compared")
+    }
+
+    /** A corpus of your own: `node tools/strudel-ref/mini-oracle.mjs --strings in.json out.json`, then `COSIC_MINI_ORACLE=out.json ./gradlew :engine:test --rerun --tests 'cosic.mini.MiniOracleTest'`. */
+    @Test
+    fun aCorpusNamedByTheEnvironmentComesOutAsInStrudel() {
+        val path = System.getenv("COSIC_MINI_ORACLE")
+        assumeTrue("COSIC_MINI_ORACLE names no corpus", path != null)
+        compare(parseCases(java.io.File(path!!).readText()))
     }
 
     private companion object {

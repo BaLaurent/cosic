@@ -7,6 +7,8 @@
 //   node tools/strudel-ref/mini-oracle.mjs                 writes engine/src/test/resources/mini/oracle.json
 //   node tools/strudel-ref/mini-oracle.mjs --letters       writes engine/src/main/kotlin/cosic/mini/MiniLetters.kt
 //   node tools/strudel-ref/mini-oracle.mjs --show '<src>'  prints what Strudel makes of one string
+//   node tools/strudel-ref/mini-oracle.mjs --strings <in.json> <out.json>   the same for the strings of a JSON array (a corpus
+//                                                          of your own: COSIC_MINI_ORACLE=<out.json> ./gradlew :engine:test --rerun --tests 'cosic.mini.MiniOracleTest')
 //
 // Every case is `m(src, 10)`, the call the transpiler writes for the double-quoted string `"src"` that starts at offset 10.
 // What is stored per case:
@@ -769,6 +771,13 @@ function generate(seed, count) {
 function main() {
   const args = process.argv.slice(2);
   if (args[0] === '--letters') return writeLetters();
+  if (args[0] === '--strings') {
+    const strings = JSON.parse(fs.readFileSync(args[1], 'utf8'));
+    const cases = [...new Set(strings)].map((src) => runCase(src)).filter(Boolean);
+    fs.writeFileSync(args[2], `[\n${cases.map((c) => JSON.stringify(c)).join(',\n')}\n]\n`);
+    console.log(`mini oracle: ${cases.length} cases (${cases.filter((c) => c.error).length} errors) written to ${args[2]}`);
+    return;
+  }
   if (args[0] === '--show') {
     console.log(JSON.stringify(runCase(args[1]), null, 1));
     return;
