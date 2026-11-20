@@ -16,6 +16,8 @@
 // Hap strings go through the roundFloatStrings of test/tunes.test.mjs, like the tune snapshots.
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterAll, describe, it } from 'vitest';
 import { evalScope, Pattern, repl, useRNG } from '@strudel/core';
@@ -75,13 +77,44 @@ const workspaceEntry = (spec) => {
   }
   return undefined;
 };
+
+// hs2js (`@strudel/tidal`) parses with web-tree-sitter, which loads its wasm files by path and takes the page for a browser
+// as soon as a `window` exists. So its parser is loaded first, from a directory that holds both files, and `window` is the
+// global object only while a snippet that lists the module runs: tidal.mjs reads it when `initTidal` and `tidal` are called.
+let hs2jsParser;
+const loadHs2jsParser = () =>
+  (hs2jsParser ??= (async () => {
+    const hs2jsDir = path.resolve(testDir, '../packages/hs2js');
+    const require = createRequire(path.join(hs2jsDir, 'package.json'));
+    const wasmDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hs2js-wasm-'));
+    fs.copyFileSync(require.resolve('web-tree-sitter/tree-sitter.wasm'), path.join(wasmDir, 'tree-sitter.wasm'));
+    fs.copyFileSync(require.resolve('tree-sitter-haskell/tree-sitter-haskell.wasm'), path.join(wasmDir, 'tree-sitter-haskell.wasm'));
+    const hs2js = await import(/* @vite-ignore */ pathToFileURL(path.join(hs2jsDir, 'src/index.mjs')).href);
+    hs2js.setBase(`${wasmDir}/`);
+    await hs2js.loadParser();
+  })());
+const moduleSetup = { '@strudel/tidal': loadHs2jsParser };
+const modulesNeedingWindow = ['@strudel/tidal'];
+
 const loadModules = (specs = []) =>
   Promise.all(
-    specs.map((spec) => {
+    specs.map(async (spec) => {
+      await moduleSetup[spec]?.();
       const entry = workspaceEntry(spec);
       return import(/* @vite-ignore */ entry ? pathToFileURL(entry).href : spec);
     }),
   );
+
+const withModuleGlobals = async (snippet, run) => {
+  await Promise.all((snippet.modules ?? []).map((spec) => moduleSetup[spec]?.())); // while there is no `window` yet
+  const needsWindow = (snippet.modules ?? []).some((spec) => modulesNeedingWindow.includes(spec)) && !('window' in globalThis);
+  if (needsWindow) globalThis.window = globalThis;
+  try {
+    return await run();
+  } finally {
+    if (needsWindow) delete globalThis.window;
+  }
+};
 
 const messageOf = (err) => String(err?.message ?? err);
 
@@ -152,7 +185,7 @@ describe('cosic extra snippets', () => {
         it(`${snippetId}: ${snippet.name}`, { timeout: 120_000 }, async () => {
           let result;
           try {
-            result = snippet.mode === 'repl' ? await runReplMode(snippet) : await runTestMode(snippet);
+            result = await withModuleGlobals(snippet, () => (snippet.mode === 'repl' ? runReplMode(snippet) : runTestMode(snippet)));
           } catch (err) {
             result = { haps: [], cps: null, miniLocations: [], error: messageOf(err) };
           }
