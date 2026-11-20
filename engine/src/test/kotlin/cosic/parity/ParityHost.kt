@@ -1,6 +1,7 @@
 package cosic.parity
 
 import cosic.mini.getLeafLocations
+import cosic.pattern.Alignment
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
@@ -60,6 +61,11 @@ Pattern.prototype.piano = function () {
 /** One realm with the catalogue and the oracle's mocks; [session] is set for a REPL case. */
 internal class ParityWorld private constructor(val host: SessionHost, val realm: Realm, val session: ReplSession?) {
     private val locator = MiniLeafLocator { quoted, start -> getLeafLocations(quoted, start) }
+
+    init {
+        // vitest.setup.mjs resets `setDefaultJoin` (to `in`) after every test: a case must not see what the one before it chose
+        Alignment.reset()
+    }
 
     /** `evaluate` of @strudel/transpiler (test/runtime.mjs): the value of the last statement of [code], with no REPL semantics. */
     fun run(code: String): Any? {

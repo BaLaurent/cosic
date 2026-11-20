@@ -4,6 +4,7 @@ import cosic.script.ReplSession
 import cosic.script.catalogue.registerOperators
 import cosic.script.evaluateProgram
 import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -22,6 +23,8 @@ class OperatorsSpecTest {
         }
     }
 
+    // the process-wide default alignment is shared with every other test of the JVM: start and end with the default one
+    @BeforeTest
     @AfterTest
     fun restoreTheDefaultAlignment() = Alignment.reset()
 
