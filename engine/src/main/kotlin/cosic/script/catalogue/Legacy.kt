@@ -61,7 +61,7 @@ import cosic.pattern.silence
 import cosic.pattern.slowcat
 import cosic.pattern.soundControl
 import cosic.pattern.withControls
-import cosic.script.next.js.JsArray
+import cosic.script.js.JsArray
 import kotlin.math.abs
 import kotlin.math.roundToInt
 

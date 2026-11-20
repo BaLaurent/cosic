@@ -7,9 +7,8 @@ import cosic.pattern.Rational
 import cosic.pattern.Registry
 import cosic.pattern.callMethod
 import cosic.pattern.jsFn
-import cosic.script.BuiltinKind
-import cosic.script.Builtins
-import cosic.script.evaluateForQuery
+import cosic.script.evaluateProgram
+import cosic.script.reference
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import kotlin.test.Test
@@ -17,8 +16,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * The legacy builtins registered in the one catalogue behave like the old evaluator's: every old name has an entry, and
- * programs built through direct `Registry` calls give the haps of the same program run by the old evaluator.
+ * The legacy builtins registered in the one catalogue: every documented name has an entry, and programs built through
+ * direct `Registry` calls give the haps of the same program run by the interpreter.
  */
 class LegacyRegistrationTest {
     companion object {
@@ -46,17 +45,17 @@ class LegacyRegistrationTest {
         p.sortHapsByPart().queryArc(Rational.ZERO, Rational(3)).map { it.show(true) }
 
     private fun check(code: String, build: () -> Pattern) {
-        val expected = shown(evaluateForQuery(code))
-        assertTrue(expected.isNotEmpty(), "the old evaluator gave no haps for $code")
+        val expected = shown(evaluateProgram(code).pattern)
+        assertTrue(expected.isNotEmpty(), "the program gave no haps: $code")
         assertEquals(expected, shown(build()), code)
     }
 
     @Test
-    fun everyOldNameIsRegistered() {
+    fun everyDocumentedNameIsRegistered() {
         val missing = ArrayList<String>()
-        for (builtin in Builtins.all) {
-            if (builtin.kind == BuiltinKind.SETTING) continue
-            for (name in listOf(builtin.name) + builtin.aliases) {
+        for (entry in reference()) {
+            if (entry.category == "Settings") continue // setcps, setcpm and hush are functions of the session, not of patterns
+            for (name in listOf(entry.name) + entry.aliases) {
                 if (Registry.lookup(name) == null && name !in Registry.constants()) missing.add(name)
             }
         }

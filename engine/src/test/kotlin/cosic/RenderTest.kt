@@ -70,7 +70,7 @@ class RenderTest {
     @Test
     fun anEvaluationErrorIsThrownWithItsMessage() {
         val error = assertFailsWith<IllegalStateException> { OfflineRenderer.render("foo(1)", 1.0) }
-        assertEquals("Unknown function 'foo'", error.message)
+        assertEquals("foo is not defined", error.message)
     }
 
     @Test
@@ -169,7 +169,7 @@ class RenderTest {
         val wav = File(tmp, "never.wav")
         val run = cli("--code", "foo(1)", "--out", wav.path)
         assertEquals(1, run.code)
-        assertContains(run.err.lines(), "Unknown function 'foo'")
+        assertContains(run.err.lines(), "foo is not defined")
         assertTrue(!wav.exists(), "nothing is written")
     }
 

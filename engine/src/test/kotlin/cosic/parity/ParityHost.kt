@@ -9,17 +9,17 @@ import cosic.pattern.TOO_DENSE
 import cosic.pattern.Undefined
 import cosic.pattern.reportingExhaustion
 import cosic.pattern.silence
-import cosic.script.next.MiniLeafLocator
-import cosic.script.next.PatternValue
-import cosic.script.next.Realm
-import cosic.script.next.ReplSession
-import cosic.script.next.SessionHost
-import cosic.script.next.TranspileOptions
-import cosic.script.next.bridge
-import cosic.script.next.catalogue.Catalogue
-import cosic.script.next.catalogue.refPattern
-import cosic.script.next.js.PropFlags
-import cosic.script.next.transpile
+import cosic.script.MiniLeafLocator
+import cosic.script.PatternValue
+import cosic.script.Realm
+import cosic.script.ReplSession
+import cosic.script.SessionHost
+import cosic.script.TranspileOptions
+import cosic.script.bridge
+import cosic.script.catalogue.Catalogue
+import cosic.script.catalogue.refPattern
+import cosic.script.js.PropFlags
+import cosic.script.transpile
 
 /*
  * The world the parity programs run in, the counterpart of Strudel's test/runtime.mjs (LANG 3.0 step 4): the whole

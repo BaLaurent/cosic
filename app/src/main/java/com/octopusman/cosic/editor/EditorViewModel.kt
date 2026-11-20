@@ -59,6 +59,11 @@ class EditorViewModel(
     private val loaded: Project? = projects.load(projectId)
     private val undoStack = UndoStack(SystemClock::uptimeMillis)
 
+    init {
+        // The tempo a program sets lasts from one evaluation to the next; a different project starts at the default.
+        engine.resetSession()
+    }
+
     /** True when the project is gone, for example because its file was unreadable. */
     val missing = loaded == null
 

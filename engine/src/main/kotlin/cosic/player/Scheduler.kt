@@ -2,6 +2,7 @@ package cosic.player
 
 import cosic.HighlightEvent
 import cosic.pattern.ControlMap
+import cosic.pattern.CosicError
 import cosic.pattern.Hap
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
@@ -57,6 +58,16 @@ private fun onsets(pattern: Pattern, begin: Rational, cps: Double, warnings: War
 }
 
 /**
+ * The controls an event plays with. A hap whose value is not an object (a bare `"c e"` or `60`) is an error in Strudel
+ * too, with the hint to append `.note()` or `.s()`.
+ */
+private fun controlsOf(hap: Hap): ControlMap {
+    hap.ensureObjectValue()
+    @Suppress("UNCHECKED_CAST")
+    return hap.value as? ControlMap ?: throw CosicError("expected hap.value to be an object, but got a list. Hint: append .note() or .s() to the end")
+}
+
+/**
  * Looks ahead the way the [Scheduler] will, over two cycles from [fromCycle], without making a sound. Returns the
  * warnings playing those cycles would raise (unknown sounds, a pattern too dense), and throws a
  * [cosic.pattern.CosicError] or other exception for whatever would fail, so a program that would fail is rejected when
@@ -69,7 +80,7 @@ internal fun dryRun(pattern: Pattern, fromCycle: Long, sounds: SoundResolver, cp
     val end = begin + Rational(DRY_RUN_CYCLES)
     while (begin < end) {
         for (hap in onsets(pattern, begin, cps, warnings)) {
-            val lookup = sounds.resolve(hap.value as ControlMap)
+            val lookup = sounds.resolve(controlsOf(hap))
             if (lookup is SoundLookup.Unknown) warnings.add(unknownSoundWarning(lookup.key))
         }
         begin += CHUNK
@@ -127,11 +138,16 @@ internal class Scheduler(private val sampleRate: Int, private val sounds: SoundR
      * a new anchor at the horizon, so those events keep their frames. [warnings] are the ones its dry run found.
      */
     fun setProgram(pattern: Pattern, cps: Double, warnings: List<String>) {
-        if (playing && cps != anchor.cps) anchor = TempoAnchor(anchor.frameAt(horizon), horizon, cps, sampleRate)
+        setCps(cps)
         this.pattern = pattern
-        this.cps = cps
         warningLog = Warnings(warnings)
         runtimeError = null
+    }
+
+    /** Changes the tempo from the horizon on, as `setcps` does while a program runs; events already queued keep their frames. */
+    fun setCps(cps: Double) {
+        if (playing && cps != anchor.cps) anchor = TempoAnchor(anchor.frameAt(horizon), horizon, cps, sampleRate)
+        this.cps = cps
     }
 
     /** Starts at cycle 0, which sounds at engine frame [startFrame]. */
@@ -172,12 +188,13 @@ internal class Scheduler(private val sampleRate: Int, private val sounds: SoundR
         val events = ArrayList<SoundEvent>()
         val marks = ArrayList<HighlightEvent>()
         for (hap in onsets(pattern, begin, anchor.cps, warningLog)) {
-            when (val lookup = sounds.resolve(hap.value as ControlMap)) {
+            val controls = controlsOf(hap)
+            when (val lookup = sounds.resolve(controls)) {
                 is SoundLookup.Ready -> {
                     val whole = checkNotNull(hap.whole)
                     val start = anchor.frameAt(whole.begin)
                     val seconds = (whole.end - whole.begin).toDouble() / anchor.cps
-                    events.add(SoundEvent(start, voiceParams(hap.value as ControlMap, lookup.source, seconds)))
+                    events.add(SoundEvent(start, voiceParams(controls, lookup.source, seconds)))
                     if (hap.context.locations.isNotEmpty()) marks.add(HighlightEvent(start, anchor.frameAt(whole.end), hap.context.locations))
                 }
                 is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))

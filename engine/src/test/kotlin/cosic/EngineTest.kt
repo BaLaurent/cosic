@@ -27,25 +27,31 @@ private const val BLOCK = 256
 class EngineTest {
     private val threads = ManagementFactory.getThreadMXBean() as com.sun.management.ThreadMXBean
 
+    /** [report] is a success at the default tempo with exactly [warnings]. */
+    private fun assertOk(warnings: List<String>, report: EvalReport) {
+        val ok = assertIs<EvalReport.Ok>(report)
+        assertEquals(0.5, ok.cps)
+        assertEquals(warnings, ok.warnings)
+    }
     // ------------------------------------------------------------------------------ evaluate
 
     @Test
     fun evaluateAcceptsAProgramAndReportsItsTempo() {
         val engine = engineOf()
-        assertEquals(EvalReport.Ok(0.5, emptyList()), engine.evaluate("""s("bd sd")"""))
+        assertOk(emptyList(), engine.evaluate("""s("bd sd")"""))
         assertEquals(1.0, engine.evaluateOk("setcpm(60)\n\$: s(\"bd\")").cps)
     }
 
     @Test
     fun evaluateReportsAnErrorWithItsRangeLineAndColumn() {
         val report = assertIs<EvalReport.Failed>(engineOf().evaluate("foo(1)"))
-        assertEquals(EvalReport.Failed("Unknown function 'foo'", SourceRange(0, 6), 1, 1), report)
+        assertEquals(EvalReport.Failed("foo is not defined", SourceRange(0, 3), 1, 1), report)
     }
 
     @Test
     fun lineAndColumnAreOneBasedFromTheStartOfTheLine() {
         val report = assertIs<EvalReport.Failed>(engineOf().evaluate("s(\"bd\")\n\n  foo(1)"))
-        assertEquals(SourceRange(11, 17), report.range)
+        assertEquals(SourceRange(11, 14), report.range)
         assertEquals(3, report.line)
         assertEquals(3, report.column)
     }
@@ -120,7 +126,7 @@ class EngineTest {
     @Test
     fun unknownSoundsAreWarnedAboutNotRejected() {
         val engine = engineOf()
-        assertEquals(EvalReport.Ok(0.5, listOf("Unknown sound 'nope'")), engine.evaluate("""s("nope*2, sine")"""))
+        assertOk(listOf("Unknown sound 'nope'"), engine.evaluate("""s("nope*2, sine")"""))
         engine.play()
         engine.renderFrames(CYCLE)
         assertEquals(listOf("Unknown sound 'nope'"), engine.snapshot.warnings)
@@ -141,7 +147,7 @@ class EngineTest {
     @Test
     fun aDrumMachineIsChosenWithTheBankControlAndPlays() {
         val engine = engineOf()
-        assertEquals(EvalReport.Ok(0.5, emptyList()), engine.evaluate("""s("bd sd").bank("cosic808")"""))
+        assertOk(emptyList(), engine.evaluate("""s("bd sd").bank("cosic808")"""))
         engine.play()
         assertTrue(rms(engine.renderFrames(CYCLE)) > 0.01, "the machine's kick and snare are heard")
     }
@@ -165,7 +171,7 @@ class EngineTest {
     @Test
     fun anUnknownSoundOfADrumMachineIsWarnedAboutByItsFullName() {
         val engine = engineOf()
-        assertEquals(EvalReport.Ok(0.5, listOf("Unknown sound 'cosic808_xx'")), engine.evaluate("""s("xx bd").bank("cosic808")"""))
+        assertOk(listOf("Unknown sound 'cosic808_xx'"), engine.evaluate("""s("xx bd").bank("cosic808")"""))
         engine.play()
         engine.renderFrames(CYCLE)
         assertEquals(listOf("Unknown sound 'cosic808_xx'"), engine.snapshot.warnings)
@@ -174,7 +180,7 @@ class EngineTest {
     @Test
     fun theBankReferenceExamplePlaysABuiltInDrumMachine() {
         val example = reference().first { it.name == "bank" }.example
-        assertEquals(EvalReport.Ok(0.5, emptyList()), engineOf().evaluate(example))
+        assertOk(emptyList(), engineOf().evaluate(example))
     }
 
     @Test

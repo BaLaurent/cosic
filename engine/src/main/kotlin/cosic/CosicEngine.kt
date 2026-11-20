@@ -14,7 +14,9 @@ import cosic.player.SoundResolver
 import cosic.player.dryRun
 import cosic.player.errorMessage
 import cosic.script.DEFAULT_CPS
-import cosic.script.evaluateProgram
+import cosic.script.ReplSession
+import cosic.script.SessionHost
+import cosic.script.onBigStack
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
 import kotlin.math.floor
@@ -36,6 +38,9 @@ private const val HIGHLIGHT_KEEP_SECONDS = 1
 /** Work handed from other threads to the audio thread. */
 private sealed interface Command {
     class SetProgram(val pattern: Pattern, val cps: Double, val warnings: List<String>) : Command
+
+    /** A program set the tempo while it ran. */
+    class SetCps(val cps: Double) : Command
 
     data object Play : Command
 
@@ -64,6 +69,12 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
     private val commands = ConcurrentLinkedQueue<Command>()
     private val startDelayFrames = Math.round(PLAY_START_DELAY_SECONDS * sampleRate)
 
+    /** What a program can reach outside of the language; a `setcps` reaches the scheduler at once, even when the program fails later. */
+    private val host = SessionHost { cps -> commands.add(Command.SetCps(cps)) }
+
+    /** The language session: the tempo and the patterns labelled by earlier programs live from one evaluation to the next. */
+    private var session = ReplSession(host)
+
     // Audio thread only from here on.
     private var renderedFrames = 0L
     private var startedVoice = false
@@ -90,14 +101,26 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
      */
     @Synchronized
     fun evaluate(code: String): EvalReport = try {
-        val program = evaluateProgram(code)
-        val warnings = dryRun(program.pattern, currentCycle(), sounds, program.cps)
-        commands.add(Command.SetProgram(program.pattern, program.cps, warnings))
-        EvalReport.Ok(program.cps, warnings)
+        onBigStack {
+            val program = session.evaluate(code)
+            val warnings = host.quietly { dryRun(program.pattern, currentCycle(), sounds, program.cps) }
+            commands.add(Command.SetProgram(program.pattern, program.cps, warnings))
+            EvalReport.Ok(program.cps, warnings, ProgramInfo(program.miniLocations, program.sliders, program.widgets))
+        }
     } catch (e: CosicError) {
         failed(code, e.message, e.range)
     } catch (e: Exception) {
         failed(code, "Error while playing: ${errorMessage(e)}", null)
+    }
+
+    /**
+     * Forgets what the programs so far set, the tempo and what they labelled, as when another project is opened: the next
+     * program starts in a new session at the default tempo.
+     */
+    @Synchronized
+    fun resetSession() {
+        session = ReplSession(host)
+        host.cps = DEFAULT_CPS
     }
 
     /** Starts the program at cycle 0 if it is not playing yet. */
@@ -146,6 +169,7 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
             any = true
             when (command) {
                 is Command.SetProgram -> scheduler.setProgram(command.pattern, command.cps, command.warnings)
+                is Command.SetCps -> scheduler.setCps(command.cps)
                 Command.Play -> if (!scheduler.playing) scheduler.play(renderedFrames + startDelayFrames)
                 Command.Stop -> {
                     scheduler.stop()

@@ -18,7 +18,7 @@ interface SoundLibrary {
 }
 
 sealed interface EvalReport {
-    data class Ok(val cps: Double, val warnings: List<String>) : EvalReport
+    data class Ok(val cps: Double, val warnings: List<String>, val program: ProgramInfo) : EvalReport
 
     /** [line] and [column] are 1-based; 0 when no range is known. */
     data class Failed(val message: String, val range: SourceRange?, val line: Int, val column: Int) : EvalReport
@@ -59,7 +59,7 @@ public data class SliderConfig(
 )
 
 /** What the transpiler found in a program: where the atoms of its mini-notation strings are, and the sliders and widgets it makes. */
-public class ProgramInfo(
+public data class ProgramInfo(
     val miniLocations: List<SourceRange>,
     val sliders: List<SliderConfig>,
     val widgets: List<WidgetConfig>,

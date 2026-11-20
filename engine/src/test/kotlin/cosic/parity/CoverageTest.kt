@@ -1,8 +1,8 @@
 package cosic.parity
 
-import cosic.script.next.Realm
-import cosic.script.next.SessionHost
-import cosic.script.next.catalogue.Catalogue
+import cosic.script.Realm
+import cosic.script.SessionHost
+import cosic.script.catalogue.Catalogue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject

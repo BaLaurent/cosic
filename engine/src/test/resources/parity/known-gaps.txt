@@ -329,7 +329,6 @@ examples:pw#0  # not implemented yet
 examples:pw#1  # not implemented yet
 examples:pwrate#0  # not implemented yet
 examples:pwsweep#0  # not implemented yet
-examples:queryArc#0  # not implemented yet
 examples:rand#0  # not implemented yet
 examples:randL#0  # not implemented yet
 examples:range#0  # not implemented yet
