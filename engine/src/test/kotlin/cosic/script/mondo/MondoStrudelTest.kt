@@ -274,8 +274,9 @@ class MondoStrudelTest {
             "markcss", realm.function("markcss", 1) { self, args -> seen = self to args[0]; self }, PropFlags.HIDDEN,
         )
         val pattern = session.evaluate("mondo`s bd`").pattern
-        assertEquals("color: var(--caret,--foreground);text-decoration:underline", seen!!.second)
-        assertTrue(seen!!.first is PatternValue)
+        val (receiver, style) = checkNotNull(seen) { "markcss was not called" }
+        assertEquals("color: var(--caret,--foreground);text-decoration:underline", style)
+        assertTrue(receiver is PatternValue)
         assertEquals(listOf("[ 0/1 → 1/1 | s:bd ]"), shown(pattern))
     }
 }
