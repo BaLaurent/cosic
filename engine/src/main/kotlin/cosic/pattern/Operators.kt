@@ -63,11 +63,13 @@ private val ALIGNMENT_KEYS = listOf("in", "out", "mix", "squeeze", "squeezeout",
 internal object Alignment {
     /**
      * `DEFAULT_ALIGNMENT` of pattern.mjs:1439, what `pat.add(x)` does: `in`, unless `setDefaultJoin` changed it. Like Strudel's
-     * it is global to the process; a new session starts with [reset] (Strudel's own tests do the same after every test).
+     * it is global to the process, so it is shared by every program that is queried; the REPL puts it back with [reset] before it
+     * runs a program (Strudel keeps it until the page is reloaded, and its own tests reset it after every test).
      */
     @Volatile
     var default: String = "in"
 
+    /** The default alignment again: `in`. */
     fun reset() {
         default = "in"
     }

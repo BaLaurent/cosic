@@ -8,6 +8,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -207,6 +208,23 @@ class OperatorsSpecTest {
         )
         assertEquals(emptyList(), fastcat(1.0, 2.0).aligned("add", "out", emptyList()).firstLines())
         assertFailsWith<CosicError> { fastcat(1.0).aligned("add", "sideways", listOf(2.0)) }
+    }
+
+    @Test
+    fun everyAlignmentGivesItsResultTheStepsStrudelGives() {
+        // pattern.mjs:805-834: `in` keeps the steps of the pattern, `out` those of the other one, `mix` their least common multiple,
+        // `poly` the pattern's; the joins that squeeze and restart have none (left has 3 steps, right has 2)
+        val steps = mapOf("in" to 3L, "out" to 2L, "mix" to 6L, "poly" to 3L)
+        for (op in listOf("add", "keepif", "keep", "set")) {
+            for (how in listOf("in", "out", "mix", "squeeze", "squeezeout", "reset", "restart", "poly")) {
+                assertEquals(steps[how]?.let { Rational(it) }, left().aligned(op, how, listOf(right())).steps, "$op.$how")
+            }
+        }
+        assertEquals(Rational(3), pure("a").callMethod("struct", fastcat(1.0, 0.0, 1.0)).steps)
+        assertEquals(Rational(2), fastcat("a", "b").callMethod("mask", fastcat(1.0, 0.0, 1.0)).steps)
+        assertEquals(Rational(3), fastcat(0.0, 0.5, 1.0).callMethod("range", 10.0, 20.0).steps)
+        assertEquals(Rational(3), fastcat(0.0, 0.5, 1.0).callMethod("round").steps)
+        assertNull(fastcat(0.0, 0.5, 1.0).callMethod("range", slowcat(10.0, 20.0), 30.0).steps)
     }
 
     @Test
