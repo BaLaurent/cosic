@@ -1,0 +1,464 @@
+## Hand-written programs for the transpiler. `node tools/strudel-ref/transpile-oracle.mjs` runs each through Strudel's transpiler
+## (with the mini-notation, bare-samples and widget plugins, and the two embedded languages `mondo` and `mondolang`) with four sets
+## of options and writes oracle.json; TranspileOracleTest compares the Kotlin transpiler with it, tree and context alike.
+## Format: `### <name>` then the code; `### <name> !json` then one JSON string literal. `## ` lines are comments.
+
+## ---- double-quoted strings are mini-notation
+### mini.double-quoted
+"c3 e3"
+### mini.call-args
+s("bd", "hh oh")
+### mini.stack-args
+stack("c3","bd sd")
+### mini.method-chain
+n("0 1 2").s("sine").lpf("200 400")
+### mini.array
+["a b", "c d"]
+### mini.object-value
+({ a: "x y", b: 1 })
+### mini.single-quoted
+s('bd sd')
+### mini.single-and-double
+s('bd', "hh")
+### mini.escaped-quote
+s("a\"b")
+### mini.escape-newline
+s("a\nb")
+### mini.unicode-escape
+s("\u00e9 b")
+### mini.hex-escape
+s("\x41 b")
+### mini.empty
+s("")
+### mini.apostrophe
+s("it's")
+### mini.arrow-body
+x => "a b"
+### mini.arrow-default
+(a = "x y") => a
+### mini.nested-function
+const f = () => { return s("a b") }; f()
+### mini.conditional
+true ? "a b" : "c d"
+### mini.logical
+x || "a b"
+### mini.binary
+"a" + "b"
+### mini.after-declaration
+const a = "b c"; s(a)
+### mini.nested-calls
+s("a").fast("<2 3>").slow("4")
+### mini.spread
+f(..."ab")
+### mini.new
+new Foo("a b")
+### mini.computed-member
+x["a b"]
+### mini.computed-key
+({ ["a b"]: 1 })
+### mini.shorthand
+({ a })
+### mini.object-spread
+({ ...a, b: "x y" })
+### mini.getter
+({ get a() { return "x y" } })
+### mini.nullish
+a ?? "b c"
+### mini.async-arrow
+const f = async () => await g("a b")
+### mini.directive
+"use strict"
+### mini.unicode-identifier
+const é = "a b"
+## ---- keys that are strings stay strings (a deliberate difference from Strudel, which makes `m(...)` of them)
+### mini.object-key-string
+({ "a b": 1 })
+### mini.object-key-and-value
+({ "a b": "c d" })
+### mini.object-method-key
+({ "a"() { return 1 } })
+### mini.pattern-key
+const { "a b": x } = y
+## ---- template literals
+### template.backtick
+s(`bd sd`)
+### template.multiline
+s(`bd sd
+hh oh
+cp`)
+### template.expression
+s(`bd ${x} sd`)
+### template.two-expressions
+`a ${x} b ${y} c`
+### template.escape
+s(`a\nb`)
+### template.crlf !json
+"s(`a\r\nb`)"
+### template.nested
+s(`a ${`b`} c`)
+### template.empty
+``
+### template.tagged
+xxx`c3`
+### template.tagged-expression
+xxx`a ${"b c"} d`
+### template.tagged-member
+a.b`c3`
+### template.tagged-call
+f(1)`c3`
+### template.tagged-in-call
+s(xxx`a b`).fast(2)
+### template.in-label
+$: s(`bd sd`)
+## ---- mini-off and mini-on
+### off.block-comments
+/* mini-off */
+s("a b");
+/* mini-on */
+s("c d")
+### off.line-comments
+// mini-off
+s("a b");
+// mini-on
+s("c d")
+### off.nested
+// mini-off
+// mini-off
+s("a");
+// mini-on
+s("b");
+// mini-on
+s("c")
+### off.unmatched-off
+// mini-off
+s("a b")
+### off.unmatched-on
+// mini-on
+s("a b")
+### off.on-before-off
+// mini-on
+// mini-off
+s("a");
+// mini-on
+s("b")
+### off.compact
+/*mini-off*/ "a"; /*mini-on*/ "b"
+### off.text-after
+// mini-off because reasons
+"a"
+// mini-on: back again
+"b"
+### off.longer-word
+// mini-offline
+"a b"
+### off.boundaries
+"a"
+/* mini-off */"b"
+/* mini-on */"c"
+### off.template-keeps-expression
+/* mini-off */
+const randPrefix = Math.random() > 0.5 ? "b" : "s";
+const drumPat = `${randPrefix}d`;
+// mini-on
+s(drumPat).lpf("5000 10000") // make sure mini still runs;
+### off.in-function
+const f = () => {
+  // mini-off
+  const a = "x y"
+  // mini-on
+  return "z w"
+}
+### off.multiline-comment
+/*
+  mini-off
+*/
+"a"
+### off.tab-before !json
+"//\tmini-off\n\"a\"\n// mini-on\n\"b\""
+### off.no-break-space !json
+"/*\u00a0mini-off*/ \"a\"; /*\u00a0mini-on*/ \"b\""
+### off.tagged-unaffected
+// mini-off
+mondo`a b`
+### off.other-comments
+// not mini-off at the start
+"a"
+/* mini-ofx */
+"b"
+## ---- labels
+### label.dollar
+$: s("bd")
+### label.named
+bass: note("c2")
+### label.multiple
+$: s("bd")
+$: s("hh")
+### label.muted
+_bass: note("c2")
+### label.solo
+S: s("bd")
+### label.in-block
+{ a: s("bd") }
+### label.in-arrow
+const f = () => { x: y }; f()
+### label.in-if
+if (true) { a: s("bd") }
+### label.semicolon
+$: s("bd");
+### label.sequence-body
+a: s("a"), s("b")
+### label.comments
+// the drums
+drums: /* really */ s("bd") // here
+### label.then-declaration
+$: s("bd")
+const x = 1
+### label.in-switch
+switch (1) { case 1: a: s("bd") }
+### label.multiline-body
+$: stack(
+  s("a"),
+  s("b")
+)
+### label.arrow-body
+a: x => y
+### label.object-body
+a: ({ b: 1 })
+### label.unicode-name
+é: s("a")
+### label.error-block
+a: { s("bd") }
+### label.error-nested
+a: b: c
+### label.error-loop
+a: for (;;) { break a }
+### label.error-if
+a: if (x) y
+## ---- bare samples calls
+### samples.bare
+samples('xxx')
+### samples.await
+await samples('xxx')
+### samples.object
+samples({ a: ['a.wav'] }, 'https://x/')
+### samples.github
+samples('github:tidalcycles/dirt-samples')
+### samples.async-arrow
+const f = async () => { samples('x') }
+### samples.error-arrow
+const f = () => { samples('x') }
+### samples.error-function
+function f() { samples('x') }
+### samples.error-method
+({ m() { samples('x') } })
+### samples.method
+x.samples('a')
+### samples.argument
+f(samples('a'))
+### samples.operand
+1 + samples('a')
+### samples.then
+samples('a').then(f)
+### samples.await-then
+await samples('a').then(f)
+### samples.double-quoted
+samples("a")
+### samples.parenthesized-await
+await (samples('a'))
+### samples.in-async-function
+async function f() { return samples('a') }
+### samples.nested-async-in-sync
+const f = async () => { const g = () => 1; return samples('a') }
+### samples.label
+$: samples('a')
+### samples.callee-only
+samples
+### samples.two
+samples('a'); samples('b')
+## ---- sliders
+### slider.value
+slider(0.5)
+### slider.bounds
+slider(0.5, 0, 1)
+### slider.step
+slider(0.5, 0, 1, 0.1)
+### slider.in-chain
+s("bd").lpf(slider(200, 100, 5000))
+### slider.two
+n(slider(1, 0, 8)).add(slider(2, 0, 8))
+### slider.negative-first
+slider(-1, -2, 2, 0.5)
+### slider.identifier-first
+slider(x, 0, 1)
+### slider.identifier-bounds
+slider(1, a, b)
+### slider.double-quoted-first
+slider("1", 0, 1)
+### slider.null-bounds
+slider(1, null, null)
+### slider.spread
+slider(...args)
+### slider.no-arguments-error
+slider()
+### slider.method
+x.slider(1)
+### slider.exponent
+slider(1e3, 0, 1e4)
+### slider.hex
+slider(0x10, 0, 0xff)
+### slider.in-function
+const f = () => slider(1)
+### slider.nested
+slider(slider(1))
+### slider.negative-second
+slider(5, 1, -3)
+### slider.template-first
+slider(`1`)
+### slider.label
+$: s("bd").gain(slider(0.5))
+### slider.undefined-step
+slider(1, 0, 10, undefined)
+## ---- widgets
+### widget.pianoroll
+s("bd")._pianoroll()
+### widget.options
+s("bd")._pianoroll({ fold: 1 })
+### widget.chain
+s("bd")._scope()._pianoroll()._scope()
+### widget.all-types
+x._pianoroll()._punchcard()._spiral()._scope()._pitchwheel()._spectrum()._print()
+### widget.plain-method
+s("bd").pianoroll()
+### widget.in-function
+const f = (p) => p._spiral()
+### widget.computed-identifier
+x[_scope]()
+### widget.computed-string
+x["_scope"]()
+### widget.optional-call
+x?._scope()
+### widget.two-lines
+$: s("a")._scope()
+$: s("b")._scope()
+### widget.nested-argument
+x._scope(y._scope())
+### widget.with-mini
+s("a b")._pitchwheel()._spectrum()
+### widget.not-called
+x._scope
+### widget.function-call
+_scope()
+## ---- the value of the program
+### last.empty
+### last.comment-only
+// nothing
+### last.declaration
+const a = 1
+### last.function
+function f() {}
+### last.if
+if (x) { s("a") }
+### last.block
+{ s("a") }
+### last.expression
+s("a")
+### last.two
+s("a"); s("b")
+### last.empty-statement
+s("a");;
+### last.for-of
+for (const i of [1]) { s("a") }
+### last.label
+$: s("a")
+### last.let-then-name
+let a = 1
+a
+### last.throw
+throw 1
+### last.try
+try { s("a") } catch (e) {}
+### last.assignment
+x = s("a")
+### last.arrow
+() => 1
+### last.object
+({ a: 1 })
+### last.await
+await samples('a')
+### last.sequence
+1, 2
+### last.function-expression
+(function () {})
+## ---- offsets are in UTF-16 code units, whatever the line endings
+### offsets.astral-before !json
+"const x = '\ud83d\ude00'; s(\"a b\")"
+### offsets.crlf-lines !json
+"s(\"a b\")\r\n$: s(\"c d\")\r\n"
+### offsets.line-separator !json
+"const x = '\u2028'\ns(\"a b\")"
+### offsets.tabs !json
+"\ts(\t\"a\tb\"\t)"
+### offsets.comment-with-astral !json
+"// \ud83d\ude00 mini-off\ns(\"a b\")"
+## ---- the value of a program that ends in a comment
+### last.trailing-comments
+s("a") // c
+// d
+/* e */
+### last.expression-then-declaration-comment
+s("a")
+const unused = 1 // after
+## ---- other things the walk meets
+### misc.string-method-single
+'c e g'.note()
+### misc.string-method-double
+"c e g".note()
+### misc.pseudo-note-name
+c3
+### misc.numbers
+s("a").fast(0.5).slow(1e3)
+### misc.comments
+// one
+/* two */ s("a") // three
+/* four */
+### misc.kabel-call-untouched
+K("a b")
+### misc.optional-chaining
+a?.b("x y")?.c
+### misc.update-and-assign
+let i = 0; i++; i += 2; x.y = "a b"
+### misc.switch
+switch (x) { case "a b": f(); break; default: g("c d") }
+### misc.try
+try { f("a b") } catch (e) { g("c d") } finally { h("e f") }
+### misc.loops
+for (let i = 0; i < 2; i++) { f("a b") }
+### misc.destructuring
+const [a, { b = "c d" }] = x
+### misc.class-free-closure
+const make = (n) => (p) => p.fast(n).s("x y")
+## ---- embedded languages: ``mondo`...` `` is a call of the language, with the offset of its first character
+### language.mondo
+mondo`c3 e3`
+### language.expression-dropped
+mondo`a ${"b"} c`
+### language.mondolang
+mondolang`a b`
+### language.in-call
+s(mondo`a b`).fast(2)
+### language.label
+$: mondo`a b`
+### language.in-mini-off-region
+// mini-off
+mondo`a b`;
+// mini-on
+"c d"
+### language.two
+mondo`a`; mondo`b c`
+### language.multiline
+mondo`a
+b`
+### language.member-tag-untouched
+a.mondo`a b`
+### language.unregistered
+foo`a b`
