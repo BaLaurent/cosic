@@ -10,7 +10,7 @@ import cosic.pattern.arith
 import cosic.pattern.asControlMap
 import cosic.pattern.reportingExhaustion
 import cosic.pattern.silence
-import cosic.pattern.legacyStack
+import cosic.pattern.legacy.legacyStack
 
 /** A program's result: the pattern to play, as sound parameters, and its tempo in cycles per second. */
 internal class ProgramResult(val pattern: Pattern, val cps: Double)

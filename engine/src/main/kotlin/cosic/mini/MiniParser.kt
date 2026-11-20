@@ -6,18 +6,18 @@ import cosic.pattern.MAX_COUNT
 import cosic.pattern.NUMBER_TEXT
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
-import cosic.pattern.degradeBy
-import cosic.pattern.euclid
-import cosic.pattern.euclidRot
-import cosic.pattern.fast
+import cosic.pattern.legacy.degradeBy
+import cosic.pattern.legacy.euclid
+import cosic.pattern.legacy.euclidRot
+import cosic.pattern.legacy.fast
 import cosic.pattern.fastcat
 import cosic.pattern.pure
-import cosic.pattern.randomChoice
+import cosic.pattern.legacy.randomChoice
 import cosic.pattern.silence
-import cosic.pattern.slow
+import cosic.pattern.legacy.slow
 import cosic.pattern.slowcat
-import cosic.pattern.legacyStack
-import cosic.pattern.timecat
+import cosic.pattern.legacy.legacyStack
+import cosic.pattern.legacy.timecat
 import kotlin.math.roundToInt
 
 /**
@@ -38,6 +38,13 @@ import kotlin.math.roundToInt
  * Errors are [CosicError]s with the range of the offending character.
  */
 internal fun parseMini(src: String, baseOffset: Int): Pattern = MiniParser(src, baseOffset).parse()
+
+/** The `[from, to]` offsets (shifted by [baseOffset]) of every atom of [src], in source order. Parse errors are thrown. */
+internal fun parseMiniLeaves(src: String, baseOffset: Int): List<IntArray> {
+    val parser = MiniParser(src, baseOffset)
+    parser.parse()
+    return parser.leaves
+}
 
 private const val PIPE_SEED_BASE = 1000
 private const val SEQUENCE_END = ",|]>})"
@@ -85,6 +92,9 @@ private class MiniParser(private val src: String, private val base: Int) {
     private var pos = 0
     private var questionMarks = 0
     private var pipeGroups = 0
+
+    /** The location of every atom parsed so far. */
+    val leaves = ArrayList<IntArray>()
 
     fun parse(): Pattern {
         val group = parseGroup()
@@ -244,6 +254,7 @@ private class MiniParser(private val src: String, private val base: Int) {
         val number = if (NUMBER_TEXT.matches(text)) text.toDouble() else null
         val value: Any = number ?: text
         val at = SourceRange(base + start, base + pos)
+        leaves.add(intArrayOf(at.start, at.end))
         return Term(pure(value).withLoc(at), number)
     }
 

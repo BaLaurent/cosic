@@ -69,6 +69,8 @@ internal class Registered(
     val kind: RegisteredKind = RegisteredKind.REGISTER,
     /** Whether `pat.name(...)` exists. Always true for a registered function. */
     val hasMethod: Boolean = kind != RegisteredKind.FUNCTION,
+    /** When set, `pat.name(...)` calls this with the receiver and the arguments as they are, instead of the registered-function rules (see [Registry.dual]). */
+    val methodImpl: ((Pattern, List<Any?>) -> Any?)? = null,
 ) {
     val name: String get() = names[0]
 
@@ -118,6 +120,7 @@ internal class Registered(
      */
     fun method(receiver: Pattern, args: List<Any?>): Pattern {
         if (!hasMethod) throw CosicError("'$name' can't be used as a method")
+        methodImpl?.let { return resultPattern(it(receiver, args)) }
         if (kind == RegisteredKind.VARIADIC) return resultPattern(impl(listOf<Any?>(receiver) + args))
         val given = when {
             arity == 2 && args.size != 1 -> listOf<Any?>(sequence(args))
@@ -177,6 +180,12 @@ internal object Registry {
     /** A global that takes any number of arguments; as a method ([method] true) it puts the receiver first: `a.stack(b)` is `stack(a, b)`. */
     fun variadic(names: List<String>, method: Boolean = true, impl: (List<Any?>) -> Any?): List<Registered> = names.map { name ->
         Registered(listOf(name), 0, true, false, { it.innerJoin() }, impl, kind = RegisteredKind.VARIADIC, hasMethod = method)
+            .also { entries[name] = it }
+    }
+
+    /** A global with its own function for the method form: `name(args)` is [global] and `pat.name(args)` is [method]. Neither is patternified. */
+    fun dual(names: List<String>, global: (List<Any?>) -> Any?, method: (Pattern, List<Any?>) -> Any?): List<Registered> = names.map { name ->
+        Registered(listOf(name), 0, true, false, { it.innerJoin() }, global, kind = RegisteredKind.FUNCTION, hasMethod = true, methodImpl = method)
             .also { entries[name] = it }
     }
 

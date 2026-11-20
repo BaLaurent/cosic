@@ -6,7 +6,7 @@ import cosic.pattern.compact
 import cosic.pattern.cycleSpan
 import cosic.pattern.query
 import cosic.pattern.r
-import cosic.pattern.timeRand
+import cosic.pattern.legacy.timeRand
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

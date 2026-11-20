@@ -1,4 +1,6 @@
-package cosic.pattern
+package cosic.pattern.legacy
+
+import cosic.pattern.*
 
 import kotlin.math.PI
 import kotlin.math.abs

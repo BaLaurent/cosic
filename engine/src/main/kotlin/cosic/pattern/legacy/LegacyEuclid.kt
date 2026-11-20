@@ -1,4 +1,6 @@
-package cosic.pattern
+package cosic.pattern.legacy
+
+import cosic.pattern.*
 
 /**
  * Spreads [k] hits as evenly as possible over [n] steps (Bjorklund's algorithm): `bjorklund(3, 8)` is

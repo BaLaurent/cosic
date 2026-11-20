@@ -1,9 +1,11 @@
-package cosic.pattern
+package cosic.pattern.legacy
+
+import cosic.pattern.*
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class EuclidTest {
+class LegacyEuclidTest {
     private fun render(bits: BooleanArray): String = bits.joinToString("") { if (it) "x" else "." }
 
     @Test

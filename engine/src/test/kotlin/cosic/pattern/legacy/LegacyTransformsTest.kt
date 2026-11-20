@@ -1,11 +1,13 @@
-package cosic.pattern
+package cosic.pattern.legacy
+
+import cosic.pattern.*
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-class TransformsTest {
+class LegacyTransformsTest {
     private val ab = fastcat(pure("a"), pure("b"))
     private val abc = fastcat(pure("a"), pure("b"), pure("c"))
     private val abcd = fastcat(pure("a"), pure("b"), pure("c"), pure("d"))

@@ -1,4 +1,6 @@
-package cosic.pattern
+package cosic.pattern.legacy
+
+import cosic.pattern.*
 
 /**
  * Time and structure transformations. Operations that take a function (`inside`, `off`, ...) apply it

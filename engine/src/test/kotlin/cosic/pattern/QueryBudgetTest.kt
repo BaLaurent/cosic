@@ -1,5 +1,6 @@
 package cosic.pattern
 
+import cosic.pattern.legacy.*
 import kotlin.concurrent.thread
 import kotlin.test.Test
 import kotlin.test.assertEquals

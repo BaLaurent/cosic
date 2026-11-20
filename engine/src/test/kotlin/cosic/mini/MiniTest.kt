@@ -11,7 +11,7 @@ import cosic.pattern.r
 import cosic.pattern.shown
 import cosic.pattern.shownCycle
 import cosic.pattern.span
-import cosic.pattern.timeRand
+import cosic.pattern.legacy.timeRand
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

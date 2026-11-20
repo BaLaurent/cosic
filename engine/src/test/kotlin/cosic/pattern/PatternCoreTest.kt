@@ -1,5 +1,6 @@
 package cosic.pattern
 
+import cosic.pattern.legacy.*
 import cosic.SourceRange
 import kotlin.test.Test
 import kotlin.test.assertEquals

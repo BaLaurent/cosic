@@ -1,4 +1,6 @@
-package cosic.pattern
+package cosic.pattern.legacy
+
+import cosic.pattern.*
 
 import kotlin.math.abs
 import kotlin.test.Test
@@ -7,7 +9,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class SignalsTest {
+class LegacySignalsTest {
     private fun valueAt(p: Pattern, t: Rational): Double = p.query(span(t, t)).single().value as Double
 
     private fun assertNear(expected: Double, actual: Double, message: String = "") =
