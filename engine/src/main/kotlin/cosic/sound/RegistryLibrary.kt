@@ -10,9 +10,13 @@ import cosic.SoundEntry
 import cosic.SoundLibrary
 import cosic.WaveTableBank
 import cosic.WavetableFrames
+import cosic.soundfont.FontLoader
+import cosic.soundfont.FontThreads
+import cosic.soundfont.FontZone
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 /** Where soundfont files are fetched from until `setSoundfontUrl` says otherwise (fontloader.mjs:13). */
@@ -44,6 +48,12 @@ class RegistryLibrary(private val store: SampleStore, builtins: Set<String>, rea
 
     /** The store the library loads from: for the code that decodes things other than samples (soundfonts). */
     internal val sampleStore: SampleStore get() = store
+
+    /** What runs the jobs that fetch and decode soundfonts (`null`: [FontThreads]); a test sets one that runs them at once. */
+    @Volatile
+    internal var fontExecutor: Executor? = null
+
+    private val fonts = FontLoader(store, { soundfontUrl }, { fontExecutor ?: FontThreads.executor })
 
     override fun sound(name: String): SoundEntry? = registry.lookup(name)
 
@@ -154,6 +164,8 @@ class RegistryLibrary(private val store: SampleStore, builtins: Set<String>, rea
     override fun setSoundfontUrl(url: String) {
         soundfontUrl = url
     }
+
+    override fun fontZone(font: String, midi: Double): FontZone? = fonts.zone(font, midi)
 
     /** `getPayload` (wavetable.mjs:46-63): channel 0 of [data] cut into frames of [frameLen]. */
     private fun cutFrames(data: SampleData, frameLen: Int): WavetableFrames {

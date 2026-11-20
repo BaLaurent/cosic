@@ -19,6 +19,11 @@ import cosic.pattern.logger
 import cosic.pattern.valueToMidi
 import cosic.sound.UNPITCHED_ROOT_MIDI
 import cosic.sound.commonSampleInfo
+import cosic.soundfont.PRESET_CONTROL
+import cosic.soundfont.PresetRef
+import cosic.soundfont.SoundfontBank
+import cosic.soundfont.resolvePreset
+import cosic.soundfont.resolveSoundfont
 
 /** The outcome of looking up the sound an event asks for. */
 internal sealed interface SoundLookup {
@@ -47,7 +52,7 @@ private val REST_NAMES = setOf("-", "~", "_")
  * and logs a warning. For a bank, `n` and `note`/`freq` choose the file and its pitch ([commonSampleInfo]).
  *
  * Lookups ask the library for the sample, which starts loading it, and render drum sounds on first use (unless [drums] has been warmed up),
- * so doing one off the audio thread (see [dryRun]) warms up what it needs. Soundfonts have no source yet and look unknown. A wavetable that is not decoded yet is [SoundLookup.Loading], as a sample is.
+ * so doing one off the audio thread (see [dryRun]) warms up what it needs. A soundfont (`gm_*`) is played by [resolveSoundfont]. A wavetable that is not decoded yet is [SoundLookup.Loading], as a sample is.
  */
 internal class SoundResolver(sampleRate: Int, val library: SoundLibrary, private val drums: DrumKit = DrumKit(sampleRate)) {
     /**
@@ -55,6 +60,7 @@ internal class SoundResolver(sampleRate: Int, val library: SoundLibrary, private
      * (`not a note: "x"`).
      */
     fun resolve(controls: ControlMap): SoundLookup {
+        (controls[PRESET_CONTROL] as? PresetRef)?.let { return resolvePreset(it, controls) } // `.soundfont(sf)`: the preset of a loaded soundfont, not a named sound
         val given = controls["s"]
         val s: Any? = if (given === Undefined || (given == null && !controls.containsKey("s"))) "triangle" else given
         if (s is String && s in REST_NAMES) return SoundLookup.Silent
@@ -75,6 +81,7 @@ internal class SoundResolver(sampleRate: Int, val library: SoundLibrary, private
                 val frames = library.wavetable(entry, choice.group, choice.index) ?: return SoundLookup.Loading
                 SoundLookup.Ready(VoiceSource.Wavetable(frames, controls.asSourceControls()))
             }
+            is SoundfontBank -> resolveSoundfont(library, entry, controls)
             is BuiltinSound -> builtin(entry.name, controls) ?: SoundLookup.Unknown(name)
             null -> builtin(name, controls) ?: SoundLookup.Unknown(name)
             else -> SoundLookup.Unknown(name)

@@ -1,5 +1,7 @@
 package cosic
 
+import cosic.soundfont.FontZone
+
 /** Absolute character offsets into the evaluated code; [end] is exclusive. */
 data class SourceRange(val start: Int, val end: Int)
 
@@ -158,6 +160,13 @@ interface SoundLibrary {
 
     /** `setSoundfontUrl(url)`: where soundfont files are fetched from. */
     fun setSoundfontUrl(url: String)
+
+    /**
+     * The decoded zone of the soundfont file [font] (`0000_JCLive_sf2_file`, a name of the `gm_*` lists) that plays MIDI note [midi]: the sample, its tuning and its
+     * loop. Never blocks: the first call starts loading the file and returns null, and so does every call until the file and the zone are decoded (or, when that
+     * failed, until it is tried again). Zones are chosen like `findZone` of Strudel's soundfont loader does.
+     */
+    fun fontZone(font: String, midi: Double): FontZone?
 }
 
 /** A [SampleStore] with nothing in it: every fetch fails and no sample ever loads. For libraries that only hold built-in sounds. */

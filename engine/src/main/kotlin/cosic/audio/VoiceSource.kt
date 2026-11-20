@@ -3,6 +3,7 @@ package cosic.audio
 import cosic.SampleData
 import cosic.WavetableFrames
 import cosic.audio.sources.SourceControls
+import cosic.soundfont.sf2.PresetZoneVoice
 
 /** What a voice plays. */
 internal sealed interface VoiceSource {
@@ -17,6 +18,9 @@ internal sealed interface VoiceSource {
      * (`wt`, `warp`, `warpmode`, `unison`, `detune`, …) from [controls], the event's control map. The source brings its own amplitude envelope.
      */
     class Wavetable(val frames: WavetableFrames, val controls: SourceControls) : VoiceSource
+
+    /** A note of a soundfont preset loaded by the program (`.soundfont(sf)`): the zones that sound, played and summed as sfumato does, without the effects of the event. */
+    class Preset(val zones: List<PresetZoneVoice>) : VoiceSource
 }
 
 /**

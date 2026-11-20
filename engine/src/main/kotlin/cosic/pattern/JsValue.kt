@@ -357,6 +357,8 @@ private fun jsonQuote(text: String): String = buildString(text.length + 2) {
  */
 internal fun stringifyValues(value: Any?, compact: Boolean = false): String {
     if (jsTypeof(value) != "object") return jsToString(value)
-    val json = jsonStringify(value) ?: "undefined"
+    // keys that start with `_cosic_` are routing data of the engine (K1 of the parity plan), not part of what a hap says
+    val shown = if (value is Map<*, *> && value.keys.any { it is String && it.startsWith("_cosic_") }) value.filterKeys { !(it is String && it.startsWith("_cosic_")) } else value
+    val json = jsonStringify(shown) ?: "undefined"
     return if (compact) json.substring(1, json.length - 1).replace("\"", "").replace(",", " ") else json
 }

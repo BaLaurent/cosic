@@ -140,6 +140,7 @@ internal object Catalogue {
             registerUtil()
             registerTonal()
             registerXen()
+            registerSoundfonts()
             registerMondo()
             registerTidal()
             registerLibrary()

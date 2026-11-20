@@ -3,6 +3,7 @@ package cosic.audio
 import cosic.audio.sources.SourceSpec
 import cosic.audio.sources.WavetableSource
 import cosic.audio.sources.frequencyFromParams
+import cosic.soundfont.sf2.PresetPlayer
 import kotlin.math.abs
 import kotlin.math.pow
 
@@ -58,7 +59,9 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
 
     /** The wavetable source of a voice that plays one (it makes its own envelope, so the amplitude envelope of the voice stays at 1); null otherwise. */
     private var wavetable: WavetableSource? = null
+    private val presetPlayer = PresetPlayer(sampleRate)
     private var isSynth = true
+    private var isPreset = false
     private var sourceLevel = 1f
 
     /** The amplitude envelope that multiplies the source (stage 0 of the chain, inside the source node in Strudel). */
@@ -147,7 +150,9 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     fun start(params: VoiceParams, startFrame: Long, order: Long, seed: Int, multiChannelOrbits: Boolean): Double {
         isActive = false
         releaseFxGroups()
-        val main = params.main
+        // a soundfont preset note ignores the controls of its event: sfumato plays it straight to the output at the gain it has
+        val preset = params.source is VoiceSource.Preset
+        val main = if (preset) PRESET_MAIN else params.main
         val t = startFrame.toDouble() / sampleRate
         val duration = if (params.durationSec > 0.0) params.durationSec else 0.0 // NaN becomes 0 too
         val end = t + duration
@@ -172,7 +177,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         val envEnd = startSource(params, main, t, duration, seed)
 
         // The effect chains: FX elements first (each takes a group from the shared pool; when it is empty the rest are dropped), the main chain last.
-        val fx = params.fx
+        val fx = if (preset) emptyList() else params.fx
         val wanted = Math.min(fx.size, MAX_FX)
         for (i in 0 until wanted) {
             fxGroups[i] = fxPool.take() ?: break
@@ -195,7 +200,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         post.configure(main)
         startSends(params, main, orbit, t)
 
-        if (params.mods.isNotEmpty()) connectMods(params, main, orbit, t, endWithRelease)
+        if (!preset && params.mods.isNotEmpty()) connectMods(params, main, orbit, t, endWithRelease)
 
         val activeUntil = Math.max(envEnd, endWithRelease)
         activeUntilFrame = frameAtOrAfter(activeUntil)
@@ -231,6 +236,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
                 wavetable = null
                 oscillator.start(source.waveform, frequencyFromParams(main), seed)
                 isSynth = true
+                isPreset = false
                 isSample = false
                 sourceLevel = source.waveform.baseLevel
                 return AmpEnvelope.schedule(
@@ -243,6 +249,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
                 val sample = source.params
                 player.start(sample, main)
                 isSynth = false
+                isPreset = false
                 isSample = sample.honoursSampleControls
                 sourceLevel = 1f
                 // The gate of a sample is the length of its slice unless clip, loop or release is set; a soundfont's is always the hap's.
@@ -252,6 +259,15 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
                     ampEnv, AmpKind.SAMPLE, main[Param.attack], main[Param.decay], main[Param.sustain], main[Param.release],
                     t, duration, sliceSec, hapGate, loopSet, releaseSet,
                 )
+            }
+            is VoiceSource.Preset -> {
+                isSynth = false
+                isPreset = true
+                isSample = false
+                sourceLevel = 1f
+                ampEnv.reset(1.0)
+                // sfumato stops the note at `deadline + h.duration`: the length of the hap in cycles, added to a time in seconds
+                return presetPlayer.start(source.zones, t, t + duration * params.cps)
             }
         }
     }
@@ -394,6 +410,10 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         val produced = if (wavetable != null) {
             blk.channels = 2
             wavetable.render(blk.l, blk.r, n)
+        } else if (isPreset) {
+            blk.channels = 2
+            presetPlayer.fill(blk.l, blk.r, ctx)
+            n
         } else if (isSynth) {
             oscillator.fill(blk.l, n)
             val level = sourceLevel
@@ -456,6 +476,9 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     }
 
     private companion object {
+        /** The controls of a preset note: a gain of 1 and everything else unset. */
+        val PRESET_MAIN = ParamSet(DoubleArray(Param.COUNT) { Double.NaN }.also { it[Param.gain.ordinal] = 1.0 })
+
         /** `release` when the pattern sets none (superdough.mjs:206). */
         const val DEFAULT_RELEASE = 0.01
 
