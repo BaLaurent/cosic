@@ -92,8 +92,9 @@ internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.IN
         if (activeUntil.isNaN()) return false
         ledger.admit(voice, t, activeUntil, maxPolyphony, stealAction)
         if (voice.isSample && voice.hasCut) {
+            // sampler.mjs:365-373: only the previous sample of the group fades, from the new voice's `t + nudge` over 10 ms
             for (other in voices) {
-                if (other !== voice && other.isSample && other.canBeCut && other.cutGroup == voice.cutGroup) other.cut(t)
+                if (other !== voice && other.isSample && other.canBeCut && other.cutGroup == voice.cutGroup) other.cut(voice.cutTime)
             }
         }
         return true

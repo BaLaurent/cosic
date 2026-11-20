@@ -135,6 +135,9 @@ internal enum class Param {
     begin,
     end,
 
+    // sample start offset in seconds (only the cut ramp reads it here; the sampler delays its start by it)
+    nudge,
+
     // sources append their own entries below this line
     ;
 

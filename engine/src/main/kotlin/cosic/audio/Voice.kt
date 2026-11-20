@@ -2,7 +2,6 @@ package cosic.audio
 
 import cosic.audio.sources.frequencyFromParams
 import kotlin.math.abs
-import kotlin.math.floor
 import kotlin.math.pow
 
 private const val MAX_GAIN_PARAM = 3.4e38
@@ -11,7 +10,9 @@ private const val MAX_GAIN_PARAM = 3.4e38
 private const val MAX_SPEED = 8.0
 private const val MIN_NOTE = -24.0
 private const val MAX_NOTE = 132.0
-private const val MAX_CUT_GROUP = 1e9
+
+/** A `nudge` beyond this many seconds counts as this, so that the time of a cut stays a number the timelines can hold. */
+private const val MAX_NUDGE = 3600.0
 
 /** `cut` fades the previous voice of the group over this long (sampler.mjs:365-373). */
 private const val CUT_RAMP_SECONDS = 0.01
@@ -123,7 +124,16 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
 
     var hasCut = false
         private set
-    var cutGroup = 0
+
+    /**
+     * The cut group: `cutGroups[cut]` of the sampler, a property key of a JS array, so `1.5` is a group of its own and `-0` is `0`. Compared as a
+     * double.
+     */
+    var cutGroup = 0.0
+        private set
+
+    /** When this voice, as the newest of its cut group, silences the previous one: `t + nudge` of sampler.mjs:332, a negative nudge counting as 0. */
+    var cutTime = 0.0
         private set
 
     /** True while the voice's cut group may still be cut by a later voice of the group. */
@@ -201,7 +211,8 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         cutPending = false
         isFading = false
         hasCut = !main[Param.cut].isNaN()
-        cutGroup = if (hasCut) floor(main[Param.cut].coerceIn(-MAX_CUT_GROUP, MAX_CUT_GROUP)).toInt() else 0
+        cutGroup = if (hasCut) main[Param.cut] else 0.0
+        cutTime = t + valueOr(main[Param.nudge], 0.0).coerceIn(0.0, MAX_NUDGE)
         this.order = order
         isActive = true
         return activeUntil
