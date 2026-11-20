@@ -40,6 +40,10 @@ internal class ParityTest(private val case: ParityCase) {
         val problem = mismatch(case, expected, runCase(case))
         ParityReport.record(case, if (problem == null) Status.PASS else Status.FAIL, problem)
         if (ParityData.writeGaps) return
+        if (ParityData.only != null) {
+            if (problem != null) fail("${case.id} does not match Strudel\n${shortened(case.codes.joinToString("\n---\n"))}\n$problem")
+            return
+        }
         val listed = case.id in KnownGaps.entries
         when {
             problem == null && listed -> fail("remove '${case.id}' from known-gaps.txt: it now matches Strudel")
@@ -53,7 +57,8 @@ internal class ParityTest(private val case: ParityCase) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun cases(): List<Array<Any>> = ParityData.cases.map { arrayOf<Any>(it) }
+        fun cases(): List<Array<Any>> =
+            ParityData.cases.filter { ParityData.only?.containsMatchIn(it.id) ?: true }.map { arrayOf<Any>(it) }
 
         @JvmStatic
         @AfterClass

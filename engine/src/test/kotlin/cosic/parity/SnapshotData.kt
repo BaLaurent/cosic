@@ -72,6 +72,9 @@ internal object ParityData {
 
     val writeGaps: Boolean = System.getProperty("cosic.parity.writeGaps") == "true"
 
+    /** `-Dcosic.parity.only=<regex>`: run only the cases whose id matches; known-gaps.txt is ignored then. */
+    val only: Regex? = System.getProperty("cosic.parity.only")?.takeIf { it.isNotBlank() }?.let { Regex(it) }
+
     val knownGapsFile: File get() = File(dir, "known-gaps.txt")
     val coverageExclusionsFile: File get() = File(dir, "coverage-exclusions.txt")
     val namesFile: File get() = File(dir, "strudel-names.json")
