@@ -1,0 +1,1426 @@
+## Snippets for the interpreter, compared with V8 by InterpreterOracleTest. `node tools/strudel-ref/interpreter-oracle.mjs`
+## runs each as the body of a function in Node (strict mode) and writes oracle.json; the Kotlin interpreter must print the
+## same text: the value (prelude.js show()), or `THROW <name>: <message>`. Nothing here uses a library (no Math, no
+## Array.prototype.map, no JSON): only the language and the helpers isArray/keys/hasOwn of prelude.js.
+## Format: `### <name>` then the code; `### <name> !json` then one JSON string literal. `## ` lines are comments.
+
+## ---- literals
+### lit.numbers
+return [0, 1.5, .5, 5., 1e3, 1E-3, 0x1f, 0o17, 0b101, 1_000, 0xFF_FF, 123456789012345680000, 1e21, 1e-7, 5e-324, 1.7976931348623157e308, 9007199254740993];
+### lit.strings
+return ['a', "b", `c`, 'it\'s', "say \"hi\"", 'tab\there', '\x41\u0042\u{43}', 'line\nbreak', '\0'.length, '\\'.length];
+### lit.constants
+return [true, false, null, undefined, NaN, Infinity, -Infinity, void 0];
+### lit.negzero
+return [-0, 1 / -0, 1 / 0, 0 * -1, 1 / (0 * -1), -0 + 0, 1 / (-0 + 0), -0 - 0, 1 / (-0 - 0)];
+### lit.template
+const a = 1, b = 'x';
+return [`plain`, `a${a}b`, `${a}${b}`, `${a + 1}`, `${`nested ${b}`}`, `line1
+line2`, `\${escaped}`, `${[1, 2]}`, `${null} ${undefined}`];
+### lit.array-holes
+const a = [1, , 3];
+return [a.length, a[1], a];
+### lit.object
+const k = 'dyn';
+return {a: 1, 'b c': 2, 3: 3, [k]: 4, [k + 1]: 5, 0.5: 6, 1e3: 7};
+### lit.object-order
+return {b: 1, 2: 1, a: 1, 1: 1, '-1': 1, '01': 1, 10: 1, 9: 1};
+### lit.object-shorthand
+const x = 1, y = 2;
+return {x, y, z: x + y};
+### lit.object-dup-key
+return {a: 1, b: 2, a: 3};
+### lit.object-method
+const o = {m() { return 1; }, n: function () { return 2; }, o: () => 3};
+return [o.m(), o.n(), o.o(), o.m.name, o.n.name, o.o.name];
+
+## ---- typeof
+### typeof.all
+return [typeof 1, typeof 's', typeof true, typeof undefined, typeof null, typeof {}, typeof [], typeof (() => 1), typeof function () {}, typeof NaN];
+### typeof.undeclared
+return [typeof nothingDeclaredHere, typeof undefined];
+### typeof.tdz
+try { typeof q; let q = 1; } catch (e) { return e.name + ': ' + e.message; }
+
+## ---- arithmetic
+### num.arith
+return [1 + 2, 5 - 7, 3 * 4, 7 / 2, 7 % 3, -7 % 3, 7 % -3, 5.5 % 2, 2 ** 10, 2 ** -1, 2 ** 0.5, (-8) ** (1 / 3), 10 / 0, -10 / 0, 0 / 0, 5 % 0, Infinity % 5, 5 % Infinity];
+### num.exp
+return [2 ** 3 ** 2, (-2) ** 2, 0 ** 0, NaN ** 0, 1 ** Infinity, (-1) ** Infinity, 2 ** NaN, 4 ** 0.5, 10 ** 21, 10 ** -7];
+### num.precision
+return [0.1 + 0.2, 0.1 * 3, 1 / 3, 100 / 3, 1e21 + 1, 2 ** 53 + 1, 123456789 * 987654321, 0.000001, 0.0000001, 1.5e300 * 1.5e300];
+### num.mod
+return [-0 % 5, 1 / (-0 % 5), 5.5 % -2, -5.5 % 2, 1e21 % 7, 7 % 1e21, 0.3 % 0.1];
+### num.bitwise
+return [5 & 3, 5 | 3, 5 ^ 3, ~5, ~~3.7, ~~-3.7, 1 << 31, 1 << 32, 1 << 33, -1 >>> 0, -1 >>> 28, -16 >> 2, 2 ** 32 >> 0, 2 ** 31 | 0, 1.9 | 0, -1.9 | 0, 4294967296 | 0, 4294967295 | 0, NaN | 0, Infinity | 0];
+### num.unsigned
+return [-1 >>> 0, -1 >>> 31, -1 >>> 32, 1 >>> 33, 2 ** 32 >>> 0, (2 ** 32 + 5) >>> 0, -(2 ** 31) >>> 0, 8 >>> 1, 0 >>> 5];
+### num.compound
+let a = 10; a += 5; a -= 3; a *= 2; a /= 4; a %= 4; a **= 3; a <<= 2; a >>= 1; a >>>= 1; a &= 7; a |= 8; a ^= 3;
+return a;
+### num.logical-assign
+let a = null, b = 0, c = 5, d = 'x', e;
+a ??= 1; b ||= 2; c &&= 3; d ??= 'y'; e ||= 'z';
+return [a, b, c, d, e];
+### num.incdec
+let a = 5, b = '5', c = null, d, e = true;
+const r = [a++, a, ++a, a--, a, --a, b++, b, c--, c, d++, d, e++, e];
+return r;
+### num.incdec-member
+const o = {x: 1, y: '2'}, arr = [10];
+o.x++; ++o.y; arr[0]--; o['x'] += 5;
+return [o.x, o.y, arr[0]];
+
+## ---- coercion
+### co.plus
+return [1 + '2', '1' + 2, 1 + null, 1 + undefined, [] + [], [] + {}, 1 + true, '5' - 2, '5' * '2', null + null, true + true, {} + 1, [1, 2] + [3], 'a' + null + undefined + true, 1 + 2 + '3', '1' + 2 + 3];
+### co.numbers
+return [+'', +' 12 ', +'0x1f', +'1e3', +'1_0', +'abc', +true, +false, +null, +undefined, +[], +[5], +[1, 2], +{}, +'Infinity', +'-Infinity', +'0b11', +'0o7', +'.5', +'5.', +'+5', +'--5'];
+### co.strings
+return ['' + 1, '' + 1.5, '' + -0, '' + 1e21, '' + 1e-7, '' + NaN, '' + [1, [2, 3]], '' + {}, '' + null, '' + undefined, '' + true, '' + (() => 1)];
+### co.toprimitive
+const o = {valueOf() { return 42; }, toString() { return 'str'; }};
+return [o + 1, o + '', `${o}`, o * 2, o > 41, '' + o, [o] + '', o == 42, o == 'str'];
+### co.toprimitive-order
+const log = [];
+const o = {valueOf() { log.push('v'); return {}; }, toString() { log.push('s'); return 'S'; }};
+return [o + '', log];
+### co.toprimitive-fail
+const o = {valueOf() { return {}; }, toString() { return {}; }};
+try { return o + ''; } catch (e) { return e.name + ': ' + e.message; }
+### co.boolean
+return [!0, !1, !'', !'0', !null, !undefined, !NaN, ![], !{}, !!'false', !!-0];
+### co.truthy-values
+const r = [];
+for (const v of [0, -0, NaN, '', 'a', '0', null, undefined, [], {}, 1, -1, Infinity, () => 1]) r.push(v ? 1 : 0);
+return r;
+
+## ---- equality and comparison
+### eq.loose
+return [null == undefined, null == 0, '' == 0, '0' == false, 'a' == 'a', [] == '', [1] == 1, NaN == NaN, ({}) == '[object Object]', 1 == '1', true == '1', true == 'true', false == '', null == false, undefined == false, [] == false, [0] == false, [[]] == 0];
+### eq.loose-objects
+const a = {}, b = {};
+return [a == a, a == b, a != b, a === a, a === b, [] == [], 0 == [], '1,2' == [1, 2], null == null, undefined == undefined];
+### eq.strict
+return [1 === 1, 1 === '1', NaN === NaN, 0 === -0, null === undefined, null === null, 'a' === 'a', true === true, true === 1, [] === [], undefined === void 0];
+### eq.ne
+return [1 != 2, 1 != '1', 1 !== '1', null != undefined, null !== undefined, NaN != NaN, NaN !== NaN];
+### cmp.numbers
+return [1 < 2, 2 < 1, 1 <= 1, 1 >= 2, 1 > 0, NaN < 1, NaN >= 1, NaN > 1, NaN <= 1, 1 < Infinity, -Infinity < 1, 0 < -0, 0 <= -0, 0 >= -0];
+### cmp.strings
+return ['a' < 'b', 'a' < 'B', '10' < '9', 'a' < 'ab', '' < 'a', 'b' > 'a', 'Z' < 'a', 'é' > 'z', 'abc' <= 'abc', '2' > '12'];
+### cmp.mixed
+return ['10' < 9, '10' < '9', 10 < '9', null < 1, null >= 0, null > -1, undefined < 1, undefined >= 0, undefined == 0, true > false, [2] > 1, 'b' > 'a', {} > 1, '' < 1, ' ' < 1];
+### cmp.objects
+const o = {valueOf() { return 5; }};
+const p = {valueOf() { return 7; }};
+return [o < p, o > p, o <= 5, o >= 5, o < 6, o == 5, o === 5];
+
+## ---- logical
+### log.values
+return [1 && 2, 0 && 2, 1 || 2, 0 || 2, null ?? 'd', 0 ?? 'd', undefined ?? 'd', '' ?? 'd', false ?? 'd', 1 && 2 && 3, 0 || null || 'z', null ?? (0 || 'q')];
+### log.short-circuit
+const log = [];
+const f = (v) => { log.push(v); return v; };
+f(0) && f(1); f(1) && f(2); f(0) || f(3); f(1) || f(4); f(null) ?? f(5); f(6) ?? f(7);
+return log;
+### log.conditional
+const a = 5;
+return [a > 3 ? 'big' : 'small', a > 9 ? 'big' : a > 4 ? 'mid' : 'small', a ? a ? 1 : 2 : 3, true ? 1 : 2, (0, 1) ? 'y' : 'n'];
+### log.sequence
+let x = 0;
+return [(x = 1, x + 1), (1, 2, 3), x];
+
+## ---- variables, scopes
+### var.hoist
+const r = [typeof v];
+var v = 1;
+r.push(typeof v);
+return r;
+### var.redeclare
+var a = 1;
+var a = 2;
+var a;
+return a;
+### var.block-leak
+{
+  var inner = 'leaked';
+}
+if (true) { var inIf = 'if'; }
+for (var i = 0; i < 2; i++) { var inLoop = i; }
+return [inner, inIf, inLoop, i];
+### let.block-scope
+let a = 'outer';
+{
+  let a = 'inner';
+  {
+    let a = 'innermost';
+  }
+}
+return a;
+### let.shadow-param
+const f = (a) => { { let a = 2; } return a; };
+return f(1);
+### let.tdz
+try { a; let a = 1; } catch (e) { return e.name + ': ' + e.message; }
+### let.tdz-closure
+const f = () => x;
+let x = 1;
+return f();
+### let.tdz-closure-early
+const f = () => x;
+try { f(); } catch (e) { var m = e.name + ': ' + e.message; }
+let x = 1;
+return [m, f()];
+### let.tdz-assign
+try { x = 1; let x; } catch (e) { return e.name + ': ' + e.message; }
+### let.tdz-self
+try { let x = x; } catch (e) { return e.name + ': ' + e.message; }
+### let.no-init
+let a;
+return a;
+### const.reassign
+const c = 1;
+try { c = 2; } catch (e) { return [e.name, e.message, c]; }
+### const.compound
+const c = 1;
+try { c += 2; } catch (e) { return e.name + ': ' + e.message; }
+### const.incr
+const c = 1;
+try { c++; } catch (e) { return e.name + ': ' + e.message; }
+### const.object-mutable
+const o = {a: 1};
+o.a = 2;
+o.b = 3;
+return o;
+### const.loop-body
+const r = [];
+for (let i = 0; i < 3; i++) { const sq = i * i; r.push === undefined; r[i] = sq; }
+return r;
+### scope.fn-hoist
+const r = f();
+function f() { return g() + 1; }
+function g() { return 1; }
+return r;
+### scope.fn-hoist-in-block
+{
+  function h() { return 'block'; }
+  var r = h();
+}
+return [r, typeof h];
+### scope.fn-redeclare
+function f() { return 1; }
+function f() { return 2; }
+return f();
+### scope.fn-overrides-param
+function f(a) { function a() {} return typeof a; }
+return f(1);
+### scope.var-fn-same-name
+function f() { var g; function g() { return 1; } return typeof g; }
+return f();
+### scope.closure-counter
+const make = () => { let n = 0; return () => ++n; };
+const c = make(), d = make();
+c(); c();
+return [c(), d()];
+### scope.closure-loop-let
+const fs = [];
+for (let i = 0; i < 3; i++) fs[i] = () => i;
+return [fs[0](), fs[1](), fs[2]()];
+### scope.closure-loop-var
+const fs = [];
+for (var i = 0; i < 3; i++) fs[i] = () => i;
+return [fs[0](), fs[1](), fs[2]()];
+### scope.closure-loop-let-mutate
+const fs = [];
+for (let i = 0; i < 3; i++) { fs[i] = () => i; i++; }
+return [fs[0](), fs[2]()];
+### scope.closure-loop-body-let
+const fs = [];
+for (let i = 0; i < 3; i++) { let j = i * 10; fs[i] = () => j + i; }
+return [fs[0](), fs[1](), fs[2]()];
+### scope.closure-while
+const fs = [];
+let i = 0;
+while (i < 3) { let j = i; fs[i] = () => j; i++; }
+return [fs[0](), fs[1](), fs[2]()];
+### scope.closure-forof
+const fs = [];
+for (const v of [1, 2, 3]) fs[fs.length] = () => v;
+return [fs[0](), fs[1](), fs[2]()];
+### scope.closure-forin
+const fs = [];
+for (const k in {a: 1, b: 2}) fs[fs.length] = () => k;
+return [fs[0](), fs[1]()];
+### scope.nested-closures
+const a = 1;
+const f = (b) => (c) => (d) => a + b + c + d;
+return f(2)(3)(4);
+### scope.recursion
+const fact = n => n <= 1 ? 1 : n * fact(n - 1);
+const fib = n => n < 2 ? n : fib(n - 1) + fib(n - 2);
+return [fact(10), fib(15)];
+### scope.fn-expr-name
+const f = function g(n) { return n <= 0 ? 'done' : g(n - 1); };
+return [f(3), typeof g];
+### scope.fn-expr-name-readonly
+const f = function g() { g = 1; return typeof g; };
+try { return f(); } catch (e) { return e.name + ': ' + e.message; }
+### scope.fn-expr-name-shadow
+const f = function g(g) { return g; };
+return f(5);
+### scope.switch-let
+switch (1) { case 1: let a = 'one'; var r = a; break; case 2: let b = 'two'; }
+return r;
+### scope.catch-param
+let e = 'outer';
+try { throw 'inner'; } catch (e) { var seen = e; }
+return [e, seen];
+### scope.catch-var
+try { throw 1; } catch (e) { var e = 2; var f = e; }
+return [f, typeof e];
+### scope.global-shadow
+const undefined_ = undefined;
+function f() { const NaN = 5; return NaN; }
+return [f(), isNaNLike(NaN)];
+function isNaNLike(x) { return x !== x; }
+
+## ---- functions
+### fn.length
+return [((a, b = 1, c) => 0).length, ((...r) => 0).length, (function (a, b) {}).length, (() => 0).length, ((a, {b}, [c]) => 0).length, ((a = 1) => 0).length];
+### fn.name
+const f = () => 0;
+const o = {g: () => 0, h() {}, i: function () {}, ['j' + 1]: () => 0};
+let q;
+q = function () {};
+const named = function inner() {};
+return [f.name, o.g.name, o.h.name, o.i.name, o.j1.name, q.name, named.name, (() => 0).name, (function () {}).name];
+### fn.name-default
+const {a = () => 0} = {};
+const [b = function () {}] = [];
+return [a.name, b.name];
+### fn.params-default
+const f = (a, b = a + 1, c = b * 2) => [a, b, c];
+return [f(1), f(1, 5), f(1, undefined, 9), f(1, null)];
+### fn.params-default-side
+let n = 0;
+const f = (a = ++n) => [a, n];
+return [f(), f(), f(10), n];
+### fn.params-rest
+const f = (a, ...r) => [a, r, r.length];
+return [f(), f(1), f(1, 2, 3)];
+### fn.params-extra
+const f = (a, b) => [a, b];
+return [f(1), f(1, 2, 3), f()];
+### fn.params-destructure
+const f = ({a, b = 2}, [c, d = 4] = [3], ...r) => [a, b, c, d, r];
+return [f({a: 1}), f({a: 1, b: 5}, [6, 7], 8, 9)];
+### fn.arguments
+function f() { return [arguments.length, arguments[0], arguments[2]]; }
+return [f(), f(7, 8, 9)];
+### fn.arguments-arrow
+function f() { const g = () => arguments[0]; return g('ignored'); }
+return f('outer');
+### fn.return-undefined
+const a = () => {};
+const b = () => { return; };
+const c = function () { return
+  1; };
+return [a(), b(), c()];
+### fn.return-in-loop
+const f = () => { for (let i = 0; i < 10; i++) { if (i === 3) return i; } return 'none'; };
+return f();
+### fn.call-apply-bind
+function f(a, b) { return [this === undefined ? 'u' : this.k, a, b]; }
+const o = {k: 'K'};
+const g = f.bind(o, 1);
+return [f.call(o, 1, 2), f.apply(o, [3, 4]), g(2), g.name, g.length, f.apply(undefined), f.call(undefined)[0]];
+### fn.bind-bound-this-arrow
+const o = {k: 1, f() { return () => this.k; }};
+const g = o.f();
+return [g(), g.call({k: 2})];
+### fn.tostring
+function  foo (a,b) { return a+b }
+const o = {m(x) { return x; }};
+return [`${foo}`, `${(a, b) => a + b}`, `${o.m}`, `${function () {}}`, `${async () => 1}`];
+### fn.iife
+return [(function () { return 'a'; })(), (() => 'b')(), (function (x) { return x * 2; }(4)), !function () { return 0; }()];
+### fn.higher-order
+const compose = (f, g) => x => f(g(x));
+const inc = x => x + 1, dbl = x => x * 2;
+return [compose(inc, dbl)(5), compose(dbl, inc)(5)];
+### fn.varargs-spread
+const f = (...a) => a.length;
+return [f(...[1, 2, 3]), f(...'ab', ...[1]), f(...[], 0), f(0, ...[1, 2], 3)];
+### fn.default-this
+function f() { return this; }
+return [f(), f.call(5), f.call('s'), f.call(undefined)];
+### fn.method-this
+const o = {x: 3, f() { return this.x; }, g: function () { return this.x; }, h: () => typeof this};
+const f = o.f;
+return [o.f(), o.g(), o['f'](), (o.f)(), (0, o.f)()];
+### fn.this-detached
+const o = {x: 1, f() { return this; }};
+const f = o.f;
+return [f(), o.f() === o, (o.f)() === o, (0, o.f)()];
+### fn.arrow-this
+function outer() { return (() => this.v)(); }
+return outer.call({v: 'lex'});
+## ---- destructuring
+### ds.object
+const {a, b: bb, c = 3, d: dd = 4} = {a: 1, b: 2};
+return [a, bb, c, dd];
+### ds.object-nested
+const {p: {q, r: [s, t]}} = {p: {q: 1, r: [2, 3]}};
+return [q, s, t];
+### ds.object-rest
+const {a, ...rest} = {a: 1, b: 2, c: 3};
+return [a, rest];
+### ds.object-computed
+const k = 'x';
+const {[k]: v, [k + 'y']: w = 'dw'} = {x: 1};
+return [v, w];
+### ds.object-defaults-order
+const log = [];
+const f = (n) => { log.push(n); return n; };
+const {a = f('a'), b = f('b')} = {b: 1};
+return [a, b, log];
+### ds.array
+const [a, , b, ...rest] = [1, 2, 3, 4, 5];
+return [a, b, rest];
+### ds.array-defaults
+const [a = 1, b = 2, c = 3] = [undefined, null];
+return [a, b, c];
+### ds.array-string
+const [a, b, ...c] = 'héllo';
+return [a, b, c];
+### ds.array-nested
+const [[a, b], [c]] = [[1, 2], [3]];
+return [a, b, c];
+### ds.swap
+let a = 1, b = 2;
+[a, b] = [b, a];
+return [a, b];
+### ds.assign-object
+let a, b;
+({a, b = 5} = {a: 1});
+const o = {};
+({x: o.x, y: o['y']} = {x: 1, y: 2});
+return [a, b, o];
+### ds.assign-rest
+let a, r;
+[a, ...r] = [1, 2, 3];
+return [a, r];
+### ds.for-of
+const out = [];
+for (const [k, v] of [['a', 1], ['b', 2]]) out.push(k + v);
+for (const {x, y = 0} of [{x: 1}, {x: 2, y: 3}]) out.push(x + y);
+return out;
+### ds.catch
+try { throw {code: 7, info: ['i']}; } catch ({code, info: [i]}) { return [code, i]; }
+### ds.err-undefined
+try { const {x} = undefined; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-null-var
+const y = null;
+try { const {x} = y; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-undefined-member
+const o = {p: undefined};
+try { const {x} = o.p; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-undefined-call
+const g = () => undefined;
+try { const {x} = g(); } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-empty-pattern
+try { const {} = undefined; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-null-empty
+try { const {} = null; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-computed
+try { const k = 'x'; const {[k]: v} = undefined; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-param-undefined
+try { (({a}) => a)(); } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-param-null
+try { (({a}) => a)(null); } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-nested
+try { const {a: {b}} = {}; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-assign
+try { let x; ({x} = undefined); } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-array-undefined
+try { const [a] = undefined; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-array-null
+try { const [a] = null; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-array-number
+try { const [a] = 5; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-array-var
+const y = 5;
+try { const [a] = y; } catch (e) { return e.name + ': ' + e.message; }
+### ds.err-array-call
+const g = () => 5;
+try { const [a] = g(); } catch (e) { return e.name + ': ' + e.message; }
+
+## ---- objects and arrays
+### obj.spread
+const a = {x: 1, y: 2}, b = {y: 3, z: 4};
+return [{...a, ...b}, {...a, y: 9}, {y: 9, ...a}, {...null, ...undefined, ...5, ...true}, {...'ab'}, {...[7, 8]}];
+### obj.spread-getter
+let n = 0;
+const src = {get g() { return ++n; }};
+const copy = {...src};
+return [copy, n];
+### obj.getter-setter
+const o = {_v: 1, get v() { return this._v * 2; }, set v(x) { this._v = x; }};
+o.v = 5;
+return [o.v, o._v, keys(o)];
+### obj.getter-only
+const o = {get a() { return 1; }};
+try { o.a = 2; } catch (e) { return [e.name, e.message, o.a]; }
+### obj.setter-only
+let seen;
+const o = {set a(v) { seen = v; }};
+o.a = 9;
+return [seen, o.a];
+### obj.accessor-merge
+const o = {get a() { return 1; }, set a(v) {}};
+return [o.a, keys(o)];
+### obj.accessor-inherit
+const base = {get who() { return 'base:' + this.name; }};
+const o = {name: 'O'};
+return [base.who === undefined, o.name];
+### obj.in-delete
+const o = {a: 1, b: undefined};
+return ['a' in o, 'b' in o, 'c' in o, 'toString' in o, delete o.a, 'a' in o, delete o.zz, keys(o)];
+### obj.delete-nonconfigurable
+try { delete [].length; } catch (e) { return e.name + ': ' + e.message; }
+### obj.numeric-keys
+const o = {};
+o[1] = 'a'; o[1.5] = 'b'; o[-0] = 'c'; o[1e21] = 'd'; o['01'] = 'e'; o[NaN] = 'f'; o[true] = 'g'; o[null] = 'h'; o[undefined] = 'i';
+return [keys(o), o];
+### obj.key-order
+const o = {};
+o.b = 1; o[2] = 1; o.a = 1; o[1] = 1; o[0] = 1;
+return keys(o);
+### obj.computed-key-eval
+const log = [];
+const k = (n) => { log.push(n); return n; };
+const o = {[k('a')]: k('1'), [k('b')]: k('2')};
+return [log, o];
+### obj.proto-chain
+function P() {}
+P.prototype.greet = function () { return 'hi ' + this.n; };
+const p = new P();
+p.n = 'p';
+return [p.greet(), p.constructor === P, 'greet' in p, hasOwn(p, 'greet'), hasOwn(p, 'n')];
+### obj.for-in
+const base = {b: 1, a: 2};
+function C() { this.own = 1; this[1] = 1; }
+C.prototype = base;
+const o = new C();
+const ks = [];
+for (const k in o) ks.push(k);
+return ks;
+### obj.for-in-shadow
+const base = {a: 1, b: 2};
+function C() { this.a = 3; }
+C.prototype = base;
+const ks = [];
+for (const k in new C()) ks.push(k);
+return ks;
+### obj.for-in-delete
+const o = {a: 1, b: 2, c: 3};
+const ks = [];
+for (const k in o) { ks.push(k); delete o.b; }
+return ks;
+### obj.for-in-string
+const ks = [];
+for (const k in 'ab') ks.push(k);
+for (const k in null) ks.push('x');
+for (const k in undefined) ks.push('y');
+return ks;
+### obj.freeze-like
+const o = {a: 1};
+return [typeof o.hasOwnProperty, o.hasOwnProperty('a'), o.hasOwnProperty('b'), o.toString(), o.valueOf() === o, `${o}`];
+### arr.basic
+const a = [1, 2, 3];
+a[5] = 6;
+return [a.length, a[3], a[5], a[7], a['0'], a['1.0'], a[-1], a.length = 2, a];
+### arr.length-set
+const a = [1, 2, 3, 4];
+a.length = 2;
+const b = [];
+b.length = 3;
+return [a, b, b.length];
+### arr.length-invalid
+try { const a = []; a.length = -1; } catch (e) { return e.name + ': ' + e.message; }
+### arr.length-invalid-frac
+try { const a = []; a.length = 1.5; } catch (e) { return e.name + ': ' + e.message; }
+### arr.neg-index
+const a = [];
+a[-1] = 'n';
+return [a.length, keys(a), a[-1]];
+### arr.string-index
+const a = ['x'];
+return [a['0'], a['00'], a[0.0], a[' 0'], a['1']];
+### arr.nested-join
+return ['' + [1, [2, [3, 4]], 5], [] + '', [null] + '', [undefined, null] + '', [1, 2].join('-'), [].join(), [[]] + ''];
+### arr.keys
+const a = [1, 2];
+a.extra = 'e';
+return [keys(a), a.length];
+### arr.spread
+const a = [1, 2];
+return [[...a, ...a], [0, ...a, 3], [...'ab'], [...[]], [...[[1]], 2]];
+### arr.spread-order
+const log = [];
+const f = (n) => { log.push(n); return [n]; };
+const r = [...f(1), ...f(2)];
+return [r, log];
+### arr.in
+const a = [10, 20];
+return [0 in a, 1 in a, 2 in a, 'length' in a, '0' in a];
+### str.index
+return ['abc'[1], 'abc'[5], 'abc'.length, 'abc'['length'], 'abc'[-1], 'abc'[1.5], ''.length, 'a😀'.length, 'a😀'[1] === '\ud83d'];
+### str.iterate
+const out = [];
+for (const ch of 'a😀b') out.push(ch);
+return [out, out.length];
+### str.concat-types
+return ['a' + 1 + 2, 1 + 2 + 'a', 'a' + (1 + 2), 'x' + [1, 2], 'x' + {}, 'x' + (() => 1)];
+
+## ---- control flow
+### ctl.if
+const f = (n) => { if (n > 1) return 'big'; else if (n > 0) return 'one'; else return 'none'; };
+return [f(2), f(1), f(0)];
+### ctl.switch-basic
+const f = (x) => { switch (x) { case 1: return 'one'; case '1': return 'str'; case 2: case 3: return 'two-three'; default: return 'other'; } };
+return [f(1), f('1'), f(2), f(3), f(4), f(null)];
+### ctl.switch-fall
+let r = '';
+switch (2) { case 1: r += 'a'; case 2: r += 'b'; case 3: r += 'c'; break; default: r += 'd'; }
+return r;
+### ctl.switch-default-mid
+let r = '';
+switch (9) { case 1: r += 'a'; default: r += 'd'; case 2: r += 'b'; }
+return r;
+### ctl.switch-strict
+const r = [];
+switch ('1') { case 1: r.push('num'); break; case '1': r.push('str'); break; }
+switch (NaN) { case NaN: r.push('nan'); break; default: r.push('no-nan'); }
+return r;
+### ctl.switch-continue
+const r = [];
+for (let i = 0; i < 4; i++) { switch (i) { case 1: continue; case 2: break; default: r.push('d' + i); } r.push('e' + i); }
+return r;
+### ctl.while
+let i = 0, s = 0;
+while (i < 5) { i++; if (i === 2) continue; if (i === 4) break; s += i; }
+return [i, s];
+### ctl.do-while
+let i = 10, n = 0;
+do { n++; } while (i < 5);
+do { i--; if (i === 7) break; } while (true);
+return [n, i];
+### ctl.for-variants
+const r = [];
+for (let i = 0; i < 3; i++) r.push(i);
+for (let i = 5, j = 0; i > 3; i--, j++) r.push(i * 10 + j);
+let k = 0;
+for (; k < 2;) k++;
+for (;;) { k++; if (k > 4) break; }
+r.push(k);
+return r;
+### ctl.for-continue
+const r = [];
+for (let i = 0; i < 5; i++) { if (i % 2) continue; r.push(i); }
+return r;
+### ctl.for-of
+const r = [];
+for (const v of [1, 2, 3]) { if (v === 2) continue; r.push(v); }
+for (const [i, v] of [[0, 'a'], [1, 'b']]) r.push(i + v);
+return r;
+### ctl.for-of-live
+const a = [1, 2];
+const r = [];
+for (const v of a) { r.push(v); if (v < 4) a.push(v + 2); }
+return r;
+### ctl.for-of-err
+try { for (const v of 5) {} } catch (e) { return e.name + ': ' + e.message; }
+### ctl.for-of-err-obj
+try { for (const v of {}) {} } catch (e) { return e.name + ': ' + e.message; }
+### ctl.for-of-err-member
+const o = {p: 5};
+try { for (const v of o.p) {} } catch (e) { return e.name + ': ' + e.message; }
+### ctl.for-of-err-call
+const g = () => 5;
+try { for (const v of g()) {} } catch (e) { return e.name + ': ' + e.message; }
+### ctl.for-of-err-undefined
+try { for (const v of undefined) {} } catch (e) { return e.name + ': ' + e.message; }
+### ctl.labels
+let r = '';
+a: for (let i = 0; i < 3; i++) { for (let j = 0; j < 3; j++) { if (j == 1) continue a; if (i == 2) break a; r += i + '' + j + ','; } }
+return r;
+### ctl.label-block
+let r = [];
+a: { r.push(1); if (r.length) break a; r.push(2); }
+b: c: { r.push(3); break b; }
+return r;
+### ctl.label-while
+let r = [], i = 0;
+outer: while (true) { i++; do { if (i > 2) break outer; continue outer; } while (false); }
+return i;
+### ctl.try-finally
+const log = [];
+const f = () => { try { log.push('t'); return 'ret'; } finally { log.push('f'); } };
+return [f(), log];
+### ctl.finally-override
+const f = () => { try { return 1; } finally { return 2; } };
+const g = () => { try { throw 1; } finally { return 'swallowed'; } };
+const h = () => { for (let i = 0; i < 3; i++) { try { return 'r'; } finally { break; } } return 'after'; };
+return [f(), g(), h()];
+### ctl.finally-throw
+const f = () => { try { throw 'a'; } catch (e) { throw 'b' + e; } finally { log.push('f'); } };
+const log = [];
+try { f(); } catch (e) { return [e, log]; }
+### ctl.catch-rethrow
+try { try { throw new Error('inner'); } catch (e) { throw new TypeError('outer:' + e.message); } } catch (e) { return [e.name, e.message, e instanceof TypeError, e instanceof Error]; }
+### ctl.try-break
+let r = '';
+for (let i = 0; i < 3; i++) { try { if (i == 1) break; r += i; } finally { r += 'f'; } }
+return r;
+### ctl.try-continue
+let r = '';
+for (let i = 0; i < 3; i++) { try { if (i == 1) continue; r += i; } finally { r += 'f'; } }
+return r;
+### ctl.catch-no-binding
+try { throw 1; } catch { return 'caught'; }
+### ctl.throw-values
+const r = [];
+for (const v of [1, 'str', null, undefined, {a: 1}, [1], () => 1]) { try { throw v; } catch (e) { r.push(typeof e); } }
+return r;
+### ctl.nested-try
+const log = [];
+try { try { throw 1; } finally { log.push('f1'); } } catch (e) { log.push('c' + e); } finally { log.push('f2'); }
+return log;
+### ctl.return-from-catch
+const f = () => { try { throw 1; } catch (e) { return 'c'; } finally { } };
+return f();
+### ctl.empty-statements
+;;;
+if (1) ; else ;
+for (let i = 0; i < 2; i++) ;
+return 'ok';
+### ctl.comma-for
+let r = [];
+for (let i = 0, j = 10; i < j; i += 4, j -= 1) r.push([i, j]);
+return r;
+
+## ---- optional chaining, nullish
+### chain.basic
+const o = {a: {b: [1, 2]}, f() { return this.a; }, n: null};
+return [o?.a?.b[1], o.x?.y, o.n?.z, o.n?.[0], o.f?.().b[0], o.g?.(), o?.['a'].b.length, o.n ?? 'dflt'];
+### chain.short-circuit
+const o = null;
+let n = 0;
+const r = o?.a[n++];
+const s = o?.a.b.c(n++);
+return [r, s, n];
+### chain.this
+const o = {f() { return this; }};
+return [o?.f() === o, o.f?.() === o, (o?.f)() === o, (o.f)() === o];
+### chain.paren
+const o = null;
+try { (o?.a).b; } catch (e) { return e.name + ': ' + e.message; }
+### chain.delete
+const o = {a: 1};
+const n = null;
+return [delete o?.a, delete n?.a, o];
+### chain.call-notfn
+const o = {a: 1};
+try { o.a?.(); } catch (e) { return e.name + ': ' + e.message; }
+### chain.optional-call-undefined
+const f = undefined;
+return [f?.(), f?.(1, 2), typeof f?.x];
+
+## ---- templates
+### tpl.tagged
+function t(s, ...v) { return s.raw.join('|') + '#' + v.join(',') + '#' + s.length + '#' + s.join('|'); }
+return [t`a${1}b${2}c\n`, t``, t`${1}`, t`x`];
+### tpl.tagged-member
+const o = {tag(s, ...v) { return [this === o, s[0], v]; }};
+return o.tag`a${1}b`;
+### tpl.tagged-nonfn
+const t = 1;
+try { t`x`; } catch (e) { return e.name + ': ' + e.message; }
+### tpl.tostring-hint
+const o = {toString() { return 'T'; }, valueOf() { return 5; }};
+return [`${o}`, o + '', o * 1, `${[1, 2]}`, `${{}}`];
+
+## ---- new, prototypes, instanceof
+### new.basic
+function P(x) { this.x = x; }
+P.prototype.get = function () { return this.x; };
+const p = new P(4);
+return [p.get(), p instanceof P, p.constructor === P, P.prototype.constructor === P];
+### new.return-object
+function P() { return {z: 1}; }
+function Q() { this.y = 1; return 5; }
+return [new P().z, new Q().y, new P() instanceof P];
+### new.no-args
+function P() { this.n = arguments.length; }
+return [new P().n, (new P).n, new P(1, 2).n];
+### new.arrow-err
+try { new (() => 1)(); } catch (e) { return e.name + ': ' + e.message; }
+### new.method-err
+const o = {m() {}};
+try { new o.m(); } catch (e) { return e.name + ': ' + e.message; }
+### new.non-fn
+const o = {};
+try { new o(); } catch (e) { return e.name + ': ' + e.message; }
+### new.member-non-fn
+const o = {f: 1};
+try { new o.f(); } catch (e) { return e.name + ': ' + e.message; }
+### new.async-err
+try { new (async function f() {})(); } catch (e) { return e.name + ': ' + e.message; }
+### proto.prototype-assign
+function A() {}
+A.prototype.x = 1;
+const a = new A();
+A.prototype = {x: 2};
+const b = new A();
+return [a.x, b.x, a instanceof A, b instanceof A];
+### proto.method-this
+function Counter() { this.n = 0; }
+Counter.prototype.inc = function () { this.n++; return this; };
+const c = new Counter();
+c.inc().inc().inc();
+return c.n;
+### proto.instanceof
+function A() {}
+const a = new A();
+const g = a.constructor;
+return [a instanceof A, {} instanceof A, 5 instanceof A, null instanceof A];
+### proto.instanceof-err-primitive
+try { ({}) instanceof 5; } catch (e) { return e.name + ': ' + e.message; }
+### proto.instanceof-err-object
+try { ({}) instanceof ({}); } catch (e) { return e.name + ': ' + e.message; }
+### proto.bound-instanceof
+function A() {}
+const B = A.bind(null);
+return [new A() instanceof B, new B() instanceof A];
+### proto.error-classes
+const errs = [new Error('e'), new TypeError('t'), new RangeError('r'), new ReferenceError('f'), new SyntaxError('s'), new EvalError('v'), new URIError('u')];
+const r = [];
+for (const e of errs) r.push([e.name, e.message, e instanceof Error, `${e}`]);
+return r;
+### proto.error-props
+const e = new Error('m', {cause: 'c'});
+return [e.message, e.cause, keys(e), typeof e.stack, Error('x') instanceof Error, Error.prototype.name, TypeError.prototype.name, TypeError.name, TypeError.length, new Error().message === '', `${new Error()}`];
+
+## ---- errors: messages
+### err.not-defined
+try { undefinedVar; } catch (e) { return e.name + ': ' + e.message; }
+### err.assign-undeclared
+try { undeclared = 1; } catch (e) { return e.name + ': ' + e.message; }
+### err.call-ident
+const a = 1;
+try { a(); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-member
+const o = {};
+try { o.f(); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-nested-member
+const o = {a: {}};
+try { o.a.b(); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-computed
+const o = {}, k = 'a';
+try { o[k](); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-computed-literal
+const o = {};
+try { o[0](); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-computed-string
+const o = {};
+try { o['a'](); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-computed-expr
+const o = {}, k = 1;
+try { o[k + 1](); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-call
+const f = () => 1;
+try { f()(); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-member-of-call
+const f = () => ({});
+try { f().g(); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-this
+try { (function () { this(); }).call({}); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-this-member
+try { (function () { this.a(); }).call({}); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-literals
+const r = [];
+for (const f of [() => "abc"(), () => (1)(), () => null(), () => undefined(), () => true()]) { try { f(); } catch (e) { r.push(e.message); } }
+return r;
+### err.call-optional-member
+const o = {};
+try { o?.a(); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-param
+try { ((a) => a())(1); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-undefined-var
+const u = undefined;
+try { u(); } catch (e) { return e.name + ': ' + e.message; }
+### err.call-fn-expr-result
+try { (function () {})()(); } catch (e) { return e.name + ': ' + e.message; }
+### err.read-undefined
+const u = undefined;
+try { u.x; } catch (e) { return e.name + ': ' + e.message; }
+### err.read-null
+const u = null;
+try { u.x; } catch (e) { return e.name + ': ' + e.message; }
+### err.read-computed
+const u = undefined, k = 'abc';
+try { u[k]; } catch (e) { return e.name + ': ' + e.message; }
+### err.read-index
+const u = undefined;
+try { u[0]; } catch (e) { return e.name + ': ' + e.message; }
+### err.read-chain
+const o = {};
+try { o.a.b.c; } catch (e) { return e.name + ': ' + e.message; }
+### err.read-call-result
+const f = () => undefined;
+try { f().x; } catch (e) { return e.name + ': ' + e.message; }
+### err.call-undefined-member
+const o = {};
+try { o.a.b(); } catch (e) { return e.name + ': ' + e.message; }
+### err.set-undefined
+const u = undefined;
+try { u.x = 1; } catch (e) { return e.name + ': ' + e.message; }
+### err.set-null
+const u = null;
+try { u.x = 1; } catch (e) { return e.name + ': ' + e.message; }
+### err.set-computed
+const u = undefined, k = 'kk';
+try { u[k] = 1; } catch (e) { return e.name + ': ' + e.message; }
+### err.set-primitive
+const r = [];
+for (const f of [() => { 'abc'.x = 1; }, () => { (5).x = 1; }, () => { true.x = 1; }]) { try { f(); } catch (e) { r.push(e.message); } }
+return r;
+### err.compound-undefined
+const u = undefined;
+try { u.x += 1; } catch (e) { return e.name + ': ' + e.message; }
+### err.in-operator
+const r = [];
+for (const f of [() => 'x' in 5, () => 'x' in 'abc', () => 'x' in undefined, () => 'x' in null]) { try { f(); } catch (e) { r.push(e.message); } }
+return r;
+### err.spread-array
+const r = [];
+const o = {};
+for (const f of [() => [...5], () => [...undefined], () => [...null], () => [...o]]) { try { f(); } catch (e) { r.push(e.message); } }
+return r;
+### err.spread-call
+const g = (...a) => a;
+const r = [];
+const o = {};
+for (const f of [() => g(...5), () => g(...undefined), () => g(...o)]) { try { f(); } catch (e) { r.push(e.message); } }
+return r;
+### err.arrow-body-throw
+const f = () => { throw new RangeError('boom'); };
+try { f(); } catch (e) { return [e.name, e.message]; }
+### err.recursion
+function f() { f(); }
+try { f(); } catch (e) { return e.name + ': ' + e.message; }
+### err.recursion-arrow
+const f = (n) => f(n + 1) + 1;
+try { f(0); } catch (e) { return e instanceof RangeError; }
+### err.convert-primitive
+const o = {valueOf() { return {}; }, toString() { return {}; }};
+const r = [];
+for (const f of [() => o + 1, () => `${o}`, () => o * 2, () => o < 1, () => [o].join()]) { try { f(); } catch (e) { r.push(e.name + ': ' + e.message); } }
+return r;
+### err.convert-null-proto
+const o = {};
+o.valueOf = undefined;
+o.toString = undefined;
+try { o + ''; } catch (e) { return e.name + ': ' + e.message; }
+### err.thrown-error-fields
+const e = new Error('m');
+return [e.name, e.message, hasOwn(e, 'message'), hasOwn(e, 'name'), keys(e)];
+### err.readonly-name
+function f() {}
+try { f.name = 'g'; } catch (e) { return [e.name, f.name]; }
+### err.readonly-length
+function f(a) {}
+try { f.length = 5; } catch (e) { return [e.name, f.length]; }
+### err.fn-prototype
+function f() {}
+const arrow = () => {};
+return [typeof f.prototype, f.prototype.constructor === f, 'prototype' in arrow, hasOwn(f, 'prototype'), hasOwn(arrow, 'prototype'), keys(f)];
+
+## ---- statements in odd places
+### misc.asi
+const a = 1
+const b = 2
+;[a, b].length
+const c = a
++ b
+return c
+### misc.comments
+// comment
+return /* inline */ 1 /* more */ + /* x */ 2; // trailing
+### misc.strict-this
+function f() { return typeof this; }
+return [f(), f.call(1), f.call('x'), f.call(true)];
+### misc.getter-on-proto-chain
+const base = {get x() { return this.v; }};
+function C() { this.v = 'own'; }
+C.prototype = base;
+return new C().x;
+### misc.setter-on-proto-chain
+let stored;
+const base = {set x(v) { stored = [v, this.constructor === C]; }};
+function C() {}
+C.prototype = base;
+const c = new C();
+c.x = 5;
+return [stored, hasOwn(c, 'x')];
+### misc.big-loop
+let s = 0;
+for (let i = 0; i < 100000; i++) s += i;
+return s;
+### misc.string-building
+let s = '';
+for (let i = 0; i < 100; i++) s += i % 10;
+return [s.length];
+### misc.array-building
+const a = [];
+for (let i = 0; i < 50; i++) a[a.length] = i * i;
+return [a.length, a[49], a[7]];
+### misc.deep-nesting
+const f = (n) => n === 0 ? 0 : 1 + f(n - 1);
+return f(500);
+
+## ---- evaluation order
+### order.binary
+const log = [];
+const f = (n) => { log.push(n); return n; };
+const r = f(1) + f(2) * f(3) - f(4);
+return [r, log];
+### order.call-args
+const log = [];
+const f = (n) => { log.push(n); return n; };
+const g = (a, b, c) => [a, b, c];
+const r = f(g)(f(1), f(2), f(3));
+return [r, log.length];
+### order.member-assign
+const log = [];
+const f = (n) => { log.push(n); return n; };
+const o = {};
+const k = () => { log.push('k'); return 'key'; };
+const base = () => { log.push('base'); return o; };
+base()[k()] = f('rhs');
+return [o, log];
+### order.compound-member-once
+let n = 0;
+const o = {x: 1};
+const get = () => { n++; return o; };
+get().x += 5;
+get()['x'] *= 2;
+return [o.x, n];
+### order.update-member-once
+let n = 0;
+const arr = [1, 2];
+const idx = () => n++;
+arr[idx()]++;
+arr[idx()] += 10;
+return [arr, n];
+### order.assign-chain
+let a, b, c;
+a = b = c = 5;
+const o = {};
+o.x = o.y = 'z';
+return [a, b, c, o];
+### order.logical-assign-short
+const o = {a: 1, b: 0};
+let n = 0;
+const f = () => { n++; return 'v'; };
+o.a ||= f();
+o.b ||= f();
+o.c ??= f();
+o.a &&= f();
+return [o, n];
+### order.template
+const log = [];
+const f = (n) => { log.push(n); return n; };
+const s = `${f(1)}${f(2)}-${f(3)}`;
+return [s, log];
+### order.array-literal
+const log = [];
+const f = (n) => { log.push(n); return n; };
+const a = [f(1), ...[f(2), f(3)], f(4)];
+return [a, log];
+### order.object-literal
+const log = [];
+const f = (n) => { log.push(n); return n; };
+const o = {[f('a')]: f(1), b: f(2), ...{c: f(3)}};
+return [o, log];
+### order.conditional-lazy
+const log = [];
+const f = (n) => { log.push(n); return n; };
+const r = f(0) ? f('a') : f('b');
+return [r, log];
+### order.default-params
+const log = [];
+const f = (n) => { log.push(n); return n; };
+const g = (a = f('a'), b = f('b'), c = f('c')) => [a, b, c];
+return [g(1, undefined), log];
+### order.spread-call
+const f = (...a) => a.length;
+const g = (n) => [n, n + 1];
+return [f(...g(1), ...g(5), 9)];
+
+## ---- assignment and targets
+### assign.member-forms
+const o = {};
+o.a = 1; o['b'] = 2; o[3] = 3; o[1 + 1] = 'two'; o[o.a + 'x'] = 'dyn';
+return o;
+### assign.array-destructure-member
+const o = {}, a = [];
+[o.x, a[0], ...a[1]] = [1, 2, 3, 4];
+return [o, a];
+### assign.destructure-default-fn
+let f;
+({f = () => 'dflt'} = {});
+return [f(), f.name];
+### assign.in-condition
+let x;
+if ((x = 5) > 3) return ['yes', x];
+### assign.expression-value
+let a, b;
+const r = [a = 1, b = a + 1, (a += 10), a, b++, b];
+return r;
+### assign.numbers-and-strings
+let s = 'a';
+s += 1; s += null; s += undefined; s += [1, 2]; s += {};
+let n = 1;
+n += '1'; n -= 1; 
+return [s, n];
+### assign.exponent-right-assoc
+let a = 2;
+a **= 3 ** 2;
+return a;
+
+## ---- closures and scopes in odd places
+### closure.in-block-function
+const fs = [];
+for (let i = 0; i < 3; i++) { function g() { return i; } fs[i] = g; }
+return [fs[0](), fs[1](), fs[2]()];
+### closure.shared-variable
+const make = () => { let v = 0; return [() => ++v, () => v]; };
+const [inc, get] = make();
+inc(); inc();
+return get();
+### closure.counter-per-call
+function counter() { let n = 0; return { inc() { return ++n; }, dec() { return --n; } }; }
+const a = counter(), b = counter();
+a.inc(); a.inc(); b.dec();
+return [a.inc(), b.dec()];
+### closure.switch-let
+const fs = [];
+for (let i = 0; i < 2; i++) { switch (i) { case 0: let v = 'zero'; fs[i] = () => v; break; default: let w = 'other'; fs[i] = () => w; } }
+return [fs[0](), fs[1]()];
+### closure.catch-param
+const fs = [];
+for (let i = 0; i < 2; i++) { try { throw i; } catch (e) { fs[i] = () => e; } }
+return [fs[0](), fs[1]()];
+### closure.default-param
+const f = (a, g = () => a) => { a = 'changed'; return g(); };
+return f('orig');
+### closure.self-reference
+const o = {n: 0, inc() { return () => ++this.n; }};
+const inc = o.inc();
+inc(); inc();
+return o.n;
+### closure.hoisted-function-sees-later-let
+function f() { return later; }
+let later = 'set';
+return f();
+### closure.var-in-loop-body
+const fs = [];
+for (let i = 0; i < 2; i++) { var shared = i; fs[i] = () => shared; }
+return [fs[0](), fs[1]()];
+### closure.nested-loops
+const fs = [];
+for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) fs[fs.length] = () => i * 10 + j;
+return [fs[0](), fs[1](), fs[2](), fs[3]()];
+### closure.immediately-invoked-loop
+const fs = [];
+for (var i = 0; i < 3; i++) (function (k) { fs[k] = () => k; })(i);
+return [fs[0](), fs[1](), fs[2]()];
+
+## ---- precedence and operators
+### prec.chained-compare
+return [1 < 2 < 3, 3 > 2 > 1, 1 < 3 < 2, 3 > 2 > 2, 1 == 1 == 1, 2 == 2 == 2, '2' > '12', 2 > '12'];
+### prec.unary
+return [1, !1 == 0, !(1 == 0), -(-1), - -1, +-1, !!!1, typeof typeof 1, void 0 === undefined, -'3', +'3' + +'4', 2 - -2, 2 + +2];
+### prec.mixed
+return [1 + 2 * 3, (1 + 2) * 3, 10 - 2 - 3, 2 ** 2 ** 3, 100 / 10 / 2, 7 % 4 * 2, 1 + 1 + '1' + 1 + 1, 6 / 2 * 3, 1 << 2 + 1, 5 & 3 | 4, 5 | 3 & 4, 1 | 2 ^ 3 & 4];
+### prec.logical
+return [1 || 0 && 0, (1 || 0) && 0, null ?? undefined ?? 'x', (null || undefined) ?? 'y', (0 ?? 1) || 2, (1 && null) ?? 'z'];
+### prec.ternary-assign
+let a, b;
+a = true ? b = 1 : 2;
+return [a, b, false ? 1 : true ? 2 : 3, true ? false ? 1 : 2 : 3];
+### prec.comma-arrow
+const f = (a, b) => (a, b);
+const g = () => (1, 2, 3);
+return [f(1, 2), g(), [1, 2, 3][1, 2]];
+### prec.in-instanceof
+const o = {a: 1};
+return ['a' in o && !('b' in o), !('a' in o), ('a' in o) == true, 1 + 1 in [0, 0, 5]];
+### prec.typeof-forms
+return [typeof 1 + 1, typeof (1 + 1), typeof -1, (typeof 'x').length, typeof typeof undefined];
+
+## ---- numbers and strings corners
+### num.keys-from-numbers
+const o = {};
+o[0.1 + 0.2] = 'sum';
+o[1 / 3] = 'third';
+o[2 ** 53] = 'big';
+o[-5] = 'neg';
+o[1e21] = 'huge';
+o[1e-7] = 'tiny';
+return keys(o);
+### num.parse-forms
+return [0.1, .1e1, 1_0.5_5, 0b1010, 0O17, 0XfF, 1e+3, 1E3];
+### str.escapes
+return ['\u0041\x42C'.length, 'a\
+b', '\'', "\"", '\\n'.length, '\n'.length, '\u{1F600}'.length, '\0' === '\u0000'];
+### str.compare-surrogates
+return ['\ud83d\ude00' < '\uffff', '\ud83d\ude00' > 'z', 'a' < '\ud83d', '\u00e9' > 'e', 'abc' < 'abd', 'abc' < 'abcd', '' < '\0'];
+### str.length-unicode
+return ['é'.length, '😀'.length, '𝒳𝒳'.length, 'a\u0301'.length, ''.length];
+### str.index-bounds
+const s = 'abc';
+return [s[0], s[2], s[3], s[-1], s[1.0], s['1'], s['01'], s.length, s['length']];
+### str.equality-forms
+return ['a' === 'a', 'a' == 'a', '1' == 1, '1' === 1, 'a' < 'b', 'B' < 'a'];
+### num.nan-inf-keys
+const o = {};
+o[NaN] = 1; o[Infinity] = 2; o[-Infinity] = 3;
+return keys(o);
+### num.int-conversion-corners
+return [(2 ** 31) | 0, (2 ** 32 + 1) | 0, (-(2 ** 31) - 1) | 0, 1e20 | 0, 2 ** 53 | 0, -0 | 0, 1 / (-0 | 0), 0.9999999999999999 | 0, '12abc' | 0, '0x10' | 0, [] | 0, [5] | 0, null | 0, undefined | 0];
+
+## ---- objects, arrays, prototypes corners
+### obj.redefine-key-keeps-position
+const o = {a: 1, b: 2, c: 3};
+o.a = 10;
+delete o.b;
+o.b = 20;
+return keys(o);
+### obj.numeric-key-after-string
+const o = {b: 1};
+o[2] = 1; o.a = 1; o[1] = 1;
+return keys(o);
+### obj.nested-get-set
+const o = {a: {b: {c: 1}}};
+o.a.b.c += 1;
+o['a']['b'].d = 5;
+return [o.a.b.c, o.a.b.d, keys(o.a.b)];
+### obj.method-shorthand-this
+const o = {n: 'o', f() { return this.n; }, g() { return (() => this.n)(); }, h: function () { return [1].length && this.n; }};
+return [o.f(), o.g(), o.h()];
+### obj.getter-this-chain
+const base = {get full() { return this.first + ' ' + this.last; }};
+function P(first, last) { this.first = first; this.last = last; }
+P.prototype = base;
+return new P('A', 'B').full;
+### obj.shadow-proto-setter-less
+const base = {get x() { return 'getter'; }};
+function C() {}
+C.prototype = base;
+const c = new C();
+try { c.x = 1; return 'assigned'; } catch (e) { return e.name + ': ' + e.message; }
+### obj.hasown-and-in
+function C() { this.own = 1; }
+C.prototype.inherited = 2;
+const c = new C();
+return [hasOwn(c, 'own'), hasOwn(c, 'inherited'), 'inherited' in c, c.hasOwnProperty('own'), c.hasOwnProperty('inherited'), c.propertyIsEnumerable('own')];
+### obj.tostring-valueof-on-plain
+const o = {};
+return [o.toString(), o.valueOf() === o, `${o}`, o + '', o == '[object Object]'];
+### obj.constructor-links
+function F() {}
+const f = new F();
+return [f.constructor === F, F.prototype.constructor === F];
+### arr.index-write-grows
+const a = [];
+a[3] = 'x';
+return [a.length, a[0], a[3], keys(a)];
+### arr.length-truncates-and-regrows
+const a = [1, 2, 3];
+a.length = 1;
+a.length = 3;
+return [a, a.length];
+### arr.nested-literal-identity
+const inner = [1];
+const a = [inner, inner];
+inner[0] = 'changed';
+return [a[0] === a[1], a[1][0]];
+### arr.holes-iteration
+const out = [];
+for (const v of [1, , 3]) out.push(v);
+return out;
+### arr.destructure-from-function
+const f = () => [1, [2, 3]];
+const [a, [b, c]] = f();
+return [a, b, c];
+### arr.spread-string-and-array
+return [[...'abc', ...[1, 2]], [...[[1], [2]]], [...[]].length];
+### arr.join-nested-holes
+return [[1, [2, , 3], [[]], null, undefined, [null]].join('/')];
+
+## ---- control flow corners
+### flow.nested-switch-break
+const out = [];
+for (let i = 0; i < 3; i++) {
+  switch (i) {
+    case 0: switch (i) { case 0: out.push('inner0'); break; } out.push('after-inner'); break;
+    case 1: out.push('one'); continue;
+    default: out.push('d');
+  }
+  out.push('end' + i);
+}
+return out;
+### flow.labeled-continue-in-try
+const out = [];
+loop: for (let i = 0; i < 3; i++) {
+  try { if (i === 1) continue loop; out.push('b' + i); } finally { out.push('f' + i); }
+}
+return out;
+### flow.return-in-nested-loops
+const f = () => { for (let i = 0; i < 3; i++) { for (let j = 0; j < 3; j++) { if (i * j === 2) return [i, j]; } } return null; };
+return f();
+### flow.finally-order
+const out = [];
+const f = () => { try { out.push('try'); throw 'x'; } catch (e) { out.push('catch'); return 'from-catch'; } finally { out.push('finally'); } };
+return [f(), out];
+### flow.finally-without-catch
+const out = [];
+try { try { throw 'a'; } finally { out.push('f'); } } catch (e) { out.push('c' + e); }
+return out;
+### flow.throw-in-finally-replaces
+try { try { throw 'first'; } finally { throw 'second'; } } catch (e) { return e; }
+### flow.break-out-of-finally-swallows
+const f = () => { for (;;) { try { throw 'lost'; } finally { break; } } return 'after'; };
+return f();
+### flow.while-complex
+let i = 0, out = [];
+while (i < 10) { i++; if (i % 2) continue; if (i > 6) break; out.push(i); }
+return [out, i];
+### flow.do-while-continue
+let i = 0, n = 0;
+do { i++; if (i < 3) continue; n++; } while (i < 5);
+return [i, n];
+### flow.for-in-array
+const a = ['x', 'y'];
+a.extra = 1;
+const out = [];
+for (const k in a) out.push(k);
+return out;
+### flow.for-in-assign-target
+const o = {};
+let k;
+const keysSeen = [];
+for (k in {a: 1, b: 2}) keysSeen.push(k);
+for (o.last in {z: 1}) ;
+return [keysSeen, k, o.last];
+### flow.for-of-assign-pattern
+let a, b;
+const out = [];
+for ([a, b] of [[1, 2], [3, 4]]) out.push(a + b);
+return [out, a, b];
+### flow.if-else-chain-scope
+const f = (x) => { if (x > 0) { const r = 'pos'; return r; } else if (x < 0) { const r = 'neg'; return r; } const r = 'zero'; return r; };
+return [f(1), f(-1), f(0)];
+### flow.recursion-mutual
+const isEven = (n) => n === 0 ? true : isOdd(n - 1);
+const isOdd = (n) => n === 0 ? false : isEven(n - 1);
+return [isEven(10), isOdd(7), isEven(7)];
+### flow.generator-like-closure
+const make = (items) => { let i = 0; return () => i < items.length ? items[i++] : undefined; };
+const next = make(['a', 'b']);
+return [next(), next(), next(), next()];
+
+## ---- chaining and optional corners
+### chain.computed-call
+const o = {m: {f() { return this === o.m; }}};
+const k = 'm', f = 'f';
+return [o[k][f](), o?.[k]?.[f]?.(), o.x?.[k][f](), o?.m.f()];
+### chain.nested-optional
+const a = {b: null, c: {d: undefined, e: () => 'e'}};
+return [a?.b?.x, a?.c?.d?.y, a.c?.e?.(), a.c.e?.().length, a.z?.y.z.w, a?.["c"]?.["e"]()];
+### chain.with-nullish
+const o = {a: 0, b: '', c: null};
+return [o.a ?? 'x', o.b ?? 'x', o.c ?? 'x', o.d ?? 'x'];
+
+## ---- functions corners
+### fn.recursive-default
+const f = (n, acc = n <= 0 ? [] : f(n - 1)) => [n, acc.length];
+return [f(3), f(0)];
+### fn.arguments-length-extra
+function f(a, b) { return [arguments.length, f.length, a, b]; }
+return [f(1), f(1, 2, 3)];
+### fn.rest-destructure
+const f = (...[a, b = 'dflt']) => [a, b];
+return [f(1), f(1, 2)];
+### fn.arrow-returning-object
+const f = (a) => ({a, b: a * 2});
+const g = (a) => { a };
+return [f(2), g(1)];
+### fn.call-on-primitives-this
+function f() { return typeof this; }
+return [f.call(undefined), f.call(null), f.call(1), f.call('s'), f.call(true), f.call({})];
+### fn.name-after-assignment
+let f;
+f = () => 1;
+const g = f;
+return [f.name, g.name, (f = function () {}).name === 'f'];
+### fn.property-function-names
+const o = {};
+o.a = function () {};
+o['b'] = () => 1;
+return [o.a.name, o.b.name];
+### fn.method-not-constructor-but-callable
+const o = {m() { return 'called'; }, get g() { return 1; }};
+return [o.m(), o.g];
+### fn.new-this-binding
+function Person(name) { this.name = name; this.greet = () => 'hi ' + this.name; }
+const p = new Person('Ann');
+const greet = p.greet;
+return greet();
+### fn.bind-twice
+function f(a, b, c) { return [this.k, a, b, c].join(); }
+const g = f.bind({k: 'K'}, 1).bind({k: 'ignored'}, 2);
+return [g(3), g.length, g.name];
+### fn.apply-array-like
+function f() { return arguments.length; }
+return [f.apply(null, []), f.apply(null, [1, 2]), f.apply(null, {length: 3}), f.apply(null, undefined), f.apply(null)];
+### fn.immediately-invoked-arrow-chain
+return ((a) => (b) => (c) => a + b + c)(1)(2)(3);
+### fn.hoisted-var-function-expression
+const r = typeof f;
+var f = function () {};
+return [r, typeof f];
+### fn.duplicate-var-and-function
+function g() { return 'fn'; }
+var g;
+return typeof g;
+### fn.length-is-readonly-configurable
+function f(a, b) {}
+return [f.length, hasOwn(f, 'length'), hasOwn(f, 'name'), keys(f).length];
+### fn.closure-over-parameter
+const make = (n) => () => n++;
+const a = make(5);
+a(); a();
+return a();
+### closure.for-init-closure
+let g;
+for (let i = 0, f = () => i; i < 3; i++) { g = f; }
+return g();
+### closure.for-test-update-closures
+const getters = [];
+for (let i = 0; getters[getters.length] = () => i, i < 3; i++) {}
+return [getters.length, getters[0](), getters[1](), getters[3]()];

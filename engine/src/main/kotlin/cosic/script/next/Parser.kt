@@ -26,6 +26,16 @@ internal class ParseResult(val source: String, val program: Program, val comment
 /** Parses [code] as a program. Throws a [CosicError] with the range of the offending code for a syntax error. */
 internal fun parseProgram(code: String): ParseResult = Parser(code).parse()
 
+/**
+ * Parses [code] as the body of a function: the same as [parseProgram], but a `return` at the top level is allowed.
+ * This is how a program that is run as a plain function (`Realm.runRaw`) is read.
+ */
+internal fun parseFunctionBody(code: String): ParseResult {
+    val parser = Parser(code)
+    parser.allowReturnOutsideFunction = true
+    return parser.parse()
+}
+
 /** How many statements, expressions and unary operators may nest; deeper code is an error. */
 internal const val MAX_DEPTH = 200
 
@@ -92,6 +102,9 @@ internal class Parser(internal val input: String) {
     internal var labels = ArrayList<ParseLabel>()
     internal val scopeStack = ArrayList<ParseScope>()
     private var depth = 0
+
+    /** Whether `return` is allowed at the top level (the program is the body of a function). */
+    internal var allowReturnOutsideFunction = false
 
     fun parse(): ParseResult {
         scopeStack.add(ParseScope(ScopeFlag.TOP))
@@ -469,7 +482,7 @@ internal class Parser(internal val input: String) {
     }
 
     private fun parseReturnStatement(start: Int): Node {
-        if (!inFunction) raise(tok.start, "'return' outside of function", tok.end)
+        if (!inFunction && !allowReturnOutsideFunction) raise(tok.start, "'return' outside of function", tok.end)
         next()
         // The keywords with an optional argument look for a semicolon eagerly.
         var argument: Node? = null
