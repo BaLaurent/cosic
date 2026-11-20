@@ -4,6 +4,7 @@ import cosic.FrameClock
 import cosic.MidiSink
 import cosic.OscSink
 import cosic.SpeechSink
+import cosic.io.serial.SerialSink
 import cosic.pattern.ScheduleHook
 import cosic.pattern.ScheduledHap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -57,6 +58,9 @@ class OutputBus(
 
     @Volatile
     var speech: SpeechSink? = null
+
+    @Volatile
+    var serial: SerialSink? = null
 
     /**
      * Sends every hap that is not made to sound by a dominant hook to OSC instead of playing it (the audio engine target `osc`: "all events

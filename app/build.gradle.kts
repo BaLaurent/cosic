@@ -115,6 +115,7 @@ dependencies {
     implementation(libs.billing.ktx)
     implementation(libs.play.services.ads)
     implementation(libs.ump)
+    implementation(libs.usb.serial)
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test.junit)
     androidTestImplementation(libs.androidx.test.runner)

@@ -13,11 +13,13 @@ coroutines = "1.11.0"
 billing = "9.1.0"
 ads = "25.5.0"
 ump = "4.0.0"
+usbSerial = "3.12.0"
 junit = "4.13.2"
 androidxTestRunner = "1.6.2"
 androidxTestJunit = "1.2.1"
 
 [libraries]
+usb-serial = { module = "com.github.mik3y:usb-serial-for-android", version.ref = "usbSerial" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
