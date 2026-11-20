@@ -6,6 +6,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class PatternCoreTest {
@@ -21,6 +22,7 @@ class PatternCoreTest {
     fun spanCyclesKeepsWholeCyclesIntact() {
         assertEquals(listOf(span(r(0), r(1))), span(r(0), r(1)).spanCycles())
         assertEquals(listOf(span(r(3), r(4))), span(r(3), r(4)).spanCycles())
+        assertEquals(listOf(span(r(0), r(1)), span(r(1), r(2))), span(r(0), r(2)).spanCycles())
     }
 
     @Test
@@ -30,28 +32,40 @@ class PatternCoreTest {
     }
 
     @Test
-    fun intersectOfOverlappingSpans() {
-        assertEquals(span(r(1, 2), r(1)), span(r(0), r(1)).intersect(span(r(1, 2), r(2))))
+    fun anInvertedSpanHasNoCycles() {
+        assertEquals(emptyList(), span(r(0), r(-2)).spanCycles())
+        assertEquals(emptyList(), span(r(1), r(1, 2)).spanCycles())
     }
 
     @Test
-    fun intersectOfDisjointOrTouchingSpansIsNull() {
-        assertNull(span(r(0), r(1)).intersect(span(r(1), r(2))))
-        assertNull(span(r(1), r(2)).intersect(span(r(0), r(1))))
-        assertNull(span(r(0), r(1)).intersect(span(r(2), r(3))))
+    fun intersectionOfOverlappingSpans() {
+        assertEquals(span(r(1, 2), r(1)), span(r(0), r(1)).intersection(span(r(1, 2), r(2))))
     }
 
     @Test
-    fun intersectKeepsZeroWidthSpanInsideTheOther() {
-        assertEquals(span(r(1, 2), r(1, 2)), span(r(1, 2), r(1, 2)).intersect(span(r(0), r(1))))
-        assertEquals(span(r(0), r(0)), span(r(0), r(0)).intersect(span(r(0), r(1))))
-        assertEquals(span(r(1, 2), r(1, 2)), span(r(0), r(1)).intersect(span(r(1, 2), r(1, 2))))
+    fun intersectionOfDisjointOrTouchingSpansIsNull() {
+        assertNull(span(r(0), r(1)).intersection(span(r(1), r(2))))
+        assertNull(span(r(1), r(2)).intersection(span(r(0), r(1))))
+        assertNull(span(r(0), r(1)).intersection(span(r(2), r(3))))
     }
 
     @Test
-    fun intersectDropsZeroWidthSpanAtTheEndOfTheOther() {
-        assertNull(span(r(1), r(1)).intersect(span(r(0), r(1))))
-        assertNull(span(r(0), r(1)).intersect(span(r(1), r(1))))
+    fun intersectionKeepsZeroWidthSpanInsideTheOther() {
+        assertEquals(span(r(1, 2), r(1, 2)), span(r(1, 2), r(1, 2)).intersection(span(r(0), r(1))))
+        assertEquals(span(r(0), r(0)), span(r(0), r(0)).intersection(span(r(0), r(1))))
+        assertEquals(span(r(1, 2), r(1, 2)), span(r(0), r(1)).intersection(span(r(1, 2), r(1, 2))))
+    }
+
+    @Test
+    fun intersectionDropsZeroWidthSpanAtTheEndOfTheOther() {
+        assertNull(span(r(1), r(1)).intersection(span(r(0), r(1))))
+        assertNull(span(r(0), r(1)).intersection(span(r(1), r(1))))
+    }
+
+    @Test
+    fun intersectionEThrowsWhenTheSpansDoNotMeet() {
+        assertEquals(span(r(1), r(2)), span(r(0), r(2)).intersectionE(span(r(1), r(3))))
+        assertEquals("TimeSpans do not intersect", assertFailsWith<CosicError> { span(r(0), r(1)).intersectionE(span(r(2), r(3))) }.message)
     }
 
     @Test
@@ -60,14 +74,78 @@ class PatternCoreTest {
     }
 
     @Test
+    fun withCycleWorksRelativeToTheCycleOfTheBegin() {
+        assertEquals(span(r(3), r(7, 2)), span(r(5, 2), r(11, 4)).withCycle { it * r(2) })
+        assertEquals(span(r(2), r(3)), span(r(2), r(5, 2)).withCycle { it * r(2) })
+        assertEquals(span(r(0), r(1, 2)), span(r(3), r(7, 2)).cycleArc())
+        assertEquals(span(r(1, 2), r(3, 2)), span(r(5, 2), r(7, 2)).cycleArc())
+    }
+
+    @Test
     fun hapOnsetAndWhole() {
         val whole = span(r(0), r(1))
-        assertTrue(Hap(whole, span(r(0), r(1, 2)), "a", emptyList()).hasOnset())
-        assertFalse(Hap(whole, span(r(1, 2), r(1)), "a", emptyList()).hasOnset())
-        val continuous = Hap(null, span(r(0), r(1)), "a", emptyList())
+        assertTrue(Hap(whole, span(r(0), r(1, 2)), "a").hasOnset())
+        assertFalse(Hap(whole, span(r(1, 2), r(1)), "a").hasOnset())
+        val continuous = Hap(null, span(r(0), r(1)), "a")
         assertFalse(continuous.hasOnset())
         assertEquals(span(r(0), r(1)), continuous.wholeOrPart())
-        assertEquals(whole, Hap(whole, span(r(0), r(1, 2)), "a", emptyList()).wholeOrPart())
+        assertEquals(whole, Hap(whole, span(r(0), r(1, 2)), "a").wholeOrPart())
+    }
+
+    @Test
+    fun hapDurationIsTheWholeUnlessTheValueSaysOtherwise() {
+        val whole = span(r(0), r(1, 2))
+        assertEquals(r(1, 2), Hap(whole, whole, "a").duration)
+        assertEquals(r(1, 4), Hap(whole, whole, mapOf("clip" to 0.5)).duration)
+        assertEquals(r(3, 4), Hap(whole, whole, mapOf("duration" to 0.75)).duration)
+        assertEquals(r(3, 8), Hap(whole, whole, mapOf("duration" to 0.75, "clip" to 0.5)).duration)
+        assertEquals(r(1, 4), Hap(whole, whole, mapOf("clip" to 0.5)).endClipped)
+    }
+
+    @Test
+    fun spanEqualsComparesWholesOnly() {
+        val a = Hap(span(r(0), r(1, 2)), span(r(0), r(1, 2)), "a")
+        val b = Hap(span(r(0), r(1, 2)), span(r(0), r(1, 4)), "b")
+        val c = Hap(span(r(0), r(1, 4)), span(r(0), r(1, 4)), "c")
+        assertTrue(a.spanEquals(b))
+        assertFalse(a.spanEquals(c))
+        val d = Hap(null, span(r(0), r(1, 2)), "d")
+        assertTrue(d.spanEquals(Hap(null, span(r(0), r(1)), "e")))
+        assertFailsWith<CosicError> { d.spanEquals(a) }
+    }
+
+    @Test
+    fun combiningContextsAddsLocationsAndLetsTheSecondOneOverrideTheRest() {
+        val a = HapContext(listOf(SourceRange(0, 1)), mapOf("x" to 1, "y" to 1), tags = listOf("a"))
+        val b = HapContext(listOf(SourceRange(5, 6)), mapOf("y" to 2), tags = null)
+        val c = a.combine(b)
+        assertEquals(listOf(SourceRange(0, 1), SourceRange(5, 6)), c.locations)
+        assertEquals(mapOf("x" to 1, "y" to 2), c.extra)
+        assertEquals(listOf("a"), c.tags)
+        assertEquals(listOf("b"), a.combine(HapContext(tags = listOf("b"))).tags)
+    }
+
+    @Test
+    fun stateAndHapTransformationsDropTheStatefulFlag() {
+        val whole = span(r(0), r(1))
+        val hap = Hap(whole, whole, jsFn(1) { arrayOf("state", "value") }, stateful = true)
+        assertFalse(hap.withValue { it }.stateful)
+        assertFalse(hap.withSpan { it }.stateful)
+        assertFalse(hap.setContext(HapContext.EMPTY).stateful)
+    }
+
+    @Test
+    fun resolveStateRunsAStatefulFunction() {
+        val whole = span(r(0), r(1))
+        val counter = jsFn(1) { args -> listOf((args[0] as Double) + 1, args[0]) }
+        val hap = Hap(whole, whole, counter, stateful = true)
+        val (state2, hap2) = hap.resolveState(10.0)
+        val (state3, hap3) = hap.resolveState(state2)
+        assertEquals(11.0, state2)
+        assertEquals(12.0, state3)
+        assertEquals(10.0, hap2.value)
+        assertEquals(11.0, hap3.value)
+        assertFalse(hap2.stateful)
     }
 
     // ---- constructors ------------------------------------------------------------------
@@ -77,11 +155,16 @@ class PatternCoreTest {
         val haps = pure("a").query(span(r(1, 2), r(3, 2)))
         assertEquals(
             listOf(
-                Hap(span(r(0), r(1)), span(r(1, 2), r(1)), "a", emptyList()),
-                Hap(span(r(1), r(2)), span(r(1), r(3, 2)), "a", emptyList()),
+                Hap(span(r(0), r(1)), span(r(1, 2), r(1)), "a"),
+                Hap(span(r(1), r(2)), span(r(1), r(3, 2)), "a"),
             ),
             haps,
         )
+    }
+
+    @Test
+    fun pureSupportsZeroWidthQueries() {
+        assertEquals(1, pure("a").queryArc(Rational.ZERO, Rational.ZERO).size)
     }
 
     @Test
@@ -98,7 +181,13 @@ class PatternCoreTest {
 
     @Test
     fun fastcatOfNothingIsSilence() {
-        assertEquals(emptyList(), fastcat(emptyList<Pattern<String>>()).shownCycle())
+        assertEquals(emptyList(), fastcat(emptyList()).shownCycle())
+        assertSame(silence, fastcat(emptyList()))
+    }
+
+    @Test
+    fun fastcatTakesListsAsSubsequences() {
+        assertEquals(fastcat(pure("a"), fastcat(pure("b"), pure("c"))).shownCycle(), fastcat("a", listOf("b", "c")).shownCycle())
     }
 
     @Test
@@ -127,45 +216,22 @@ class PatternCoreTest {
     @Test
     fun slowcatOfOnePatternIsThatPattern() {
         assertEquals(listOf("a@7-8"), slowcat(pure("a")).shownCycle(7))
+        val only = pure("a")
+        assertSame(only, slowcat(only))
     }
 
     @Test
-    fun timecatGivesEachStepASliceByWeight() {
-        val p = timecat(listOf(r(3) to pure("a"), r(1) to pure("b")))
-        assertEquals(listOf("a@0-3/4", "b@3/4-1"), p.shownCycle(0))
-        assertEquals(listOf("a@1-7/4", "b@7/4-2"), p.shownCycle(1))
-        val q = timecat(listOf(r(1) to pure("a"), r(2) to pure("b"), r(1) to pure("c")))
-        assertEquals(listOf("a@0-1/4", "b@1/4-3/4", "c@3/4-1"), q.shownCycle(0))
+    fun slowcatCanBeEmptyAndGoIntoNegativeTime() {
+        assertEquals(emptyList(), slowcat(emptyList()).shownCycle())
+        val p = fastcat("a", "b", "c").late(r(1000000))
+        assertEquals(fastcat("a", "b", "c").shownCycle(), p.shownCycle())
     }
 
     @Test
-    fun compressSqueezesACycleIntoASlice() {
-        assertEquals(listOf("a@1/4-3/4"), pure("a").compress(r(1, 4), r(3, 4)).shownCycle())
-        assertEquals(
-            listOf("a@1/4-1/2", "b@1/2-3/4"),
-            fastcat(pure("a"), pure("b")).compress(r(1, 4), r(3, 4)).shownCycle(),
-        )
-    }
-
-    @Test
-    fun compressClipsPartsButNotWholesToTheSlice() {
-        val slowed = pure("a").slow(r(2)).compress(r(1, 4), r(3, 4))
-        assertEquals(listOf("a@1/4-5/4|1/4-3/4"), slowed.shownCycle())
-    }
-
-    @Test
-    fun compressAnswersPartialQueries() {
-        assertEquals(
-            listOf("a@1/4-1/2"),
-            fastcat(pure("a"), pure("b")).compress(r(1, 4), r(3, 4)).shown(span(r(0), r(1, 2))),
-        )
-    }
-
-    @Test
-    fun compressOutsideTheCycleIsSilent() {
-        assertEquals(emptyList(), pure("a").compress(r(1, 2), r(1, 4)).shownCycle())
-        assertEquals(emptyList(), pure("a").compress(r(1, 2), r(3, 2)).shownCycle())
-        assertEquals(emptyList(), pure("a").compress(r(-1, 2), r(1, 2)).shownCycle())
+    fun slowcatPrimeQueriesWithTheUnshiftedTime() {
+        val p = slowcatPrime(listOf(fastcat(0.0, 1.0, 2.0, 3.0).slow(r(2)), fastcat(4.0, 5.0, 6.0, 7.0).slow(r(2)))).fast(r(4))
+        assertEquals(listOf(0.0, 1.0, 6.0, 7.0, 0.0, 1.0, 6.0, 7.0), p.cycleValues())
+        assertEquals(emptyList(), slowcatPrime(emptyList()).shownCycle())
     }
 
     @Test
@@ -174,15 +240,40 @@ class PatternCoreTest {
         assertEquals(listOf("b@0-1/2", "a@0-1", "c@1/2-1"), p.shownCycle())
     }
 
+    @Test
+    fun stackTakesListsAsSequences() {
+        assertEquals(stack("a", fastcat("b", "c")).shownCycle(), stack("a", listOf("b", "c")).shownCycle())
+    }
+
+    @Test
+    fun stackKeepsGoingWhenOneOfItsPatternsFails() {
+        val seen = ArrayList<Throwable>()
+        val outer = errorLogger
+        errorLogger = { seen.add(it) }
+        try {
+            val broken = Pattern { throw CosicError("boom") }
+            assertEquals(listOf("a@0-1"), stack(pure("a"), broken).shownCycle())
+            assertEquals(listOf("boom"), seen.map { it.message })
+        } finally {
+            errorLogger = outer
+        }
+    }
+
+    @Test
+    fun stackDoesNotSwallowAQueryThatRanOutOfBudget() {
+        val dense = Pattern { throw CosicError(TOO_DENSE) }
+        assertEquals(TOO_DENSE, assertFailsWith<CosicError> { stack(pure("a"), dense).query(cycleSpan(0)) }.message)
+        val deep = Pattern { throw CosicError(TOO_DEEP) }
+        assertEquals(TOO_DEEP, assertFailsWith<CosicError> { stack(deep).query(cycleSpan(0)) }.message)
+    }
+
     // ---- mapping and filtering --------------------------------------------------------
 
     @Test
     fun fmapKeepsStructureAndLocations() {
-        val located = Pattern<String> { s ->
-            pure("a").query(s).map { it.copy(locations = listOf(SourceRange(2, 3))) }
-        }
-        val haps = located.fmap { it.uppercase() }.query(cycleSpan(0))
-        assertEquals(listOf(Hap(span(r(0), r(1)), span(r(0), r(1)), "A", listOf(SourceRange(2, 3)))), haps)
+        val located = pure("a").withLoc(SourceRange(2, 3))
+        val haps = located.fmap { (it as String).uppercase() }.query(cycleSpan(0))
+        assertEquals(listOf(Hap(span(r(0), r(1)), span(r(0), r(1)), "A", HapContext(listOf(SourceRange(2, 3))))), haps)
     }
 
     @Test
@@ -193,52 +284,117 @@ class PatternCoreTest {
 
     @Test
     fun splitQueriesSplitsAtCycleBoundaries() {
-        val whole = Pattern<Int> { s -> listOf(Hap(s, s, 1, emptyList())) }
+        val whole = Pattern { s -> listOf(Hap(s.span, s.span, 1)) }
         assertEquals(1, whole.query(span(r(0), r(5, 2))).size)
         val split = whole.splitQueries().query(span(r(0), r(5, 2)))
         assertEquals(listOf(span(r(0), r(1)), span(r(1), r(2)), span(r(2), r(5, 2))), split.map { it.part })
     }
 
     @Test
+    fun withQuerySpanMaybeAnswersNothingWhenTheFunctionDoes() {
+        val p = pure("a").withQuerySpanMaybe { if (it.begin < r(1)) it else null }
+        assertEquals(listOf("a@0-1"), p.shownCycle(0))
+        assertEquals(emptyList(), p.shownCycle(1))
+    }
+
+    @Test
     fun filterValuesKeepsMatchingHaps() {
-        val p = fastcat(pure(1), pure(2), pure(3)).filterValues { it % 2 == 1 }
+        val p = fastcat(pure(1), pure(2), pure(3)).filterValues { (it as Int) % 2 == 1 }
         assertEquals(listOf(1, 3), p.cycleValues())
     }
 
     @Test
     fun filterHapsCanKeepOnsetsOnly() {
-        val onsets = pure("a").filterHaps { it.hasOnset() }
+        val onsets = pure("a").onsetsOnly()
         assertEquals(listOf("a@1-2|1-3/2"), onsets.shown(span(r(1, 2), r(3, 2))))
+    }
+
+    @Test
+    fun removeUndefinedsDropsNullAndUndefined() {
+        val p = fastcat(pure(1.0), pure(Undefined), pure(null), pure(2.0)).removeUndefineds()
+        assertEquals(listOf(1.0, 2.0), p.cycleValues())
+    }
+
+    @Test
+    fun discreteOnlyDropsHapsWithoutAWhole() {
+        assertEquals(emptyList(), saw.discreteOnly().query(cycleSpan(0)))
+        assertEquals(1, stack(saw, pure("a")).discreteOnly().query(cycleSpan(0)).size)
+    }
+
+    // ---- context ----------------------------------------------------------------------
+
+    @Test
+    fun withLocAddsALocationToEveryHap() {
+        val p = fastcat(pure("a"), pure("b")).withLoc(SourceRange(1, 2)).withLoc(SourceRange(5, 6))
+        assertEquals(listOf(listOf(SourceRange(1, 2), SourceRange(5, 6))), p.query(cycleSpan(0)).map { it.context.locations }.distinct())
+    }
+
+    @Test
+    fun aConstantPatternRemembersWhereItWasWritten() {
+        val p = pure(2.0).withLoc(SourceRange(4, 5))
+        assertEquals(2.0, p.pureValue)
+        assertEquals(SourceRange(4, 5), p.pureLoc)
+        assertNull(p.fmap { it }.pureValue, "fmap makes a new pattern, which is no longer a constant")
+    }
+
+    @Test
+    fun zeroIsNotRememberedAsWhereItWasWritten() {
+        val p = pure(0.0).withLoc(SourceRange(4, 5))
+        assertNull(p.pureLoc)
+        assertEquals(0.0, p.pureValue)
+        assertNull(pure(Undefined).pureValue)
+        assertNull(pure(null).pureValue)
+    }
+
+    @Test
+    fun withContextKeepsAConstantConstant() {
+        val p = pure("a").withContext { it.copy(tags = listOf("x")) }
+        assertEquals("a", p.pureValue)
+        assertEquals(listOf("x"), p.query(cycleSpan(0)).single().context.tags)
+    }
+
+    @Test
+    fun setContextAndStripContext() {
+        val p = pure("a").withLoc(SourceRange(0, 1))
+        assertEquals(HapContext.EMPTY, p.stripContext().query(cycleSpan(0)).single().context)
+        assertEquals(listOf(SourceRange(9, 9)), p.setContext(HapContext(listOf(SourceRange(9, 9)))).query(cycleSpan(0)).single().context.locations)
+        assertEquals(HapContext.EMPTY, p.firstCycle().single().context)
+        assertEquals(listOf(SourceRange(0, 1)), p.firstCycle(withContext = true).single().context.locations)
     }
 
     // ---- applicative and join ---------------------------------------------------------
 
     @Test
-    fun appLeftTakesStructureFromTheLeft() {
-        val p = fastcat(pure("a"), pure("b")).appLeft(pure(1)) { x, y -> "$x$y" }
+    fun zipLeftTakesStructureFromTheLeft() {
+        val p = fastcat(pure("a"), pure("b")).zipLeft(pure(1)) { x, y -> "$x$y" }
         assertEquals(listOf("a1@0-1/2", "b1@1/2-1"), p.shownCycle())
     }
 
     @Test
-    fun appLeftSplitsPartsButKeepsTheLeftWhole() {
-        val p = pure("a").appLeft(fastcat(pure(1), pure(2))) { x, y -> "$x$y" }
+    fun zipLeftSplitsPartsButKeepsTheLeftWhole() {
+        val p = pure("a").zipLeft(fastcat(pure(1), pure(2))) { x, y -> "$x$y" }
         assertEquals(listOf("a1@0-1|0-1/2", "a2@0-1|1/2-1"), p.shownCycle())
-        val q = fastcat(pure("a"), pure("b")).appLeft(fastcat(pure(1), pure(2), pure(3), pure(4))) { x, y -> "$x$y" }
+        val q = fastcat(pure("a"), pure("b")).zipLeft(fastcat(pure(1), pure(2), pure(3), pure(4))) { x, y -> "$x$y" }
         assertEquals(listOf("a1@0-1/2|0-1/4", "a2@0-1/2|1/4-1/2", "b3@1/2-1|1/2-3/4", "b4@1/2-1|3/4-1"), q.shownCycle())
     }
 
     @Test
-    fun appLeftOnlyCombinesRightHapsInsideTheLeftPart() {
-        val p = fastcat(pure("a"), pure("b")).appLeft(fastcat(pure(1), pure(2), pure(3), pure(4))) { x, y -> "$x$y" }
+    fun zipLeftOnlyCombinesRightHapsInsideTheLeftPart() {
+        val p = fastcat(pure("a"), pure("b")).zipLeft(fastcat(pure(1), pure(2), pure(3), pure(4))) { x, y -> "$x$y" }
         assertEquals(listOf("a1@0-1/2|0-1/4"), p.shown(span(r(0), r(1, 4))))
     }
 
     @Test
-    fun appLeftConcatenatesLocationsLeftThenRight() {
-        fun located(value: String, at: SourceRange) =
-            Pattern<String> { s -> pure(value).query(s).map { it.copy(locations = listOf(at)) } }
-        val haps = located("a", SourceRange(0, 1)).appLeft(located("b", SourceRange(5, 6))) { x, y -> x + y }.query(cycleSpan(0))
-        assertEquals(listOf(SourceRange(0, 1), SourceRange(5, 6)), haps.single().locations)
+    fun appLeftPutsTheLocationsOfTheValueSideFirst() {
+        val a = pure("a").withLoc(SourceRange(0, 1))
+        val b = pure("b").withLoc(SourceRange(5, 6))
+        val haps = a.zipLeft(b) { x, y -> "$x$y" }.query(cycleSpan(0))
+        assertEquals(listOf(SourceRange(5, 6), SourceRange(0, 1)), haps.single().context.locations)
+    }
+
+    @Test
+    fun appLeftOnAValueThatIsNotAFunctionIsAnError() {
+        assertFailsWith<CosicError> { pure("a").appLeft(pure(1)).query(cycleSpan(0)) }
     }
 
     @Test
@@ -248,11 +404,11 @@ class PatternCoreTest {
     }
 
     @Test
-    fun innerJoinConcatenatesInnerThenOuterLocations() {
-        val inner = Pattern<String> { s -> pure("a").query(s).map { it.copy(locations = listOf(SourceRange(0, 1))) } }
-        val outer = Pattern<Pattern<String>> { s -> pure(inner).query(s).map { it.copy(locations = listOf(SourceRange(7, 8))) } }
+    fun innerJoinConcatenatesOuterThenInnerLocations() {
+        val inner = pure("a").withLoc(SourceRange(0, 1))
+        val outer = pure(inner).withLoc(SourceRange(7, 8))
         val haps = outer.innerJoin().query(cycleSpan(0))
-        assertEquals(listOf(SourceRange(0, 1), SourceRange(7, 8)), haps.single().locations)
+        assertEquals(listOf(SourceRange(7, 8), SourceRange(0, 1)), haps.single().context.locations)
     }
 
     @Test
@@ -261,69 +417,33 @@ class PatternCoreTest {
         assertEquals(listOf("q@0-1/2|1/4-1/2", "r@1/2-1|1/2-3/4"), outer.innerJoin().shown(span(r(1, 4), r(3, 4))))
     }
 
-    // ---- notes and scales -------------------------------------------------------------
-
     @Test
-    fun noteNamesToMidi() {
-        assertEquals(48, noteToMidi("c"))
-        assertEquals(60, noteToMidi("c4"))
-        assertEquals(51, noteToMidi("eb3"))
-        assertEquals(69, noteToMidi("a4"))
-        assertEquals(69, noteToMidi("A4"))
-        assertEquals(61, noteToMidi("c#4"))
-        assertEquals(61, noteToMidi("db4"))
-        assertEquals(58, noteToMidi("bb"))
-        assertEquals(59, noteToMidi("b"))
-        assertEquals(59, noteToMidi("cb4"))
-        assertEquals(0, noteToMidi("c-1"))
-        assertEquals(127, noteToMidi("g9"))
+    fun aValueThatIsNotAPatternCannotBeJoined() {
+        assertFailsWith<CosicError> { pure("a").innerJoin().query(cycleSpan(0)) }
+        assertFailsWith<CosicError> { pure(3.0).join().query(cycleSpan(0)) }
     }
 
+    // ---- steps ------------------------------------------------------------------------
+
     @Test
-    fun invalidNoteNamesAreNull() {
-        for (bad in listOf("", "h3", "bd", "c##3", "4", "c 4", "c4x", "cb#")) {
-            assertNull(noteToMidi(bad), "'$bad' must not be a note")
+    fun withStepsIsANoOpWhenStepsAreNotTracked() {
+        val p = fastcat("a", "b")
+        Steps.enabled = false
+        try {
+            assertSame(p, p.withSteps { it * r(2) })
+            assertNull(stack(p, p).steps)
+            assertNull(slowcat(p, p).steps)
+        } finally {
+            Steps.enabled = true
         }
+        assertEquals(r(4), p.withSteps { it * r(2) }.steps)
     }
 
     @Test
-    fun scaleDegreesToNotes() {
-        assertEquals(60.0, scaleNote(7, "C:major"))
-        assertEquals(48.0, scaleNote(0, "C:major"))
-        assertEquals(52.0, scaleNote(2, "C:major"))
-        assertEquals(47.0, scaleNote(-1, "C:major"))
-        assertEquals(51.0, scaleNote(2, "C:minor"))
-        assertEquals(69.0, scaleNote(0, "A4:minor"))
-        assertEquals(57.0, scaleNote(4, "C:majorpentatonic"))
-        assertEquals(60.0, scaleNote(5, "C:majorpentatonic"))
-    }
-
-    @Test
-    fun scaleNamesAreNormalised() {
-        assertEquals(59.0, scaleNote(6, "C:harmonic minor"))
-        assertEquals(59.0, scaleNote(6, "C:Harmonic_Minor"))
-        assertEquals(53.0, scaleNote(1, "D:minor:pentatonic"))
-        assertEquals(scaleNote(3, "C:major"), scaleNote(3, "C:ionian"))
-        assertEquals(scaleNote(3, "C:minor"), scaleNote(3, "C:aeolian"))
-    }
-
-    @Test
-    fun everyScaleKnownByThePlanExists() {
-        val names = listOf(
-            "major", "ionian", "minor", "aeolian", "dorian", "phrygian", "lydian", "mixolydian", "locrian",
-            "harmonicminor", "melodicminor", "majorpentatonic", "minorpentatonic", "blues", "chromatic", "wholetone",
-        )
-        for (name in names) scaleNote(1, "C:$name")
-        assertEquals(49.0, scaleNote(1, "C:chromatic"))
-        assertEquals(50.0, scaleNote(1, "C:wholetone"))
-        assertEquals(51.0, scaleNote(1, "C:blues"))
-    }
-
-    @Test
-    fun unknownScaleThrows() {
-        val e = assertFailsWith<CosicError> { scaleNote(0, "C:foo") }
-        assertEquals("Unknown scale 'C:foo'", e.message)
-        assertFailsWith<CosicError> { scaleNote(0, "H:major") }
-        assertFailsWith<CosicError> { scaleNote(0, "C") }
+    fun setStepsMakesACopyAndNeverTouchesSharedPatterns() {
+        val copy = silence.setSteps(r(5))
+        assertEquals(r(5), copy.steps)
+        assertEquals(r(1), silence.steps)
+        assertEquals(r(0), nothing.steps)
     }
 }

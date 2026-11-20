@@ -5,8 +5,7 @@ import cosic.pattern.CosicError
 import cosic.pattern.MAX_COUNT
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
-import cosic.pattern.SCALE_MODES
-import cosic.pattern.innerJoin
+import cosic.pattern.legacy.SCALE_MODES
 import kotlin.math.roundToInt
 
 /** What kind of value a builtin parameter accepts; arguments are checked against it before the builtin runs. */
@@ -77,23 +76,23 @@ internal class Builtin(
 internal class Call(
     val name: String,
     val range: SourceRange,
-    val self: Pattern<Any>?,
+    val self: Pattern?,
     val args: List<Value>,
     val session: Session,
 ) {
     fun fail(message: String): Nothing = throw CosicError(message, range)
 
-    fun pattern(i: Int): Pattern<Any> = toPattern(args[i])
+    fun pattern(i: Int): Pattern = toPattern(args[i])
 
     /** The function argument [i], applied to a pattern. */
-    fun function(i: Int): (Pattern<Any>) -> Pattern<Any> {
+    fun function(i: Int): (Pattern) -> Pattern {
         val fn = args[i] as Value.Fn
         return { p -> toPattern(fn.body(listOf(Value.Pat(p)))) }
     }
 
-    fun number(value: Any): Double = value as? Double ?: fail("'$name' expects a number, got ${describeValue(value)}")
+    fun number(value: Any?): Double = value as? Double ?: fail("'$name' expects a number, got ${describeValue(value)}")
 
-    fun text(value: Any): String = when (value) {
+    fun text(value: Any?): String = when (value) {
         is String -> value
         is Double -> formatNumber(value)
         else -> fail("'$name' expects a string, got ${describeValue(value)}")
@@ -103,20 +102,20 @@ internal class Call(
      * Builds the result for a numeric argument. A plain number is used directly; a pattern of numbers
      * makes the result change with it (joined by the argument's structure).
      */
-    fun joinNumber(i: Int, f: (Double) -> Pattern<Any>): Pattern<Any> {
+    fun joinNumber(i: Int, f: (Double) -> Pattern): Pattern {
         val arg = args[i]
         return if (arg is Value.Num) f(arg.value) else toPattern(arg).fmap { f(number(it)) }.innerJoin()
     }
 
-    fun joinRational(i: Int, f: (Rational) -> Pattern<Any>): Pattern<Any> = joinNumber(i) { f(Rational.of(it)) }
+    fun joinRational(i: Int, f: (Rational) -> Pattern): Pattern = joinNumber(i) { f(Rational.of(it)) }
 
     /** Like [joinNumber] for a whole number between -[MAX_COUNT] and [MAX_COUNT]. */
-    fun joinInt(i: Int, f: (Int) -> Pattern<Any>): Pattern<Any> = joinNumber(i) { value ->
+    fun joinInt(i: Int, f: (Int) -> Pattern): Pattern = joinNumber(i) { value ->
         if (!(Math.abs(value) <= MAX_COUNT)) fail("'$name' expects a number up to $MAX_COUNT, got ${formatNumber(value)}")
         f(value.roundToInt())
     }
 
-    fun joinText(i: Int, f: (String) -> Pattern<Any>): Pattern<Any> = when (val arg = args[i]) {
+    fun joinText(i: Int, f: (String) -> Pattern): Pattern = when (val arg = args[i]) {
         is Value.Str -> f(arg.value)
         is Value.Num -> f(formatNumber(arg.value))
         else -> toPattern(arg).fmap { f(text(it)) }.innerJoin()

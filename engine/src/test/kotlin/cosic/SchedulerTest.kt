@@ -3,7 +3,6 @@ package cosic
 import cosic.audio.SR
 import cosic.audio.VoiceSource
 import cosic.audio.Waveform
-import cosic.pattern.ControlMap
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
@@ -288,7 +287,7 @@ class SchedulerTest {
     }
 
     /** What the dry run throws, and what the scheduler records, when querying [pattern] fails on every chunk. */
-    private fun queryFailureOf(pattern: Pattern<ControlMap>): Pair<String?, String?> {
+    private fun queryFailureOf(pattern: Pattern): Pair<String?, String?> {
         val sounds = SoundResolver(SR, FakeLibrary())
         val thrown = assertFailsWith<CosicError> { dryRun(pattern, 0, sounds) }
         val scheduler = Scheduler(SR, sounds)
@@ -307,7 +306,7 @@ class SchedulerTest {
 
     @Test
     fun aPatternNestedTooDeeplyToQueryIsReportedInsteadOfCrashing() {
-        var nested: Pattern<ControlMap> = pure(mapOf("s" to "sine"))
+        var nested: Pattern = pure(mapOf("s" to "sine"))
         repeat(200_000) { nested = nested.withQueryTime { it } }
         val (thrown, recorded) = queryFailureOf(nested)
         assertEquals("The program nests or calls itself too deeply", thrown)
@@ -317,7 +316,7 @@ class SchedulerTest {
     @Test
     fun aChunkWhoseQueryDoesMoreWorkThanTheBudgetAllowsIsRefused() {
         // cutting a span into 100 000 cycles costs next to nothing, but is far more than a chunk of playback needs
-        val busy = Pattern<ControlMap> {
+        val busy = Pattern {
             TimeSpan(Rational.ZERO, Rational(100_000)).spanCycles()
             emptyList()
         }

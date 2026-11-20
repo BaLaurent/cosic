@@ -10,10 +10,10 @@ import cosic.pattern.arith
 import cosic.pattern.asControlMap
 import cosic.pattern.reportingExhaustion
 import cosic.pattern.silence
-import cosic.pattern.stack
+import cosic.pattern.legacyStack
 
 /** A program's result: the pattern to play, as sound parameters, and its tempo in cycles per second. */
-internal class ProgramResult(val pattern: Pattern<ControlMap>, val cps: Double)
+internal class ProgramResult(val pattern: Pattern, val cps: Double)
 
 /**
  * Parses and evaluates a program. This is the entry point of the language: the result's pattern is ready to
@@ -37,7 +37,7 @@ internal fun evaluateProgram(code: String): ProgramResult = reportingExhaustion 
  * methods it mocks (`osc`, `pianoroll`, `midi`, ...) return the pattern they are called on. A declaration as the last
  * statement gives silence, like the `silence` the transpiler appends there.
  */
-internal fun evaluateForQuery(code: String): Pattern<Any> = reportingExhaustion {
+internal fun evaluateForQuery(code: String): Pattern = reportingExhaustion {
     Evaluator(queryMode = true).runForQuery(parseProgram(code))
 }
 
@@ -61,9 +61,9 @@ private class Scope(private val parent: Scope?) {
 }
 
 /** Plays [pattern] but gives errors thrown while querying it without a range the range of [range]. */
-private fun attributing(pattern: Pattern<Any>, range: SourceRange): Pattern<Any> = Pattern { span ->
+private fun attributing(pattern: Pattern, range: SourceRange): Pattern = Pattern { state ->
     try {
-        pattern.query(span)
+        pattern.query(state)
     } catch (e: CosicError) {
         throw e.withRange(range)
     }
@@ -80,13 +80,13 @@ private fun scalarOf(value: Value): Any? = when (value) {
  * The pattern combining [left] and [right] with [op]. The structure comes from the left; a plain value on
  * the left has none, so then it comes from the right.
  */
-internal fun arithmetic(op: ArithOp, left: Value, right: Value): Pattern<Any> {
+internal fun arithmetic(op: ArithOp, left: Value, right: Value): Pattern {
     val rightScalar = scalarOf(right)
     val leftScalar = scalarOf(left)
     return when {
         rightScalar != null -> toPattern(left).fmap { arith(op, it, rightScalar) }
         leftScalar != null -> toPattern(right).fmap { arith(op, leftScalar, it) }
-        else -> toPattern(left).appLeft(toPattern(right)) { a, b -> arith(op, a, b) }
+        else -> toPattern(left).zipLeft(toPattern(right)) { a, b -> arith(op, a, b) }
     }
 }
 
@@ -95,9 +95,9 @@ private class Evaluator(private val queryMode: Boolean = false) {
     private val globals = Scope(null)
 
     fun run(statements: List<Stmt>): ProgramResult {
-        val labelled = ArrayList<Pattern<Any>>()
+        val labelled = ArrayList<Pattern>()
         var hasLabels = false
-        var last: Pattern<Any>? = null
+        var last: Pattern? = null
         for (statement in statements) {
             when (statement) {
                 is Stmt.Let -> globals[statement.name] = eval(statement.value, globals)
@@ -112,16 +112,16 @@ private class Evaluator(private val queryMode: Boolean = false) {
                 }
             }
         }
-        val program: Pattern<Any> = when {
+        val program: Pattern = when {
             session.hushed -> silence
-            hasLabels -> stack(labelled)
+            hasLabels -> legacyStack(labelled)
             else -> last ?: silence
         }
         return ProgramResult(program.fmap { asControlMap(it) }, session.cps)
     }
 
     /** The value of the last statement as a pattern, or silence when there is none; see [evaluateForQuery]. */
-    fun runForQuery(statements: List<Stmt>): Pattern<Any> {
+    fun runForQuery(statements: List<Stmt>): Pattern {
         var last: Value? = null
         for (statement in statements) {
             last = when (statement) {
@@ -136,7 +136,7 @@ private class Evaluator(private val queryMode: Boolean = false) {
         return toPattern(last ?: return silence)
     }
 
-    private fun patternOf(expr: Expr): Pattern<Any> = try {
+    private fun patternOf(expr: Expr): Pattern = try {
         toPattern(eval(expr, globals))
     } catch (e: CosicError) {
         throw e.withRange(expr.range)
@@ -266,7 +266,7 @@ private class Evaluator(private val queryMode: Boolean = false) {
             invoke(builtin, name, toPattern(rest[0]), args, range)
         }
 
-    private fun invoke(builtin: Builtin, name: String, self: Pattern<Any>?, args: List<Value>, range: SourceRange): Value {
+    private fun invoke(builtin: Builtin, name: String, self: Pattern?, args: List<Value>, range: SourceRange): Value {
         val result = try {
             builtin.impl(Call(name, range, self, args, session))
         } catch (e: CosicError) {

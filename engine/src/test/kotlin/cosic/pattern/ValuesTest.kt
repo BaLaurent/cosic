@@ -7,32 +7,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ValuesTest {
-    // ---- truthiness -------------------------------------------------------------------
-
-    @Test
-    fun numbersAreTruthyWhenNotZero() {
-        assertTrue(truthy(1.0))
-        assertTrue(truthy(-0.5))
-        assertFalse(truthy(0.0))
-    }
-
-    @Test
-    fun stringsAreTruthyUnlessFalseLike() {
-        assertTrue(truthy("x"))
-        assertTrue(truthy("t"))
-        assertTrue(truthy("1"))
-        assertFalse(truthy("f"))
-        assertFalse(truthy("false"))
-        assertFalse(truthy("0"))
-    }
-
-    @Test
-    fun booleansAreThemselvesAndOtherValuesAreTruthy() {
-        assertTrue(truthy(true))
-        assertFalse(truthy(false))
-        assertTrue(truthy(mapOf("s" to "bd")))
-    }
-
     // ---- sounds and control maps ------------------------------------------------------
 
     @Test

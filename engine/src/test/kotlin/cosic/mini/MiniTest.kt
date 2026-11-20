@@ -6,6 +6,7 @@ import cosic.pattern.Hap
 import cosic.pattern.Pattern
 import cosic.pattern.cycleSpan
 import cosic.pattern.cycleValues
+import cosic.pattern.query
 import cosic.pattern.r
 import cosic.pattern.shown
 import cosic.pattern.shownCycle
@@ -17,9 +18,9 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class MiniTest {
-    private fun mini(src: String, base: Int = 0): Pattern<Any> = parseMini(src, base)
+    private fun mini(src: String, base: Int = 0): Pattern = parseMini(src, base)
 
-    private fun Pattern<Any>.picks(cycles: LongRange): List<Any> = cycles.map { cycleValues(it).single() }
+    private fun Pattern.picks(cycles: LongRange): List<Any?> = cycles.map { cycleValues(it).single() }
 
     private fun error(src: String, base: Int = 0): CosicError = assertFailsWith<CosicError> { mini(src, base) }
 
@@ -238,30 +239,30 @@ class MiniTest {
 
     @Test
     fun atomLocationsIncludeTheBaseOffset() {
-        val haps: List<Hap<Any>> = mini("bd sd", 10).query(cycleSpan(0)).sortedBy { it.part.begin }
-        assertEquals(listOf(SourceRange(10, 12)), haps[0].locations)
-        assertEquals(listOf(SourceRange(13, 15)), haps[1].locations)
+        val haps: List<Hap> = mini("bd sd", 10).query(cycleSpan(0)).sortedBy { it.part.begin }
+        assertEquals(listOf(SourceRange(10, 12)), haps[0].context.locations)
+        assertEquals(listOf(SourceRange(13, 15)), haps[1].context.locations)
     }
 
     @Test
     fun nestedAtomsKeepTheirOwnLocations() {
         val haps = mini("a [b c]").query(cycleSpan(0)).sortedBy { it.part.begin }
-        assertEquals(listOf(SourceRange(0, 1)), haps[0].locations)
-        assertEquals(listOf(SourceRange(3, 4)), haps[1].locations)
-        assertEquals(listOf(SourceRange(5, 6)), haps[2].locations)
+        assertEquals(listOf(SourceRange(0, 1)), haps[0].context.locations)
+        assertEquals(listOf(SourceRange(3, 4)), haps[1].context.locations)
+        assertEquals(listOf(SourceRange(5, 6)), haps[2].context.locations)
     }
 
     @Test
     fun constantModifierNumbersAreNotHighlighted() {
-        assertEquals(listOf(listOf(SourceRange(0, 2)), listOf(SourceRange(0, 2))), mini("bd*2").query(cycleSpan(0)).map { it.locations })
-        assertEquals(listOf(listOf(SourceRange(0, 2))), mini("bd(1,4)").query(cycleSpan(0)).map { it.locations })
+        assertEquals(listOf(listOf(SourceRange(0, 2)), listOf(SourceRange(0, 2))), mini("bd*2").query(cycleSpan(0)).map { it.context.locations })
+        assertEquals(listOf(listOf(SourceRange(0, 2))), mini("bd(1,4)").query(cycleSpan(0)).map { it.context.locations })
     }
 
     @Test
     fun patternedModifierNumbersAreHighlightedAfterTheStep() {
         val p = mini("bd*<2 3>")
-        assertEquals(listOf(SourceRange(0, 2), SourceRange(4, 5)), p.query(cycleSpan(0)).first().locations)
-        assertEquals(listOf(SourceRange(0, 2), SourceRange(6, 7)), p.query(cycleSpan(1)).first().locations)
+        assertEquals(listOf(SourceRange(4, 5), SourceRange(0, 2)), p.query(cycleSpan(0)).first().context.locations)
+        assertEquals(listOf(SourceRange(6, 7), SourceRange(0, 2)), p.query(cycleSpan(1)).first().context.locations)
     }
 
     // ---- errors -----------------------------------------------------------------------

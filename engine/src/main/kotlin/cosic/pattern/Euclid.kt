@@ -34,8 +34,8 @@ internal fun BooleanArray.rotatedLeft(steps: Int): BooleanArray {
 }
 
 /** Plays this pattern's values on the hits of a Euclidean rhythm of [k] hits over [n] steps. */
-internal fun <T> Pattern<T>.euclid(k: Int, n: Int): Pattern<T> = euclidRot(k, n, 0)
+internal fun Pattern.euclid(k: Int, n: Int): Pattern = euclidRot(k, n, 0)
 
 /** Like [euclid], with the rhythm rotated left by [rotation] steps. */
-internal fun <T> Pattern<T>.euclidRot(k: Int, n: Int, rotation: Int): Pattern<T> =
+internal fun Pattern.euclidRot(k: Int, n: Int, rotation: Int): Pattern =
     struct(fastcat(bjorklund(k, n).rotatedLeft(rotation).map { pure(it) }))

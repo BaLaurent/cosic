@@ -4,7 +4,6 @@ import cosic.pattern.CosicError
 import cosic.pattern.Rational
 import cosic.pattern.TOO_DEEP
 import cosic.pattern.TOO_DENSE
-import cosic.pattern.TimeSpan
 import cosic.pattern.reportingExhaustion
 import cosic.script.evaluateForQuery
 import org.junit.AfterClass
@@ -133,17 +132,15 @@ private fun evaluateOnce(case: ParityCase): ActualOutcome {
     }
     val haps = try {
         reportingExhaustion {
-            sortHapsByPart(pattern.query(TimeSpan(Rational.ZERO, Rational(case.cycles.toLong()))))
+            pattern.sortHapsByPart().queryArc(Rational.ZERO, Rational(case.cycles.toLong()))
         }
     } catch (e: CosicError) {
-        // Pattern.queryArc catches whatever the query throws and returns []. Running out of stack or memory is no
-        // Strudel behaviour, so that stays a failure.
+        // Pattern.queryArc catches whatever the query throws, the failing sort of haps without a whole included, and
+        // answers []. Running out of stack or memory is no Strudel behaviour, so that stays a failure.
         if (e.message == TOO_DEEP || e.message == TOO_DENSE) return failed(e.message)
         emptyList()
-    } catch (e: HapsWithoutWholeSortError) {
-        emptyList()
     }
-    val shown = haps.map { showHap(it, compact = true) }
+    val shown = haps.map { it.show(true) }
     return ActualOutcome(if (case.roundFloats) shown.map { roundFloatStrings(it) } else shown, null, null, null)
 }
 

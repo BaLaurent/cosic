@@ -3,6 +3,7 @@ package cosic.script
 import cosic.pattern.ControlMap
 import cosic.pattern.Hap
 import cosic.pattern.Pattern
+import cosic.pattern.query
 import cosic.pattern.r
 import cosic.pattern.span
 import kotlin.test.Test
@@ -61,15 +62,15 @@ class QueryConsistencyTest {
         "\$: s(\"bd*2\")\n\$: s(\"hh*3\").degrade()",
     )
 
-    private fun key(hap: Hap<ControlMap>): String {
+    private fun key(hap: Hap): String {
         val whole = checkNotNull(hap.whole)
         return "${renderValue(hap.value)}@${whole.begin}-${whole.end}"
     }
 
-    private fun fullOnsets(pattern: Pattern<ControlMap>): List<String> =
+    private fun fullOnsets(pattern: Pattern): List<String> =
         pattern.query(span(r(0), r(4))).filter { it.hasOnset() }.map(::key).sorted()
 
-    private fun chunkedOnsets(pattern: Pattern<ControlMap>): List<String> {
+    private fun chunkedOnsets(pattern: Pattern): List<String> {
         val onsets = ArrayList<String>()
         for (i in 0L until 64L) {
             val begin = r(i, 16)

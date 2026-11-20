@@ -2,6 +2,7 @@ package cosic.script
 
 import cosic.pattern.CosicError
 import cosic.pattern.cycleSpan
+import cosic.pattern.query
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

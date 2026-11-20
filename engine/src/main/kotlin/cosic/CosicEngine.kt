@@ -5,7 +5,6 @@ import cosic.audio.DrumKit
 import cosic.audio.Mixer
 import cosic.audio.SYNTH_NAMES
 import cosic.audio.VoiceParams
-import cosic.pattern.ControlMap
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.player.IdleTracker
@@ -36,7 +35,7 @@ private const val HIGHLIGHT_KEEP_SECONDS = 1
 
 /** Work handed from other threads to the audio thread. */
 private sealed interface Command {
-    class SetProgram(val pattern: Pattern<ControlMap>, val cps: Double, val warnings: List<String>) : Command
+    class SetProgram(val pattern: Pattern, val cps: Double, val warnings: List<String>) : Command
 
     data object Play : Command
 
@@ -92,7 +91,7 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
     @Synchronized
     fun evaluate(code: String): EvalReport = try {
         val program = evaluateProgram(code)
-        val warnings = dryRun(program.pattern, currentCycle(), sounds)
+        val warnings = dryRun(program.pattern, currentCycle(), sounds, program.cps)
         commands.add(Command.SetProgram(program.pattern, program.cps, warnings))
         EvalReport.Ok(program.cps, warnings)
     } catch (e: CosicError) {

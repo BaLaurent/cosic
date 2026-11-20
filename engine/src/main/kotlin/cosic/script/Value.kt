@@ -13,7 +13,7 @@ internal sealed class Value {
 
     class Bool(val value: Boolean) : Value()
 
-    class Pat(val pattern: Pattern<Any>) : Value()
+    class Pat(val pattern: Pattern) : Value()
 
     class Arr(val items: List<Value>) : Value()
 
@@ -25,7 +25,7 @@ internal sealed class Value {
 }
 
 /** Turns any value into a pattern: scalars repeat every cycle and lists become sequences. */
-internal fun toPattern(value: Value): Pattern<Any> = when (value) {
+internal fun toPattern(value: Value): Pattern = when (value) {
     is Value.Pat -> value.pattern
     is Value.Num -> pure(value.value)
     is Value.Str -> pure(value.value)
@@ -51,7 +51,7 @@ internal fun describe(value: Value): String = when (value) {
 }
 
 /** How a pattern value reads in an error message. */
-internal fun describeValue(value: Any): String = when (value) {
+internal fun describeValue(value: Any?): String = when (value) {
     is Double -> "'${formatNumber(value)}'"
     is Map<*, *> -> "a control pattern"
     else -> "'$value'"

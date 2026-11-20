@@ -1,6 +1,7 @@
 package cosic.script
 
 import cosic.pattern.cycleSpan
+import cosic.pattern.query
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -43,7 +44,7 @@ class ReferenceSnippetTest {
     fun aMethodSnippetStillSoundsNextToAnExistingLabelledPattern() {
         val program = evaluateProgram("\$: s(\"hh\")\n${entry("euclid").snippet}")
 
-        val sounds = program.pattern.query(cycleSpan(0)).map { it.value["s"] }.toSet()
+        val sounds = program.pattern.query(cycleSpan(0)).map { (it.value as Map<*, *>)["s"] }.toSet()
 
         assertTrue("bd" in sounds, "the inserted euclid pattern is silent: $sounds")
     }

@@ -8,7 +8,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SignalsTest {
-    private fun valueAt(p: Pattern<Double>, t: Rational): Double = p.query(span(t, t)).single().value
+    private fun valueAt(p: Pattern, t: Rational): Double = p.query(span(t, t)).single().value as Double
 
     private fun assertNear(expected: Double, actual: Double, message: String = "") =
         assertEquals(expected, actual, 1e-9, message)
@@ -22,8 +22,8 @@ class SignalsTest {
 
     @Test
     fun signalsAreSampledAtTheQueryMidpoint() {
-        assertNear(1.0, sine.query(span(r(0), r(1, 2))).single().value)
-        assertNear(0.5, sine.query(span(r(0), r(1))).single().value)
+        assertNear(1.0, sine.query(span(r(0), r(1, 2))).single().value as Double)
+        assertNear(0.5, sine.query(span(r(0), r(1))).single().value as Double)
     }
 
     @Test

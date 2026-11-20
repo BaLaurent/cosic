@@ -60,9 +60,13 @@ class EngineTest {
 
     @Test
     fun anExceptionThatIsNotACosicErrorIsReportedAsAnErrorWhilePlaying() {
-        val tooLarge = """s("sine").early("9000000000000000000")""" // the number is looked at only when the pattern is queried
-        val report = assertIs<EvalReport.Failed>(engineOf().evaluate(tooLarge))
-        assertEquals("Error while playing: Invalid number", report.message)
+        val broken = object : SoundLibrary {
+            override fun bank(name: String): BankInfo? = throw IllegalStateException("the library broke")
+
+            override fun sample(name: String, index: Int): SampleData? = null
+        }
+        val report = assertIs<EvalReport.Failed>(engineOf(broken).evaluate("""s("kit")"""))
+        assertEquals("Error while playing: the library broke", report.message)
         assertNull(report.range)
         assertEquals(0, report.line)
         assertEquals(0, report.column)

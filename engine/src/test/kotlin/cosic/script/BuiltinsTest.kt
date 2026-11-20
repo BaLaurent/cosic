@@ -2,7 +2,9 @@ package cosic.script
 
 import cosic.SourceRange
 import cosic.pattern.Rational
+import cosic.pattern.compact
 import cosic.pattern.cycleSpan
+import cosic.pattern.query
 import cosic.pattern.r
 import cosic.pattern.timeRand
 import kotlin.test.Test
@@ -236,7 +238,7 @@ class BuiltinsTest {
     @Test
     fun structImposesARhythm() {
         assertEquals(listOf("s=bd@0-1/4", "s=bd@1/2-3/4", "s=bd@3/4-1"), run("s(\"bd\").struct(\"x ~ x x\")"))
-        assertEquals(listOf("s=bd@0-1/4", "s=bd@3/4-1"), run("s(\"bd\").struct(\"t f f t\")"))
+        assertEquals(listOf("s=bd@0-1/4", "s=bd@3/4-1"), run("s(\"bd\").struct(\"1 0 0 1\")"))
     }
 
     @Test
@@ -334,7 +336,7 @@ class BuiltinsTest {
     fun sometimesByAppliesTheFunctionToARandomShare() {
         val expected = (0L..7L).map { i ->
             val sped = timeRand(r(i, 8), 0) < 0.5
-            "s=hh" + (if (sped) " speed=2" else "") + "@${r(i, 8)}-${r(i + 1, 8)}"
+            "s=hh" + (if (sped) " speed=2" else "") + "@${r(i, 8).compact()}-${r(i + 1, 8).compact()}"
         }
         assertEquals(expected, run("s(\"hh*8\").sometimesBy(0.5, x => x.speed(2))"))
     }

@@ -2,6 +2,7 @@ package cosic.script
 
 import cosic.SourceRange
 import cosic.pattern.cycleSpan
+import cosic.pattern.query
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -362,13 +363,13 @@ class ScriptTest {
     @Test
     fun hapsRememberWhereTheirAtomsAre() {
         val haps = evaluateProgram("s(\"bd sd\").fast(1)").pattern.query(cycleSpan(0)).sortedBy { it.part.begin }
-        assertEquals(listOf(listOf(SourceRange(3, 5)), listOf(SourceRange(6, 8))), haps.map { it.locations })
+        assertEquals(listOf(listOf(SourceRange(3, 5)), listOf(SourceRange(6, 8))), haps.map { it.context.locations })
     }
 
     @Test
     fun patternedArgumentsAddTheirLocations() {
         val hap = evaluateProgram("s(\"bd\").n(\"1\")").pattern.query(cycleSpan(0)).single()
-        assertEquals(listOf(SourceRange(3, 5), SourceRange(11, 12)), hap.locations)
+        assertEquals(listOf(SourceRange(11, 12), SourceRange(3, 5)), hap.context.locations)
     }
 
     // ---- tokenize ---------------------------------------------------------------------
@@ -441,7 +442,8 @@ class ScriptTest {
         val fast = failure("s(\"bd\").fast(1000000)")
         assertEquals("Too fast: at most 10000 events per cycle", fast.message)
         assertEquals(SourceRange(8, 21), fast.range)
-        assertEquals(emptyList(), run("s(\"bd\").slow(0.000001)"))
+        assertEquals("Too fast: at most 10000 events per cycle", failure("s(\"bd\").slow(0.000001)").message)
+        assertEquals(emptyList(), run("s(\"bd\").slow(0.0000000001)"))
         assertEquals("Too fast: at most 10000 events per cycle", failure("s(\"bd\").segment(1000000)").message)
         val mini = failure("s(\"bd*1000000\")")
         assertEquals("Mini-notation: number out of range", mini.message)
@@ -453,7 +455,7 @@ class ScriptTest {
     @Test
     fun numbersThatAreNotNumbersAreReported() {
         val e = failure("s(\"bd\").fast(1/0)")
-        assertEquals("'fast': Invalid number", e.message)
+        assertEquals("Invalid argument", e.message)
         assertEquals(SourceRange(8, 17), e.range)
     }
 

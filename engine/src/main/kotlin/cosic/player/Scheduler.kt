@@ -6,7 +6,7 @@ import cosic.pattern.Hap
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
 import cosic.pattern.TOO_DENSE
-import cosic.pattern.TimeSpan
+import cosic.pattern.QueryContext
 import cosic.pattern.reportingExhaustion
 import cosic.pattern.silence
 import cosic.pattern.withQueryBudget
@@ -36,15 +36,18 @@ private class Warnings(initial: List<String> = emptyList()) {
     }
 }
 
+/** The controls Strudel's cyclist passes with every query: the tempo (`_cps`, read by `loopAt`, `splice` and `fit`) and who is asking. */
+private fun schedulerControls(cps: Double): Map<String, Any?> = mapOf("_cps" to cps, "cyclist" to "cyclist")
+
 /**
  * The haps of [pattern] that start inside the chunk beginning at [begin]: those with an onset whose whole begins in
  * it. Beyond [MAX_HAPS_PER_CHUNK] the rest is dropped and [warnings] told. Querying runs under a budget (see
  * [withQueryBudget]) and throws a [cosic.pattern.CosicError] when the chunk is too dense to build.
  */
-private fun onsets(pattern: Pattern<ControlMap>, begin: Rational, warnings: Warnings): List<Hap<ControlMap>> {
+private fun onsets(pattern: Pattern, begin: Rational, cps: Double, warnings: Warnings): List<Hap> {
     val end = begin + CHUNK
-    val haps = withQueryBudget { pattern.query(TimeSpan(begin, end)) }
-    val starting = ArrayList<Hap<ControlMap>>()
+    val haps = withQueryBudget { QueryContext.asScheduler { pattern.queryArc(begin, end, schedulerControls(cps)) } }
+    val starting = ArrayList<Hap>()
     for (hap in haps) {
         if (hap.hasOnset() && hap.part.begin >= begin && hap.part.begin < end) starting.add(hap)
     }
@@ -60,13 +63,13 @@ private fun onsets(pattern: Pattern<ControlMap>, begin: Rational, warnings: Warn
  * it is evaluated. Resolving each sound also makes the library start loading the samples and renders the drum sounds,
  * which keeps that work off the audio thread.
  */
-internal fun dryRun(pattern: Pattern<ControlMap>, fromCycle: Long, sounds: SoundResolver): List<String> = reportingExhaustion {
+internal fun dryRun(pattern: Pattern, fromCycle: Long, sounds: SoundResolver, cps: Double = DEFAULT_CPS): List<String> = reportingExhaustion {
     val warnings = Warnings()
     var begin = Rational(fromCycle)
     val end = begin + Rational(DRY_RUN_CYCLES)
     while (begin < end) {
-        for (hap in onsets(pattern, begin, warnings)) {
-            val lookup = sounds.resolve(hap.value)
+        for (hap in onsets(pattern, begin, cps, warnings)) {
+            val lookup = sounds.resolve(hap.value as ControlMap)
             if (lookup is SoundLookup.Unknown) warnings.add(unknownSoundWarning(lookup.key))
         }
         begin += CHUNK
@@ -83,7 +86,7 @@ internal fun dryRun(pattern: Pattern<ControlMap>, fromCycle: Long, sounds: Sound
 internal class Scheduler(private val sampleRate: Int, private val sounds: SoundResolver) {
     private val lookaheadFrames = Math.round(LOOKAHEAD_SECONDS * sampleRate)
     private val pending = ArrayDeque<SoundEvent>()
-    private var pattern: Pattern<ControlMap> = silence
+    private var pattern: Pattern = silence
     private var warningLog = Warnings()
 
     /** The tempo of the current program, which the next [play] starts at. */
@@ -123,7 +126,7 @@ internal class Scheduler(private val sampleRate: Int, private val sounds: SoundR
      * Switches to a new program from the horizon on: events already queued stay as they are. A tempo change starts
      * a new anchor at the horizon, so those events keep their frames. [warnings] are the ones its dry run found.
      */
-    fun setProgram(pattern: Pattern<ControlMap>, cps: Double, warnings: List<String>) {
+    fun setProgram(pattern: Pattern, cps: Double, warnings: List<String>) {
         if (playing && cps != anchor.cps) anchor = TempoAnchor(anchor.frameAt(horizon), horizon, cps, sampleRate)
         this.pattern = pattern
         this.cps = cps
@@ -168,14 +171,14 @@ internal class Scheduler(private val sampleRate: Int, private val sounds: SoundR
     private fun queueChunk(begin: Rational) {
         val events = ArrayList<SoundEvent>()
         val marks = ArrayList<HighlightEvent>()
-        for (hap in onsets(pattern, begin, warningLog)) {
-            when (val lookup = sounds.resolve(hap.value)) {
+        for (hap in onsets(pattern, begin, anchor.cps, warningLog)) {
+            when (val lookup = sounds.resolve(hap.value as ControlMap)) {
                 is SoundLookup.Ready -> {
                     val whole = checkNotNull(hap.whole)
                     val start = anchor.frameAt(whole.begin)
                     val seconds = (whole.end - whole.begin).toDouble() / anchor.cps
-                    events.add(SoundEvent(start, voiceParams(hap.value, lookup.source, seconds)))
-                    if (hap.locations.isNotEmpty()) marks.add(HighlightEvent(start, anchor.frameAt(whole.end), hap.locations))
+                    events.add(SoundEvent(start, voiceParams(hap.value as ControlMap, lookup.source, seconds)))
+                    if (hap.context.locations.isNotEmpty()) marks.add(HighlightEvent(start, anchor.frameAt(whole.end), hap.context.locations))
                 }
                 is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))
                 SoundLookup.Loading -> Unit

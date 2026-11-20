@@ -22,7 +22,7 @@ import cosic.pattern.iterBack
 import cosic.pattern.lastOf
 import cosic.pattern.late
 import cosic.pattern.mask
-import cosic.pattern.noteToMidi
+import cosic.pattern.legacy.legacyNoteToMidi
 import cosic.pattern.off
 import cosic.pattern.outside
 import cosic.pattern.perlin
@@ -31,7 +31,7 @@ import cosic.pattern.pure
 import cosic.pattern.rand
 import cosic.pattern.rev
 import cosic.pattern.saw
-import cosic.pattern.scaleNote
+import cosic.pattern.legacy.scaleNote
 import cosic.pattern.segment
 import cosic.pattern.silence
 import cosic.pattern.sine
@@ -42,7 +42,7 @@ import cosic.pattern.sometimesBy
 import cosic.pattern.soundControl
 import cosic.pattern.splitWholes
 import cosic.pattern.square
-import cosic.pattern.stack
+import cosic.pattern.legacyStack
 import cosic.pattern.struct
 import cosic.pattern.superimpose
 import cosic.pattern.swingBy
@@ -79,12 +79,12 @@ private fun MutableList<Builtin>.create(
     category: String = CONSTRUCTORS,
     variadic: ParamKind? = null,
     aliases: List<String> = emptyList(),
-    make: Call.() -> Pattern<Any>,
+    make: Call.() -> Pattern,
 ) {
     add(Builtin(name, aliases, category, params.toList(), variadic, BuiltinKind.CONSTRUCTOR, doc, example) { Value.Pat(make()) })
 }
 
-private fun MutableList<Builtin>.signal(name: String, doc: String, example: String, pattern: Pattern<Any>) {
+private fun MutableList<Builtin>.signal(name: String, doc: String, example: String, pattern: Pattern) {
     add(Builtin(name, emptyList(), SIGNALS, emptyList(), null, BuiltinKind.SIGNAL, doc, example) { Value.Pat(pattern) })
 }
 
@@ -113,7 +113,7 @@ private fun MutableList<Builtin>.method(
     vararg params: ParamKind,
     variadic: ParamKind? = null,
     aliases: List<String> = emptyList(),
-    transform: Call.(Pattern<Any>) -> Pattern<Any>,
+    transform: Call.(Pattern) -> Pattern,
 ) {
     add(
         Builtin(name, aliases, category, params.toList(), variadic, BuiltinKind.METHOD, doc, example) {
@@ -129,7 +129,7 @@ private fun MutableList<Builtin>.control(
     example: String,
     kind: ParamKind,
     aliases: List<String> = emptyList(),
-    convert: Call.(Any) -> ControlMap,
+    convert: Call.(Any?) -> ControlMap,
 ) {
     add(
         Builtin(name, aliases, category, listOf(kind), null, BuiltinKind.CONTROL, doc, example) {
@@ -151,7 +151,7 @@ private fun MutableList<Builtin>.numericControl(
  * maps; called as a method it sets the control on every value of [Call.self], with the structure of that
  * pattern. A plain number or string is converted once, so mistakes in it are reported right away.
  */
-private fun Call.setControl(arg: Value, convert: (Any) -> ControlMap): Pattern<Any> {
+private fun Call.setControl(arg: Value, convert: (Any?) -> ControlMap): Pattern {
     val constant: ControlMap? = when (arg) {
         is Value.Num -> convert(arg.value)
         is Value.Str -> convert(arg.value)
@@ -161,7 +161,7 @@ private fun Call.setControl(arg: Value, convert: (Any) -> ControlMap): Pattern<A
     return when {
         receiver == null -> if (constant != null) pure(constant) else toPattern(arg).fmap(convert)
         constant != null -> receiver.fmap { asControlMap(it) + constant }
-        else -> receiver.appLeft(toPattern(arg).fmap(convert)) { value, set -> asControlMap(value) + set }
+        else -> receiver.zipLeft(toPattern(arg).fmap(convert)) { value, set -> asControlMap(value) + asControlMap(set) }
     }
 }
 
@@ -179,7 +179,7 @@ internal fun constructorBuiltins(): List<Builtin> = buildList {
     ) { slowcat(args.indices.map { pattern(it) }) }
     create(
         "stack", "Plays all of its arguments at the same time.", "stack(s(\"bd*2\"), s(\"hh*4\"))", variadic = ANY,
-    ) { stack(args.indices.map { pattern(it) }) }
+    ) { legacyStack(args.indices.map { pattern(it) }) }
     create(
         "arrange", "Plays each [cycles, pattern] section for its number of cycles, then starts over.",
         "arrange([2, s(\"bd*2\")], [1, s(\"sd*4\")])", variadic = ANY,
@@ -337,13 +337,13 @@ internal fun methodBuiltins(): List<Builtin> = buildList {
     method(
         "layer", STRUCTURE, "Plays several transformed copies of the pattern at once.",
         "s(\"bd sd\").layer(rev, x => x.fast(2))", variadic = FN,
-    ) { p -> stack(args.indices.map { function(it)(p) }) }
+    ) { p -> legacyStack(args.indices.map { function(it)(p) }) }
     method(
         "jux", STRUCTURE, "Plays the pattern in the left ear and a transformed copy in the right.",
         "s(\"bd sd hh cp\").jux(rev)", FN,
     ) { p ->
         val copy = function(0)(p)
-        stack(p.withControls("pan" to 0.0), copy.withControls("pan" to 1.0))
+        legacyStack(p.withControls("pan" to 0.0), copy.withControls("pan" to 1.0))
     }
     method(
         "juxBy", STRUCTURE, "Like jux with a narrower stereo spread, from 0 (centre) to 1 (full).",
@@ -351,7 +351,7 @@ internal fun methodBuiltins(): List<Builtin> = buildList {
     ) { p ->
         val copy = function(1)(p)
         joinNumber(0) { width ->
-            stack(p.withControls("pan" to 0.5 - width / 2), copy.withControls("pan" to 0.5 + width / 2))
+            legacyStack(p.withControls("pan" to 0.5 - width / 2), copy.withControls("pan" to 0.5 + width / 2))
         }
     }
     method(
@@ -428,7 +428,7 @@ private fun MutableList<Builtin>.sometimesEntry(name: String, probability: Doubl
 }
 
 /** Piece [index] of [count] of a sample: narrows `begin`..`end` (0..1 unless set) to that piece. */
-private fun chopped(value: Any, index: Int, count: Int): ControlMap {
+private fun chopped(value: Any?, index: Int, count: Int): ControlMap {
     val controls = asControlMap(value)
     val begin = controls["begin"] as? Double ?: 0.0
     val end = controls["end"] as? Double ?: 1.0
@@ -439,7 +439,7 @@ private fun chopped(value: Any, index: Int, count: Int): ControlMap {
 }
 
 /** [value] (a degree, or a control map holding one in `n`) as a note of [scale]. */
-private fun Call.scaled(value: Any, scale: String): ControlMap = when (value) {
+private fun Call.scaled(value: Any?, scale: String): ControlMap = when (value) {
     is Double -> mapOf("note" to scaleNote(Math.round(value).toInt(), scale))
     is Map<*, *> -> {
         val degree = value["n"] as? Double ?: fail("scale: needs n values")
@@ -555,8 +555,8 @@ internal fun controlBuiltins(): List<Builtin> = buildList {
 }
 
 /** A MIDI number as it is, or a note name converted to one. */
-private fun Call.noteNumber(value: Any): Double = when (value) {
+private fun Call.noteNumber(value: Any?): Double = when (value) {
     is Double -> value
-    is String -> noteToMidi(value)?.toDouble() ?: fail("Not a note: '$value'")
+    is String -> legacyNoteToMidi(value)?.toDouble() ?: fail("Not a note: '$value'")
     else -> fail("'$name' expects a number or a note name, got ${describeValue(value)}")
 }

@@ -134,9 +134,10 @@ class TransformsTest {
     }
 
     @Test
-    fun structTreatsFalseStringsAsRests() {
+    fun structTakesEveryNonEmptyStringAsTruthy() {
         val structure = fastcat(pure("t"), pure("f"), pure("false"), pure("x"))
-        assertEquals(listOf("a@0-1/4", "a@3/4-1"), pure("a").struct(structure).shownCycle())
+        assertEquals(listOf("a@0-1/4", "a@1/4-1/2", "a@1/2-3/4", "a@3/4-1"), pure("a").struct(structure).shownCycle())
+        assertEquals(listOf("a@0-1/4", "a@3/4-1"), pure("a").struct(fastcat(pure("t"), pure(0.0), pure(""), pure("x"))).shownCycle())
     }
 
     @Test
@@ -154,7 +155,7 @@ class TransformsTest {
 
     @Test
     fun chunkTransformsOneSliceAtATime() {
-        val upper = abcd.fmap { it.uppercase() }
+        val upper = abcd.fmap { (it as String).uppercase() }
         val values = (0L..4L).map { abcd.chunk(4, upper).cycleValues(it).joinToString("") }
         assertEquals(listOf("Abcd", "aBcd", "abCd", "abcD", "Abcd"), values)
     }
@@ -203,20 +204,20 @@ class TransformsTest {
 
     @Test
     fun degradeByUsesTheWholeStartNotTheQuery() {
-        val whole = sixteen.degradeBy(0.5).cycleValues().sorted()
+        val whole = sixteen.degradeBy(0.5).cycleValues().map { it as Int }.sorted()
         val halves = (sixteen.degradeBy(0.5).query(span(r(0), r(1, 2))) + sixteen.degradeBy(0.5).query(span(r(1, 2), r(1))))
-            .map { it.value }
+            .map { it.value as Int }
             .sorted()
         assertEquals(whole, halves)
     }
 
     @Test
     fun sometimesByAppliesTheFunctionToTheComplementOfWhatIsKept() {
-        val p = sixteen.sometimesBy(0.5) { it.fmap { v -> -v } }
-        val values = p.cycleValues()
+        val p = sixteen.sometimesBy(0.5) { it.fmap { v -> -(v as Int) } }
+        val values = p.cycleValues().map { it as Int }
         assertEquals((1..16).toList(), values.map { Math.abs(it) }.sorted())
         assertTrue(values.any { it < 0 } && values.any { it > 0 })
-        val kept = sixteen.degradeBy(0.5).cycleValues()
+        val kept = sixteen.degradeBy(0.5).cycleValues().map { it as Int }
         assertEquals(kept.sorted(), values.filter { it > 0 }.sorted())
     }
 
@@ -267,13 +268,13 @@ class TransformsTest {
 
     @Test
     fun randomChoiceOfNothingIsSilent() {
-        assertEquals(emptyList(), randomChoice(emptyList<Pattern<String>>(), 1000).shownCycle())
+        assertEquals(emptyList(), randomChoice(emptyList(), 1000).shownCycle())
     }
 
     @Test
     fun timecatWithoutAnyWeightIsSilent() {
         assertEquals(emptyList(), timecat(listOf(r(0) to pure("a"), r(0) to pure("b"))).shownCycle())
-        assertEquals(emptyList(), timecat(emptyList<Pair<Rational, Pattern<String>>>()).shownCycle())
+        assertEquals(emptyList(), timecat(emptyList()).shownCycle())
     }
 
     @Test
@@ -286,5 +287,46 @@ class TransformsTest {
         assertEquals(listOf("b@1/2-1|1/2-1/2"), ab.shown(span(r(1, 2), r(1, 2))))
         assertEquals(listOf("a@1-3/2|1-1"), ab.shown(span(r(1), r(1))))
         assertEquals(listOf("a@0-1|1/2-1/2"), pure("a").shown(span(r(1, 2), r(1, 2))))
+    }
+
+    // ---- timecat and compress (legacy mini-notation and arrange) -----------------------------
+
+    @Test
+    fun timecatGivesEachStepASliceByWeight() {
+        val p = timecat(listOf(r(3) to pure("a"), r(1) to pure("b")))
+        assertEquals(listOf("a@0-3/4", "b@3/4-1"), p.shownCycle(0))
+        assertEquals(listOf("a@1-7/4", "b@7/4-2"), p.shownCycle(1))
+        val q = timecat(listOf(r(1) to pure("a"), r(2) to pure("b"), r(1) to pure("c")))
+        assertEquals(listOf("a@0-1/4", "b@1/4-3/4", "c@3/4-1"), q.shownCycle(0))
+    }
+
+    @Test
+    fun compressSqueezesACycleIntoASlice() {
+        assertEquals(listOf("a@1/4-3/4"), pure("a").compress(r(1, 4), r(3, 4)).shownCycle())
+        assertEquals(
+            listOf("a@1/4-1/2", "b@1/2-3/4"),
+            fastcat(pure("a"), pure("b")).compress(r(1, 4), r(3, 4)).shownCycle(),
+        )
+    }
+
+    @Test
+    fun compressClipsPartsButNotWholesToTheSlice() {
+        val slowed = pure("a").slow(r(2)).compress(r(1, 4), r(3, 4))
+        assertEquals(listOf("a@1/4-5/4|1/4-3/4"), slowed.shownCycle())
+    }
+
+    @Test
+    fun compressAnswersPartialQueries() {
+        assertEquals(
+            listOf("a@1/4-1/2"),
+            fastcat(pure("a"), pure("b")).compress(r(1, 4), r(3, 4)).shown(span(r(0), r(1, 2))),
+        )
+    }
+
+    @Test
+    fun compressOutsideTheCycleIsSilent() {
+        assertEquals(emptyList(), pure("a").compress(r(1, 2), r(1, 4)).shownCycle())
+        assertEquals(emptyList(), pure("a").compress(r(1, 2), r(3, 2)).shownCycle())
+        assertEquals(emptyList(), pure("a").compress(r(-1, 2), r(1, 2)).shownCycle())
     }
 }

@@ -8,31 +8,27 @@ import kotlin.test.assertTrue
 class RationalTest {
     @Test
     fun normalisesByGcd() {
-        val x = Rational(2, 4)
-        assertEquals(1L, x.num)
-        assertEquals(2L, x.den)
+        assertEquals("1/2", Rational(2, 4).show())
     }
 
     @Test
     fun keepsDenominatorPositive() {
-        assertEquals(-1L, Rational(1, -2).num)
-        assertEquals(2L, Rational(1, -2).den)
-        assertEquals(1L, Rational(-1, -2).num)
-        assertEquals(2L, Rational(-1, -2).den)
+        assertEquals("-1/2", Rational(1, -2).show())
+        assertEquals("1/2", Rational(-1, -2).show())
     }
 
     @Test
     fun zeroIsZeroOverOne() {
         val z = Rational(0, 5)
-        assertEquals(0L, z.num)
-        assertEquals(1L, z.den)
+        assertEquals("0/1", z.show())
         assertEquals(Rational.ZERO, z)
+        assertTrue(z.isZero())
     }
 
     @Test
     fun zeroDenominatorThrows() {
-        assertFailsWith<ArithmeticException> { Rational(1, 0) }
-        assertFailsWith<ArithmeticException> { Rational.ONE / Rational.ZERO }
+        assertEquals("Division by Zero", assertFailsWith<CosicError> { Rational(1, 0) }.message)
+        assertEquals("Division by Zero", assertFailsWith<CosicError> { Rational.ONE / Rational.ZERO }.message)
     }
 
     @Test
@@ -45,10 +41,10 @@ class RationalTest {
     }
 
     @Test
-    fun overflowThrows() {
-        assertFailsWith<ArithmeticException> { Rational(Long.MAX_VALUE) + Rational(1) }
-        assertFailsWith<ArithmeticException> { Rational(Long.MAX_VALUE) * Rational(2) }
-        assertFailsWith<ArithmeticException> { Rational(1, Long.MAX_VALUE) * Rational(1, 3) }
+    fun arithmeticNeverOverflows() {
+        assertEquals("9223372036854775808/1", (Rational(Long.MAX_VALUE) + Rational(1)).show())
+        assertEquals("18446744073709551614/1", (Rational(Long.MAX_VALUE) * Rational(2)).show())
+        assertEquals("1/27670116110564327421", (Rational(1, Long.MAX_VALUE) * Rational(1, 3)).show())
     }
 
     @Test
@@ -89,9 +85,9 @@ class RationalTest {
     }
 
     @Test
-    fun toStringIsCompact() {
+    fun toStringIsTheShowForm() {
         assertEquals("1/2", Rational(1, 2).toString())
-        assertEquals("3", Rational(3).toString())
+        assertEquals("3/1", Rational(3).toString())
         assertEquals("-3/4", Rational(3, -4).toString())
     }
 
@@ -108,23 +104,10 @@ class RationalTest {
     }
 
     @Test
-    fun ofLimitsTheDenominatorTo10000() {
-        val pi = Rational.of(Math.PI)
-        assertEquals(Rational(355, 113), pi)
-        assertTrue(Rational.of(0.123456789123).den <= 10_000)
-    }
-
-    @Test
     fun ofRejectsNonFiniteNumbers() {
         for (bad in listOf(Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY)) {
-            val e = assertFailsWith<IllegalArgumentException> { Rational.of(bad) }
-            assertEquals("Invalid number", e.message)
+            assertEquals("Invalid argument", assertFailsWith<CosicError> { Rational.of(bad) }.message)
         }
-    }
-
-    @Test
-    fun ofRejectsNumbersTooLargeToBeFractions() {
-        assertEquals("Invalid number", assertFailsWith<IllegalArgumentException> { Rational.of(1e19) }.message)
     }
 
     @Test
@@ -132,5 +115,6 @@ class RationalTest {
         assertEquals(Rational(1_000_000), Rational.of(1e6))
         assertEquals(Rational(1, 4), Rational.of(0.25))
         assertEquals(Rational(-5, 4), Rational.of(-1.25))
+        assertEquals("10000000000000000000/1", Rational.of(1e19).show())
     }
 }

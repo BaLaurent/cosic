@@ -11,13 +11,12 @@ import cosic.pattern.euclid
 import cosic.pattern.euclidRot
 import cosic.pattern.fast
 import cosic.pattern.fastcat
-import cosic.pattern.innerJoin
 import cosic.pattern.pure
 import cosic.pattern.randomChoice
 import cosic.pattern.silence
 import cosic.pattern.slow
 import cosic.pattern.slowcat
-import cosic.pattern.stack
+import cosic.pattern.legacyStack
 import cosic.pattern.timecat
 import kotlin.math.roundToInt
 
@@ -38,40 +37,40 @@ import kotlin.math.roundToInt
  * modifier arguments (`bd*<2 3>`) add the ranges of their atoms after the step's own.
  * Errors are [CosicError]s with the range of the offending character.
  */
-internal fun parseMini(src: String, baseOffset: Int): Pattern<Any> = MiniParser(src, baseOffset).parse()
+internal fun parseMini(src: String, baseOffset: Int): Pattern = MiniParser(src, baseOffset).parse()
 
 private const val PIPE_SEED_BASE = 1000
 private const val SEQUENCE_END = ",|]>})"
 private const val ATOM_SYMBOLS = "#.-_:^'"
 
 /** One step of a sequence; [number] is set while the step is still a bare numeric atom. */
-private class Step(val pattern: Pattern<Any>, val weight: Rational, val number: Double?)
+private class Step(val pattern: Pattern, val weight: Rational, val number: Double?)
 
-private class Term(val pattern: Pattern<Any>, val number: Double? = null)
+private class Term(val pattern: Pattern, val number: Double? = null)
 
 /** The sequences between one pair of brackets; [pipeSeed] is set when they are alternatives (`|`). */
 private class Group(val sequences: List<List<Step>>, val pipeSeed: Int?) {
-    fun build(sequence: (List<Step>) -> Pattern<Any>): Pattern<Any> {
+    fun build(sequence: (List<Step>) -> Pattern): Pattern {
         val built = sequences.map(sequence)
-        return if (pipeSeed != null) randomChoice(built, pipeSeed) else stack(built)
+        return if (pipeSeed != null) randomChoice(built, pipeSeed) else legacyStack(built)
     }
 }
 
 /** A number argument of a modifier: a plain number, or a pattern of numbers. */
 private sealed interface Arg {
     class Constant(val value: Double) : Arg
-    class Patterned(val pattern: Pattern<Any>) : Arg
+    class Patterned(val pattern: Pattern) : Arg
 }
 
-private fun Arg.join(f: (Double) -> Pattern<Any>): Pattern<Any> = when (this) {
+private fun Arg.join(f: (Double) -> Pattern): Pattern = when (this) {
     is Arg.Constant -> f(value)
     is Arg.Patterned -> pattern.fmap { f(numberOf(it)) }.innerJoin()
 }
 
-private fun numberOf(value: Any): Double =
+private fun numberOf(value: Any?): Double =
     value as? Double ?: throw CosicError("Mini-notation: expected a number, got '$value'")
 
-private fun timecatSteps(steps: List<Step>): Pattern<Any> = when (steps.size) {
+private fun timecatSteps(steps: List<Step>): Pattern = when (steps.size) {
     0 -> silence
     1 -> steps[0].pattern
     else -> timecat(steps.map { it.weight to it.pattern })
@@ -87,7 +86,7 @@ private class MiniParser(private val src: String, private val base: Int) {
     private var questionMarks = 0
     private var pipeGroups = 0
 
-    fun parse(): Pattern<Any> {
+    fun parse(): Pattern {
         val group = parseGroup()
         skipSpace()
         if (pos < src.length) unexpected(pos)
@@ -208,7 +207,7 @@ private class MiniParser(private val src: String, private val base: Int) {
         }
     }
 
-    private fun bracketed(close: Char, build: (Group) -> Pattern<Any>): Term {
+    private fun bracketed(close: Char, build: (Group) -> Pattern): Term {
         val open = pos
         pos++
         val group = parseGroup()
@@ -231,7 +230,7 @@ private class MiniParser(private val src: String, private val base: Int) {
     }
 
     /** Plays the steps of one sequence at the pace of a sequence with [base] steps per cycle. */
-    private fun polymeter(sequence: List<Step>, base: Arg): Pattern<Any> {
+    private fun polymeter(sequence: List<Step>, base: Arg): Pattern {
         if (sequence.isEmpty()) return silence
         val steps = fastcat(sequence.map { it.pattern })
         return base.join { count -> steps.fast(Rational.of(count) / Rational(sequence.size.toLong())) }
@@ -244,8 +243,8 @@ private class MiniParser(private val src: String, private val base: Int) {
         if (text.all { it == '-' }) return Term(silence)
         val number = if (NUMBER_TEXT.matches(text)) text.toDouble() else null
         val value: Any = number ?: text
-        val at = listOf(SourceRange(base + start, base + pos))
-        return Term(pure(value).withLocations(at), number)
+        val at = SourceRange(base + start, base + pos)
+        return Term(pure(value).withLoc(at), number)
     }
 
     // ---- modifier arguments -------------------------------------------------------------
@@ -282,7 +281,7 @@ private class MiniParser(private val src: String, private val base: Int) {
         return text.toDoubleOrNull() ?: fail("unexpected '$text'", start, text.length)
     }
 
-    private fun parseEuclid(pattern: Pattern<Any>): Pattern<Any> {
+    private fun parseEuclid(pattern: Pattern): Pattern {
         val open = pos
         pos++
         val hits = parseArg()
