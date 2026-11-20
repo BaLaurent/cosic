@@ -1,5 +1,6 @@
 package cosic.pattern
 
+import java.util.Collections
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -256,7 +257,7 @@ private fun minTopNoteDiff(voicings: List<List<String>>, last: List<String>?): L
  */
 internal object Voicings {
     private val lock = Any()
-    private val entries = LinkedHashMap<String, Map<String, Any?>>()
+    private val entries = LinkedHashMap<String, MutableMap<String, Any?>>()
     private var defaultName: Any? = "ireal"
 
     @Volatile
@@ -274,12 +275,12 @@ internal object Voicings {
             if ('+' in symbol) alias(symbol, symbol.replaceFirst("+", "aug"), complex, ireal)
         }
         val classic = parseSections("voicing-dictionaries.txt")
-        entries["lefthand"] = linkedMapOf("dictionary" to classic.getValue("lefthand"), "range" to listOf("F3", "A4"), "mode" to "below", "anchor" to "a4")
-        entries["triads"] = linkedMapOf("dictionary" to classic.getValue("triads"), "mode" to "below", "anchor" to "a4")
-        entries["guidetones"] = linkedMapOf("dictionary" to classic.getValue("guidetones"), "mode" to "above", "anchor" to "a4")
-        entries["legacy"] = linkedMapOf("dictionary" to classic.getValue("legacy"), "mode" to "below", "anchor" to "a4")
-        entries["ireal"] = linkedMapOf("dictionary" to ireal)
-        entries["ireal-ext"] = linkedMapOf("dictionary" to complex)
+        put("lefthand", linkedMapOf("dictionary" to classic.getValue("lefthand"), "range" to listOf("F3", "A4"), "mode" to "below", "anchor" to "a4"))
+        put("triads", linkedMapOf("dictionary" to classic.getValue("triads"), "mode" to "below", "anchor" to "a4"))
+        put("guidetones", linkedMapOf("dictionary" to classic.getValue("guidetones"), "mode" to "above", "anchor" to "a4"))
+        put("legacy", linkedMapOf("dictionary" to classic.getValue("legacy"), "mode" to "below", "anchor" to "a4"))
+        put("ireal", linkedMapOf("dictionary" to ireal))
+        put("ireal-ext", linkedMapOf("dictionary" to complex))
     }
 
     private fun parseSections(file: String): Map<String, LinkedHashMap<String, Any?>> {
@@ -309,16 +310,27 @@ internal object Voicings {
         for (set in sets) set[alias] = set[symbol]
     }
 
-    /** `voicingRegistry[name]`: the entry (`dictionary`, `range`, `mode`, `anchor`) of a dictionary, null when there is none. */
-    fun entry(name: Any?): Map<String, Any?>? = synchronized(lock) { entries[jsToString(name)] }
+    /**
+     * `voicingRegistry[name]`: the entry (`dictionary`, `range`, `mode`, `anchor`) of a dictionary, null when there is none. The entry
+     * and its dictionary are the registry's own maps, which may be changed (they are synchronized: the scheduler reads them while a program changes them).
+     */
+    fun entry(name: Any?): MutableMap<String, Any?>? = synchronized(lock) { entries[jsToString(name)] }
 
     /** The names of the dictionaries in the order they were added. */
     fun names(): List<String> = synchronized(lock) { entries.keys.toList() }
 
-    /** `Object.assign(voicingRegistry, {[name]: entry})`. */
+    /** `Object.assign(voicingRegistry, {[name]: entry})`: the registry keeps copies of [entry] and of its dictionary. */
     fun put(name: Any?, entry: Map<String, Any?>) {
-        synchronized(lock) { entries[jsToString(name)] = entry }
+        val copy = synchronizedCopy(entry)
+        (copy["dictionary"] as? Map<*, *>)?.let { dictionary ->
+            @Suppress("UNCHECKED_CAST")
+            copy["dictionary"] = synchronizedCopy(dictionary as Map<String, Any?>)
+        }
+        synchronized(lock) { entries[jsToString(name)] = copy }
     }
+
+    /** A copy of [map] that may be read and written from any thread (every call is one atomic step). */
+    fun synchronizedCopy(map: Map<String, Any?>): MutableMap<String, Any?> = Collections.synchronizedMap(LinkedHashMap(map))
 
     /** Removes the entry [name] (`delete voicingRegistry[name]`). */
     fun remove(name: String): Boolean = synchronized(lock) { entries.remove(name) != null }

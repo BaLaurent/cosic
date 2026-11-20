@@ -1,0 +1,2817 @@
+[
+ {
+  "name": "scale.name.0",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C major pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.1",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.2",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.3",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C ionian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.4",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.5",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C aeolian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.6",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C major blues')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.7",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C minor blues')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.8",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C blues')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.9",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C melodic minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.10",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C harmonic minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.11",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C bebop')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.12",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C diminished')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.13",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C whole-half diminished')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.14",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C dorian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.15",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.16",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C mixolydian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.17",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C dominant')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.18",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C phrygian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.19",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C locrian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.20",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C ionian pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.21",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C mixolydian pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.22",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C indian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.23",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C ritusen')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.24",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C egyptian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.25",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C neopolitan major pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.26",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C vietnamese 1')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.27",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C pelog')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.28",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C kumoijoshi')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.29",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C hirajoshi')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.30",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C iwato')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.31",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C in-sen')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.32",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.33",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C chinese')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.34",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C malkos raga')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.35",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C locrian pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.36",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C minor seven flat five pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.37",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.38",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C vietnamese 2')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.39",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C minor six pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.40",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C flat three pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.41",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C kumoi')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.42",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C flat six pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.43",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C scriabin')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.44",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C whole tone pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.45",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian #5P pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.46",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian dominant pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.47",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C minor #7M pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.48",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C super locrian pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.49",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C minor hexatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.50",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C augmented')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.51",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C piongio')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.52",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C prometheus neopolitan')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.53",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C prometheus')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.54",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C mystery #1')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.55",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C six tone symmetric')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.56",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C whole tone')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.57",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C messiaen\\'s mode #1')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.58",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C messiaen\\'s mode #5')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.59",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C locrian major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.60",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C arabian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.61",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C double harmonic lydian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.62",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C altered')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.63",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C super locrian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.64",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C diminished whole tone')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.65",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C pomeroy')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.66",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C locrian #2')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.67",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C half-diminished')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.68",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C aeolian b5')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.69",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C mixolydian b6')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.70",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C melodic minor fifth mode')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.71",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C hindu')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.72",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian dominant')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.73",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian b7')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.74",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C overtone')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.75",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian augmented')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.76",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C dorian b2')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.77",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C phrygian #6')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.78",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C melodic minor second mode')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.79",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C ultralocrian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.80",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C superlocrian bb7')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.81",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C superlocrian diminished')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.82",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C locrian 6')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.83",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C locrian natural 6')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.84",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C locrian sharp 6')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.85",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C augmented heptatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.86",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C dorian #4')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.87",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C ukrainian dorian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.88",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C romanian minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.89",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C altered dorian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.90",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian diminished')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.91",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C leading whole tone')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.92",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.93",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C phrygian dominant')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.94",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C spanish')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.95",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C phrygian major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.96",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C balinese')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.97",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C neopolitan major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.98",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C harmonic major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.99",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C double harmonic major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.100",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C gypsy')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.101",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C hungarian minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.102",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C hungarian major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.103",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C oriental')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.104",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C flamenco')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.105",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C todi raga')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.106",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C persian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.107",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C enigmatic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.108",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C major augmented')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.109",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C major #5')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.110",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C ionian augmented')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.111",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C ionian #5')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.112",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C lydian #9')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.113",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C messiaen\\'s mode #4')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.114",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C purvi raga')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.115",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C spanish heptatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.116",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C bebop minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.117",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C bebop major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.118",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C bebop locrian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.119",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C minor bebop')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.120",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C ichikosucho')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.121",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C minor six diminished')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.122",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C half-whole diminished')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.123",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C dominant diminished')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.124",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C messiaen\\'s mode #2')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.125",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C kafi raga')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.126",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C messiaen\\'s mode #6')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.127",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C composite blues')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.128",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C messiaen\\'s mode #3')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.129",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C messiaen\\'s mode #7')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.name.130",
+  "code": "n(\"0 1 2 3 4 5 6 7 -1 -8\").scale('C chromatic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.0",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:major:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.1",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.2",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:major\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.3",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:ionian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.4",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:minor\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.5",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:aeolian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.6",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:major:blues\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.7",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:minor:blues\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.8",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:blues\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.9",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:melodic:minor\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.10",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:harmonic:minor\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.11",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:bebop\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.12",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:diminished\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.13",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:whole-half:diminished\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.14",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:dorian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.15",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.16",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:mixolydian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.17",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:dominant\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.18",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:phrygian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.19",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:locrian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.20",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:ionian:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.21",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:mixolydian:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.22",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:indian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.23",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:ritusen\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.24",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:egyptian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.25",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:neopolitan:major:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.26",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:vietnamese:1\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.27",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:pelog\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.28",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:kumoijoshi\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.29",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:hirajoshi\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.30",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:iwato\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.31",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:in-sen\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.32",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.33",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:chinese\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.34",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:malkos:raga\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.35",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:locrian:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.36",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:minor:seven:flat:five:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.37",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:minor:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.38",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:vietnamese:2\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.39",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:minor:six:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.40",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:flat:three:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.41",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:kumoi\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.42",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:flat:six:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.43",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:scriabin\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.44",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:whole:tone:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.45",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian:#5P:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.46",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian:dominant:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.47",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:minor:#7M:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.48",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:super:locrian:pentatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.49",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:minor:hexatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.50",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:augmented\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.51",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:piongio\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.52",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:prometheus:neopolitan\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.53",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:prometheus\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.54",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:mystery:#1\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.55",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:six:tone:symmetric\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.56",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:whole:tone\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.57",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:locrian:major\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.58",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:arabian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.59",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:double:harmonic:lydian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.60",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:altered\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.61",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:super:locrian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.62",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:diminished:whole:tone\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.63",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:pomeroy\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.64",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:locrian:#2\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.65",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:half-diminished\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.66",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:aeolian:b5\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.67",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:mixolydian:b6\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.68",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:melodic:minor:fifth:mode\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.69",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:hindu\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.70",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian:dominant\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.71",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian:b7\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.72",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:overtone\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.73",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian:augmented\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.74",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:dorian:b2\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.75",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:phrygian:#6\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.76",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:melodic:minor:second:mode\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.77",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:ultralocrian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.78",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:superlocrian:bb7\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.79",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:superlocrian:diminished\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.80",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:locrian:6\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.81",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:locrian:natural:6\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.82",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:locrian:sharp:6\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.83",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:augmented:heptatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.84",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:dorian:#4\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.85",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:ukrainian:dorian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.86",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:romanian:minor\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.87",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:altered:dorian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.88",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian:diminished\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.89",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:leading:whole:tone\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.90",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian:minor\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.91",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:phrygian:dominant\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.92",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:spanish\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.93",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:phrygian:major\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.94",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:balinese\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.95",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:neopolitan:major\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.96",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:harmonic:major\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.97",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:double:harmonic:major\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.98",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:gypsy\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.99",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:hungarian:minor\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.100",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:hungarian:major\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.101",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:oriental\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.102",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:flamenco\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.103",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:todi:raga\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.104",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:persian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.105",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:enigmatic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.106",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:major:augmented\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.107",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:major:#5\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.108",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:ionian:augmented\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.109",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:ionian:#5\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.110",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:lydian:#9\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.111",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:purvi:raga\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.112",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:spanish:heptatonic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.113",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:bebop:minor\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.114",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:bebop:major\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.115",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:bebop:locrian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.116",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:minor:bebop\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.117",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:ichikosucho\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.118",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:minor:six:diminished\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.119",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:half-whole:diminished\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.120",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:dominant:diminished\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.121",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:kafi:raga\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.122",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:composite:blues\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.mini.123",
+  "code": "n(\"0 2 4 7 9\").scale(\"D:chromatic\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.0",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.0",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('C minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.1",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('D major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.1",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('D minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.2",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('Eb major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.2",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('Eb minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.3",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('F# major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.3",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('F# minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.4",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('G# major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.4",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('G# minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.5",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('Bb major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.5",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('Bb minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.6",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('Cb major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.6",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('Cb minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.7",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('E# major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.7",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('E# minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.8",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('c4 major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.8",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('c4 minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.9",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('a2 major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.9",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('a2 minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.10",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('B#5 major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.10",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('B#5 minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.11",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('Dbb major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.11",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('Dbb minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.12",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('f major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.12",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('f minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.13",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('ab3 major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.tonic.minor.13",
+  "code": "n(\"0 1 2 3 4 5 6\").scale('ab3 minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.noTonic.1",
+  "code": "n(\"0 1 2 3 4 5 6 7\").scale('major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.noTonic.2",
+  "code": "n(\"<0 2 4>*2\").scale('minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.degrees.accidentals",
+  "code": "n(\"0b 1# 2## 3bb -2# 7b 4s 5f 6#\").scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.degrees.negative",
+  "code": "n(\"-1 -2 -3 -7 -8 -9 -15\").scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.degrees.large",
+  "code": "n(\"7 8 14 15 21 22 100 -100\").scale('F# minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.degrees.fractional",
+  "code": "n(\"0.5 1.5 2.3 -0.5 -1.5\").scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.degrees.accidentals.pentatonic",
+  "code": "n(\"0# 1b 2## 3bb 4# -1b\").scale('A4 minor pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.degrees.plain",
+  "code": "\"0 1 2 3\".scale('C:major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.degrees.plain.2",
+  "code": "\"0 1 2 3\".scale('Ab4 dorian')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.notes.1",
+  "code": "note(\"c e g a# bb f#\").scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.notes.2",
+  "code": "note(\"c4 e4 g#5 cb3 b#2\").scale('Eb minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.notes.3",
+  "code": "note(\"c d e f g a b\").scale('C pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.notes.4",
+  "code": "note(\"c d e f g a b\").scale('Eb:minor:pentatonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.notes.5",
+  "code": "note(\"<c4 g4 e5>\").scale('A# minor')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.notes.6",
+  "code": "note(\"g1 a9 c-1 cb0 e##3\").scale('C chromatic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.notes.7",
+  "code": "\"c e g\".scale('D whole tone')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.notes.8",
+  "code": "note(\"c3 e3 g3\").scale('bogus tonic')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.pattern.1",
+  "code": "n(\"0 1 2 3\").scale(\"<C:major D:minor>\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.pattern.2",
+  "code": "n(\"0 1 2 3\").scale(\"C:<major minor>/2\")",
+  "cycles": 4
+ },
+ {
+  "name": "scale.pattern.3",
+  "code": "n(\"0 1 2 3\").scale(cat('C minor','F dorian'))",
+  "cycles": 2
+ },
+ {
+  "name": "scale.pattern.4",
+  "code": "n(\"<0 2 4>*2\").scale(slowcat('C major', 'D minor'))",
+  "cycles": 2
+ },
+ {
+  "name": "scale.pattern.5",
+  "code": "n(\"0 1 2 3\").scale(\"C:major D:dorian\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.pattern.6",
+  "code": "n(\"0 1 2 3\").scale(['C', 'major'].join(' '))",
+  "cycles": 1
+ },
+ {
+  "name": "scale.objects.1",
+  "code": "n(\"0 1 2\").s(\"piano\").gain(0.5).scale('C:major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.objects.2",
+  "code": "s(\"piano\").n(\"0 1 2\").scale('C:major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.objects.3",
+  "code": "s(\"piano\").note(\"c e g\").scale('C:major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.objects.4",
+  "code": "n(\"0 1 2\").color(\"red\").scale('C:major').note()",
+  "cycles": 1
+ },
+ {
+  "name": "scale.anchor.1",
+  "code": "n(\"0 1 2 3\").anchor(\"c4\").scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.anchor.2",
+  "code": "n(\"0 .. 3\").anchor(\"<c4 g4>\").scale(\"C:major\")",
+  "cycles": 2
+ },
+ {
+  "name": "scale.anchor.3",
+  "code": "n(\"0 1 2 3\").anchor(66).scale(\"<C:major F:minor>\")",
+  "cycles": 2
+ },
+ {
+  "name": "scale.anchor.4",
+  "code": "n(\"0 1#\").anchor(\"e3\").scale(\"D:major\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.anchor.5",
+  "code": "n(\"0 1 2\").anchor(\"c4\").scale('C major').s(\"piano\")",
+  "cycles": 1
+ },
+ {
+  "name": "scale.anchor.6",
+  "code": "n(\"0 1 2\").anchor(\"c4\").scale('major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.value",
+  "code": "n({value: 3}).scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.value.2",
+  "code": "pure({value: 3, s: 'x'}).scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.noValue",
+  "code": "s(\"bd hh\").scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.steps",
+  "code": "n(\"0 1 2 3\").scale('C major').pace(8)",
+  "cycles": 1
+ },
+ {
+  "name": "scale.errors.step",
+  "code": "n(\"0 1 2\").scale('C bogus')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.errors.incomplete",
+  "code": "n(\"0 1 2\").scale('C')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.errors.badStep",
+  "code": "n(\"0 x 2\").scale('C major')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.errors.quantize",
+  "code": "note(\"c e\").scale('C bogus')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.errors.quantizeIncomplete",
+  "code": "note(\"c e\").scale('C')",
+  "cycles": 1
+ },
+ {
+  "name": "scale.errors.number",
+  "code": "n(\"0 1\").scale(3)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.numbers.1",
+  "code": "note(\"48 52 55\").transpose(7)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.numbers.2",
+  "code": "note(\"48 52 55\").transpose(\"<0 -12 5>\")",
+  "cycles": 3
+ },
+ {
+  "name": "transpose.numbers.3",
+  "code": "note(\"48 52 55\").transpose(\"1P 2M 3m\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.numbers.4",
+  "code": "\"48 52\".transpose(2).note()",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.numbers.5",
+  "code": "n(\"0 1 2\").note().transpose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.numbers.6",
+  "code": "note(\"48 52 55\").transpose(\"bogus\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.numbers.7",
+  "code": "note(\"48 52 55\").transpose(1.5)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.numbers.8",
+  "code": "note(\"48.5 52\").transpose(-3)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.strings.1",
+  "code": "note(\"c2 e3 g4\").transpose(7)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.strings.2",
+  "code": "note(\"c2 e3 g4\").transpose(\"<0 2 5>\")",
+  "cycles": 3
+ },
+ {
+  "name": "transpose.strings.3",
+  "code": "note(\"c2 e3 g4\").transpose(\"<1P 2M 3m 4A 5d 8P -2M>\")",
+  "cycles": 7
+ },
+ {
+  "name": "transpose.strings.4",
+  "code": "note(\"c#4 db4 f##2 gbb3\").transpose(\"2M\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.strings.5",
+  "code": "note(\"b3 b#3 cb4\").transpose(1)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.strings.6",
+  "code": "\"c2 c3\".fast(2).transpose(\"<0 -2 5 3>\".slow(2)).note()",
+  "cycles": 2
+ },
+ {
+  "name": "transpose.strings.7",
+  "code": "note(\"c4 e4 g4\").transpose(\"bogus\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.strings.8",
+  "code": "note(\"c4 e4 g4\").transpose(12.5)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.strings.9",
+  "code": "note(\"c4 e4 g4\").transpose(\"-8P\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.strings.10",
+  "code": "note(\"c-1 g9\").transpose(5)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.strings.11",
+  "code": "note(\"c4 e4\").transpose(\"20M\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.strings.12",
+  "code": "note(\"c4 e4\").transpose('')",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.octaveLess.1",
+  "code": "note(\"c d\").transpose(1)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.octaveLess.2",
+  "code": "note(\"e f\").transpose(12)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.octaveLess.3",
+  "code": "note(\"g a\").transpose(\"2M\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.octaveLess.4",
+  "code": "note(\"d gb\").transpose(\"<-1 2 -2>\")",
+  "cycles": 3
+ },
+ {
+  "name": "transpose.octaveLess.5",
+  "code": "note(\"ab bb c#\").transpose(\"1P 2M 3m\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.octaveLess.6",
+  "code": "note(\"eb f# g#\").transpose(\"<0 5 7 12>\")",
+  "cycles": 4
+ },
+ {
+  "name": "transpose.octaveLess.7",
+  "code": "note(\"a# cb\").transpose(\"-9\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.octaveLess.8",
+  "code": "note(\"b bb\").transpose(\"<-12 7 13>\")",
+  "cycles": 3
+ },
+ {
+  "name": "transpose.objects.1",
+  "code": "s(\"bd hh\").transpose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.objects.2",
+  "code": "n(\"0 1\").transpose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.objects.3",
+  "code": "note(\"c4 e4\").s(\"piano\").transpose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.objects.4",
+  "code": "note(\"48 52\").s(\"piano\").transpose(\"<2 3>\")",
+  "cycles": 2
+ },
+ {
+  "name": "transpose.objects.5",
+  "code": "note(\"c4 e4\").gain(0.4).s(\"piano\").transpose(\"3m\")",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.notNotes.1",
+  "code": "\"hello world\".transpose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.notNotes.2",
+  "code": "pure(true).transpose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.notNotes.3",
+  "code": "note(\"c4 x\").transpose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.notNotes.4",
+  "code": "note(\"cs4 e4\").transpose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.global.1",
+  "code": "note(\"c3 e3\").superimpose(transpose(7))",
+  "cycles": 1
+ },
+ {
+  "name": "transpose.global.2",
+  "code": "note(\"c3 e3\").layer(transpose(\"<7 12>\"), x => x)",
+  "cycles": 2
+ },
+ {
+  "name": "trans.plain",
+  "code": "note(\"c3 e3 g3\").trans(7)",
+  "cycles": 1
+ },
+ {
+  "name": "trans.pattern",
+  "code": "note(\"c3 e3 g3\").trans(\"<0 2 5>\")",
+  "cycles": 3
+ },
+ {
+  "name": "trans.interval",
+  "code": "note(\"c3 e3 g3\").trans(\"2M\")",
+  "cycles": 1
+ },
+ {
+  "name": "trans.global",
+  "code": "note(\"c3 e3\").superimpose(trans(\"<7 5>\"))",
+  "cycles": 2
+ },
+ {
+  "name": "scaleTranspose.plain.1",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTranspose(1)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.2",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTranspose(-1)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.3",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTranspose(7)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.4",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTranspose(-8)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.5",
+  "code": "n(\"0 2 4\").scale('F# minor').scaleTranspose(3)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.6",
+  "code": "n(\"0 2 4\").scale('Eb dorian').scaleTranspose(\"2\")",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.7",
+  "code": "note(\"c3 e3 g3\").scale('C major').scaleTranspose(1)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.8",
+  "code": "note(\"c3 e3 g3\").scale('C pentatonic').scaleTranspose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.9",
+  "code": "n(\"0 2 4\").scale('C chromatic').scaleTranspose(13)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.10",
+  "code": "n(\"0 2 4\").scale('Cb2 major').scaleTranspose(3)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.11",
+  "code": "n(\"0 2 4\").scale('C major').scaleTranspose(1.5)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.plain.12",
+  "code": "n(\"0 2 4\").scale('C major').scaleTranspose(0)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.pattern.1",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTranspose(\"<0 1 2 -1>\")",
+  "cycles": 4
+ },
+ {
+  "name": "scaleTranspose.pattern.2",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTranspose(\"0 2 4\")",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.pattern.3",
+  "code": "n(\"0 2 4\").scale(\"<C:major D:minor>\").scaleTranspose(\"<1 2>\")",
+  "cycles": 4
+ },
+ {
+  "name": "scaleTranspose.pattern.4",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTranspose(\"0 [1,2]\")",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.objects",
+  "code": "n(\"0 2 4\").s(\"piano\").scale('C:major').scaleTranspose(2)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.global",
+  "code": "n(\"0 2 4\").scale('C:major').superimpose(scaleTranspose(2))",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.global.2",
+  "code": "n(\"0 2 4\").scale('C:major').layer(scaleTranspose(\"<0 2>\"), scaleTranspose(4))",
+  "cycles": 2
+ },
+ {
+  "name": "scaleTranspose.chain",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTranspose(1).transpose(12)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.errors.noScale",
+  "code": "note(\"c3 e3\").scaleTranspose(1)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.errors.notInScale",
+  "code": "note(\"c#3\").scale('C major').transpose(1).scaleTranspose(1)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.errors.notNote",
+  "code": "n(\"0 2\").scale('C major').fmap(x => 5).scaleTranspose(1)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.errors.badOffset",
+  "code": "n(\"0 2\").scale('C major').scaleTranspose(\"x\")",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTranspose.anchored",
+  "code": "n(\"0 2\").anchor(\"c4\").scale('C major').scaleTranspose(1)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTrans.plain",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTrans(1)",
+  "cycles": 1
+ },
+ {
+  "name": "scaleTrans.pattern",
+  "code": "n(\"0 2 4\").scale('C:major').scaleTrans(\"<0 1 2>\")",
+  "cycles": 3
+ },
+ {
+  "name": "scaleTrans.global",
+  "code": "n(\"0 2 4\").scale('C:major').superimpose(scaleTrans(2))",
+  "cycles": 1
+ },
+ {
+  "name": "strans.plain",
+  "code": "n(\"0 2 4\").scale('C:major').strans(1)",
+  "cycles": 1
+ },
+ {
+  "name": "strans.pattern",
+  "code": "n(\"0 2 4\").scale('C:major').strans(\"<0 -1 2>\")",
+  "cycles": 3
+ },
+ {
+  "name": "strans.global",
+  "code": "n(\"0 2 4\").scale('C:major').superimpose(strans(\"<2 4>\"))",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.roots.ireal",
+  "code": "resetVoicings(); chord(\"C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B\").dict('ireal').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.sevenths.ireal",
+  "code": "resetVoicings(); chord(\"C^7 Dm7 E7 Fm7b5 Go7 A-7 Bb^7 Cm6\").dict('ireal').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.symbols.ireal",
+  "code": "resetVoicings(); chord(seq('C2', 'C5', 'C6', 'C7', 'C9', 'C11', 'C13', 'C69', 'Cadd9', 'C+', 'Co', 'Ch', 'Csus', 'C^', 'C-', 'C^9', 'C-9', 'C-11', 'C7sus', 'Cm', 'Caug', 'CM', 'C')).dict('ireal').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.roots.ireal-ext",
+  "code": "resetVoicings(); chord(\"C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B\").dict('ireal-ext').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.sevenths.ireal-ext",
+  "code": "resetVoicings(); chord(\"C^7 Dm7 E7 Fm7b5 Go7 A-7 Bb^7 Cm6\").dict('ireal-ext').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.symbols.ireal-ext",
+  "code": "resetVoicings(); chord(seq('C2', 'C5', 'C6', 'C7', 'C9', 'C11', 'C13', 'C69', 'Cadd9', 'C+', 'Co', 'Ch', 'Csus', 'C^', 'C-', 'C^9', 'C-9', 'C-11', 'C7sus', 'Cm', 'Caug', 'CM', 'C')).dict('ireal-ext').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.roots.lefthand",
+  "code": "resetVoicings(); chord(\"C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B\").dict('lefthand').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.sevenths.lefthand",
+  "code": "resetVoicings(); chord(\"C^7 Dm7 E7 Fm7b5 Go7 A-7 Bb^7 Cm6\").dict('lefthand').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.symbols.lefthand",
+  "code": "resetVoicings(); chord(seq('C2', 'C5', 'C6', 'C7', 'C9', 'C11', 'C13', 'C69', 'Cadd9', 'C+', 'Co', 'Ch', 'Csus', 'C^', 'C-', 'C^9', 'C-9', 'C-11', 'C7sus', 'Cm', 'Caug', 'CM', 'C')).dict('lefthand').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.roots.guidetones",
+  "code": "resetVoicings(); chord(\"C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B\").dict('guidetones').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.sevenths.guidetones",
+  "code": "resetVoicings(); chord(\"C^7 Dm7 E7 Fm7b5 Go7 A-7 Bb^7 Cm6\").dict('guidetones').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.symbols.guidetones",
+  "code": "resetVoicings(); chord(seq('C2', 'C5', 'C6', 'C7', 'C9', 'C11', 'C13', 'C69', 'Cadd9', 'C+', 'Co', 'Ch', 'Csus', 'C^', 'C-', 'C^9', 'C-9', 'C-11', 'C7sus', 'Cm', 'Caug', 'CM', 'C')).dict('guidetones').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.roots.triads",
+  "code": "resetVoicings(); chord(\"C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B\").dict('triads').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.sevenths.triads",
+  "code": "resetVoicings(); chord(\"C^7 Dm7 E7 Fm7b5 Go7 A-7 Bb^7 Cm6\").dict('triads').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.symbols.triads",
+  "code": "resetVoicings(); chord(seq('C2', 'C5', 'C6', 'C7', 'C9', 'C11', 'C13', 'C69', 'Cadd9', 'C+', 'Co', 'Ch', 'Csus', 'C^', 'C-', 'C^9', 'C-9', 'C-11', 'C7sus', 'Cm', 'Caug', 'CM', 'C')).dict('triads').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.roots.legacy",
+  "code": "resetVoicings(); chord(\"C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B\").dict('legacy').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.sevenths.legacy",
+  "code": "resetVoicings(); chord(\"C^7 Dm7 E7 Fm7b5 Go7 A-7 Bb^7 Cm6\").dict('legacy').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.symbols.legacy",
+  "code": "resetVoicings(); chord(seq('C2', 'C5', 'C6', 'C7', 'C9', 'C11', 'C13', 'C69', 'Cadd9', 'C+', 'Co', 'Ch', 'Csus', 'C^', 'C-', 'C^9', 'C-9', 'C-11', 'C7sus', 'Cm', 'Caug', 'CM', 'C')).dict('legacy').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.aliases.1",
+  "code": "resetVoicings(); chord(seq('Cm7', 'C-7', 'CM7', 'C^7', 'Caug', 'C+', 'C', 'Cmaj', 'Cmin7', 'Cm^7', 'C-^7', 'C-M7', 'CmM7', 'C7b9', 'C7#9', 'C7alt')).voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.default",
+  "code": "resetVoicings(); chord(\"<C^7 Am7 Dm7 G7>\").voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.plainStrings",
+  "code": "resetVoicings(); \"<C^7 Am7 Dm7 G7>\".voicing().note()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.plainStrings.2",
+  "code": "resetVoicings(); \"<C^7 Am7>\".voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.pattern.chords",
+  "code": "resetVoicings(); chord(\"<C Am F G>\").voicing().s(\"piano\")",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.slash.1",
+  "code": "resetVoicings(); chord('C/E').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.slash.2",
+  "code": "resetVoicings(); chord('Bb7b9/F').voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.anchor.numbers",
+  "code": "resetVoicings(); chord(\"C^7\").anchor(\"<48 60 66 72>\").voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.anchor.names",
+  "code": "resetVoicings(); chord(\"Am7\").anchor(\"<c3 c4 g4 e5 Bb4>\").voicing()",
+  "cycles": 5
+ },
+ {
+  "name": "voicing.anchor.default",
+  "code": "resetVoicings(); chord(\"Am7 G7 C^7\").voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.mode.all",
+  "code": "resetVoicings(); chord(\"Am7\").anchor(\"c5\").mode(\"<below above duck root oldabove oldroot>\").voicing()",
+  "cycles": 6
+ },
+ {
+  "name": "voicing.mode.all.2",
+  "code": "resetVoicings(); chord(\"C\").anchor(\"g4\").mode(\"<below above duck root oldabove oldroot>\").voicing()",
+  "cycles": 6
+ },
+ {
+  "name": "voicing.mode.lefthand",
+  "code": "resetVoicings(); chord(\"C^7 A7\").dict('lefthand').anchor(\"e4\").mode(\"<below above duck root>\").voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.mode.unknown",
+  "code": "resetVoicings(); chord(\"C^7\").mode(\"bogus\").voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.offset",
+  "code": "resetVoicings(); chord(\"C^7\").offset(\"<0 1 2 3 4 -1 -2>\").voicing()",
+  "cycles": 7
+ },
+ {
+  "name": "voicing.offset.2",
+  "code": "resetVoicings(); chord(\"<C Am>\").dict('triads').offset(\"<0 1 2 3>\").voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.offset.fractional",
+  "code": "resetVoicings(); chord(\"C^7\").offset(1.5).voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.n",
+  "code": "resetVoicings(); n(\"0 1 2 3\").chord(\"<C Am>\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.n.2",
+  "code": "resetVoicings(); n(\"0 1 2 3 4 5 -1 -2\").chord(\"C^7\").anchor(\"g4\").voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.n.3",
+  "code": "resetVoicings(); n(\"<0 1 2 3>*4\").chord(\"Am7\").dict('lefthand').anchor(\"g4\").voicing().s(\"piano\")",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.n.fractional",
+  "code": "resetVoicings(); n(\"0.5 1\").chord(\"C\").voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.octaves",
+  "code": "resetVoicings(); n(\"0 1 2 3 4 5\").chord(\"C\").octaves(\"<1 2 4>\").voicing()",
+  "cycles": 3
+ },
+ {
+  "name": "voicing.octaves.2",
+  "code": "resetVoicings(); chord(\"<Am C>\").octaves(\"<2 4>\").voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.dict.names",
+  "code": "resetVoicings(); chord(\"<C^7 A7>\").dict(\"<lefthand ireal triads>\").voicing()",
+  "cycles": 3
+ },
+ {
+  "name": "voicing.dict.unknown",
+  "code": "resetVoicings(); chord(\"C^7\").dict(\"bogus\").voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.dict.default.legacy",
+  "code": "setDefaultVoicings('legacy'); chord(\"<C Am F G>\").voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.dict.default.lefthand",
+  "code": "setDefaultVoicings('lefthand'); chord(\"<C^7 A7>\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.dict.default.back",
+  "code": "resetVoicings(); chord(\"<C^7 A7>\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.unknownChord",
+  "code": "resetVoicings(); chord(\"<C Q C^7 H>\").voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.lowercase",
+  "code": "resetVoicings(); chord(\"c am\").voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.rest",
+  "code": "resetVoicings(); chord(\"C ~ Am -\").voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.extra.controls",
+  "code": "resetVoicings(); chord(\"<C Am>\").voicing().s(\"piano\").gain(0.8).room(0.5)",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.extra.controls.2",
+  "code": "resetVoicings(); s(\"piano\").chord(\"<C Am>\").gain(0.8).voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.noChord",
+  "code": "resetVoicings(); s(\"bd\").voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.number",
+  "code": "resetVoicings(); pure(5).voicing()",
+  "cycles": 1
+ },
+ {
+  "name": "voicing.structure",
+  "code": "resetVoicings(); chord(\"<C Am>\").struct(\"x*4\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.slow",
+  "code": "resetVoicings(); chord(\"<C^7 Am7>/2\").voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.tune.1",
+  "code": "resetVoicings(); chord(\"<C^7 Am7 Dm7 G7>*2\").dict('lefthand').anchor(\"G4\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.tune.2",
+  "code": "resetVoicings(); chord(\"<C^7 A7 Dm7 Fm7>/2\").dict('lefthand').voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.house",
+  "code": "resetVoicings(); addVoicings('snippetHouse', {'': ['7 12 16', '0 7 16', '4 7 12'], 'm': ['0 3 7']}); chord(\"<Am C D F>\").dict('snippetHouse').anchor(66).voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "voicing.inlineDictionary",
+  "code": "resetVoicings(); chord(\"<Am C>\").dict({'': ['0 4 7'], 'm': ['0 3 7']}).anchor(60).voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicing.arrayDictionary",
+  "code": "resetVoicings(); chord(\"<Am C>\").dict({'': [[0, 4, 7]], 'm': [[0, 3, 7], [3, 7, 12]]}).anchor(60).voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicings.ireal",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 A7 Dm7 G7>\".voicings('ireal').note()",
+  "cycles": 4
+ },
+ {
+  "name": "voicings.ireal.2",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C Am F G7 Em7 Bb^7>\".voicings('ireal').note()",
+  "cycles": 6
+ },
+ {
+  "name": "voicings.ireal-ext",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 A7 Dm7 G7>\".voicings('ireal-ext').note()",
+  "cycles": 4
+ },
+ {
+  "name": "voicings.ireal-ext.2",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C Am F G7 Em7 Bb^7>\".voicings('ireal-ext').note()",
+  "cycles": 6
+ },
+ {
+  "name": "voicings.lefthand",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 A7 Dm7 G7>\".voicings('lefthand').note()",
+  "cycles": 4
+ },
+ {
+  "name": "voicings.lefthand.2",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C Am F G7 Em7 Bb^7>\".voicings('lefthand').note()",
+  "cycles": 6
+ },
+ {
+  "name": "voicings.guidetones",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 A7 Dm7 G7>\".voicings('guidetones').note()",
+  "cycles": 4
+ },
+ {
+  "name": "voicings.guidetones.2",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C Am F G7 Em7 Bb^7>\".voicings('guidetones').note()",
+  "cycles": 6
+ },
+ {
+  "name": "voicings.triads",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 A7 Dm7 G7>\".voicings('triads').note()",
+  "cycles": 4
+ },
+ {
+  "name": "voicings.triads.2",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C Am F G7 Em7 Bb^7>\".voicings('triads').note()",
+  "cycles": 6
+ },
+ {
+  "name": "voicings.legacy",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 A7 Dm7 G7>\".voicings('legacy').note()",
+  "cycles": 4
+ },
+ {
+  "name": "voicings.legacy.2",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C Am F G7 Em7 Bb^7>\".voicings('legacy').note()",
+  "cycles": 6
+ },
+ {
+  "name": "voicings.stack",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); stack(\"<C^7 A7 Dm7 G7>\".voicings('lefthand'), \"<C3 A2 D3 G2>\").note()",
+  "cycles": 4
+ },
+ {
+  "name": "voicings.twoCalls",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); stack(\"<C^7 A7>\".voicings('lefthand'), \"<Dm7 G7>\".voicings('guidetones')).note()",
+  "cycles": 2
+ },
+ {
+  "name": "voicings.pattern.dictionary",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 A7>\".voicings(\"<lefthand guidetones>\").note()",
+  "cycles": 2
+ },
+ {
+  "name": "voicings.unknownDictionary",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"C^7\".voicings('bogus').note()",
+  "cycles": 1
+ },
+ {
+  "name": "voicings.unknownChord",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 Q A7>\".voicings('lefthand').note()",
+  "cycles": 3
+ },
+ {
+  "name": "voicings.rest",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"C^7 ~ A7\".voicings('lefthand').note()",
+  "cycles": 1
+ },
+ {
+  "name": "voicings.chordControl",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); chord(\"<C^7 A7>\").voicings('lefthand').note()",
+  "cycles": 2
+ },
+ {
+  "name": "addVoicings.range",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); addVoicings('snippetCookie', {7: ['3M 7m 9M 12P 15P', '7m 10M 13M 16M 19P'], '^7': ['3M 6M 9M 12P 14M', '7M 10M 13M 16M 19P']}, ['C3', 'C6']); \"<C^7 A7 C^7 A7>\".voicings('snippetCookie').note()",
+  "cycles": 4
+ },
+ {
+  "name": "addVoicings.defaultRange",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); addVoicings('snippetPlain', {'': ['1P 3M 5P', '3M 5P 8P', '5P 8P 10M']}); \"<C F G>\".voicings('snippetPlain').note()",
+  "cycles": 3
+ },
+ {
+  "name": "addVoicings.voicing",
+  "code": "resetVoicings(); addVoicings('snippetVoicing', {'': ['1P 3M 5P', '3M 5P 8P', '5P 8P 10M']}); chord(\"<C F G>\").dict('snippetVoicing').anchor(\"g4\").voicing()",
+  "cycles": 3
+ },
+ {
+  "name": "registerVoicings.plain",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); registerVoicings('snippetRegistered', {'': ['1P 3M 5P', '3M 5P 8P']}); \"<C F>\".voicings('snippetRegistered').note()",
+  "cycles": 2
+ },
+ {
+  "name": "registerVoicings.options",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); registerVoicings('snippetRegistered2', {'': ['1P 3M 5P', '3M 5P 8P', '5P 8P 10M']}, {range: ['C4', 'G5'], mode: 'above', anchor: 'c4'}); \"<C F G>\".voicings('snippetRegistered2').note()",
+  "cycles": 3
+ },
+ {
+  "name": "registerVoicings.pattern",
+  "code": "resetVoicings(); registerVoicings('snippetRegistered3', {'m': ['0 3 7'], '': ['0 4 7']}); chord(\"<Am C>\").dict(\"<snippetRegistered3 triads>\").anchor(60).voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "registerVoicings.voicingIgnoresMode",
+  "code": "resetVoicings(); registerVoicings('snippetRegistered4', {'': ['1P 3M 5P', '3M 5P 8P', '5P 8P 10M']}, {mode: 'above', anchor: 'e5'}); chord(\"<C F>\").dict('snippetRegistered4').voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "setVoicingRange.plain",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['C3', 'C5']); \"<C^7 A7 Dm7 G7>\".voicings('lefthand').note()",
+  "cycles": 4
+ },
+ {
+  "name": "setVoicingRange.pattern",
+  "code": "resetVoicings(); setVoicingRange('guidetones', ['C2', 'G3']); \"<C^7 A7 Dm7 G7>\".voicings(\"<guidetones lefthand>\").note()",
+  "cycles": 4
+ },
+ {
+  "name": "setVoicingRange.restore",
+  "code": "resetVoicings(); setVoicingRange('lefthand', ['F3', 'A4']); \"<C^7 A7 Dm7 G7>\".voicings('lefthand').note()",
+  "cycles": 4
+ },
+ {
+  "name": "setVoicingRange.unknown",
+  "code": "resetVoicings(); setVoicingRange('snippetUnknown', ['C3', 'C5']); s(\"bd\")",
+  "cycles": 1
+ },
+ {
+  "name": "setVoicingRange.keepsDictionary",
+  "code": "resetVoicings(); setVoicingRange('triads', ['C2', 'C3']); chord(\"<C Am>\").dict('triads').voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "setDefaultVoicings.plain",
+  "code": "setDefaultVoicings('triads'); chord(\"<C Am F G>\").voicing()",
+  "cycles": 4
+ },
+ {
+  "name": "setDefaultVoicings.pattern",
+  "code": "setDefaultVoicings('guidetones'); chord(\"<C^7 Am7>\").voicing().s(\"piano\")",
+  "cycles": 2
+ },
+ {
+  "name": "setDefaultVoicings.ireal",
+  "code": "setDefaultVoicings('ireal-ext'); chord(\"<C^7 Am7>\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "setDefaultVoicings.unknown",
+  "code": "setDefaultVoicings('snippetNowhere'); chord(\"<C^7 Am7>\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "setDefaultVoicings.result",
+  "code": "n(setDefaultVoicings('legacy').length)",
+  "cycles": 1
+ },
+ {
+  "name": "setDefaultVoicings.reset",
+  "code": "setDefaultVoicings('lefthand'); resetVoicings(); chord(\"<C^7 Am7>\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "resetVoicings.plain",
+  "code": "resetVoicings(); \"<C^7 A7>\".voicings('lefthand').note()",
+  "cycles": 2
+ },
+ {
+  "name": "resetVoicings.pattern",
+  "code": "resetVoicings(); stack(\"<C^7 A7>\".voicings('lefthand'), \"<Dm7 G7>\".voicings('guidetones')).note()",
+  "cycles": 2
+ },
+ {
+  "name": "resetVoicings.defaultAgain",
+  "code": "setDefaultVoicings('triads'); resetVoicings(); chord(\"<C Am>\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "resetVoicings.result",
+  "code": "n(typeof resetVoicings())",
+  "cycles": 1
+ },
+ {
+  "name": "voicingAlias.plain",
+  "code": "resetVoicings(); const d = {m7: ['3m 5P 7m 9M', '7m 9M 10m 12P']}; voicingAlias('m7', 'min7', d); registerVoicings('snippetAlias', d); chord(\"<Dmin7 Dm7>\").dict('snippetAlias').voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicingAlias.sets",
+  "code": "resetVoicings(); const a = {'^7': ['3M 5P 7M 9M']}; const b = {'^7': ['3M 7M 10M']}; voicingAlias('^7', 'maj7', [a, b]); registerVoicings('snippetAliasA', a); registerVoicings('snippetAliasB', b); stack(chord(\"Cmaj7\").dict('snippetAliasA').voicing(), chord(\"Cmaj7\").dict('snippetAliasB').voicing())",
+  "cycles": 1
+ },
+ {
+  "name": "voicingAlias.pattern",
+  "code": "resetVoicings(); const d = {m: ['0 3 7'], '': ['0 4 7']}; voicingAlias('m', 'min', d); registerVoicings('snippetAlias2', d); chord(\"<Amin Am A>\").dict('snippetAlias2').anchor(66).voicing()",
+  "cycles": 3
+ },
+ {
+  "name": "voicingAlias.missingSymbol",
+  "code": "resetVoicings(); const d = {m: ['0 3 7']}; voicingAlias('nothing', 'x', d); registerVoicings('snippetAlias3', d); chord(\"<Am Ax>\").dict('snippetAlias3').anchor(66).voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicingAlias.registry",
+  "code": "resetVoicings(); voicingAlias('^7', 'snippetMaj7', voicingRegistry.ireal.dictionary); chord(\"<CsnippetMaj7 C^7>\").voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicingRegistry.names",
+  "code": "s(\"bd\").n(voicingRegistry.lefthand.range.length)",
+  "cycles": 1
+ },
+ {
+  "name": "voicingRegistry.mode",
+  "code": "note(voicingRegistry.guidetones.mode)",
+  "cycles": 1
+ },
+ {
+  "name": "voicingRegistry.lefthandAnchor",
+  "code": "note(voicingRegistry.lefthand.anchor)",
+  "cycles": 1
+ },
+ {
+  "name": "voicingRegistry.rangeText",
+  "code": "s(voicingRegistry.lefthand.range.join('-'))",
+  "cycles": 1
+ },
+ {
+  "name": "voicingRegistry.symbol",
+  "code": "s(\"bd\").n(Object.keys(voicingRegistry.triads.dictionary).length)",
+  "cycles": 1
+ },
+ {
+  "name": "voicingRegistry.assign",
+  "code": "resetVoicings(); voicingRegistry.snippetAssigned = {dictionary: {'': ['0 4 7'], 'm': ['0 3 7']}}; chord(\"<Am C>\").dict('snippetAssigned').anchor(60).voicing()",
+  "cycles": 2
+ },
+ {
+  "name": "voicingRegistry.assignRange",
+  "code": "resetVoicings(); voicingRegistry.snippetAssigned2 = {dictionary: {'': ['1P 3M 5P', '3M 5P 8P']}, range: ['C4', 'G4']}; \"<C F>\".voicings('snippetAssigned2').note()",
+  "cycles": 2
+ },
+ {
+  "name": "voicingRegistry.lookup",
+  "code": "s(\"bd\").n(Object.keys(voicingRegistry).includes('ireal') ? 1 : 0)",
+  "cycles": 1
+ },
+ {
+  "name": "rootNotes.plain",
+  "code": "\"<C^7 A7 Dm7 G7>\".rootNotes(2).note()",
+  "cycles": 4
+ },
+ {
+  "name": "rootNotes.pattern",
+  "code": "\"<C^7 A7 Dm7 G7>\".rootNotes(\"<2 3>\").note()",
+  "cycles": 4
+ },
+ {
+  "name": "rootNotes.pattern.2",
+  "code": "\"C^7 A7 Dm7 G7\".rootNotes(\"2 3\").note()",
+  "cycles": 1
+ },
+ {
+  "name": "rootNotes.accidentals",
+  "code": "\"C#m7 Bb^7 Ebm7b5 F#o7 Gb7 Abm\".rootNotes(2).note()",
+  "cycles": 1
+ },
+ {
+  "name": "rootNotes.lowercase",
+  "code": "\"c am\".rootNotes(3).note()",
+  "cycles": 1
+ },
+ {
+  "name": "rootNotes.chordControl",
+  "code": "chord(\"<C^7 A7>\").rootNotes(2)",
+  "cycles": 2
+ },
+ {
+  "name": "rootNotes.chordControl.2",
+  "code": "chord(\"<C^7 A7>\").s(\"piano\").rootNotes(2).note()",
+  "cycles": 2
+ },
+ {
+  "name": "rootNotes.chordControl.3",
+  "code": "chord(\"<C^7 A7>\").rootNotes(\"<2 4>\")",
+  "cycles": 2
+ },
+ {
+  "name": "rootNotes.global",
+  "code": "chord(\"<C^7 A7>\").superimpose(rootNotes(2)).note()",
+  "cycles": 2
+ },
+ {
+  "name": "rootNotes.fractional",
+  "code": "\"C^7\".rootNotes(2.5).note()",
+  "cycles": 1
+ },
+ {
+  "name": "rootNotes.negative",
+  "code": "\"C^7\".rootNotes(-1).note()",
+  "cycles": 1
+ },
+ {
+  "name": "rootNotes.stack",
+  "code": "stack(\"<C^7 A7>\".rootNotes(2), \"<C^7 A7>\".rootNotes(4)).note()",
+  "cycles": 2
+ },
+ {
+  "name": "rootNotes.notChord",
+  "code": "\"hello\".rootNotes(2).note()",
+  "cycles": 1
+ },
+ {
+  "name": "rootNotes.number",
+  "code": "pure(5).rootNotes(2)",
+  "cycles": 1
+ },
+ {
+  "name": "arp.plain",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"0 [0,2] 1 [0,2]\")",
+  "cycles": 4
+ },
+ {
+  "name": "arp.pattern",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"<0 1 2>\")",
+  "cycles": 4
+ },
+ {
+  "name": "arp.pattern.2",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"<[0 1] [2 1]>*2\")",
+  "cycles": 4
+ },
+ {
+  "name": "arp.numbers",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(1)",
+  "cycles": 4
+ },
+ {
+  "name": "arp.negative",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"-1 -2 -3\")",
+  "cycles": 4
+ },
+ {
+  "name": "arp.large",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"5 7 9 10\")",
+  "cycles": 4
+ },
+ {
+  "name": "arp.seq",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"0 1 2\").fast(2)",
+  "cycles": 4
+ },
+ {
+  "name": "arp.stack",
+  "code": "stack(note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"0 1 2\"), note(\"c2 g2\"))",
+  "cycles": 2
+ },
+ {
+  "name": "arp.single",
+  "code": "note(\"c e g\").arp(\"0 1 2\")",
+  "cycles": 1
+ },
+ {
+  "name": "arp.three",
+  "code": "note(\"[c,e,g] [d,f,a]\").arp(\"0 1 2\")",
+  "cycles": 1
+ },
+ {
+  "name": "arp.fractional",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"0.5 1.5\")",
+  "cycles": 2
+ },
+ {
+  "name": "arp.controls",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").s(\"piano\").gain(0.5).arp(\"0 1 2\")",
+  "cycles": 2
+ },
+ {
+  "name": "arp.controls.2",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab]>\").s(\"<piano sax>\").arp(\"0 1 2\")",
+  "cycles": 3
+ },
+ {
+  "name": "arp.silence",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"~ 0\")",
+  "cycles": 2
+ },
+ {
+  "name": "arp.notNumbers",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"a b\")",
+  "cycles": 2
+ },
+ {
+  "name": "arp.chordControl",
+  "code": "chord(\"<Am C>\").arp(\"0 1 2\")",
+  "cycles": 2
+ },
+ {
+  "name": "arp.voicing",
+  "code": "resetVoicings(); chord(\"<C^7 A7>\").voicing().arp(\"0 1 2 3\")",
+  "cycles": 2
+ },
+ {
+  "name": "arp.polyrhythm",
+  "code": "note(\"[c,e,g]*2 [d,f,a]\").arp(\"0 1\")",
+  "cycles": 2
+ },
+ {
+  "name": "arp.arpOfArp",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arp(\"0 1 2\").arp(\"0 1\")",
+  "cycles": 2
+ },
+ {
+  "name": "arpWith.plain",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => haps[2])",
+  "cycles": 4
+ },
+ {
+  "name": "arpWith.first",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => haps[0])",
+  "cycles": 4
+ },
+ {
+  "name": "arpWith.last",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => haps[haps.length - 1])",
+  "cycles": 4
+ },
+ {
+  "name": "arpWith.sequence",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => sequence(...haps))",
+  "cycles": 4
+ },
+ {
+  "name": "arpWith.reverse",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => sequence(...haps.slice().reverse()))",
+  "cycles": 4
+ },
+ {
+  "name": "arpWith.stack",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => stack(haps[0], haps[2]))",
+  "cycles": 4
+ },
+ {
+  "name": "arpWith.fastcat",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => fastcat(...haps.slice(0, 2)))",
+  "cycles": 2
+ },
+ {
+  "name": "arpWith.pure",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => pure(haps[1]))",
+  "cycles": 2
+ },
+ {
+  "name": "arpWith.pattern",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => reify(\"0 1\").fmap(i => haps[i]))",
+  "cycles": 2
+ },
+ {
+  "name": "arpWith.controls",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab]>\").s(\"piano\").arpWith(haps => haps[1])",
+  "cycles": 3
+ },
+ {
+  "name": "arpWith.single",
+  "code": "note(\"c e g\").arpWith(haps => haps[0])",
+  "cycles": 1
+ },
+ {
+  "name": "arpWith.undefined",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => haps[7])",
+  "cycles": 2
+ },
+ {
+  "name": "arpWith.number",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => 3)",
+  "cycles": 2
+ },
+ {
+  "name": "arpWith.methodChain",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => haps[2]).fast(2)",
+  "cycles": 2
+ },
+ {
+  "name": "arpWith.struct",
+  "code": "note(\"<[c,eb,g]!2 [c,f,ab] [d,f,ab]>\").arpWith(haps => haps[1]).struct(\"x*2\")",
+  "cycles": 2
+ },
+ {
+  "name": "arpWith.chordControl",
+  "code": "chord(\"<Am C>\").voicing().arpWith(haps => haps[0])",
+  "cycles": 2
+ }
+]
