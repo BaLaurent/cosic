@@ -1,8 +1,6 @@
 package cosic.parity
 
-import cosic.script.Realm
-import cosic.script.SessionHost
-import cosic.script.catalogue.Catalogue
+import cosic.script.ReplSession
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -33,8 +31,10 @@ class CoverageTest {
                 listOf(
                     "Strudel names (globals, Pattern methods and controls of the oracle runtime) that Cosic has no builtin for,",
                     "one per line: <name>  # reason. A name is covered once Cosic implements it; delete its line then.",
-                    "Reasons other than \"$NOT_IMPLEMENTED_YET\" are deliberate exclusions: browser and REPL internals, Hydra,",
-                    "CSound, and what decision 4 of the parity plan rules out.",
+                    "A reason says who covers the name: `Task N.N: ...` (the task of the plan that implements it), an internal of Strudel's",
+                    "(REPL, Web Audio, pattern.mjs) or a mock of its test runtime that no program uses, `out of scope: ...` (Hydra, CSound and",
+                    "what decision 4 of the parity plan rules out), or `no task in the plan` / `Phase 2 gap` (it needs an owner).",
+                    "\"$NOT_IMPLEMENTED_YET\" is the temporary reason the generator writes for a new name; Phase 5 requires that none is left.",
                     "Regenerate: ./gradlew :engine:test --tests 'cosic.parity.*' -Dcosic.parity.writeGaps=true",
                 ),
                 names.filterNot { isImplemented(it) }.associateWith { exclusions[it]?.takeIf(String::isNotEmpty) ?: NOT_IMPLEMENTED_YET },
@@ -59,15 +59,16 @@ class CoverageTest {
         names.take(limit).joinToString(" ") + if (names.size > limit) " ... and ${names.size - limit} more" else ""
 
     /**
-     * Whether a program can use [name] today: the catalogue gives a global or a method of `Pattern.prototype` of that
-     * name. (A realm of its own, without the oracle's mocks, which would make names such as `filter` look implemented.)
+     * Whether a program can use [name] today: its world has a global or a method of `Pattern.prototype` of that name. That is the catalogue
+     * plus what the REPL adds to it when it evaluates (`setcps`, `setcpm`, `all`, `each`, `hush`, `p`, ...), in a realm of its own, without
+     * the oracle's mocks, which would make names such as `filter` look implemented.
      */
     private fun isImplemented(name: String): Boolean = name in implemented
 
     private val implemented: Set<String> by lazy {
-        val realm = Realm(SessionHost())
-        Catalogue.install(realm)
-        (realm.global.ownKeys() + realm.patternPrototype.ownKeys()).toSet()
+        val session = ReplSession()
+        session.evaluate("")
+        (session.realm.global.ownKeys() + session.realm.patternPrototype.ownKeys()).toSet()
     }
 
     private fun strudelNames(): Set<String> {

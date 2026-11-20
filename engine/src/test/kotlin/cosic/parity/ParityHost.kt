@@ -5,6 +5,7 @@ import cosic.pattern.Alignment
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
+import cosic.pattern.Registry
 import cosic.pattern.Rng
 import cosic.pattern.TOO_DEEP
 import cosic.pattern.TOO_DENSE
@@ -57,6 +58,25 @@ Pattern.prototype.piano = function () {
     });
 };
 """
+
+/**
+ * The oracle's `Pattern.prototype.filter` is the identity (it is one of the methods that draw or play), and Strudel's `filterWhen` calls
+ * `pat.filter(...)` by name, so there `filterWhen` and `within` (which uses it) never filter anything: their snapshots show the pattern as
+ * it was. Cosic's `filterWhen` reaches `filter` through the registry, which the mock on the program's side does not touch. So for the
+ * length of [block] the registry's `filterWhen` is the identity, which is what Strudel's makes of the mocked `filter` (the global `filter(...)`
+ * stays a real filter, as it is in the oracle). The registered function is put back afterwards; cases run one after the other, so no other
+ * test sees the swap.
+ */
+internal fun <T> withOracleFilter(block: () -> T): T {
+    Catalogue.installAll()
+    val original = checkNotNull(Registry.lookup("filterWhen")) { "filterWhen is not registered" }
+    Registry.register(listOf("filterWhen"), 2) { a -> a[1] }
+    try {
+        return block()
+    } finally {
+        Registry.register(original.names, original.arity, original.patternify, original.preserveSteps, original.join, original.alignable, original.impl)
+    }
+}
 
 /** One realm with the catalogue and the oracle's mocks; [session] is set for a REPL case. */
 internal class ParityWorld private constructor(val host: SessionHost, val realm: Realm, val session: ReplSession?) {

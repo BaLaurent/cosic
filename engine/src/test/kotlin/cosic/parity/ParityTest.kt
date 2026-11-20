@@ -1,10 +1,12 @@
 package cosic.parity
 
 import cosic.pattern.CosicError
+import cosic.pattern.Voicings
 import org.junit.AfterClass
 import org.junit.Assert.fail
 import org.junit.Assume.assumeFalse
 import org.junit.Assume.assumeTrue
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -37,7 +39,7 @@ internal class ParityTest(private val case: ParityCase) {
             assumeTrue("${case.id}: ${case.skipReason}", false)
             return
         }
-        val problem = mismatch(case, expected, runCase(case))
+        val problem = mismatch(case, expected, withOracleFilter { runCase(case) })
         ParityReport.record(case, if (problem == null) Status.PASS else Status.FAIL, problem)
         if (ParityData.writeGaps) return
         if (ParityData.only != null) {
@@ -60,9 +62,19 @@ internal class ParityTest(private val case: ParityCase) {
         fun cases(): List<Array<Any>> =
             ParityData.cases.filter { ParityData.only?.containsMatchIn(it.id) ?: true }.map { arrayOf<Any>(it) }
 
+        /** Strudel's own run starts in a fresh process: the voicing dictionaries are the ones it ships, whatever another test did to them. */
+        @JvmStatic
+        @BeforeClass
+        fun startWithTheShippedVoicings() = Voicings.restore()
+
+        /**
+         * The extras register voicings into the global registry (`voicingAlias('^7', ...)` adds a symbol to the real `ireal` dictionary):
+         * what stays there would be seen by the tests that run after this one in the same JVM.
+         */
         @JvmStatic
         @AfterClass
         fun writeOutputs() {
+            Voicings.restore()
             ParityReport.write(File(moduleDir(), "build/reports/parity.md"))
             if (ParityData.writeGaps) ParityReport.rewriteKnownGaps()
         }
@@ -270,7 +282,7 @@ internal object ParityReport {
             ParityData.knownGapsFile,
             listOf(
                 "Parity cases that are expected to fail until their feature lands, one per line: <id>  # reason",
-                "ids: examples:<function>#<index>, tunes:<tune>, extra:<snippet>",
+                "ids: examples:<function>#<index>, tunes:<tune>, extra:<file>/<snippet> (the file stem of parity/extra/<file>.json)",
                 "ParityTest fails on a case that mismatches and is not listed, and on a listed case that now matches.",
                 "Regenerate: ./gradlew :engine:test --tests 'cosic.parity.*' -Dcosic.parity.writeGaps=true",
             ),

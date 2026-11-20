@@ -20,7 +20,7 @@ import os from 'node:os';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterAll, describe, it } from 'vitest';
-import { evalScope, Pattern, repl, useRNG } from '@strudel/core';
+import { evalScope, nothing, Pattern, repl, silence, useRNG } from '@strudel/core';
 import { transpiler } from '@strudel/transpiler';
 import { queryCode } from './runtime.mjs';
 
@@ -55,7 +55,20 @@ const identityMethods = [
   'osc', 'csound', 'tone', 'webdirt', 'pianoroll', 'speak', 'wave', 'filter', 'adsr', 'webaudio', 'soundfont', 'tune',
   'midi', '_scope', '_spiral', '_pitchwheel', '_pianoroll', '_spectrum', '_print', 'markcss', 'p', 'dough',
 ];
+// `fast(0)` and `slow(0)` return Strudel's one global `silence`, and the machinery that registers a function then writes the
+// steps of the pattern it was called on into it (`result._steps = pat._steps`); mini.mjs marks it as a source of steps the same
+// way. Every later `~` then carries those steps, so what a snippet gives would depend on the snippets that ran before it (and on
+// whether the whole corpus or one file is run). That leak between programs is not something to reproduce: a snippet starts from
+// the state the pattern module has when it is loaded.
+const sharedPatterns = [silence, nothing].map((pattern) => ({ pattern, steps: pattern._steps, source: pattern.__steps_source }));
+if (String(silence._steps) !== '1' || String(nothing._steps) !== '0' || silence.__steps_source || nothing.__steps_source) {
+  throw new Error('silence and nothing were changed before the first snippet ran');
+}
 const applyOracleMocks = () => {
+  for (const { pattern, steps, source } of sharedPatterns) {
+    pattern._steps = steps;
+    pattern.__steps_source = source;
+  }
   // module state of Strudel that a snippet can change (`useRNG('precise')`) must not reach the next snippet
   useRNG('legacy');
   identityMethods.forEach((name) => {

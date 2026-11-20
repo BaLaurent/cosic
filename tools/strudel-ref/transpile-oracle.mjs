@@ -186,9 +186,10 @@ export function corpus() {
   }
   const extraDir = path.join(dir, 'extra');
   for (const file of fs.readdirSync(extraDir).filter((f) => f.endsWith('.json')).sort()) {
+    const stem = file.slice(0, -'.json'.length);
     for (const e of JSON.parse(fs.readFileSync(path.join(extraDir, file), 'utf8'))) {
-      if (e.mode === 'repl') e.codes.forEach((code, i) => entries.push({ id: `extra:${e.name}/${i}`, code }));
-      else entries.push({ id: `extra:${e.name}`, code: e.code });
+      if (e.mode === 'repl') e.codes.forEach((code, i) => entries.push({ id: `extra:${stem}/${e.name}/${i}`, code }));
+      else entries.push({ id: `extra:${stem}/${e.name}`, code: e.code });
     }
   }
   return entries;

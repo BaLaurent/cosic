@@ -1,686 +1,239 @@
 # Strudel names (globals, Pattern methods and controls of the oracle runtime) that Cosic has no builtin for,
 # one per line: <name>  # reason. A name is covered once Cosic implements it; delete its line then.
-# Reasons other than "not implemented yet" are deliberate exclusions: browser and REPL internals, Hydra,
-# CSound, and what decision 4 of the parity plan rules out.
+# A reason says who covers the name: `Task N.N: ...` (the task of the plan that implements it), an internal of Strudel's
+# (REPL, Web Audio, pattern.mjs) or a mock of its test runtime that no program uses, `out of scope: ...` (Hydra, CSound and
+# what decision 4 of the parity plan rules out), or `no task in the plan` / `Phase 2 gap` (it needs an owner).
+# "not implemented yet" is the temporary reason the generator writes for a new name; Phase 5 requires that none is left.
 # Regenerate: ./gradlew :engine:test --tests 'cosic.parity.*' -Dcosic.parity.writeGaps=true
 
-Chorus  # not implemented yet
-Clock  # not implemented yet
-ClockBridge  # not implemented yet
-ClockCollator  # not implemented yet
-Cyclist  # not implemented yet
-DEFAULT_MAX_POLYPHONY  # not implemented yet
-FX  # not implemented yet
-FeedbackDelay  # not implemented yet
-Freeverb  # not implemented yet
-Gain  # not implemented yet
-MembraneSynth  # not implemented yet
-MetalSynth  # not implemented yet
-NoiseSynth  # not implemented yet
-PolySynth  # not implemented yet
-Reverb  # not implemented yet
-Synth  # not implemented yet
-Warpmode  # not implemented yet
-__chooseWith  # not implemented yet
-_always  # not implemented yet
-_and  # not implemented yet
-_apply  # not implemented yet
-_applyN  # not implemented yet
-_arp  # not implemented yet
-_arpWith  # not implemented yet
-_band  # not implemented yet
-_beat  # not implemented yet
-_bite  # not implemented yet
-_bjork  # not implemented yet
-_blshift  # not implemented yet
-_bor  # not implemented yet
-_brandBy  # not implemented yet
-_brshift  # not implemented yet
-_bxor  # not implemented yet
-_bypass  # not implemented yet
-_chunkBack  # not implemented yet
-_chunkBackInto  # not implemented yet
-_chunkInto  # not implemented yet
-_chunkback  # not implemented yet
-_chunkbackinto  # not implemented yet
-_chunkinto  # not implemented yet
-_contract  # not implemented yet
-_cpm  # not implemented yet
-_cycleStruct  # not implemented yet
-_cyclestruct  # not implemented yet
-_degradeByWith  # not implemented yet
-_drop  # not implemented yet
-_echo  # not implemented yet
-_echoWith  # not implemented yet
-_echowith  # not implemented yet
-_edoScale  # not implemented yet
-_eish  # not implemented yet
-_eq  # not implemented yet
-_eqt  # not implemented yet
-_euclidLegato  # not implemented yet
-_euclidLegatoRot  # not implemented yet
-_euclidish  # not implemented yet
-_euclidrot  # not implemented yet
-_fTrans  # not implemented yet
-_fTranspose  # not implemented yet
-_fastChunk  # not implemented yet
-_fastchunk  # not implemented yet
-_filter  # not implemented yet
-_filterWhen  # not implemented yet
-_fitslice  # not implemented yet
-_flux  # not implemented yet
-_fluxBy  # not implemented yet
-_fluxby  # not implemented yet
-_ftrans  # not implemented yet
-_ftranspose  # not implemented yet
-_func  # not implemented yet
-_grow  # not implemented yet
-_gt  # not implemented yet
-_gte  # not implemented yet
-_hsl  # not implemented yet
-_hsla  # not implemented yet
-_inhabit  # not implemented yet
-_inhabitmod  # not implemented yet
-_irand  # not implemented yet
-_isobite  # not implemented yet
-_iterback  # not implemented yet
-_juxFlip  # not implemented yet
-_juxFlipBy  # not implemented yet
-_juxby  # not implemented yet
-_juxflip  # not implemented yet
-_juxflipby  # not implemented yet
-_keep  # not implemented yet
-_keepif  # not implemented yet
-_keyDown  # not implemented yet
-_linger  # not implemented yet
-_loopAt  # not implemented yet
-_loopAtCps  # not implemented yet
-_loopat  # not implemented yet
-_loopatcps  # not implemented yet
-_lt  # not implemented yet
-_lte  # not implemented yet
-_match  # not implemented yet
-_mod  # not implemented yet
-_morph  # not implemented yet
-_moveXY  # not implemented yet
-_ne  # not implemented yet
-_net  # not implemented yet
-_never  # not implemented yet
-_opIn  # not implemented yet
-_opMix  # not implemented yet
-_opOut  # not implemented yet
-_opPoly  # not implemented yet
-_opReset  # not implemented yet
-_opRestart  # not implemented yet
-_opSqueeze  # not implemented yet
-_opSqueezeOut  # not implemented yet
-_or  # not implemented yet
-_pace  # not implemented yet
-_pianoroll  # not implemented yet
-_pick  # not implemented yet
-_pickF  # not implemented yet
-_pickOut  # not implemented yet
-_pickReset  # not implemented yet
-_pickRestart  # not implemented yet
-_pickSqueeze  # not implemented yet
-_pickmod  # not implemented yet
-_pickmodF  # not implemented yet
-_pickmodOut  # not implemented yet
-_pickmodReset  # not implemented yet
-_pickmodRestart  # not implemented yet
-_pickmodSqueeze  # not implemented yet
-_pitchwheel  # not implemented yet
-_plyForEach  # not implemented yet
-_plyWith  # not implemented yet
-_plyforeach  # not implemented yet
-_plywith  # not implemented yet
-_polymeterListSteps  # not implemented yet
-_pow  # not implemented yet
-_pressBy  # not implemented yet
-_print  # not implemented yet
-_range2  # not implemented yet
-_rangex  # not implemented yet
-_repeatCycles  # not implemented yet
-_replicate  # not implemented yet
-_rescale  # not implemented yet
-_retime  # not implemented yet
-_rib  # not implemented yet
-_ribbon  # not implemented yet
-_rootNotes  # not implemented yet
-_scaleTrans  # not implemented yet
-_scaleTranspose  # not implemented yet
-_scope  # not implemented yet
-_scramble  # not implemented yet
-_seed  # not implemented yet
-_seg  # not implemented yet
-_set  # not implemented yet
-_shrink  # not implemented yet
-_shuffle  # not implemented yet
-_slice  # not implemented yet
-_slices  # not implemented yet
-_slowChunk  # not implemented yet
-_slowchunk  # not implemented yet
-_speak  # not implemented yet
-_spectrum  # not implemented yet
-_spiral  # not implemented yet
-_splice  # not implemented yet
-_strans  # not implemented yet
-_strudelLoaded  # not implemented yet
-_stut  # not implemented yet
-_stutWith  # not implemented yet
-_stutwith  # not implemented yet
-_take  # not implemented yet
-_timeline  # not implemented yet
-_trans  # not implemented yet
-_transpose  # not implemented yet
-_tuning  # not implemented yet
-_undegradeBy  # not implemented yet
-_voicings  # not implemented yet
-_when  # not implemented yet
-_whenKey  # not implemented yet
-_withBase  # not implemented yet
-_within  # not implemented yet
-_xen  # not implemented yet
-_zoom  # not implemented yet
-_zoomArc  # not implemented yet
-_zoomIn  # not implemented yet
-_zoomarc  # not implemented yet
-addVoicings  # not implemented yet
-aliasBank  # not implemented yet
-always  # not implemented yet
-analysers  # not implemented yet
-analysersData  # not implemented yet
-and  # not implemented yet
-angle  # not implemented yet
-animate  # not implemented yet
-apply  # not implemented yet
-applyFM  # not implemented yet
-applyGainCurve  # not implemented yet
-applyN  # not implemented yet
-applyParameterModulators  # not implemented yet
-arp  # not implemented yet
-arpWith  # not implemented yet
-averageArray  # not implemented yet
-backgroundImage  # not implemented yet
-band  # not implemented yet
-base  # not implemented yet
-base64ToUnicode  # not implemented yet
-beat  # not implemented yet
-berlin  # not implemented yet
-binary  # not implemented yet
-binaryL  # not implemented yet
-binaryN  # not implemented yet
-binaryNL  # not implemented yet
-bindWhole  # not implemented yet
-bite  # not implemented yet
-bjork  # not implemented yet
-bjorklund  # not implemented yet
-blshift  # not implemented yet
-bor  # not implemented yet
-brak  # not implemented yet
-brand  # not implemented yet
-brandBy  # not implemented yet
-brshift  # not implemented yet
-buttonMap  # not implemented yet
-bxor  # not implemented yet
-bypass  # not implemented yet
-calculateSteps  # not implemented yet
-ceil  # not implemented yet
-choose  # not implemented yet
-choose2  # not implemented yet
-chooseCycles  # not implemented yet
-chooseIn  # not implemented yet
-chooseInWith  # not implemented yet
-chooseWith  # not implemented yet
-chunkBack  # not implemented yet
-chunkBackInto  # not implemented yet
-chunkInto  # not implemented yet
-chunkback  # not implemented yet
-chunkbackinto  # not implemented yet
-chunkinto  # not implemented yet
-clamp  # not implemented yet
-cleanupOnEnd  # not implemented yet
-cleanupUi  # not implemented yet
-clearGamepadStates  # not implemented yet
-close  # not implemented yet
-code2hash  # not implemented yet
-collect  # not implemented yet
-compose  # not implemented yet
-connectBusModulator  # not implemented yet
-connectEnvelope  # not implemented yet
-connectLFO  # not implemented yet
-connectToDestination  # not implemented yet
-constant  # not implemented yet
-contract  # not implemented yet
-controls  # not implemented yet
-cosine2  # not implemented yet
-cpm  # not implemented yet
-createClock  # not implemented yet
-createFilter  # not implemented yet
-csound  # not implemented yet
-curry  # not implemented yet
-cycleStruct  # not implemented yet
-cycleToSeconds  # not implemented yet
-cyclesPer  # not implemented yet
-cyclestruct  # not implemented yet
-defragmentHaps  # not implemented yet
-degradeByWith  # not implemented yet
-distortionAlgorithms  # not implemented yet
-dough  # not implemented yet
-draw  # not implemented yet
-drawFrequencyScope  # not implemented yet
-drawLine  # not implemented yet
-drawTimeScope  # not implemented yet
-drop  # not implemented yet
-drywet  # not implemented yet
-dspWorklet  # not implemented yet
-echo  # not implemented yet
-echoWith  # not implemented yet
-echowith  # not implemented yet
-edoScale  # not implemented yet
-effectSend  # not implemented yet
-eish  # not implemented yet
-ensureMinimalOutput  # not implemented yet
-eq  # not implemented yet
-eqt  # not implemented yet
-errorLogger  # not implemented yet
-euclidLegato  # not implemented yet
-euclidLegatoRot  # not implemented yet
-euclidish  # not implemented yet
-euclidrot  # not implemented yet
-evaluate  # not implemented yet
-expDecay  # not implemented yet
-fTrans  # not implemented yet
-fTranspose  # not implemented yet
-fastChunk  # not implemented yet
-fastchunk  # not implemented yet
-fetchSampleMap  # not implemented yet
-fill  # not implemented yet
-filter  # not implemented yet
-filterWhen  # not implemented yet
-firstCycleValues  # not implemented yet
-fit  # not implemented yet
-flatten  # not implemented yet
-floor  # not implemented yet
-flux  # not implemented yet
-fluxBy  # not implemented yet
-fluxby  # not implemented yet
-fmsynth  # not implemented yet
-fractionalArgs  # not implemented yet
-freqToMidi  # not implemented yet
-fromBipolar  # not implemented yet
-fscope  # not implemented yet
-ftrans  # not implemented yet
-ftranspose  # not implemented yet
-func  # not implemented yet
-gainNode  # not implemented yet
-gamepad  # not implemented yet
-getADSRValues  # not implemented yet
-getAccidentalsOffset  # not implemented yet
-getAnalyserById  # not implemented yet
-getAnalyzerData  # not implemented yet
-getAudioContext  # not implemented yet
-getAudioContextCurrentTime  # not implemented yet
-getAudioDevices  # not implemented yet
-getCachedBuffer  # not implemented yet
-getClockBridge  # not implemented yet
-getClockTime  # not implemented yet
-getCompressor  # not implemented yet
-getCps  # not implemented yet
-getCurrentKeyboardState  # not implemented yet
-getDefaultValue  # not implemented yet
-getDestination  # not implemented yet
-getDistortion  # not implemented yet
-getDistortionAlgorithm  # not implemented yet
-getDrawContext  # not implemented yet
-getDur  # not implemented yet
-getDuration  # not implemented yet
-getEnvelope  # not implemented yet
-getEventOffsetMs  # not implemented yet
-getFreq  # not implemented yet
-getFrequency  # not implemented yet
-getFrequencyFromValue  # not implemented yet
-getGamepadStates  # not implemented yet
-getIsStarted  # not implemented yet
-getLfo  # not implemented yet
-getLoadedBuffer  # not implemented yet
-getOscillator  # not implemented yet
-getPainters  # not implemented yet
-getParamADSR  # not implemented yet
-getParamLfo  # not implemented yet
-getPattern  # not implemented yet
-getPerformanceTimeSeconds  # not implemented yet
-getPitchEnvelope  # not implemented yet
-getPlayableNoteValue  # not implemented yet
-getRandsAtTime  # not implemented yet
-getSampleBuffer  # not implemented yet
-getSampleBufferSource  # not implemented yet
-getSampleInfo  # not implemented yet
-getSchedule  # not implemented yet
-getScheduleFunc  # not implemented yet
-getSound  # not implemented yet
-getSoundIndex  # not implemented yet
-getSuperdoughAudioController  # not implemented yet
-getTime  # not implemented yet
-getVibratoOscillator  # not implemented yet
-getWorklet  # not implemented yet
-getZZFX  # not implemented yet
-grow  # not implemented yet
-growlist  # not implemented yet
-gt  # not implemented yet
-gte  # not implemented yet
-h  # not implemented yet
-hash2code  # not implemented yet
-highpass  # not implemented yet
-hsl  # not implemented yet
-hsla  # not implemented yet
-hush  # not implemented yet
-id  # not implemented yet
-in  # not implemented yet
-inhabit  # not implemented yet
-inhabitmod  # not implemented yet
-initAudio  # not implemented yet
-initAudioOnFirstClick  # not implemented yet
-initDough  # not implemented yet
-into  # not implemented yet
-inv  # not implemented yet
-invert  # not implemented yet
-isNote  # not implemented yet
-isNoteWithOctave  # not implemented yet
-isaw2  # not implemented yet
-isobite  # not implemented yet
-isquare  # not implemented yet
-isquare2  # not implemented yet
-iterback  # not implemented yet
-itri  # not implemented yet
-itri2  # not implemented yet
-juxFlip  # not implemented yet
-juxFlipBy  # not implemented yet
-juxby  # not implemented yet
-juxflip  # not implemented yet
-juxflipby  # not implemented yet
-keep  # not implemented yet
-keepif  # not implemented yet
-keyAlias  # not implemented yet
-keyDown  # not implemented yet
-linger  # not implemented yet
-listRange  # not implemented yet
-loadBuffer  # not implemented yet
-loadCSound  # not implemented yet
-loadCsound  # not implemented yet
-loadOrc  # not implemented yet
-loadSoundfont  # not implemented yet
-loadWorklets  # not implemented yet
-loadcsound  # not implemented yet
-log2  # not implemented yet
-logKey  # not implemented yet
-loopAt  # not implemented yet
-loopAtCps  # not implemented yet
-loopat  # not implemented yet
-loopatcps  # not implemented yet
-lowpass  # not implemented yet
-lt  # not implemented yet
-lte  # not implemented yet
-mapArgs  # not implemented yet
-markcss  # not implemented yet
-maskAll  # not implemented yet
-maxPolyphony  # not implemented yet
-membrane  # not implemented yet
-metal  # not implemented yet
-midi  # not implemented yet
-midi2note  # not implemented yet
-midiToFreq  # not implemented yet
-midikeys  # not implemented yet
-midin  # not implemented yet
-mix  # not implemented yet
-mod  # not implemented yet
-morph  # not implemented yet
-mouseX  # not implemented yet
-mouseY  # not implemented yet
-mousex  # not implemented yet
-mousey  # not implemented yet
-moveXY  # not implemented yet
-multiChannelOrbits  # not implemented yet
-nanFallback  # not implemented yet
-ne  # not implemented yet
-net  # not implemented yet
-never  # not implemented yet
-noises  # not implemented yet
-noteToMidi  # not implemented yet
-numeralArgs  # not implemented yet
-objectMap  # not implemented yet
-onPaint  # not implemented yet
-onTrigger  # not implemented yet
-onTriggerSample  # not implemented yet
-onTriggerSynth  # not implemented yet
-onTriggerTime  # not implemented yet
-onceEnded  # not implemented yet
-open  # not implemented yet
-or  # not implemented yet
-osc  # not implemented yet
-out  # not implemented yet
-p  # not implemented yet
-pace  # not implemented yet
-packageName  # not implemented yet
-pairs  # not implemented yet
-parray  # not implemented yet
-parseFractional  # not implemented yet
-parseNumeral  # not implemented yet
-partials  # not implemented yet
-per  # not implemented yet
-perCycle  # not implemented yet
-perx  # not implemented yet
-phases  # not implemented yet
-piano  # not implemented yet
-pianoroll  # not implemented yet
-pick  # not implemented yet
-pickF  # not implemented yet
-pickOut  # not implemented yet
-pickReset  # not implemented yet
-pickRestart  # not implemented yet
-pickSqueeze  # not implemented yet
-pickmod  # not implemented yet
-pickmodF  # not implemented yet
-pickmodOut  # not implemented yet
-pickmodReset  # not implemented yet
-pickmodRestart  # not implemented yet
-pickmodSqueeze  # not implemented yet
-pipe  # not implemented yet
-pitchwheel  # not implemented yet
-players  # not implemented yet
-plyForEach  # not implemented yet
-plyWith  # not implemented yet
-plyforeach  # not implemented yet
-plywith  # not implemented yet
-pm  # not implemented yet
-poly  # not implemented yet
-polymeter  # not implemented yet
-polysynth  # not implemented yet
-pow  # not implemented yet
-press  # not implemented yet
-pressBy  # not implemented yet
-print  # not implemented yet
-processSampleMap  # not implemented yet
-punchcard  # not implemented yet
-r  # not implemented yet
-rand2  # not implemented yet
-randL  # not implemented yet
-randcat  # not implemented yet
-randrun  # not implemented yet
-range2  # not implemented yet
-rangex  # not implemented yet
-ratio  # not implemented yet
-rawdsp  # not implemented yet
-rawdspOutput  # not implemented yet
-registerSampleSource  # not implemented yet
-registerSamplesPrefix  # not implemented yet
-registerSound  # not implemented yet
-registerSynthSounds  # not implemented yet
-registerVoicings  # not implemented yet
-registerWaveTable  # not implemented yet
-registerWorklet  # not implemented yet
-registerZZFXSounds  # not implemented yet
-releaseAudioNode  # not implemented yet
-renderPatternAudio  # not implemented yet
-repeatCycles  # not implemented yet
-repl  # not implemented yet
-replicate  # not implemented yet
-rescale  # not implemented yet
-reset  # not implemented yet
-resetAll  # not implemented yet
-resetDefaultValues  # not implemented yet
-resetDefaults  # not implemented yet
-resetGlobalEffects  # not implemented yet
-resetLoadedSounds  # not implemented yet
-resetSeenKeys  # not implemented yet
-resetVoicings  # not implemented yet
-reset_state  # not implemented yet
-reset_timelines  # not implemented yet
-restart  # not implemented yet
-restartAll  # not implemented yet
-reverseBuffer  # not implemented yet
-revv  # not implemented yet
-rib  # not implemented yet
-ribbon  # not implemented yet
-rootNotes  # not implemented yet
-rotate  # not implemented yet
-round  # not implemented yet
-s_add  # not implemented yet
-s_alt  # not implemented yet
-s_contract  # not implemented yet
-s_polymeter  # not implemented yet
-s_sub  # not implemented yet
-s_taper  # not implemented yet
-s_taperlist  # not implemented yet
-s_tour  # not implemented yet
-s_zip  # not implemented yet
-sampler  # not implemented yet
-saw2  # not implemented yet
-scaleTrans  # not implemented yet
-scaleTranspose  # not implemented yet
-scheduleAtTime  # not implemented yet
-scope  # not implemented yet
-scramble  # not implemented yet
-seed  # not implemented yet
-seg  # not implemented yet
-seqPLoop  # not implemented yet
-set  # not implemented yet
-setAudioContext  # not implemented yet
-setClockTime  # not implemented yet
-setCpsFunc  # not implemented yet
-setDefault  # not implemented yet
-setDefaultAudioContext  # not implemented yet
-setDefaultJoin  # not implemented yet
-setDefaultValue  # not implemented yet
-setDefaultValues  # not implemented yet
-setDefaultVoicings  # not implemented yet
-setGainCurve  # not implemented yet
-setIsStarted  # not implemented yet
-setLogger  # not implemented yet
-setMaxPolyphony  # not implemented yet
-setMultiChannelOrbits  # not implemented yet
-setPattern  # not implemented yet
-setScheduleFunc  # not implemented yet
-setStringParser  # not implemented yet
-setSuperdoughAudioController  # not implemented yet
-setTime  # not implemented yet
-setVersionDefaults  # not implemented yet
-setVoicingRange  # not implemented yet
-setcpm  # not implemented yet
-setcps  # not implemented yet
-showFirstCycle  # not implemented yet
-shrink  # not implemented yet
-shrinklist  # not implemented yet
-shuffle  # not implemented yet
-signal  # not implemented yet
-sine2  # not implemented yet
-slice  # not implemented yet
-slowChunk  # not implemented yet
-slowchunk  # not implemented yet
-sol2note  # not implemented yet
-soundAlias  # not implemented yet
-soundMap  # not implemented yet
-soundfont  # not implemented yet
-speak  # not implemented yet
-spectrum  # not implemented yet
-spiral  # not implemented yet
-splice  # not implemented yet
-splitAt  # not implemented yet
-square2  # not implemented yet
-squeeze  # not implemented yet
-squeezeout  # not implemented yet
-stackBy  # not implemented yet
-stackCenter  # not implemented yet
-stackCentre  # not implemented yet
-stackLeft  # not implemented yet
-stackRepeat  # not implemented yet
-stackRight  # not implemented yet
-steady  # not implemented yet
-stepalt  # not implemented yet
-steps  # not implemented yet
-strans  # not implemented yet
-stringifyValues  # not implemented yet
-structAll  # not implemented yet
-stut  # not implemented yet
-stutWith  # not implemented yet
-stutwith  # not implemented yet
-superdough  # not implemented yet
-synth  # not implemented yet
-tables  # not implemented yet
-tag  # not implemented yet
-take  # not implemented yet
-time  # not implemented yet
-timeline  # not implemented yet
-toBipolar  # not implemented yet
-tokenizeNote  # not implemented yet
-tone  # not implemented yet
-tour  # not implemented yet
-trans  # not implemented yet
-transpose  # not implemented yet
-tri2  # not implemented yet
-tscope  # not implemented yet
-tune  # not implemented yet
-tuning  # not implemented yet
-undegrade  # not implemented yet
-undegradeBy  # not implemented yet
-unicodeToBase64  # not implemented yet
-uniq  # not implemented yet
-uniqsort  # not implemented yet
-uniqsortr  # not implemented yet
-unjoin  # not implemented yet
-useRNG  # not implemented yet
-valueToMidi  # not implemented yet
-voicing  # not implemented yet
-voicingAlias  # not implemented yet
-voicingRegistry  # not implemented yet
-voicings  # not implemented yet
-vol  # not implemented yet
-w  # not implemented yet
-wave  # not implemented yet
-waveformN  # not implemented yet
-wchoose  # not implemented yet
-wchooseCycles  # not implemented yet
-webAudioTimeout  # not implemented yet
-webaudio  # not implemented yet
-webaudioOutput  # not implemented yet
-webaudioRepl  # not implemented yet
-webdirt  # not implemented yet
-when  # not implemented yet
-whenKey  # not implemented yet
-withBase  # not implemented yet
-withLoc  # not implemented yet
-withSeed  # not implemented yet
-within  # not implemented yet
-wordfall  # not implemented yet
-worklet  # not implemented yet
-wrandcat  # not implemented yet
-x  # not implemented yet
-xen  # not implemented yet
-xfade  # not implemented yet
-y  # not implemented yet
-zip  # not implemented yet
-zipWith  # not implemented yet
-zoom  # not implemented yet
-zoomArc  # not implemented yet
-zoomIn  # not implemented yet
-zoomarc  # not implemented yet
+Chorus  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+Clock  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+ClockBridge  # superdough's clock bridge (Web Audio timing); Cosic's ClockBridge is Kotlin (Task 4.1)
+ClockCollator  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+Cyclist  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+DEFAULT_MAX_POLYPHONY  # Task 3.4: polyphony (Strudel's maxPolyphony, 128 by default)
+FeedbackDelay  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+Freeverb  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+Gain  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+MembraneSynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+MetalSynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+NoiseSynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+PolySynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+Reverb  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+Synth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+Warpmode  # Task 3.14: wavetables (the warp modes of the `warp` controls)
+_fitslice  # internal helper of pattern.mjs, not meant to be called by programs
+_match  # internal helper of pattern.mjs, not meant to be called by programs
+_moveXY  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
+_opIn  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
+_opMix  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
+_opOut  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
+_opPoly  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
+_opReset  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
+_opRestart  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
+_opSqueeze  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
+_opSqueezeOut  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
+_pianoroll  # Task 4.2: visuals (inline widget method)
+_pitchwheel  # Task 4.2: visuals (inline widget method)
+_print  # Task 4.2: visuals (inline widget method, example print#1)
+_rescale  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
+_retime  # internal helper of pattern.mjs, not meant to be called by programs
+_scope  # Task 4.2: visuals (inline widget method)
+_slices  # internal helper of pattern.mjs, not meant to be called by programs
+_speak  # Task 4.6: speech (`.speak()`)
+_spectrum  # Task 4.2: visuals (inline widget method)
+_spiral  # Task 4.2: visuals (inline widget method)
+_strudelLoaded  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+_zoomIn  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
+aliasBank  # Task 3.16: library functions (`aliasBank`)
+analysers  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+analysersData  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+angle  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
+animate  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
+applyFM  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+applyGainCurve  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+applyParameterModulators  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+backgroundImage  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
+bindWhole  # internal helper of pattern.mjs, not meant to be called by programs
+buttonMap  # Task 4.7: gamepad (button name table of gamepad())
+cleanupOnEnd  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+cleanupUi  # browser DOM function (document, html); no Android counterpart and no task in the plan
+clearGamepadStates  # Task 4.7: gamepad (internal state of gamepad())
+connectBusModulator  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+connectEnvelope  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+connectLFO  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+connectToDestination  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+controls  # internal: namespace object of controls.mjs (`controls.s` is `s`); every control is a global
+createClock  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+createFilter  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+csound  # out of scope: CSound (decision 4 of the parity plan)
+defragmentHaps  # internal helper of pattern.mjs, not meant to be called by programs
+distortionAlgorithms  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+dough  # Task 4.12: dough engine (`.dough()`)
+draw  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
+drawFrequencyScope  # internal helper of `fscope` (draws an analyser on a canvas); Cosic's widgets are Compose (Task 4.3)
+drawTimeScope  # internal helper of `scope` (draws an analyser on a canvas); Cosic's widgets are Compose (Task 4.3)
+drywet  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+dspWorklet  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+effectSend  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+ensureMinimalOutput  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+errorLogger  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+evaluate  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+expDecay  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+fetchSampleMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+fill  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
+firstCycleValues  # internal helper of pattern.mjs, not meant to be called by programs
+fmsynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+fscope  # Task 4.2: visuals (example fscope#0)
+gainNode  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+gamepad  # Task 4.7: gamepad
+getADSRValues  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getAnalyserById  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getAnalyzerData  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getAudioContext  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getAudioContextCurrentTime  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getAudioDevices  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getCachedBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+getClockBridge  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getClockTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+getCompressor  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getCps  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+getCurrentKeyboardState  # Task 4.7: keyboard (state of the keys the keyboard signals read)
+getDefaultValue  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
+getDestination  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+getDistortion  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getDistortionAlgorithm  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getDrawContext  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
+getDur  # Task 3.16: library functions (`getDur`, alias of getDuration)
+getDuration  # Task 3.16: library functions (`getDuration`)
+getEnvelope  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getFrequencyFromValue  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getGamepadStates  # Task 4.7: gamepad (internal state of gamepad())
+getIsStarted  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+getLfo  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getLoadedBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+getOscillator  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getPainters  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
+getParamADSR  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getParamLfo  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getPattern  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+getPitchEnvelope  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getSampleBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+getSampleBufferSource  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+getSampleInfo  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+getSchedule  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+getScheduleFunc  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+getSound  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+getSuperdoughAudioController  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+getVibratoOscillator  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getWorklet  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getZZFX  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+h  # browser DOM function (document, html); no Android counterpart and no task in the plan
+highpass  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+initAudio  # boot of superdough (creates the AudioContext, loads the worklets); its maxPolyphony and multiChannelOrbits options are Tasks 3.4 and 3.9
+initAudioOnFirstClick  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+initDough  # Task 4.12: dough engine (`initDough()`)
+keyAlias  # Task 4.7: keyboard (key name table of the keyboard signals)
+loadBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+loadCSound  # out of scope: CSound (decision 4 of the parity plan)
+loadCsound  # out of scope: CSound (decision 4 of the parity plan)
+loadOrc  # out of scope: CSound (decision 4 of the parity plan)
+loadSoundfont  # Task 3.15: soundfonts (`loadSoundfont(url)`; SAMPLES R12 says it needs an explicit decision, it is not in the user's out-of-scope list)
+loadWorklets  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+loadcsound  # out of scope: CSound (decision 4 of the parity plan)
+logKey  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+lowpass  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+markcss  # Task 4.1: highlight styling (`.markcss`)
+maxPolyphony  # Task 3.4: polyphony (Strudel's maxPolyphony, 128 by default)
+membrane  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+metal  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+midi  # Task 4.5: MIDI out
+midikeys  # Task 4.5: MIDI in
+midin  # Task 4.5: MIDI in
+moveXY  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
+multiChannelOrbits  # Task 3.9: orbit buses (multiChannelOrbits)
+noises  # constant of superdough (the names of the noise sources); Cosic's noise sources are Kotlin (Task 3.11)
+onPaint  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
+onTrigger  # Task 4.1: scheduling hooks (`onTrigger`, the deprecated form of onSchedule)
+onTriggerSample  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+onTriggerSynth  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+onTriggerTime  # Task 4.1: scheduling hooks (`onTriggerTime`, example onTriggerTime#0)
+onceEnded  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+osc  # Task 4.6: OSC to SuperDirt
+packageName  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+piano  # Task 3.16: library functions (`.piano()`, the prebake variant)
+pianoroll  # Task 4.2: visuals
+pitchwheel  # Task 4.2: visuals
+players  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+polysynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+print  # Task 4.2: visuals (`.print()`, example print#0)
+processSampleMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+punchcard  # Task 4.2: visuals
+r  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
+rawdsp  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+rawdspOutput  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+registerSampleSource  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+registerSamplesPrefix  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+registerSound  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+registerSynthSounds  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+registerWaveTable  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+registerWorklet  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+registerZZFXSounds  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+releaseAudioNode  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+renderPatternAudio  # Task 4.13: audio export (the app's OfflineRenderer is the counterpart; a program does not call it)
+repl  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+rescale  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
+resetDefaultValues  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
+resetDefaults  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
+resetGlobalEffects  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+resetLoadedSounds  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+resetSeenKeys  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+reverseBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+sampler  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+scheduleAtTime  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+scope  # Task 4.2: visuals
+setAudioContext  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+setClockTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+setCpsFunc  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+setDefault  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
+setDefaultAudioContext  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+setDefaultValue  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
+setDefaultValues  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
+setGainCurve  # Task 3.4: gain (`setGainCurve(fn)`, example setGainCurve#0)
+setIsStarted  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+setLogger  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+setMaxPolyphony  # Task 3.4: polyphony (`setMaxPolyphony(n)`, example setMaxPolyphony#0)
+setMultiChannelOrbits  # Task 3.9: orbit buses (`setMultiChannelOrbits(bool)`)
+setPattern  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+setScheduleFunc  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+setStringParser  # internal helper of pattern.mjs, not meant to be called by programs
+setSuperdoughAudioController  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+setTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+setVersionDefaults  # no task in the plan: superdough's default-value API (`setVersionDefaults('1.0')` sets fanchor 0.5); it needs an owner or an exclusion
+showFirstCycle  # internal helper of pattern.mjs, not meant to be called by programs
+soundAlias  # Task 3.16: library functions (`soundAlias`)
+soundMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+soundfont  # Task 3.15: soundfonts (`.soundfont(sf, n)`; SAMPLES R12 says it needs an explicit decision, it is not in the user's out-of-scope list)
+speak  # Task 4.6: speech (`.speak()`)
+spectrum  # Task 4.2: visuals
+spiral  # Task 4.2: visuals
+superdough  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+synth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+tables  # Task 3.16: library functions (`tables`, wavetable sample maps)
+tone  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
+tscope  # Task 4.2: visuals
+vol  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
+w  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
+wave  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
+waveformN  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+webAudioTimeout  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+webaudio  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
+webaudioOutput  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+webaudioRepl  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+webdirt  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
+withLoc  # internal helper of pattern.mjs, not meant to be called by programs
+wordfall  # Task 4.2: visuals
+x  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
+y  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
+zoomIn  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
