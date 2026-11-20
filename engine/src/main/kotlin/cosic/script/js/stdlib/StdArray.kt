@@ -143,11 +143,14 @@ private fun Realm.arrayReceiver(self: Any?, method: String): JsArray {
     throw typeError("Array.prototype.$method called on a non-array")
 }
 
+/** The objects `join` is in the middle of on this thread, so that an array that contains itself does not recurse forever. Empty between calls. */
+private val joinGuard: ThreadLocal<java.util.IdentityHashMap<JsObject, Boolean>> = ThreadLocal.withInitial { java.util.IdentityHashMap() }
+
 /** `array.join(separator)` for an array, an array-like or a string; an array that contains itself leaves its inner occurrence empty. */
-private fun joinArray(realm: Realm, std: StdRealm, self: Any?, separator: Any?): String {
+private fun joinArray(realm: Realm, self: Any?, separator: Any?): String {
     val items = realm.elements(self, "join")
     val sep = if (separator === Undefined) "," else realm.toStr(separator)
-    val joining = std.joining.get()
+    val joining = joinGuard.get()
     val key = self as? JsObject
     if (key != null) {
         if (joining.containsKey(key)) return ""
@@ -202,7 +205,7 @@ private fun installReading(realm: Realm, std: StdRealm, proto: JsObject) {
         }
         JsArray(realm, out)
     }
-    realm.defineMethod(proto, "join", 1) { self, args -> joinArray(realm, std, self, args.arg(0)) }
+    realm.defineMethod(proto, "join", 1) { self, args -> joinArray(realm, self, args.arg(0)) }
     realm.defineMethod(proto, "toString", 0) { self, _ ->
         val obj = realm.toObject(self)
         val join = obj.get("join")

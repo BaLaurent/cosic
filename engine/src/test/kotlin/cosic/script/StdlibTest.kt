@@ -5,6 +5,7 @@ import cosic.script.js.JsObject
 import cosic.script.js.stdlib.JsInspectable
 import cosic.script.js.stdlib.newPromise
 import cosic.script.js.stdlib.std
+import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
@@ -15,6 +16,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /** A host whose `runLater` only remembers the task, so a test decides when the host's thread runs what the event loop asked for. */
@@ -239,5 +241,24 @@ class StdlibTest {
     fun aSortThatTheProgramInterruptsLeavesTheArrayAlone() {
         val realm = Realm(LoopHost())
         assertEquals("3,1,2", run(realm, "const a = [3, 1, 2]; try { a.sort(() => { throw new Error('stop'); }); } catch (e) {} return a.join();"))
+    }
+
+    @Test
+    fun aRealmThatNobodyUsesAnymoreIsCollected() {
+        fun make(): WeakReference<Realm> {
+            val realm = Realm(LoopHost())
+            realm.runRaw(
+                "const a = [1, 2]; a.push(a); a.join(); [3, 1, 2].sort(); Object.freeze([1]); new Map([[1, 2]]); new Set([1]); JSON.stringify({a: [1]}); new Date(0).toString();" +
+                    "console.log(a); Promise.resolve(1).then(() => 1); queueMicrotask(() => {}); setTimeout(() => {}, 1000000);",
+            )
+            return WeakReference(realm)
+        }
+        val ref = make()
+        var attempts = 0
+        while (ref.get() != null && attempts++ < 100) {
+            System.gc()
+            Thread.sleep(20)
+        }
+        assertNull(ref.get(), "the realm is still reachable: something static (a registry, a thread-local) holds on to it")
     }
 }

@@ -13,6 +13,7 @@ import cosic.script.js.PropFlags
 import cosic.script.js.isNullish
 import cosic.script.js.toNumber
 import cosic.script.js.describe
+import java.lang.ref.WeakReference
 import java.util.WeakHashMap
 import kotlin.math.truncate
 
@@ -42,21 +43,24 @@ internal class StdRealm(val realm: Realm) {
 
     /** Per-realm state of `console`: the group indentation and the counters. */
     val console = ConsoleState()
-
-    /** The objects `join` is in the middle of on this thread, so that an array that contains itself does not recurse forever. */
-    val joining: ThreadLocal<java.util.IdentityHashMap<JsObject, Boolean>> = ThreadLocal.withInitial { java.util.IdentityHashMap() }
 }
 
-private val registry = WeakHashMap<Realm, StdRealm>()
+/**
+ * The state of each realm, by realm. The map must not keep either alive: the key is weak, and the value is weak too because a
+ * [StdRealm] refers to its realm (a strong value would keep its own key reachable, and with it every realm ever made). What
+ * keeps a [StdRealm] alive is the realm itself: `Realm.async` is the [PromiseAsync] that holds it, and so is every native
+ * function of the library that captures it.
+ */
+private val registry = WeakHashMap<Realm, WeakReference<StdRealm>>()
 
 /** The library's state of this realm. */
 internal val Realm.std: StdRealm
-    get() = synchronized(registry) { registry[this] } ?: throw IllegalStateException("the standard library is not installed in this realm")
+    get() = synchronized(registry) { registry[this]?.get() } ?: throw IllegalStateException("the standard library is not installed in this realm")
 
 /** Installs the whole library. Called by the realm after its core intrinsics. */
 internal fun installStdlib(realm: Realm) {
     val std = StdRealm(realm)
-    synchronized(registry) { registry[realm] = std }
+    synchronized(registry) { registry[realm] = WeakReference(std) }
     installObject(realm, std)
     installArray(realm, std)
     installString(realm, std)
