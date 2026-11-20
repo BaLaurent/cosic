@@ -46,7 +46,7 @@ internal class LegacyShareResolver(
             val status = connection.responseCode
             if (status != HttpURLConnection.HTTP_OK) return LegacyResult.Failed("HTTP $status")
             val body = connection.inputStream.use { stream ->
-                val bytes = stream.readNBytes(maxBytes + 1)
+                val bytes = readAtMost(stream, maxBytes + 1)
                 if (bytes.size > maxBytes) return LegacyResult.Failed("the answer is too long")
                 bytes.toString(Charsets.UTF_8)
             }
@@ -61,4 +61,16 @@ internal class LegacyShareResolver(
 
     /** [resolve] on the thread for blocking work. */
     suspend fun fetch(id: String): LegacyResult = withContext(Dispatchers.IO) { resolve(id) }
+
+    /** Up to [limit] bytes of [stream] (`readNBytes` needs API 33, the app runs from 26). */
+    private fun readAtMost(stream: java.io.InputStream, limit: Int): ByteArray {
+        val out = java.io.ByteArrayOutputStream()
+        val buffer = ByteArray(8192)
+        while (out.size() < limit) {
+            val n = stream.read(buffer, 0, minOf(buffer.size, limit - out.size()))
+            if (n < 0) break
+            out.write(buffer, 0, n)
+        }
+        return out.toByteArray()
+    }
 }
