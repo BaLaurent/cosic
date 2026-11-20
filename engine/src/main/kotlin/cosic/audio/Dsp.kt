@@ -14,6 +14,9 @@ internal const val BLOCK_FRAMES = 256
 /** Effect chains (`FX(...)` elements) a voice has besides the main one; further elements are dropped. */
 internal const val MAX_FX = 4
 
+/** Effect chains of `FX(...)` elements that can be in use by all voices together; see [FxGroupPool]. */
+internal const val FX_GROUP_POOL = 32
+
 /** Modulators (`.lfo`, `.env`, `.bmod`) a voice can connect; further ones are ignored. */
 internal const val MAX_MODS = 8
 

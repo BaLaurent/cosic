@@ -17,7 +17,8 @@ import kotlin.math.min
 internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.INLINE) {
     private val orbits = OrbitSet(sampleRate, irExecutor)
     private val buses = AudioBuses(sampleRate)
-    private val voices = Array(VOICE_SLOTS) { Voice(sampleRate, orbits, buses) }
+    private val fxPool = FxGroupPool(sampleRate)
+    private val voices = Array(VOICE_SLOTS) { Voice(sampleRate, orbits, buses, fxPool) }
     private val ledger = PolyphonyLedger(VOICE_SLOTS)
     private val block = AudioBlock(BLOCK_FRAMES)
     private val ctx = BlockContext(sampleRate)

@@ -106,4 +106,20 @@ class AdsrTest {
         assertEquals(1.0, p.valueAt(0.5), 1e-9)
         assertEquals(0.0, p.valueAt(1.0), 1e-9)
     }
+
+    @Test
+    fun theTruncatedAndExponentialVectorsOfTheSourcesSpec() {
+        // attack 0.5 cut by a gate of 0.2: up to 0.4, then the release
+        val inAttack = linear(0.5, 0.5, 0.5, 0.2, begin = 0.0, end = 0.2)
+        for ((t, v) in listOf(0.1 to 0.2, 0.2 to 0.4, 0.3 to 0.2, 0.4 to 0.0)) assertEquals(v, inAttack.valueAt(t), 1e-9, "attack cut at $t")
+        // gate ends in the decay
+        val inDecay = linear(0.1, 0.5, 0.2, 0.1, begin = 0.0, end = 0.3)
+        for ((t, v) in listOf(0.2 to 0.84, 0.3 to 0.68, 0.35 to 0.34, 0.4 to 0.0)) assertEquals(v, inDecay.valueAt(t), 1e-9, "decay cut at $t")
+        // an exponential envelope from 0 (0.001) to 1; the values are those of the real getParamADSR on a recording parameter (the spec's
+        // 0.707496 at 0.2 s was a slip: the sustain level is 0.001 + 0.5 x 0.999 = 0.5005, and its square root is 0.70746)
+        val exp = exponential(0.1, 0.2, 0.5, 0.3, 0.0, 1.0, begin = 0.0, end = 1.0)
+        assertEquals(0.03162277660168379, exp.valueAt(0.05), 1e-12)
+        assertEquals(0.7074602462329597, exp.valueAt(0.2), 1e-12)
+        assertEquals(0.02237185732119715, exp.valueAt(1.15), 1e-12)
+    }
 }

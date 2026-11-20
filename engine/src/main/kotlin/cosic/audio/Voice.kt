@@ -59,7 +59,7 @@ internal fun VoiceParams.canSound(): Boolean {
  * A voice stays active, silent or not, until `max(end of its source, endWithRelease)`: that is when Strudel releases its nodes, and
  * until then it counts toward `maxPolyphony`.
  */
-internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, private val buses: AudioBuses) {
+internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, private val buses: AudioBuses, private val fxPool: FxGroupPool) {
     // The legacy sources; Task 3.17 replaces them with SoundSource, Task 3.5 the sampler.
     private val oscillator = Oscillator(sampleRate)
     private val player = SamplePlayer(sampleRate)
@@ -78,11 +78,15 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     private val reverbSend = AParam(0.0, -MAX_GAIN_PARAM, MAX_GAIN_PARAM, 2)
     private val busSend = AParam(1.0, -MAX_GAIN_PARAM, MAX_GAIN_PARAM, 2)
 
-    /** The chains: `FX(...)` elements in order at 0 until [MAX_FX], the main chain last. */
-    private val groups = Array(MAX_FX + 1) { StageGroup(sampleRate) }
+    /**
+     * The main effect chain, the voice's own. The chains of its `FX(...)` elements come from the shared [fxPool] for as long as the voice
+     * lasts: few patterns use them, and a chain is large.
+     */
+    private val mainGroup = StageGroup(sampleRate)
+    private val fxGroups = arrayOfNulls<StageGroup>(MAX_FX)
 
-    /** What [connectModulators] gets: the [fx] chains in use followed by the main one, one array per number of `FX` elements. */
-    private val groupViews = Array(MAX_FX + 1) { fxCount -> Array(fxCount + 1) { if (it < fxCount) groups[it] else groups[MAX_FX] } }
+    /** What [connectModulators] gets: the [fxGroups] in use followed by the main one, one array per number of `FX` elements. */
+    private val groupViews = Array(MAX_FX + 1) { count -> Array(count + 1) { mainGroup } }
     private val registries = Array(MAX_FX + 1) { NodeRegistry() }
     private val registryLookup: (String) -> NodeRegistry = { key -> registries[registryIndex(key)] }
     private val reverbParams = ReverbParams()
@@ -139,6 +143,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
      */
     fun start(params: VoiceParams, startFrame: Long, order: Long, seed: Int, multiChannelOrbits: Boolean): Double {
         isActive = false
+        releaseFxGroups()
         val main = params.main
         val t = startFrame.toDouble() / sampleRate
         val duration = if (params.durationSec > 0.0) params.durationSec else 0.0 // NaN becomes 0 too
@@ -163,11 +168,19 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         outGain.reset(1.0)
         val envEnd = startSource(params, main, t, duration, seed)
 
-        // The effect chains: FX elements first, the main chain last.
+        // The effect chains: FX elements first (each takes a group from the shared pool; when it is empty the rest are dropped), the main chain last.
         val fx = params.fx
-        fxCount = Math.min(fx.size, MAX_FX)
-        for (i in 0 until fxCount) groups[i].configure(fx[i], timing, false)
-        groups[MAX_FX].configure(main, timing, true)
+        val wanted = Math.min(fx.size, MAX_FX)
+        for (i in 0 until wanted) {
+            fxGroups[i] = fxPool.take() ?: break
+            fxCount++
+        }
+        for (i in 0 until fxCount) {
+            val group = fxGroups[i]!!
+            group.configure(fx[i], timing, false)
+            groupViews[fxCount][i] = group
+        }
+        mainGroup.configure(main, timing, true)
 
         val fxr = main[Param.FXrelease]
         fxReleaseUsed = !fxr.isNaN() && fxr > release
@@ -284,8 +297,8 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
 
     private fun connectMods(params: VoiceParams, main: ParamSet, orbit: Orbit, t: Double, endWithRelease: Double) {
         for (r in registries) r.clear()
-        for (i in 0 until fxCount) groups[i].registerParams(registries[i])
-        groups[MAX_FX].registerParams(registries[MAX_FX])
+        for (i in 0 until fxCount) fxGroups[i]!!.registerParams(registries[i])
+        mainGroup.registerParams(registries[MAX_FX])
         val m = registries[MAX_FX]
         m.register("post", "gain", post.post)
         m.register("dry", "gain", post.dry)
@@ -332,6 +345,15 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         stopLeft = stopFrames
     }
 
+    /** Gives the pooled chains of the `FX(...)` elements back: the voice has ended, or is about to start again. */
+    private fun releaseFxGroups() {
+        for (i in 0 until fxCount) {
+            fxPool.give(fxGroups[i]!!)
+            fxGroups[i] = null
+        }
+        fxCount = 0
+    }
+
     /** The first frame at or after time [seconds]. */
     private fun frameAtOrAfter(seconds: Double): Long {
         val frame = Math.ceil(seconds * sampleRate)
@@ -346,6 +368,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         val left = activeUntilFrame - ctx.startFrame
         if (left <= 0L) {
             isActive = false
+            releaseFxGroups()
             return
         }
         val live = if (left < n) left.toInt() else n
@@ -372,8 +395,8 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         }
         ctx.release()
 
-        for (i in 0 until fxCount) groups[i].process(blk, ctx)
-        groups[MAX_FX].process(blk, ctx)
+        for (i in 0 until fxCount) fxGroups[i]!!.process(blk, ctx)
+        mainGroup.process(blk, ctx)
         if (fxReleaseUsed) {
             val g = ctx.borrow()
             fxRelease.fill(g, ctx)
@@ -405,6 +428,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         if (busIndex >= 0) buses.send(busIndex, blk, busSend, ctx)
         if (analyzeId >= 0) buses.analyse(analyzeId, fftSize, blk, ctx)
         if (left <= n) isActive = false
+        if (!isActive) releaseFxGroups()
     }
 
     private companion object {

@@ -385,6 +385,37 @@ class MixerTest {
     }
 
     @Test
+    fun fxElementsRunThroughTheirOwnGainStageBeforeTheMainChain() {
+        // every chain starts with its gain stage: gain x velocity, 0.8 by default
+        val left = renderLeft(vp(dcSource(), 1.0, "gain" to 0.5, "FX" to listOf(mapOf("gain" to 0.5), mapOf("velocity" to 0.5))))
+        assertEquals(0.5 * (0.8 * 0.5) * 0.5, at(left, 0.25).toDouble(), 1e-4)
+        val plain = renderLeft(vp(dcSource(), 1.0, "FX" to listOf(emptyMap<String, Any?>())))
+        assertEquals(0.8 * 0.8, at(plain, 0.25).toDouble(), 1e-4, "the default gain applies to every element")
+    }
+
+    @Test
+    fun theChainsOfFxElementsAreSharedAndGivenBackWhenTheVoiceEnds() {
+        val mixer = Mixer(SR)
+        repeat(100) { // 400 chains over the lifetime of the mixer; the pool holds 32
+            mixer.startVoice(vp(dcSource(), 0.01, "clip" to 1.0, "gain" to 0.001, "FX" to List(4) { mapOf("gain" to 1.0) }))
+            mixer.renderFrames(2000)
+        }
+        mixer.startVoice(vp(dcSource(), 1.0, "gain" to 1.0, "FX" to List(4) { mapOf("gain" to 0.5) }))
+        val left = channel(mixer.renderFrames(SR / 10), 0)
+        assertEquals(0.5 * 0.5 * 0.5 * 0.5, at(left, 0.05).toDouble(), 1e-4, "all four chains are there")
+    }
+
+    @Test
+    fun aVoiceThatFindsThePoolEmptyGetsFewerChainsAndOthersAreNotAffected() {
+        val mixer = Mixer(SR)
+        // 8 voices with 4 elements take all 32 chains; the 9th voice gets none
+        repeat(8) { mixer.startVoice(vp(dcSource(), 5.0, "gain" to 0.01, "FX" to List(4) { mapOf("gain" to 1.0) }, "pan" to 1.0)) }
+        mixer.startVoice(vp(dcSource(), 5.0, "gain" to 0.5, "FX" to List(4) { mapOf("gain" to 0.1) }, "pan" to 0.0))
+        val left = channel(mixer.renderFrames(SR / 10), 0)
+        assertEquals(0.5, at(left, 0.05).toDouble(), 1e-3, "no chain left for the 9th voice: only its main gain applies")
+    }
+
+    @Test
     fun stopAllSilencesEveryVoiceWithinTheRequestedTime() {
         val mixer = Mixer(SR)
         repeat(3) { mixer.startVoice(vp(dcSource(), 5.0, "gain" to 0.1)) }

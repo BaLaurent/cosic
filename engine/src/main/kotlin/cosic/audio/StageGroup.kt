@@ -106,3 +106,28 @@ internal class StageGroup(sampleRate: Int) {
         active.fill(false)
     }
 }
+
+/**
+ * The chains of `FX(...)` elements, shared by all voices: only some patterns use them and a chain is large, so a voice takes the groups it needs
+ * for as long as it lasts ([Voice] gives them back when it ends). When the pool is empty a voice gets fewer chains than it has elements.
+ */
+internal class FxGroupPool(sampleRate: Int, capacity: Int = FX_GROUP_POOL) {
+    private val free = arrayOfNulls<StageGroup>(capacity)
+    private var count = capacity
+
+    init {
+        for (i in 0 until capacity) free[i] = StageGroup(sampleRate)
+    }
+
+    /** A group, or null when all are taken. */
+    fun take(): StageGroup? {
+        if (count == 0) return null
+        val group = free[--count]
+        free[count] = null
+        return group
+    }
+
+    fun give(group: StageGroup) {
+        free[count++] = group
+    }
+}
