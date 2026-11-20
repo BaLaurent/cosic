@@ -7,17 +7,31 @@ License: CC0 1.0 Universal (public domain dedication)
 Author: Sam Gossner and contributors
 Source: https://github.com/sgossner/VCSL
 Commit: c1ea7bcc3c7309650ab0da9d15c9cd1fbc4a4c7e
-The samples under assets/samples are a trimmed, normalised and re-encoded
-subset of this library.
+The instrument and percussion samples under assets/samples, and the "vcsl"
+drum kit, are a trimmed, normalised and re-encoded subset of this library.
 
-2. Reverb algorithm: Freeverb
+2. Bundled drum machine kits: smpldsnds/drum-machines
+-----------------------------------------------------
+License: public domain. The collection's README states: "A collection of
+public domain samples of different drum machines". The repository carries no
+separate license file.
+Source: https://github.com/smpldsnds/drum-machines
+Commit: a894cb8c72abe15b05e7b4fd4b8ee561c0f9e960
+Machines included: 808-mini, Casio-RZ1, Casio-SK1, LM-2, MFB-512,
+Micro-Rhythmer-12, Roland-CR-8000, Sequential-Circuits-Drumtraks, TR-808 and
+Yamaha-MR10. The TR-808 set was originally released by Michael Fischer
+(Technopolis) as "Roland TR-808 Rhythm Composer Sound Sample Set 1.0.0".
+The samples are trimmed, normalised and re-encoded; each machine becomes a kit
+named after its folder (lowercase letters and digits only).
+
+3. Reverb algorithm: Freeverb
 -----------------------------
 License: public domain
 Author: Jezar at Dreampoint
 Cosic's reverb is an independent implementation of the published Freeverb
 design (8 parallel comb filters and 4 series allpass filters per channel).
 
-3. Libraries under the Apache License 2.0
+4. Libraries under the Apache License 2.0
 -----------------------------------------
 - AndroidX (Compose, Activity, Lifecycle, Navigation, DataStore, Core, DocumentFile)
 - Kotlin standard library
@@ -204,7 +218,7 @@ The full text of the Apache License 2.0 follows.
    END OF TERMS AND CONDITIONS
 
 
-4. Google Play Billing Library and Google Mobile Ads SDK
+5. Google Play Billing Library and Google Mobile Ads SDK
 --------------------------------------------------------
 - Google Play Billing Library (com.android.billingclient:billing-ktx)
 - Google Mobile Ads SDK (com.google.android.gms:play-services-ads)

@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Builds the bundled CC0 sample pack for Cosic from a pinned VCSL commit.
+"""Builds the bundled public-domain sample pack for Cosic.
+
+Sources, both pinned to a commit in manifest.json:
+- VCSL (CC0): instrument banks and percussion banks.
+- smpldsnds/drum-machines (public domain): one drum kit per machine folder.
 
 Reads manifest.json, downloads the matching files into .cache/, trims, normalises
 and encodes them to Ogg Vorbis under app/src/main/assets/samples/, and writes
-index.json next to them. Re-running is safe: the cache is reused and the output
-directory is rebuilt from scratch.
+index.json next to them. Kit banks are named "<kit>_<abbr>" and carry a "kit"
+field. Re-running is safe: the cache is reused and the output directory is
+rebuilt from scratch.
 """
 import json
 import math
@@ -34,10 +39,13 @@ PREROLL = round(0.002 * SR)
 FADE_OUT = round(0.05 * SR)
 PEAK_TARGET = 10 ** (-1 / 20)
 UNPITCHED_PICK = 8
+DRUM_ORDER = ["bd", "sd", "hh", "oh", "cp", "rim", "lt", "mt", "ht", "cr", "rd", "cb", "cl", "sh", "tb", "perc"]
 MIN_ROOT_GAP = 3
 AGREE_FRACTION = 0.8
 AGREE_TOLERANCE = 0.6
 SIZE_LIMIT = 25_000_000
+VCSL_REPO = "sgossner/VCSL"
+CENTROID_SECONDS = 0.5
 NOTE_SEMITONES = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 
 YIN_WINDOW = 4096
@@ -57,10 +65,11 @@ def http_get(url):
             time.sleep(1 + attempt)
 
 
-def load_tree(sha):
-    cached = CACHE / "tree.json"
+def load_tree(repo, sha):
+    cached = CACHE / repo.replace("/", "_") / "tree.json"
     if not cached.exists():
-        url = f"https://api.github.com/repos/sgossner/VCSL/git/trees/{sha}?recursive=1"
+        cached.parent.mkdir(parents=True, exist_ok=True)
+        url = f"https://api.github.com/repos/{repo}/git/trees/{sha}?recursive=1"
         cached.write_bytes(http_get(url))
     tree = json.loads(cached.read_text())
     if tree.get("truncated"):
@@ -68,11 +77,11 @@ def load_tree(sha):
     return sorted(e["path"] for e in tree["tree"] if e["type"] == "blob")
 
 
-def fetch(sha, path):
-    dest = CACHE / "files" / path
+def fetch(repo, sha, path):
+    dest = CACHE / repo.replace("/", "_") / "files" / path
     if not dest.exists():
         dest.parent.mkdir(parents=True, exist_ok=True)
-        url = f"https://raw.githubusercontent.com/sgossner/VCSL/{sha}/{urllib.parse.quote(path)}"
+        url = f"https://raw.githubusercontent.com/{repo}/{sha}/{urllib.parse.quote(path)}"
         tmp = dest.with_suffix(".part")
         tmp.write_bytes(http_get(url))
         tmp.rename(dest)
@@ -162,7 +171,7 @@ def pitched_files(sha, spec, tree):
     for midi, path in matches:
         by_midi.setdefault(midi, path)
     with ThreadPoolExecutor(8) as pool:
-        files = list(pool.map(lambda p: fetch(sha, p), by_midi.values()))
+        files = list(pool.map(lambda p: fetch(VCSL_REPO, sha, p), by_midi.values()))
     audio = {midi: trim_leading(decode(f)) for midi, f in zip(by_midi, files)}
 
     offset = spec.get("octave_offset")
@@ -196,11 +205,45 @@ def unpitched_files(sha, spec, tree):
     paths = [p for p in tree if p.startswith(prefix) and re.fullmatch(r".*\.wav", p)]
     if not paths:
         sys.exit(f"{spec['name']}: folder matched no files")
-    n = len(paths)
-    if n > UNPITCHED_PICK:
-        indices = sorted({math.floor(i * (n - 1) / (UNPITCHED_PICK - 1) + 0.5) for i in range(UNPITCHED_PICK)})
-        paths = [paths[i] for i in indices]
-    return [(None, truncate(trim_leading(decode(fetch(sha, p))), spec["max_seconds"])) for p in paths]
+    paths = pick_evenly(paths, UNPITCHED_PICK)
+    return [(None, truncate(trim_leading(decode(fetch(VCSL_REPO, sha, p))), spec["max_seconds"])) for p in paths]
+
+
+def pick_evenly(items, count):
+    """At most `count` items spread evenly over the sorted list, first and last included."""
+    n = len(items)
+    if n <= count:
+        return items
+    indices = sorted({math.floor(i * (n - 1) / (count - 1) + 0.5) for i in range(count)})
+    return [items[i] for i in indices]
+
+
+def spectral_centroid(x):
+    """Magnitude-weighted mean frequency in Hz over the first CENTROID_SECONDS."""
+    seg = x[:round(CENTROID_SECONDS * SR)].astype(np.float64)
+    mag = np.abs(np.fft.rfft(seg))
+    total = mag.sum()
+    return float(np.dot(np.fft.rfftfreq(len(seg), 1 / SR), mag) / total) if total > 0 else 0.0
+
+
+def split_by_centroid(items, labels):
+    """Groups (centroid, payload) pairs into the labels by ascending centroid.
+
+    Returns {label: [payloads]}. With fewer items than labels the outer labels are used
+    (one item -> middle label; two -> lowest and highest).
+    """
+    ranked = sorted(items, key=lambda it: it[0])  # (centroid, payload)
+    n = len(ranked)
+    if n == 0:
+        return {}
+    if n == 1:
+        return {labels[len(labels) // 2]: [ranked[0][1]]}
+    if n < len(labels):
+        return {labels[0]: [ranked[0][1]], labels[-1]: [r[1] for r in ranked[1:]]}
+    out = {}
+    for label, chunk in zip(labels, np.array_split(np.arange(n), len(labels))):
+        out[label] = [ranked[i][1] for i in chunk]
+    return out
 
 
 def encode(x, dest):
@@ -212,43 +255,132 @@ def encode(x, dest):
     )
 
 
-def write_bank(name, entries, pitched):
+def write_bank(name, entries, pitched, folder=None, prefix="", kit=None):
     peak = max(float(np.max(np.abs(x))) for _, x in entries if len(x))
     gain = PEAK_TARGET / peak
     files = []
     for i, (root, x) in enumerate(entries):
-        rel = f"{name}/{i:02d}.ogg"
+        rel = f"{folder or name}/{prefix}{i:02d}.ogg"
         encode(x * np.float32(gain), OUT / rel)
         files.append({"file": rel, "root": root} if pitched else {"file": rel})
-    return {"name": name, "pitched": pitched, "files": files}
+    bank = {"name": name, "pitched": pitched, "files": files}
+    if kit:
+        bank["kit"] = kit
+    return bank
+
+
+def vcsl_kit(spec, banks, audio):
+    """Kit banks that reuse the already encoded VCSL percussion files (no new audio)."""
+    by_name = {b["name"]: b for b in banks}
+    kit = spec["name"]
+    out = []
+    for abbr, source in spec["sounds"].items():
+        out.append({"name": f"{kit}_{abbr}", "kit": kit, "pitched": False, "files": by_name[source]["files"]})
+    toms = by_name[spec["toms"]["bank"]]["files"]
+    centroids = [(spectral_centroid(x), f) for f, (_, x) in zip(toms, audio[spec["toms"]["bank"]])]
+    for label, files in split_by_centroid(centroids, spec["toms"]["labels"]).items():
+        out.append({"name": f"{kit}_{label}", "kit": kit, "pitched": False, "files": sorted(files, key=lambda f: f["file"])})
+    order = {a: i for i, a in enumerate(DRUM_ORDER)}
+    out.sort(key=lambda b: order[b["name"].split("_", 1)[1]])
+    return out
+
+
+def kit_name(folder):
+    return re.sub(r"[^a-z0-9]", "", folder.lower())
+
+
+def classify(rel, rules, default):
+    for rule in rules:
+        if rule["compiled"].search(rel):
+            return rule["abbr"]
+    return default
+
+
+def drum_machine_banks(spec, tree):
+    """One kit per machine folder: {abbr: [source paths]} -> written banks, plus a mapping log."""
+    repo, sha = spec["repo"], spec["commit"]
+    prefs = {ext: i for i, ext in enumerate(spec["audio_preference"])}
+    rules = [dict(r, compiled=re.compile(r["regex"])) for r in spec["rules"]]
+    machines = sorted({p.split("/")[0] for p in tree if "/" in p and not p.startswith(".")
+                       and p.rsplit(".", 1)[-1].lower() in prefs})
+    cache = {}
+
+    def audio(path):
+        if path not in cache:
+            cache[path] = truncate(trim_leading(decode(fetch(repo, sha, path))), spec["max_seconds"])
+        return cache[path]
+
+    banks, log = [], []
+    for machine in machines:
+        kit = kit_name(machine)
+        stems = {}
+        for p in tree:
+            stem, _, ext = p.rpartition(".")
+            if p.startswith(machine + "/") and ext.lower() in prefs:
+                if stem not in stems or prefs[ext.lower()] < prefs[stems[stem].rsplit(".", 1)[-1].lower()]:
+                    stems[stem] = p
+        groups = {}
+        for stem in sorted(stems):
+            rel = stem[len(machine) + 1:].lower()
+            groups.setdefault(classify(rel, rules, spec["default_abbr"]), []).append(stems[stem])
+        generic = groups.pop("tom", [])
+        if generic:
+            ranked = [(spectral_centroid(audio(p)), p) for p in generic]
+            for label, paths in split_by_centroid(ranked, spec["generic_tom_labels"]).items():
+                groups.setdefault(label, []).extend(paths)
+        order = {a: i for i, a in enumerate(DRUM_ORDER)}
+        for abbr in sorted(groups, key=lambda a: order[a]):
+            paths = sorted(groups[abbr])
+            kept = pick_evenly(paths, spec["max_per_bank"])
+            entries = [(None, x) for x in (audio(p) for p in kept) if len(x)]
+            for p in paths:
+                status = f"{kit}/{abbr}_{kept.index(p):02d}.ogg" if p in kept else "dropped (over max_per_bank)"
+                log.append(f"  {machine}/{p[len(machine) + 1:]:<40} -> {abbr:<5} {status}")
+            banks.append(write_bank(f"{kit}_{abbr}", entries, False, folder=kit, prefix=f"{abbr}_", kit=kit))
+    return banks, machines, log
 
 
 def main():
     manifest = json.loads((HERE / "manifest.json").read_text())
     sha = manifest["commit"]
     CACHE.mkdir(exist_ok=True)
-    tree = load_tree(sha)
+    tree = load_tree(VCSL_REPO, sha)
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
 
-    banks = []
+    banks, audio = [], {}
     for spec in manifest["pitched"]:
         banks.append(write_bank(spec["name"], pitched_files(sha, spec, tree), True))
     for spec in manifest["unpitched"]:
-        banks.append(write_bank(spec["name"], unpitched_files(sha, spec, tree), False))
+        entries = unpitched_files(sha, spec, tree)
+        audio[spec["name"]] = entries
+        banks.append(write_bank(spec["name"], entries, False))
+    instrument_banks = len(banks)
 
-    index = {"version": 1, "source": f"VCSL {sha[:7]} (CC0-1.0)", "banks": banks}
+    banks.extend(vcsl_kit(manifest["vcsl_kit"], banks, audio))
+    dm = manifest["drum_machines"]
+    dm_banks, machines, log = drum_machine_banks(dm, load_tree(dm["repo"], dm["commit"]))
+    banks.extend(dm_banks)
+
+    source = f"VCSL {sha[:7]} (CC0-1.0); {dm['repo']} {dm['commit'][:7]} (public domain)"
+    index = {"version": 1, "source": source, "banks": banks}
     (OUT / "index.json").write_text(json.dumps(index, separators=(",", ":")))
 
-    total = 0
+    print("drum machine file mapping:")
+    print("\n".join(log))
+    seen, total = set(), 0
     for bank in banks:
-        size = sum((OUT / f["file"]).stat().st_size for f in bank["files"])
+        files = [f["file"] for f in bank["files"] if f["file"] not in seen]
+        seen.update(files)
+        size = sum((OUT / f).stat().st_size for f in files)
         total += size
         roots = f" roots {bank['files'][0]['root']}..{bank['files'][-1]['root']}" if bank["pitched"] else ""
-        print(f"{bank['name']:<14}{'pitched' if bank['pitched'] else 'unpitched':<10}{len(bank['files']):>3} files{size / 1024:>9.0f} KB{roots}")
+        shared = "" if len(files) == len(bank["files"]) else " (shares files)"
+        print(f"{bank['name']:<30}{'pitched' if bank['pitched'] else 'unpitched':<10}{len(bank['files']):>3} files{size / 1024:>9.0f} KB{roots}{shared}")
     total += (OUT / "index.json").stat().st_size
-    print(f"{len(banks)} banks, total {total / 1e6:.2f} MB")
+    print(f"{instrument_banks} instrument/percussion banks, {len(banks) - instrument_banks} kit banks "
+          f"({len(machines) + 1} kits), total {total / 1e6:.2f} MB")
     if total > SIZE_LIMIT:
         sys.exit(f"Pack is {total} bytes, over the {SIZE_LIMIT} byte limit")
 

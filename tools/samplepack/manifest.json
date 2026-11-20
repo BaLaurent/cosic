@@ -143,5 +143,113 @@
       "folder": "Idiophones/Struck Idiophones/Gong 1",
       "max_seconds": 5
     }
-  ]
+  ],
+  "vcsl_kit": {
+    "name": "vcsl",
+    "sounds": {
+      "bd": "kick",
+      "sd": "snare",
+      "hh": "hihat",
+      "cp": "clap",
+      "cr": "cymbal",
+      "cb": "cowbell",
+      "cl": "claves",
+      "sh": "shaker",
+      "tb": "tambourine"
+    },
+    "toms": {
+      "bank": "tom",
+      "labels": [
+        "lt",
+        "mt",
+        "ht"
+      ]
+    }
+  },
+  "drum_machines": {
+    "repo": "smpldsnds/drum-machines",
+    "commit": "a894cb8c72abe15b05e7b4fd4b8ee561c0f9e960",
+    "readme_statement": "A collection of public domain samples of different drum machines",
+    "audio_preference": [
+      "ogg",
+      "m4a",
+      "mp3",
+      "wav",
+      "flac"
+    ],
+    "max_seconds": 2,
+    "max_per_bank": 8,
+    "rules": [
+      {
+        "abbr": "rd",
+        "regex": "ride"
+      },
+      {
+        "abbr": "rim",
+        "regex": "rimshot|stick"
+      },
+      {
+        "abbr": "oh",
+        "regex": "open|ohihat|univox-oh"
+      },
+      {
+        "abbr": "hh",
+        "regex": "closed|close|chihat|hithat|hihat|univox-ch"
+      },
+      {
+        "abbr": "cr",
+        "regex": "crash|cymbal|cymball"
+      },
+      {
+        "abbr": "cp",
+        "regex": "clap"
+      },
+      {
+        "abbr": "cb",
+        "regex": "cowbell"
+      },
+      {
+        "abbr": "cl",
+        "regex": "clave"
+      },
+      {
+        "abbr": "tb",
+        "regex": "tamb"
+      },
+      {
+        "abbr": "sh",
+        "regex": "cabasa|maraca|shaker"
+      },
+      {
+        "abbr": "sd",
+        "regex": "snare|shortsn|univox-sd"
+      },
+      {
+        "abbr": "bd",
+        "regex": "kick"
+      },
+      {
+        "abbr": "ht",
+        "regex": "hitom|tom-?(hh|hi|high|h)(?![a-z])"
+      },
+      {
+        "abbr": "lt",
+        "regex": "lowtom|tom-?(ll|low|l)(?![a-z])"
+      },
+      {
+        "abbr": "mt",
+        "regex": "midtom|mid-tom|tom-?(mid|m)(?![a-z])"
+      },
+      {
+        "abbr": "tom",
+        "regex": "tom"
+      }
+    ],
+    "default_abbr": "perc",
+    "generic_tom_labels": [
+      "lt",
+      "mt",
+      "ht"
+    ]
+  }
 }
