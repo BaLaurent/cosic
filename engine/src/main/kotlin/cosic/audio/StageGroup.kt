@@ -20,6 +20,13 @@ internal class VoiceTiming(
         this.cps = cps
         this.cycle = cycle
     }
+
+    /**
+     * Whether the event's own `ftype` asks for the 24 dB filter pair (`getFilterType(value.ftype) === '24db'`, superdough.mjs:374-378): that
+     * test uses the main value for every chain, `FX(...)` elements included. The main chain's filter stages write it in `configure`, the
+     * stages of the other chains read it at their first block (the main chain is configured last).
+     */
+    var filter24db: Boolean = false
 }
 
 /**
