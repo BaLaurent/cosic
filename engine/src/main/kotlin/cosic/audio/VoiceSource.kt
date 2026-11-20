@@ -1,45 +1,36 @@
 package cosic.audio
 
-import cosic.BankInfo
 import cosic.SampleData
-import kotlin.math.abs
-import kotlin.math.floor
-
-/** The MIDI note a voice plays when the pattern sets none. */
-internal const val DEFAULT_NOTE = 48.0
-
-/** True when a control was given and is a real number: absent and NaN controls both select the default. */
-internal fun Double?.isSet(): Boolean = this != null && !isNaN()
 
 /** What a voice plays. */
 internal sealed interface VoiceSource {
     /** A built-in oscillator or noise source; `note` sets its pitch and `speed`, `begin` and `end` do not apply. */
     class Synth(val waveform: Waveform) : VoiceSource
 
-    /**
-     * A recorded sample: a bank entry or a drum-kit sound. [rootNote] is the MIDI note the recording sounds at, for
-     * entries of pitched banks. For unpitched sounds it is null and `note` only transposes when it is set,
-     * relative to note 48.
-     */
-    class Sample(val data: SampleData, val rootNote: Int?) : VoiceSource
+    /** A recorded sample (a bank file, a drum-kit sound, a soundfont zone): the sampler of superdough, see [SampleSourceParams]. */
+    class Sample(val params: SampleSourceParams) : VoiceSource
 }
 
 /**
- * The entry of [bank] that a hit with raw controls [n] and [note] plays. Pitched banks (those with root notes) pick
- * the entry whose root is nearest to [note] (default 48; ties go to the lower root) and ignore [n]. Unpitched
- * banks pick `floor(n)` wrapped by the entry count. Pass the entry's root to [VoiceSource.Sample] for pitched banks.
+ * Everything the sampler needs that the controls of an event do not say: the [data] to play and how far to repitch it, which the sound
+ * lookup decided from `note`, `freq` and the bank it picked the file from (`getCommonSampleInfo`).
+ *
+ * - [transposeSemitones]: the file plays at `2^(transpose/12)` times its speed. For a bank that is `pitch - root` (36 when the bank has no
+ *   notes), for a soundfont zone `(100 pitch - baseDetune) / 100`.
+ * - [peakGain]: the level of the amplitude envelope's peak (1 for samples, 0.3 for soundfonts); the source is multiplied by it.
+ * - [loopStartFrame], [loopEndFrame]: a loop that belongs to the file itself, in frames of [data] (a soundfont's); NaN for none. The
+ *   `loop`, `loopBegin` and `loopEnd` controls set the loop of an ordinary sample.
+ * - [honoursSampleControls]: false for soundfonts, which ignore `begin`, `end`, `speed`, `unit`, `nudge`, `cut` and the sampler's gate
+ *   rule (their gate is the hap's duration, always).
+ * - [nudgeSeconds]: the `nudge` control, how long after the event's start the source starts (the envelope does not wait); a negative
+ *   nudge counts as none.
  */
-internal fun bankEntry(bank: BankInfo, n: Double, note: Double?): Int {
-    val roots = bank.rootNotes ?: return Math.floorMod(floor(n).toInt(), maxOf(bank.count, 1))
-    val target = if (note.isSet()) note!! else DEFAULT_NOTE
-    var best = 0
-    var bestDistance = Double.MAX_VALUE
-    for (i in roots.indices) {
-        val distance = abs(roots[i] - target)
-        if (distance < bestDistance) {
-            best = i
-            bestDistance = distance
-        }
-    }
-    return best
-}
+internal class SampleSourceParams(
+    val data: SampleData,
+    val transposeSemitones: Double = 0.0,
+    val peakGain: Double = 1.0,
+    val loopStartFrame: Double = Double.NaN,
+    val loopEndFrame: Double = Double.NaN,
+    val honoursSampleControls: Boolean = true,
+    val nudgeSeconds: Double = 0.0,
+)

@@ -57,7 +57,7 @@ class SchedulerTest {
         val scheduler = scheduler("""s("bd*4, hh/2")""")
         scheduler.play(START)
         scheduler.schedule(START)
-        val durations = scheduler.drain().associate { (it.voice.source as VoiceSource.Sample).data to it.voice.durationSec }
+        val durations = scheduler.drain().associate { (it.voice.source as VoiceSource.Sample).params.data to it.voice.durationSec }
         assertEquals(setOf(0.5, 4.0), durations.values.toSet(), "a quarter cycle and two cycles, at 2 s per cycle")
     }
 
@@ -247,7 +247,7 @@ class SchedulerTest {
         scheduler.play(0)
         scheduler.schedule(2 * CYCLE)
         assertNotNull(scheduler.runtimeError)
-        assertEquals(listOf("Unknown sound 'nope'"), scheduler.warnings)
+        assertEquals(listOf("sound nope not found! Is it loaded?"), scheduler.warnings)
 
         val program = evaluateProgram("""s("sine")""")
         scheduler.setProgram(program.pattern, program.cps, listOf("from the dry run"))
@@ -330,13 +330,13 @@ class SchedulerTest {
         val scheduler = scheduler("""s("nope*4, sine")""")
         scheduler.play(0)
         scheduler.schedule(3 * CYCLE)
-        assertEquals(listOf("Unknown sound 'nope'"), scheduler.warnings)
+        assertEquals(listOf("sound nope not found! Is it loaded?"), scheduler.warnings)
         assertTrue(scheduler.drain().all { it.waveform() == Waveform.SINE })
     }
 
     @Test
     fun aSampleThatIsStillLoadingIsSkippedWithoutAWarning() {
-        val library = FakeLibrary(banks = mapOf("kit" to BankInfo("kit", 1, null)))
+        val library = FakeLibrary(banks = mapOf("kit" to TestBank(1)))
         val scheduler = scheduler("""s("kit*4")""", library)
         scheduler.play(0)
         scheduler.schedule(CYCLE)
@@ -373,15 +373,15 @@ class SchedulerTest {
     fun theDryRunWarnsAboutUnknownSoundsInTheTwoCyclesFromTheGivenOne() {
         val program = evaluateProgram("""cat(s("sine"), s("nope"), s("alsonope"), s("sine"))""")
         val sounds = SoundResolver(SR, FakeLibrary())
-        assertEquals(listOf("Unknown sound 'nope'"), dryRun(program.pattern, 0, sounds), "cycles 0 and 1")
-        assertEquals(listOf("Unknown sound 'nope'", "Unknown sound 'alsonope'"), dryRun(program.pattern, 1, sounds))
-        assertEquals(listOf("Unknown sound 'alsonope'"), dryRun(program.pattern, 2, sounds), "cycles 2 and 3")
+        assertEquals(listOf("sound nope not found! Is it loaded?"), dryRun(program.pattern, 0, sounds), "cycles 0 and 1")
+        assertEquals(listOf("sound nope not found! Is it loaded?", "sound alsonope not found! Is it loaded?"), dryRun(program.pattern, 1, sounds))
+        assertEquals(listOf("sound alsonope not found! Is it loaded?"), dryRun(program.pattern, 2, sounds), "cycles 2 and 3")
         assertEquals(emptyList(), dryRun(program.pattern, 3, sounds), "cycles 3 and 4 are both `sine`")
     }
 
     @Test
     fun theDryRunAsksTheLibraryForTheSamplesThePatternWillUse() {
-        val library = FakeLibrary(banks = mapOf("kit" to BankInfo("kit", 3, null)))
+        val library = FakeLibrary(banks = mapOf("kit" to TestBank(3)))
         val program = evaluateProgram("""s("kit:1 kit:2")""")
         assertEquals(emptyList(), dryRun(program.pattern, 0, SoundResolver(SR, library)))
         assertEquals(setOf("kit" to 1, "kit" to 2), library.requested.toSet())

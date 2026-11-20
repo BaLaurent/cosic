@@ -20,8 +20,18 @@ class RenderAllocationTest {
             vp(synth(Waveform.SQUARE), 0.4, "note" to 62.0, "hcutoff" to 200.0, "bandf" to 2000.0, "shape" to 0.6, "pan" to 0.9, "orbit" to 2.0),
             vp(synth(Waveform.PINK), 0.3, "crush" to 5.0, "coarse" to 3.0, "room" to 0.6, "roomsize" to 0.9, "dry" to 0.5),
             vp(synth(Waveform.BROWN), 0.3, "delay" to 0.3, "delaytime" to 0.12, "bus" to 1.0, "analyze" to 1.0),
-            vp(VoiceSource.Sample(sineSample(200.0, 0.5), 48), 0.5, "note" to 60.0, "speed" to 1.3, "begin" to 0.1, "end" to 0.9, "cut" to 1.0),
-            vp(VoiceSource.Sample(sineSample(300.0, 0.5), null), 0.5, "speed" to -1.0, "cut" to 1.0, "room" to 0.2, "delay" to 0.2, "channels" to listOf(1.0, 2.0)),
+            vp(
+                VoiceSource.Sample(SampleSourceParams(sineSample(200.0, 0.5), transposeSemitones = 12.0)), 0.5,
+                "speed" to 1.3, "begin" to 0.1, "end" to 0.9, "cut" to 1.0,
+            ),
+            vp(
+                VoiceSource.Sample(SampleSourceParams(sineSample(300.0, 0.5))), 0.5,
+                "speed" to -1.0, "cut" to 1.0, "room" to 0.2, "delay" to 0.2, "channels" to listOf(1.0, 2.0),
+            ),
+            vp(
+                VoiceSource.Sample(SampleSourceParams(stereoSample(0.5), nudgeSeconds = 0.003)), 0.5,
+                "loop" to 1.0, "loopBegin" to 0.2, "loopEnd" to 0.7, "unit" to "c", "speed" to 2.0, "pan" to 0.3,
+            ),
             vp(synth(Waveform.SINE), 0.2, "note" to 64.0, "djf" to 0.3, "duckorbit" to 1.0, "duckdepth" to 0.5),
         )
 

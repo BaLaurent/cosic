@@ -31,6 +31,9 @@ private const val PREVIEW_SECONDS = 0.5
 
 /** A preview waits this long for a sample that is still being decoded before it gives up. */
 private const val PREVIEW_WAIT_SECONDS = 1
+
+/** Evaluating a program waits at most this long for the library to finish installing the default sounds. */
+private const val LIBRARY_READY_MILLIS = 15_000L
 private const val SNAPSHOT_INTERVAL_FRAMES = 256
 
 /** What a pattern event may be highlighted for after it has ended. */
@@ -61,7 +64,7 @@ private sealed interface Command {
  * Events with no sound name (`note("c e g")` on its own) play a triangle. An event whose sound is unknown, or
  * whose sample is not decoded yet, is skipped; an unknown name is also reported as a warning.
  */
-class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
+class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
     internal val drums = DrumKit(sampleRate)
     private val sounds = SoundResolver(sampleRate, library, drums)
     private val mixer = Mixer(sampleRate)
@@ -102,6 +105,7 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
      */
     @Synchronized
     fun evaluate(code: String): EvalReport = try {
+        library.awaitReady(LIBRARY_READY_MILLIS) // the sounds a program names must be registered when its first events are looked up
         onBigStack {
             val program = session.evaluate(code)
             val warnings = host.quietly { dryRun(program.pattern, currentCycle(), sounds, program.cps) }
@@ -195,6 +199,7 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
             }
             SoundLookup.Loading -> if (renderedFrames >= previewGivesUpAt) waitingPreview = null
             is SoundLookup.Unknown -> waitingPreview = null
+            SoundLookup.Silent -> waitingPreview = null
         }
     }
 
@@ -252,5 +257,12 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
 
         /** How many variants each of [DRUMS] has: `bd:0` to `bd:3`. */
         const val DRUM_VARIANTS: Int = cosic.audio.DRUM_VARIANTS
+
+        /**
+         * Every name the engine plays itself (the synths with their short names, the kit's drums, the machines' `<machine>_<drum>`): what a
+         * library made for this engine takes as its `builtins`.
+         */
+        val BUILTIN_SOUNDS: Set<String> =
+            (SYNTHS + listOf("saw", "tri") + DRUMS + DRUM_MACHINES.flatMap { (machine, names) -> names.map { "${machine}_$it" } }).toSet()
     }
 }

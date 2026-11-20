@@ -62,8 +62,8 @@ private fun parse(args: Array<String>): Options {
 /**
  * Renders a program to a WAV file from the command line, with the engine that runs in the app:
  * `--code "<program>"` or `--file <path>`, `--cycles N` (default 4), `--out <wav>`, `--sr 48000`, and optionally
- * `--samples <dir>`, whose sub-folders of `.wav` files become unpitched banks. A program the engine rejects is
- * reported on stderr and ends the run with exit code 1; bad options give the usage and exit code 2.
+ * `--samples <dir>`, whose folders of `.wav` files become sample banks named after them (Strudel's folder import). A program the engine
+ * rejects is reported on stderr and ends the run with exit code 1; bad options give the usage and exit code 2.
  */
 object RenderCli {
     @JvmStatic
@@ -81,7 +81,7 @@ object RenderCli {
         }
         try {
             val code = options.source()
-            val library = options.samples?.let { FolderLibrary(it) } ?: EmptyLibrary
+            val library = options.samples?.let(::folderLibrary) ?: emptyLibrary()
             val samples = OfflineRenderer.render(code, options.cycles, options.sampleRate, library)
             OfflineRenderer.writeWav(options.out, samples, options.sampleRate)
             val seconds = String.format(Locale.ROOT, "%.2f", samples.size / 2.0 / options.sampleRate)

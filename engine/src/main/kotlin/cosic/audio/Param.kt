@@ -138,6 +138,10 @@ internal enum class Param {
     // sample start offset in seconds (only the cut ramp reads it here; the sampler delays its start by it)
     nudge,
 
+    // the sampler: the loop region as fractions of the sample (sampler.mjs:92-104)
+    loopBegin,
+    loopEnd,
+
     // sources append their own entries below this line
     ;
 
@@ -164,6 +168,7 @@ internal val STRING_KEYS: Set<String> = setOf(
     "lpshape",
     "hpshape",
     "bpshape",
+    "unit",
 )
 
 /** Controls that carry a list of numbers (`orbit` of a duck, `channels`): they land in [ParamSet.lists], a plain number as a list of one. */

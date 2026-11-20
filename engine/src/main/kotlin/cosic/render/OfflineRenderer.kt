@@ -1,11 +1,11 @@
 package cosic.render
 
-import cosic.BankInfo
 import cosic.CosicEngine
 import cosic.EvalReport
+import cosic.NoSampleStore
 import cosic.PLAY_START_DELAY_SECONDS
-import cosic.SampleData
 import cosic.SoundLibrary
+import cosic.sound.RegistryLibrary
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -14,12 +14,11 @@ private const val BLOCK_FRAMES = 256
 private const val WAV_HEADER_BYTES = 44
 private const val WAV_CHUNK_SAMPLES = 8192
 
-/** A library without banks: programs can use the synths, the drum kit and the synthesized drum machines only. */
-internal object EmptyLibrary : SoundLibrary {
-    override fun bank(name: String): BankInfo? = null
-
-    override fun sample(name: String, index: Int): SampleData? = null
-}
+/**
+ * A library without sample banks: programs can use the synths, the drum kit and the synthesized drum machines only. Every call makes a
+ * new one, because a program may register sounds in it.
+ */
+internal fun emptyLibrary(): SoundLibrary = RegistryLibrary(NoSampleStore, CosicEngine.BUILTIN_SOUNDS)
 
 /** Plays programs into memory instead of to a speaker, in the same blocks the app's audio thread uses. */
 object OfflineRenderer {
@@ -27,7 +26,7 @@ object OfflineRenderer {
      * Interleaved stereo float samples of [code] played for [cycles] cycles at its own tempo, after the 50 ms the
      * engine takes to start. Throws [IllegalStateException] with the message of the error when the code is rejected.
      */
-    fun render(code: String, cycles: Double, sampleRate: Int = 48000, library: SoundLibrary = EmptyLibrary): FloatArray {
+    fun render(code: String, cycles: Double, sampleRate: Int = 48000, library: SoundLibrary = emptyLibrary()): FloatArray {
         require(cycles > 0.0 && cycles.isFinite()) { "cycles must be a positive number" }
         val engine = CosicEngine(sampleRate, library)
         val cps = when (val report = engine.evaluate(code)) {

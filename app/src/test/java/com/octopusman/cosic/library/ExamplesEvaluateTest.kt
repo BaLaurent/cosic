@@ -1,11 +1,15 @@
 package com.octopusman.cosic.library
 
-import cosic.BankInfo
+import cosic.BankGroup
 import cosic.CosicEngine
 import cosic.EvalReport
+import cosic.SampleBank
 import cosic.SampleData
+import cosic.SampleStore
 import cosic.SoundLibrary
+import cosic.sound.RegistryLibrary
 import java.io.File
+import java.io.IOException
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,25 +25,37 @@ import kotlinx.serialization.json.jsonPrimitive
 
 private const val SAMPLE_RATE = 48_000
 
-/** The banks the app bundles, read from `assets/samples/index.json`, each entry decoded to a short constant click. */
-private class BundledBanks : SoundLibrary {
-    private val banks: Map<String, BankInfo> = Json.parseToJsonElement(File("src/main/assets/samples/index.json").readText())
-        .jsonObject.getValue("banks").jsonArray.map { it.jsonObject }.associate { bank ->
-            val name = bank.getValue("name").jsonPrimitive.content
-            val files = bank.getValue("files").jsonArray
-            val roots = if (bank.getValue("pitched").jsonPrimitive.boolean) {
-                IntArray(files.size) { files[it].jsonObject.getValue("root").jsonPrimitive.int }
-            } else {
-                null
-            }
-            name to BankInfo(name, files.size, roots)
-        }
-
+/** A store whose every file is a short constant click, already decoded. */
+private object ClickStore : SampleStore {
     private val click = SampleData(FloatArray(2400) { 0.2f }, SAMPLE_RATE)
 
-    override fun bank(name: String): BankInfo? = banks[name]
+    override fun sample(url: String): SampleData = click
 
-    override fun sample(name: String, index: Int): SampleData? = click.takeIf { index in 0 until (banks[name]?.count ?: 0) }
+    override fun fetchText(url: String): String = throw IOException("no network in tests: $url")
+
+    override fun awaitSample(url: String): SampleData = click
+
+    override fun decode(bytes: ByteArray, nameHint: String): SampleData = click
+}
+
+/** The banks the app bundles, read from `assets/samples/index.json`, each file decoded to a short constant click. */
+private fun bundledBanks(): SoundLibrary {
+    val library = RegistryLibrary(ClickStore, CosicEngine.BUILTIN_SOUNDS)
+    Json.parseToJsonElement(File("src/main/assets/samples/index.json").readText())
+        .jsonObject.getValue("banks").jsonArray.map { it.jsonObject }.forEach { bank ->
+            val name = bank.getValue("name").jsonPrimitive.content
+            val files = bank.getValue("files").jsonArray
+            val groups = if (bank.getValue("pitched").jsonPrimitive.boolean) {
+                files.indices.map { i ->
+                    val root = files[i].jsonObject.getValue("root").jsonPrimitive.int
+                    BankGroup("midi$root", root.toDouble(), listOf("$name/$i"))
+                }
+            } else {
+                listOf(BankGroup(null, null, files.indices.map { "$name/$it" }))
+            }
+            library.register(SampleBank(name, groups, null, true))
+        }
+    return library
 }
 
 /** The examples on the Library screen are the first code users run: all of them must evaluate and play cleanly. */
@@ -68,7 +84,7 @@ class ExamplesEvaluateTest {
     @Test
     fun everyExampleEvaluatesWithoutWarnings() {
         for (file in files) {
-            val report = CosicEngine(SAMPLE_RATE, BundledBanks()).evaluate(file.readText())
+            val report = CosicEngine(SAMPLE_RATE, bundledBanks()).evaluate(file.readText())
             val ok = assertIs<EvalReport.Ok>(report, "${file.name}: $report")
             assertEquals(emptyList(), ok.warnings, "${file.name} uses a sound that is not bundled")
         }
@@ -77,7 +93,7 @@ class ExamplesEvaluateTest {
     @Test
     fun everyExamplePlaysForEightCyclesWithoutErrorsAndMakesSound() {
         for (file in files) {
-            val engine = CosicEngine(SAMPLE_RATE, BundledBanks())
+            val engine = CosicEngine(SAMPLE_RATE, bundledBanks())
             val ok = assertIs<EvalReport.Ok>(engine.evaluate(file.readText()), file.name)
             engine.play()
             val buffer = FloatArray(256 * 2)

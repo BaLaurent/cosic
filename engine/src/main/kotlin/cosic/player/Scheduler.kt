@@ -20,7 +20,8 @@ private const val MAX_HAPS_PER_CHUNK = 2000
 private const val LOOKAHEAD_SECONDS = 0.1
 private const val DRY_RUN_CYCLES = 2L
 
-private fun unknownSoundWarning(key: String) = "Unknown sound '$key'"
+/** What Strudel says when a sound is not registered (superdough.mjs:594). */
+private fun unknownSoundWarning(key: String) = "sound $key not found! Is it loaded?"
 
 /** What to tell the user about an exception thrown while a pattern was queried. */
 internal fun errorMessage(error: Throwable): String = error.message ?: error.toString()
@@ -209,7 +210,7 @@ internal class Scheduler(private val sampleRate: Int, private val sounds: SoundR
                     if (hap.context.locations.isNotEmpty()) marks.add(HighlightEvent(start, anchor.frameAt(whole.end), hap.context.locations))
                 }
                 is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))
-                SoundLookup.Loading -> Unit
+                SoundLookup.Loading, SoundLookup.Silent -> Unit
             }
         }
         events.sortBy { it.startFrame }

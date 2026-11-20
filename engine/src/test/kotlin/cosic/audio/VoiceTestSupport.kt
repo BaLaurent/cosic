@@ -10,8 +10,11 @@ import cosic.player.voiceParams
 internal fun vp(source: VoiceSource, durationSec: Double, vararg controls: Pair<String, Any?>, cps: Double = 0.5, cycle: Double = 0.0): VoiceParams =
     voiceParams(mapOf(*controls), source, durationSec, cps, cycle)
 
+/** [data] played as it is: no repitching, a full level source, the sampler's controls honoured. */
+internal fun plain(data: SampleData): VoiceSource = VoiceSource.Sample(SampleSourceParams(data))
+
 /** A long constant sample, which makes every level at the output a direct reading of the gain stages. */
-internal fun dcSource(seconds: Double = 5.0, value: Float = 1f): VoiceSource = VoiceSource.Sample(constantSample(seconds, value), null)
+internal fun dcSource(seconds: Double = 5.0, value: Float = 1f): VoiceSource = plain(constantSample(seconds, value))
 
 internal fun synth(waveform: Waveform): VoiceSource = VoiceSource.Synth(waveform)
 
@@ -31,3 +34,10 @@ internal fun renderStereo(params: VoiceParams, frames: Int = SR / 2): FloatArray
 
 /** A sample of [seconds] made of the given values; shorthand for sample-path tests. */
 internal fun sampleOf(vararg values: Float, rate: Int = SR): SampleData = SampleData(floatArrayOf(*values), rate)
+
+/** A stereo sample of [seconds]: a 220 Hz sine on the left and a 330 Hz sine on the right. */
+internal fun stereoSample(seconds: Double, rate: Int = SR): SampleData {
+    val left = sineWave(220.0, seconds, 1.0, rate)
+    val right = sineWave(330.0, seconds, 1.0, rate)
+    return SampleData(FloatArray(left.size * 2) { if (it % 2 == 0) left[it / 2] else right[it / 2] }, rate, channels = 2)
+}

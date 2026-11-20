@@ -9,10 +9,14 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.documentfile.provider.DocumentFile
-import cosic.BankInfo
+import cosic.BankGroup
 import cosic.CosicEngine
+import cosic.SampleBank
 import cosic.SampleData
+import cosic.SampleStore
 import cosic.SoundLibrary
+import cosic.sound.RegistryLibrary
+import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
@@ -84,8 +88,11 @@ private sealed interface SampleSource {
     }
 }
 
+/** The shape of an indexed bank: [rootNotes] is ascending for pitched banks, null for unpitched ones. */
+private class BankShape(val name: String, val count: Int, val rootNotes: IntArray?)
+
 private class BankRecord(
-    val info: BankInfo,
+    val info: BankShape,
     val origin: BankOrigin,
     val treeUri: Uri?,
     val sources: List<SampleSource>,
@@ -94,15 +101,93 @@ private class BankRecord(
 
 private class CacheEntry(val data: SampleData, @Volatile var lastAccess: Long)
 
+private val NOTE_NAMES = arrayOf("c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b")
+
+/** The name of MIDI note [midi] as the engine reads it: `60` is `c4`. */
+private fun noteName(midi: Int): String = NOTE_NAMES[Math.floorMod(midi, 12)] + (Math.floorDiv(midi, 12) - 1)
+
+/** The sound the engine's library knows a bank as: files in index order, one note key per file for a pitched bank. */
+private fun BankRecord.toEntry(): SampleBank {
+    val urls = sources.map { it.key }
+    val roots = info.rootNotes
+    val groups = if (roots == null) {
+        listOf(BankGroup(null, null, urls))
+    } else {
+        roots.indices.map { BankGroup(noteName(roots[it]), roots[it].toDouble(), listOf(urls[it])) }
+    }
+    return SampleBank(info.name, groups, null, origin == BankOrigin.BUNDLED)
+}
+
 /**
- * Bundled and imported sample banks for the engine. Lookups never block: a sample that is not
- * decoded yet is reported as missing and decoded in the background, so asking for it once also
- * preloads it.
+ * Decodes the bundled and imported files the library's banks point at: a url is `asset:<path>` or the uri of a document. Lookups never
+ * block: a sample that is not decoded yet is reported as missing and decoded in the background, so asking for it once also preloads it.
  */
-class SampleRepository(context: Context, private val prefs: DataStore<Preferences>) : SoundLibrary {
+private class RepositoryStore(context: Context) : SampleStore {
     private val appContext = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val decoders = Dispatchers.IO.limitedParallelism(2)
+    private val cache = ConcurrentHashMap<String, CacheEntry>()
+    private val cacheLock = Any()
+    private val accessClock = AtomicLong()
+    private val loading = ConcurrentHashMap.newKeySet<String>()
+    private val broken = ConcurrentHashMap.newKeySet<String>()
+
+    override fun sample(url: String): SampleData? {
+        cache[url]?.let {
+            it.lastAccess = accessClock.incrementAndGet()
+            return it.data
+        }
+        if (url !in broken && loading.add(url)) scope.launch(decoders) { load(url) }
+        return null
+    }
+
+    override fun fetchText(url: String): String = throw IOException("no network access yet: $url")
+
+    override fun awaitSample(url: String): SampleData = throw IOException("no network access yet: $url")
+
+    override fun decode(bytes: ByteArray, nameHint: String): SampleData = throw IOException("no decoder for $nameHint yet")
+
+    private fun load(url: String) {
+        try {
+            val data = if (url.startsWith("asset:")) {
+                appContext.assets.openFd(url.removePrefix("asset:")).use { AudioDecoder.decode(it) }
+            } else {
+                AudioDecoder.decode(appContext, Uri.parse(url), IMPORT_MAX_SECONDS)
+            }
+            cacheSample(url, data)
+        } catch (e: Exception) {
+            Log.w(TAG, "cannot decode $url", e)
+            broken.add(url)
+        } finally {
+            loading.remove(url)
+        }
+    }
+
+    /** Evicts the least recently used samples once the cache outgrows its budget; playing voices keep their own array. */
+    private fun cacheSample(key: String, data: SampleData) {
+        synchronized(cacheLock) {
+            cache[key] = CacheEntry(data, accessClock.incrementAndGet())
+            var total = cache.values.sumOf { it.data.samples.size.toLong() }
+            while (total > CACHE_BUDGET_FLOATS && cache.size > 1) {
+                val oldest = cache.entries.minBy { it.value.lastAccess }
+                cache.remove(oldest.key)
+                total -= oldest.value.data.samples.size
+            }
+        }
+    }
+}
+
+/**
+ * Bundled and imported sample banks for the engine, as the sounds of a [RegistryLibrary] (which this is, for everything the engine asks).
+ * Lookups never block: see [RepositoryStore].
+ */
+class SampleRepository(
+    context: Context,
+    private val prefs: DataStore<Preferences>,
+    private val registry: RegistryLibrary = RegistryLibrary(RepositoryStore(context), CosicEngine.BUILTIN_SOUNDS),
+) : SoundLibrary by registry {
+    private val appContext = context.applicationContext
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val indexLock = Mutex()
 
     private val bundled: Map<String, BankRecord> by lazy { readBundledBanks() }
@@ -112,12 +197,6 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
     private var records: Map<String, BankRecord> = emptyMap()
     private val _banks = MutableStateFlow<List<BankSummary>>(emptyList())
 
-    private val cache = ConcurrentHashMap<String, CacheEntry>()
-    private val cacheLock = Any()
-    private val accessClock = AtomicLong()
-    private val loading = ConcurrentHashMap.newKeySet<String>()
-    private val broken = ConcurrentHashMap.newKeySet<String>()
-
     val banks: StateFlow<List<BankSummary>> = _banks.asStateFlow()
 
     init {
@@ -126,18 +205,6 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
             indexLock.withLock { publish(bundled) }
             reindex()
         }
-    }
-
-    override fun bank(name: String): BankInfo? = records[name]?.info
-
-    override fun sample(name: String, index: Int): SampleData? {
-        val source = records[name]?.sources?.getOrNull(index) ?: return null
-        cache[source.key]?.let {
-            it.lastAccess = accessClock.incrementAndGet()
-            return it.data
-        }
-        if (source.key !in broken && loading.add(source.key)) scope.launch(decoders) { load(source) }
-        return null
     }
 
     /** Adds a folder picked with the system folder picker; its banks override bundled ones of the same name. */
@@ -170,8 +237,12 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
         publish(resolved)
     }
 
+    /** Makes [banks] the banks of the library: every one is registered (a removed import gives its name back to the bundled bank), the ones that are gone are removed. */
     private fun publish(banks: Map<String, BankRecord>) {
+        val previous = records
         records = banks
+        for (name in previous.keys) if (name !in banks) registry.unregister(name)
+        for (record in banks.values) registry.register(record.toEntry())
         _banks.value = banks.values.sortedBy { it.info.name }.map {
             BankSummary(it.info.name, it.info.count, it.info.rootNotes != null, it.origin, it.treeUri, it.kit)
         }
@@ -187,7 +258,7 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
                 null
             }
             bank.name to BankRecord(
-                BankInfo(bank.name, files.size, roots),
+                BankShape(bank.name, files.size, roots),
                 BankOrigin.BUNDLED,
                 null,
                 files.map { SampleSource.Asset("samples/${it.file}") },
@@ -213,7 +284,7 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
             remaining -= audio.size
             val sources = audio.map { SampleSource.Document(it.second.uri) }
             for (bank in names) {
-                banks += BankRecord(BankInfo(bank.name, audio.size, null), BankOrigin.IMPORTED, treeUri, sources, bank.kit)
+                banks += BankRecord(BankShape(bank.name, audio.size, null), BankOrigin.IMPORTED, treeUri, sources, bank.kit)
             }
         }
 
@@ -227,34 +298,6 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
             if (!isAudio(name) && file.isDirectory) addBanks(importedBanks(file.name, parent = root.name, builtIn), file.entries())
         }
         return banks
-    }
-
-    private fun load(source: SampleSource) {
-        try {
-            val data = when (source) {
-                is SampleSource.Asset -> appContext.assets.openFd(source.path).use { AudioDecoder.decode(it) }
-                is SampleSource.Document -> AudioDecoder.decode(appContext, source.uri, IMPORT_MAX_SECONDS)
-            }
-            cacheSample(source.key, data)
-        } catch (e: Exception) {
-            Log.w(TAG, "cannot decode ${source.key}", e)
-            broken.add(source.key)
-        } finally {
-            loading.remove(source.key)
-        }
-    }
-
-    /** Evicts the least recently used samples once the cache outgrows its budget; playing voices keep their own array. */
-    private fun cacheSample(key: String, data: SampleData) {
-        synchronized(cacheLock) {
-            cache[key] = CacheEntry(data, accessClock.incrementAndGet())
-            var total = cache.values.sumOf { it.data.samples.size.toLong() }
-            while (total > CACHE_BUDGET_FLOATS && cache.size > 1) {
-                val oldest = cache.entries.minBy { it.value.lastAccess }
-                cache.remove(oldest.key)
-                total -= oldest.value.data.samples.size
-            }
-        }
     }
 }
 

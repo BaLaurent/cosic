@@ -1,22 +1,18 @@
 package com.octopusman.cosic.reference
 
 import com.octopusman.cosic.audio.BankOrigin
-import cosic.BankInfo
 import cosic.CosicEngine
 import cosic.EvalReport
-import cosic.SampleData
+import cosic.NoSampleStore
 import cosic.SoundLibrary
+import cosic.sound.RegistryLibrary
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 /** A library with no sounds: enough to check that a snippet is well-formed code. */
-private object NoSounds : SoundLibrary {
-    override fun bank(name: String): BankInfo? = null
-
-    override fun sample(name: String, index: Int): SampleData? = null
-}
+private val NoSounds: SoundLibrary = RegistryLibrary(NoSampleStore, emptySet())
 
 class DrumMachinesTest {
     private fun kit(vararg sounds: String) = Kit("k", sounds.toList(), folder = null)

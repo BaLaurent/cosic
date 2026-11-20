@@ -6,11 +6,6 @@ import kotlin.math.pow
 
 private const val MAX_GAIN_PARAM = 3.4e38
 
-/** Speed limit and note range of the legacy sample path; Task 3.5 replaces the sampler and drops them. */
-private const val MAX_SPEED = 8.0
-private const val MIN_NOTE = -24.0
-private const val MAX_NOTE = 132.0
-
 /** A `nudge` beyond this many seconds counts as this, so that the time of a cut stays a number the timelines can hold. */
 private const val MAX_NUDGE = 3600.0
 
@@ -30,20 +25,14 @@ private val DEFAULT_DUCK_DEPTH = doubleArrayOf(1.0)
 /** [v], or [default] when NaN. */
 private fun valueOr(v: Double, default: Double): Double = if (v.isNaN()) default else v
 
-private fun regionBegin(p: ParamSet): Double = valueOr(p[Param.begin], 0.0).coerceIn(0.0, 1.0)
-
-private fun regionEnd(p: ParamSet): Double = valueOr(p[Param.end], 1.0).coerceIn(0.0, 1.0)
-
-private fun playbackSpeed(p: ParamSet): Double = valueOr(p[Param.speed], 1.0).coerceIn(-MAX_SPEED, MAX_SPEED)
-
 /**
- * Whether an event can sound at all. A sample cannot when it is empty, when its `begin..end` region is empty or when
- * `speed` is zero; a synth always can. Checking this before a voice is chosen keeps an event that cannot sound from
- * disturbing the voices that do.
+ * Whether an event can sound at all. A sample cannot when it is empty, when `speed` is zero, when `begin` is negative or when the slice
+ * `begin..end` would last no time (see [Sampler.canSound]); a synth always can. Checking this before a voice is chosen keeps an event
+ * that cannot sound from disturbing the voices that do.
  */
 internal fun VoiceParams.canSound(): Boolean {
     val sample = source as? VoiceSource.Sample ?: return true
-    return sample.data.samples.isNotEmpty() && regionEnd(main) > regionBegin(main) && playbackSpeed(main) != 0.0
+    return Sampler.canSound(sample.params, main)
 }
 
 /**
@@ -61,7 +50,7 @@ internal fun VoiceParams.canSound(): Boolean {
  * until then it counts toward `maxPolyphony`.
  */
 internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, private val buses: AudioBuses, private val fxPool: FxGroupPool) {
-    // The legacy sources; Task 3.17 replaces them with SoundSource, Task 3.5 the sampler.
+    // The oscillator is the legacy synth source (Task 3.17 replaces it with SoundSource); the sampler is the player of superdough's.
     private val oscillator = Oscillator(sampleRate)
     private val player = SamplePlayer(sampleRate)
     private var isSynth = true
@@ -218,7 +207,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         return activeUntil
     }
 
-    /** Starts the legacy source and schedules the amplitude envelope; returns when the source ends. */
+    /** Starts the source and schedules the amplitude envelope; returns when the source ends. */
     private fun startSource(params: VoiceParams, main: ParamSet, t: Double, duration: Double, seed: Int): Double {
         val clipSet = main.has(Param.clip)
         val loopSet = main.has(Param.loop)
@@ -235,25 +224,17 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
                 )
             }
             is VoiceSource.Sample -> {
-                val data = source.data
-                val note = valueOr(main[Param.note], Double.NaN).coerceIn(MIN_NOTE, MAX_NOTE)
-                val root = source.rootNote
-                val pitchRatio = when {
-                    root != null -> 2.0.pow(((if (note.isNaN()) DEFAULT_NOTE else note) - root) / 12.0)
-                    note.isNaN() -> 1.0
-                    else -> 2.0.pow((note - DEFAULT_NOTE) / 12.0)
-                }
-                val begin = regionBegin(main)
-                val end = regionEnd(main)
-                val rate = playbackSpeed(main) * data.sampleRate / sampleRate * pitchRatio
-                player.start(data.samples, begin, end, rate)
+                val sample = source.params
+                player.start(sample, main)
                 isSynth = false
-                isSample = true
+                isSample = sample.honoursSampleControls
                 sourceLevel = 1f
-                val sliceSec = (end - begin) * data.samples.size / (abs(rate) * sampleRate)
+                // The gate of a sample is the length of its slice unless clip, loop or release is set; a soundfont's is always the hap's.
+                val hapGate = Sampler.gateIsHap(sample, main)
+                val sliceSec = if (hapGate) Double.NaN else Sampler.sliceSeconds(sample, main, Sampler.playbackRate(sample, main))
                 return AmpEnvelope.schedule(
                     ampEnv, AmpKind.SAMPLE, main[Param.attack], main[Param.decay], main[Param.sustain], main[Param.release],
-                    t, duration, sliceSec, clipSet, loopSet, releaseSet,
+                    t, duration, sliceSec, hapGate, loopSet, releaseSet,
                 )
             }
         }
@@ -395,9 +376,13 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
             for (i in 0 until n) blk.l[i] *= level
             n
         } else {
-            player.fill(blk.l, n)
+            if (player.stereo) blk.channels = 2
+            player.fill(blk.l, blk.r, n)
         }
-        if (produced < n) blk.l.fill(0f, produced, n)
+        if (produced < n) {
+            blk.l.fill(0f, produced, n)
+            if (blk.channels == 2) blk.r.fill(0f, produced, n)
+        }
 
         val gains = ctx.borrow()
         ampEnv.fill(gains, ctx)

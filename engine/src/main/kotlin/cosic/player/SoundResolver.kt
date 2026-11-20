@@ -1,69 +1,97 @@
 package cosic.player
 
+import cosic.BuiltinSound
+import cosic.SampleBank
 import cosic.SoundLibrary
+import cosic.audio.DRUM_VARIANTS
 import cosic.audio.DrumKit
+import cosic.audio.SampleSourceParams
 import cosic.audio.VoiceSource
 import cosic.audio.Waveform
-import cosic.audio.bankEntry
 import cosic.pattern.ControlMap
-import cosic.pattern.jsStringToNumber
-import cosic.pattern.noteToMidi
-import kotlin.math.floor
+import cosic.pattern.Undefined
+import cosic.pattern.getSoundIndex
+import cosic.pattern.jsToString
+import cosic.pattern.jsTruthy
+import cosic.pattern.logger
+import cosic.pattern.valueToMidi
+import cosic.sound.UNPITCHED_ROOT_MIDI
+import cosic.sound.commonSampleInfo
 
 /** The outcome of looking up the sound an event asks for. */
 internal sealed interface SoundLookup {
     class Ready(val source: VoiceSource) : SoundLookup
 
-    /** A bank that exists but whose sample is not decoded yet. The library has been asked to load it. */
+    /** A sound that exists but whose sample is not decoded yet. The library has been asked to load it. */
     data object Loading : SoundLookup
 
+    /** A rest: `s` was `-`, `~` or `_`. No event, no warning. */
+    data object Silent : SoundLookup
+
+    /** No sound of that name is registered (`sound <key> not found! Is it loaded?`). */
     class Unknown(val key: String) : SoundLookup
 }
 
-/** What an event plays when it names no sound: `note("c e g")` on its own is a triangle melody. */
-private val DEFAULT_SOUND = SoundLookup.Ready(VoiceSource.Synth(Waveform.TRIANGLE))
+/** What an event plays when it names no sound, and when its sound name is not a string: `note("c e g")` on its own is a triangle melody. */
+private val TRIANGLE = SoundLookup.Ready(VoiceSource.Synth(Waveform.TRIANGLE))
+
+private val REST_NAMES = setOf("-", "~", "_")
 
 /**
- * Finds what to play for the sound an event names: a synth waveform first, then a bank of the [library], then the
- * built-in drum sounds, which are the kit's (`bd`) and the drum machines' (`cosic808_bd`, the sound that
- * `s("bd").bank("cosic808")` asks for). A user bank may thus replace a drum or a machine's sound, but never a
- * synth. Lookups ask the library for the sample and render drum sounds on first use (unless [drums] has been warmed
- * up), so doing one off the audio thread (see [dryRun]) warms up what it needs.
+ * Finds what to play for the sound an event names, the way `superdough()` and `getSound` do: a rest (`-`, `~`, `_`) first; then `s`,
+ * prefixed with `bank_` when `bank` is set (both by JavaScript truthiness); then, in this order, the registry of the [library]
+ * (case-insensitive, the last registration wins, so a bank called `sine` replaces the synth), the engine's own synths, and its
+ * synthesised drums (`bd`, and `cosic808_bd`, the sound that `s("bd").bank("cosic808")` asks for). An `s` that is no string plays a triangle
+ * and logs a warning. For a bank, `n` and `note`/`freq` choose the file and its pitch ([commonSampleInfo]).
+ *
+ * Lookups ask the library for the sample, which starts loading it, and render drum sounds on first use (unless [drums] has been warmed up),
+ * so doing one off the audio thread (see [dryRun]) warms up what it needs. Wavetable banks and soundfonts have no source yet and look unknown.
  */
-internal class SoundResolver(sampleRate: Int, private val library: SoundLibrary, private val drums: DrumKit = DrumKit(sampleRate)) {
+internal class SoundResolver(sampleRate: Int, val library: SoundLibrary, private val drums: DrumKit = DrumKit(sampleRate)) {
     /**
-     * The sound of an event's controls: `s`, prefixed with `bank_` when `bank` is set, with `n` and `note` choosing the sample.
-     * `note` is kept as the pattern wrote it (`c3`) and becomes its MIDI number here; a name that is not a note is an error.
+     * The sound of an event's controls. A `note` that is not a note name, and a bank whose keys are no notes, throw [cosic.pattern.CosicError]
+     * (`not a note: "x"`).
      */
     fun resolve(controls: ControlMap): SoundLookup {
-        val name = controls["s"] as? String ?: return DEFAULT_SOUND
-        val bank = controls["bank"] as? String
-        return resolve(if (bank == null) name else "${bank}_$name", sampleNumber(controls["n"]), noteNumber(controls["note"]))
-    }
-
-    /** The sound called [key]; [n] counts samples (or drum variants) and [note] picks the entry of a pitched bank. */
-    fun resolve(key: String, n: Double, note: Double?): SoundLookup {
-        Waveform.byName(key)?.let { return SoundLookup.Ready(VoiceSource.Synth(it)) }
-        library.bank(key)?.let { bank ->
-            val index = bankEntry(bank, n, note)
-            val data = library.sample(key, index) ?: return SoundLookup.Loading
-            return SoundLookup.Ready(VoiceSource.Sample(data, bank.rootNotes?.get(index)))
+        val given = controls["s"]
+        val s: Any? = if (given === Undefined || (given == null && !controls.containsKey("s"))) "triangle" else given
+        if (s is String && s in REST_NAMES) return SoundLookup.Silent
+        val bank = controls["bank"]
+        val name: Any? = if (jsTruthy(bank) && jsTruthy(s)) "${jsToString(bank)}_${jsToString(s)}" else s
+        if (name !is String) {
+            logger("getSound: expected string got \"${jsToString(name)}\". fall back to triangle", "warning", null)
+            return TRIANGLE
         }
-        drums.sample(key, floor(n).toInt())?.let { return SoundLookup.Ready(VoiceSource.Sample(it, null)) }
-        return SoundLookup.Unknown(key)
+        return when (val entry = library.sound(name)) {
+            is SampleBank -> {
+                val choice = commonSampleInfo(entry.groups, controls)
+                val data = library.sample(entry, choice.group, choice.index) ?: return SoundLookup.Loading
+                SoundLookup.Ready(VoiceSource.Sample(SampleSourceParams(data, choice.transposeSemitones, nudgeSeconds = nudgeOf(controls))))
+            }
+            is BuiltinSound -> builtin(entry.name, controls) ?: SoundLookup.Unknown(name)
+            null -> builtin(name, controls) ?: SoundLookup.Unknown(name)
+            else -> SoundLookup.Unknown(name)
+        }
     }
-}
 
-/** The sample number of an `n`: a number, or text that reads as one (anything else is sample 0). */
-private fun sampleNumber(n: Any?): Double = when (n) {
-    is Double -> n
-    is String -> jsStringToNumber(n).let { if (it.isNaN()) 0.0 else it }
-    else -> 0.0
-}
+    /** The sound called [key] for a preview: sample [n] of it, at MIDI note [note] when that is given. */
+    fun resolve(key: String, n: Double, note: Double?): SoundLookup {
+        val controls = HashMap<String, Any?>(3)
+        controls["s"] = key
+        controls["n"] = n
+        if (note != null) controls["note"] = note
+        return resolve(controls)
+    }
 
-/** The MIDI number of a `note`: a number as it is, a note name converted; null when none is set. */
-private fun noteNumber(note: Any?): Double? = when (note) {
-    is Double -> note
-    is String -> noteToMidi(note)
-    else -> null
+    /** A synth of the engine, or one of its synthesised drums (variant `n`); null when [name] is neither. */
+    private fun builtin(name: String, controls: ControlMap): SoundLookup? {
+        val key = name.lowercase()
+        Waveform.byName(key)?.let { return SoundLookup.Ready(VoiceSource.Synth(it)) }
+        val sample = drums.sample(key, getSoundIndex(controls["n"], DRUM_VARIANTS)) ?: return null
+        val transpose = valueToMidi(controls, UNPITCHED_ROOT_MIDI) - UNPITCHED_ROOT_MIDI
+        return SoundLookup.Ready(VoiceSource.Sample(SampleSourceParams(sample, transpose, nudgeSeconds = nudgeOf(controls))))
+    }
+
+    /** The `nudge` control in seconds; anything but a number counts as none. */
+    private fun nudgeOf(controls: ControlMap): Double = (controls["nudge"] as? Double) ?: 0.0
 }

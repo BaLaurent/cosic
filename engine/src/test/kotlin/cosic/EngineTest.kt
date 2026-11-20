@@ -66,10 +66,8 @@ class EngineTest {
 
     @Test
     fun anExceptionThatIsNotACosicErrorIsReportedAsAnErrorWhilePlaying() {
-        val broken = object : SoundLibrary {
-            override fun bank(name: String): BankInfo? = throw IllegalStateException("the library broke")
-
-            override fun sample(name: String, index: Int): SampleData? = null
+        val broken = object : SoundLibrary by FakeLibrary() {
+            override fun sound(name: String): SoundEntry? = throw IllegalStateException("the library broke")
         }
         val report = assertIs<EvalReport.Failed>(engineOf(broken).evaluate("""s("kit")"""))
         assertEquals("Error while playing: the library broke", report.message)
@@ -126,10 +124,10 @@ class EngineTest {
     @Test
     fun unknownSoundsAreWarnedAboutNotRejected() {
         val engine = engineOf()
-        assertOk(listOf("Unknown sound 'nope'"), engine.evaluate("""s("nope*2, sine")"""))
+        assertOk(listOf("sound nope not found! Is it loaded?"), engine.evaluate("""s("nope*2, sine")"""))
         engine.play()
         engine.renderFrames(CYCLE)
-        assertEquals(listOf("Unknown sound 'nope'"), engine.snapshot.warnings)
+        assertEquals(listOf("sound nope not found! Is it loaded?"), engine.snapshot.warnings)
     }
 
     @Test
@@ -171,10 +169,10 @@ class EngineTest {
     @Test
     fun anUnknownSoundOfADrumMachineIsWarnedAboutByItsFullName() {
         val engine = engineOf()
-        assertOk(listOf("Unknown sound 'cosic808_xx'"), engine.evaluate("""s("xx bd").bank("cosic808")"""))
+        assertOk(listOf("sound cosic808_xx not found! Is it loaded?"), engine.evaluate("""s("xx bd").bank("cosic808")"""))
         engine.play()
         engine.renderFrames(CYCLE)
-        assertEquals(listOf("Unknown sound 'cosic808_xx'"), engine.snapshot.warnings)
+        assertEquals(listOf("sound cosic808_xx not found! Is it loaded?"), engine.snapshot.warnings)
     }
 
     @Test
@@ -198,7 +196,7 @@ class EngineTest {
         assertEquals(emptyList(), engine.evaluateOk(code).warnings, "cycles 0 and 1")
         engine.play()
         engine.renderFrames(2 * CYCLE + CYCLE / 2) // the playhead is at cycle 2.47
-        assertEquals(listOf("Unknown sound 'nope'"), engine.evaluateOk(code).warnings, "the playhead is in cycle 2, so cycles 2 and 3 are looked at")
+        assertEquals(listOf("sound nope not found! Is it loaded?"), engine.evaluateOk(code).warnings, "the playhead is in cycle 2, so cycles 2 and 3 are looked at")
     }
 
     // ------------------------------------------------------------------------ play, stop, snapshot
@@ -406,7 +404,7 @@ class EngineTest {
 
     @Test
     fun previewOfAnUnknownSoundOrAnUnloadedSampleIsSilent() {
-        val library = FakeLibrary(banks = mapOf("kit" to BankInfo("kit", 1, null)))
+        val library = FakeLibrary(banks = mapOf("kit" to TestBank(1)))
         val engine = engineOf(library)
         engine.preview("nope")
         engine.preview("kit")
@@ -435,7 +433,7 @@ class EngineTest {
 
     @Test
     fun aNewPreviewReplacesOneThatIsStillWaiting() {
-        val library = FakeLibrary(banks = mapOf("kit" to BankInfo("kit", 1, null)))
+        val library = FakeLibrary(banks = mapOf("kit" to TestBank(1)))
         val engine = engineOf(library)
         engine.preview("kit")
         engine.preview("bd")

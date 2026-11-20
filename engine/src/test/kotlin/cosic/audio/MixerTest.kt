@@ -1,6 +1,5 @@
 package cosic.audio
 
-import cosic.BankInfo
 import cosic.SampleData
 import cosic.player.voiceParams
 import java.util.Random
@@ -191,33 +190,24 @@ class MixerTest {
     // ------------------------------------------------------------------ samples
 
     @Test
-    fun pitchedSampleIsTransposedByTheDistanceFromItsRootNote() {
+    fun aSampleIsRepitchedByTheTransposeItsSourceCarriesNotByNote() {
         val data = sineSample(100.0, 1.0)
-        fun left(note: Double?) =
-            renderLeft(vp(VoiceSource.Sample(data, 48), 1.0, *(if (note == null) emptyArray() else arrayOf<Pair<String, Any?>>("note" to note))))
-        assertEquals(200.0, estimateFrequency(left(60.0), 2400, 20_000), 0.5)
-        assertEquals(100.0, estimateFrequency(left(null), 2400, 20_000), 0.5) // note defaults to 48, the root
-        assertEquals(50.0, estimateFrequency(left(36.0), 2400, 20_000), 0.5)
+        fun left(semitones: Double, vararg controls: Pair<String, Any?>) =
+            renderLeft(vp(VoiceSource.Sample(SampleSourceParams(data, semitones)), 1.0, *controls))
+        assertEquals(100.0, estimateFrequency(left(0.0), 2400, 20_000), 0.5)
+        assertEquals(200.0, estimateFrequency(left(12.0), 2400, 20_000), 0.5)
+        assertEquals(50.0, estimateFrequency(left(-12.0), 2400, 20_000), 0.5)
+        assertEquals(100.0, estimateFrequency(left(0.0, "note" to 60.0), 2400, 20_000), 0.5, "the sound lookup turns note and freq into the transpose")
 
-        val ends = renderLeft(vp(VoiceSource.Sample(data, 48), 1.0, "note" to 60.0), SR * 6 / 10)
+        val ends = left(12.0)
         assertTrue(peak(ends, 0, SR * 45 / 100) > 0.5f)
         assertEquals(0f, peak(ends, SR * 53 / 100), "an octave up halves the playing time")
     }
 
     @Test
-    fun unpitchedSampleKeepsItsRateUnlessNoteIsSet() {
-        val data = sineSample(100.0, 1.0)
-        fun left(note: Double?) =
-            renderLeft(vp(VoiceSource.Sample(data, null), 1.0, *(if (note == null) emptyArray() else arrayOf<Pair<String, Any?>>("note" to note))))
-        assertEquals(100.0, estimateFrequency(left(null), 2400, 20_000), 0.5)
-        assertEquals(200.0, estimateFrequency(left(60.0), 2400, 20_000), 0.5)
-        assertEquals(50.0, estimateFrequency(left(36.0), 2400, 20_000), 0.5)
-    }
-
-    @Test
     fun fileSampleRateIsConvertedToTheEngineRate() {
         val data = sineSample(100.0, 1.0, rate = 22_050)
-        val left = renderLeft(vp(VoiceSource.Sample(data, null), 1.0), 54_000)
+        val left = renderLeft(vp(plain(data), 1.0), 54_000)
         assertEquals(100.0, estimateFrequency(left, 4800, 40_000), 0.3)
         assertTrue(peak(left, 0, 46_000) > 0.5f)
         assertEquals(0f, peak(left, SR * 103 / 100), "the second of audio takes a second at any rate")
@@ -228,22 +218,22 @@ class MixerTest {
     }
 
     @Test
-    fun speedScalesPlaybackAndIsClampedToEight() {
+    fun speedScalesPlaybackWithoutALimit() {
         val data = sineSample(100.0, 1.0)
-        fun left(speed: Double) = renderLeft(vp(VoiceSource.Sample(data, null), 1.0, "speed" to speed))
+        fun left(speed: Double) = renderLeft(vp(plain(data), 1.0, "speed" to speed))
         assertEquals(200.0, estimateFrequency(left(2.0), 2400, 20_000), 0.5)
         assertEquals(50.0, estimateFrequency(left(0.5), 2400, 20_000), 0.5)
 
         val fast = left(100.0)
-        assertTrue(peak(fast, 0, SR / 10) > 0.5f, "speed 100 clamps to 8: 1 s of audio lasts 0.125 s")
-        assertEquals(0f, peak(fast, SR * 15 / 100))
+        assertTrue(peak(fast, 0, 300) > 0.5f, "speed 100: the second of audio lasts 0.01 s")
+        assertEquals(0f, peak(fast, SR * 3 / 100))
     }
 
     @Test
     fun negativeSpeedPlaysTheSampleBackwards() {
         val ramp = SampleData(FloatArray(24_000) { it / 24_000f }, SR)
-        val forward = renderLeft(vp(VoiceSource.Sample(ramp, null), 1.0), 12_000)
-        val backward = renderLeft(vp(VoiceSource.Sample(ramp, null), 1.0, "speed" to -1.0), 12_000)
+        val forward = renderLeft(vp(plain(ramp), 1.0), 12_000)
+        val backward = renderLeft(vp(plain(ramp), 1.0, "speed" to -1.0), 12_000)
         assertTrue(forward[3000] < forward[9000])
         assertTrue(backward[3000] > backward[9000])
         assertTrue(forward[100] < 0.05f, "forward playback starts at the quiet end of the ramp")
@@ -253,10 +243,10 @@ class MixerTest {
     @Test
     fun beginAndEndSelectTheRegionOfTheSample() {
         val ramp = SampleData(FloatArray(24_000) { it / 24_000f }, SR) // value = position / length
-        val left = renderLeft(vp(VoiceSource.Sample(ramp, null), 1.0, "begin" to 0.5), 2000)
+        val left = renderLeft(vp(plain(ramp), 1.0, "begin" to 0.5), 2000)
         assertEquals((0.5 + 100 / 24_000.0) * 0.8, left[100].toDouble(), 0.004)
 
-        val region = renderLeft(vp(VoiceSource.Sample(ramp, null), 1.0, "begin" to 0.125, "end" to 0.25), 6000) // 3000 frames
+        val region = renderLeft(vp(plain(ramp), 1.0, "begin" to 0.125, "end" to 0.25), 6000) // 3000 frames
         assertTrue(peak(region, 0, 2900) > 0.05f)
         assertEquals(0f, peak(region, 3600), "the region and the 10 ms release are over")
     }
@@ -266,14 +256,15 @@ class MixerTest {
         val data = sineSample(100.0, 0.1)
         val mixer = Mixer(SR)
         fun skipped(params: VoiceParams) = !mixer.startVoice(params)
-        assertTrue(skipped(vp(VoiceSource.Sample(data, null), 1.0, "begin" to 0.6, "end" to 0.4)))
-        assertTrue(skipped(vp(VoiceSource.Sample(data, null), 1.0, "begin" to 0.5, "end" to 0.5)))
-        assertTrue(skipped(vp(VoiceSource.Sample(data, null), 1.0, "begin" to 5.0))) // clamps to 1.0 == end
-        assertTrue(skipped(vp(VoiceSource.Sample(data, null), 1.0, "speed" to 0.0)))
-        assertTrue(skipped(vp(VoiceSource.Sample(SampleData(FloatArray(0), SR), null), 1.0)))
+        assertTrue(skipped(vp(plain(data), 1.0, "begin" to 0.6, "end" to 0.4)))
+        assertTrue(skipped(vp(plain(data), 1.0, "begin" to 0.5, "end" to 0.5)))
+        assertTrue(skipped(vp(plain(data), 1.0, "begin" to 5.0))) // the slice from 5 to 1 would last no time
+        assertTrue(skipped(vp(plain(data), 1.0, "begin" to -0.1))) // the browser refuses a negative offset
+        assertTrue(skipped(vp(plain(data), 1.0, "speed" to 0.0)))
+        assertTrue(skipped(vp(plain(SampleData(FloatArray(0), SR)), 1.0)))
         assertEquals(0, mixer.activeVoices)
 
-        assertTrue(mixer.startVoice(vp(VoiceSource.Sample(data, null), 1.0)))
+        assertTrue(mixer.startVoice(vp(plain(data), 1.0)))
         // begin, end and speed only describe sample playback; synths ignore them.
         assertTrue(mixer.startVoice(vp(sine, 1.0, "begin" to 0.6, "end" to 0.4, "speed" to 0.0)))
         assertEquals(2, mixer.activeVoices)
@@ -521,7 +512,7 @@ class MixerTest {
         mixer.startVoice(vp(sine, 0.5, "note" to 60.0, "cutoff" to 2000.0, "resonance" to 4.0, "delay" to 0.5, "delaytime" to 0.05, "delayfeedback" to 0.6, "room" to 0.4, "pan" to 0.2))
         mixer.startVoice(vp(synth(Waveform.WHITE), 0.3, "hcutoff" to 3000.0, "bandf" to 5000.0, "shape" to 0.4, "crush" to 6.0, "coarse" to 3.0, "pan" to 0.8, "room" to 0.3))
         mixer.startVoice(
-            vp(VoiceSource.Sample(sineSample(150.0, 0.4), 48), 0.4, "note" to 55.0, "speed" to 1.5, "begin" to 0.1, "end" to 0.9, "cut" to 2.0, "orbit" to 2.0),
+            vp(VoiceSource.Sample(SampleSourceParams(sineSample(150.0, 0.4), transposeSemitones = 7.0)), 0.4, "speed" to 1.5, "begin" to 0.1, "end" to 0.9, "cut" to 2.0, "orbit" to 2.0),
         )
     }
 
@@ -605,7 +596,7 @@ class MixerTest {
             val source = if (rng.nextBoolean()) {
                 VoiceSource.Synth(Waveform.entries[rng.nextInt(Waveform.entries.size)])
             } else {
-                VoiceSource.Sample(samples[rng.nextInt(samples.size)], if (rng.nextBoolean()) null else rng.nextInt(24, 90))
+                VoiceSource.Sample(SampleSourceParams(samples[rng.nextInt(samples.size)], transposeSemitones = rng.nextInt(-12, 13).toDouble()))
             }
             val controls = LinkedHashMap<String, Any?>()
             for (key in keys) if (rng.nextInt(4) == 0 && key != "orbit" && key != "bus" && key != "channels" && key != "duckorbit") controls[key] = pick()
@@ -616,31 +607,6 @@ class MixerTest {
             assertTrue(allFinite(out), "NaN or infinity after step $step")
             assertTrue(peak(out) <= 1.0f, "peak ${peak(out)} after step $step")
         }
-    }
-
-    // -------------------------------------------------------------------- banks
-
-    @Test
-    fun pitchedBankPicksTheNearestRootAndTiesGoToTheLowerRoot() {
-        val bank = BankInfo("piano", 4, intArrayOf(36, 48, 52, 72))
-        assertEquals(0, bankEntry(bank, 0.0, 30.0))
-        assertEquals(1, bankEntry(bank, 0.0, 48.0))
-        assertEquals(1, bankEntry(bank, 0.0, 50.0))
-        assertEquals(2, bankEntry(bank, 0.0, 50.1))
-        assertEquals(3, bankEntry(bank, 0.0, 100.0))
-        assertEquals(1, bankEntry(bank, 9.0, null), "n is ignored and note defaults to 48")
-    }
-
-    @Test
-    fun unpitchedBankIndexesByFlooredNWrappedByCount() {
-        val bank = BankInfo("kick", 5, null)
-        assertEquals(0, bankEntry(bank, 0.0, null))
-        assertEquals(3, bankEntry(bank, 3.7, null))
-        assertEquals(0, bankEntry(bank, 5.0, null))
-        assertEquals(4, bankEntry(bank, -1.0, null))
-        assertEquals(4, bankEntry(bank, -0.5, null))
-        assertEquals(0, bankEntry(bank, Double.NaN, null))
-        assertEquals(2, bankEntry(bank, 2.0, 60.0), "note changes pitch, not the entry")
     }
 }
 

@@ -6,7 +6,7 @@ import cosic.audio.channel
 import cosic.audio.constantSample
 import cosic.audio.peak
 import cosic.audio.rms
-import cosic.render.EmptyLibrary
+import cosic.render.emptyLibrary
 import cosic.render.OfflineRenderer
 import cosic.render.RenderCli
 import java.io.ByteArrayOutputStream
@@ -21,6 +21,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -100,9 +101,12 @@ class RenderTest {
     }
 
     @Test
-    fun theEmptyLibraryHasNothing() {
-        assertNull(EmptyLibrary.bank("kick"))
-        assertNull(EmptyLibrary.sample("kick", 0))
+    fun theEmptyLibraryHasNoBanksButTheEnginesOwnSounds() {
+        val library = emptyLibrary()
+        assertNull(library.sound("kick"))
+        assertEquals(emptyList(), library.entries(), "nothing is registered")
+        assertIs<BuiltinSound>(library.sound("bd"))
+        assertIs<BuiltinSound>(library.sound("sine"))
         assertEquals(0f, peak(OfflineRenderer.render("""s("kick")""", 1.0)), "an unknown sound is silent")
     }
 
