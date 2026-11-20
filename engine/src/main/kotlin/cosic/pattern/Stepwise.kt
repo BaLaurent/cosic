@@ -14,7 +14,7 @@ package cosic.pattern
  * comparisons with `0` in `shrinklist` that a fraction can never satisfy, `grow` reading a list amount as a fraction, the
  * `TypeError`s of the stack functions for a pattern without steps. What the port does differently:
  *  - `setSteps` returns a copy instead of changing the pattern, so the shared `silence` and `nothing` are never touched;
- *  - `seqPLoop` does not add the start of an unspecific part to the array it was given;
+ *  - `seqPLoop` completes a part given as `[stop, pattern]` in a copy, not in the array the program passed in;
  *  - a count that would make the loops of `stepalt` and `shrinklist` build more than [MAX_COUNT] entries is [TOO_DENSE].
  */
 
