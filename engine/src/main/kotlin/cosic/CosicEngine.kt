@@ -5,8 +5,15 @@ import cosic.audio.DrumKit
 import cosic.audio.Mixer
 import cosic.audio.SYNTH_NAMES
 import cosic.audio.VoiceParams
+import cosic.io.ClockBridge
+import cosic.io.ConsoleLog
+import cosic.io.InputState
+import cosic.io.OutputBus
+import cosic.io.ScopeTaps
 import cosic.pattern.CosicError
+import cosic.pattern.Hap
 import cosic.pattern.Pattern
+import cosic.pattern.Rational
 import cosic.player.IdleTracker
 import cosic.player.Scheduler
 import cosic.player.SoundLookup
@@ -48,9 +55,15 @@ private sealed interface Command {
 
     data object Play : Command
 
+    /** Starts at [cycle] with no start delay: the first frame rendered next is the first frame of that cycle. */
+    class PlayFrom(val cycle: Rational) : Command
+
     data object Stop : Command
 
     class Preview(val sound: String, val index: Int, val note: Double?) : Command
+
+    /** A live input just made events the program turns into sounds (`midikeys`); [done] is told whether any were played. */
+    class Trigger(val latencySeconds: Double, val match: (Hap) -> Boolean, val done: ((Boolean) -> Unit)?) : Command
 }
 
 /**
@@ -68,13 +81,47 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
     internal val drums = DrumKit(sampleRate)
     private val sounds = SoundResolver(sampleRate, library, drums)
     private val mixer = Mixer(sampleRate)
-    private val scheduler = Scheduler(sampleRate, sounds)
+
+    /** What the program, the engine and the patterns being played write to the console: the last 40 lines. */
+    val console = ConsoleLog()
+
+    /** Where the haps with hooks (`.midi()`, `.osc()`, `.log()`...) go, and the devices those hooks send to; the app plugs its devices in here. */
+    val outputs = OutputBus(console)
+
+    /** What the person playing does to the device: pointer, keys, motion sensors, sliders. The app sets it; patterns read it. */
+    val inputs = InputState()
+
+    /** The sound of the voices with an `analyze` id, for `scope`, `fscope` and `spectrum`. */
+    val scopes = ScopeTaps()
+
+    /** Turns the engine's frames into the system's time (for MIDI and OSC): the app feeds it the time stamps of its audio track. */
+    val clock = ClockBridge().also { outputs.clock = it }
+
+    /** Where programs fetch remote JSON from (`midimaps('github:...')`); the app implements it. */
+    @Volatile
+    var remote: RemoteJson? = null
+
+    /** Reads the metadata comments of a program (`// @title ...`) for [ProgramInfo.metadata]; no metadata is read while it is null. */
+    @Volatile
+    var metadataParser: ((String) -> Map<String, Any>)? = null
+
+    /** What the last program that [evaluate] accepted is: its sliders, widgets, visuals, metadata and the inputs it uses. */
+    @Volatile
+    var program: ProgramInfo? = null
+        private set
+
+    private val effects = EngineEffects(inputs, console, outputs) { remote }
+    private val scheduler = Scheduler(sampleRate, sounds, outputs)
     private val idleTracker = IdleTracker(sampleRate)
     private val commands = ConcurrentLinkedQueue<Command>()
     private val startDelayFrames = Math.round(PLAY_START_DELAY_SECONDS * sampleRate)
 
+    /** What callers of [play] and [stop] asked for last, so that `[cyclist] start` and `[cyclist] stop` are logged once per change, as the cyclist does. */
+    @Volatile
+    private var playRequested = false
+
     /** What a program can reach outside of the language; a `setcps` reaches the scheduler at once, even when the program fails later. */
-    private val host = SessionHost(library) { cps -> commands.add(Command.SetCps(cps)) }
+    private val host = SessionHost(library, { cps -> commands.add(Command.SetCps(cps)) }, effects)
 
     /** The language session: the tempo and the patterns labelled by earlier programs live from one evaluation to the next. */
     private var session = ReplSession(host)
@@ -107,10 +154,16 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
     fun evaluate(code: String): EvalReport = try {
         library.awaitReady(LIBRARY_READY_MILLIS) // the sounds a program names must be registered when its first events are looked up
         onBigStack {
+            effects.beginEvaluation()
             val program = session.evaluate(code)
-            val warnings = host.quietly { dryRun(program.pattern, currentCycle(), sounds, program.cps) }
+            val warnings = host.quietly { dryRun(program.pattern, currentCycle(), sounds, program.cps, outputs) }
             commands.add(Command.SetProgram(program.pattern, program.cps, warnings))
-            EvalReport.Ok(program.cps, warnings, ProgramInfo(program.miniLocations, program.sliders, program.widgets))
+            val info = ProgramInfo(
+                program.miniLocations, program.sliders, program.widgets, effects.visuals, metadataOf(code), effects.inputsUsed(),
+            )
+            this.program = info
+            console.log("[eval] code updated")
+            EvalReport.Ok(program.cps, warnings, info)
         }
     } catch (e: CosicError) {
         failed(code, e.message, e.range)
@@ -130,12 +183,37 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
 
     /** Starts the program at cycle 0 if it is not playing yet. */
     fun play() {
+        if (!playRequested) console.log("[cyclist] start")
+        playRequested = true
         commands.add(Command.Play)
+    }
+
+    /**
+     * Starts the program at [cycle] (a position in the pattern, not a time), with no start delay: the first frame rendered next is the
+     * first frame of that cycle, and the events that began before it are not played. A program that is playing starts over there. This is
+     * how a stretch of the program is rendered offline.
+     */
+    fun playFrom(cycle: Double) {
+        require(cycle >= 0.0 && cycle.isFinite()) { "cycle must be zero or a positive number" }
+        if (!playRequested) console.log("[cyclist] start")
+        playRequested = true
+        commands.add(Command.PlayFrom(Rational.of(cycle)))
     }
 
     /** Stops the program: voices and effect tails fade out over 20 ms, and the delay and reverb are emptied after it. */
     fun stop() {
+        if (playRequested) console.log("[cyclist] stop")
+        playRequested = false
         commands.add(Command.Stop)
+    }
+
+    /**
+     * Makes the program play what a live input has just made (`_triggerKeyboard` of midi.mjs): [match] picks the haps of the pattern at the
+     * instant [latencySeconds] from now that the input made (the keyboard's notes), and those are routed like scheduled ones, sounding as soon as the
+     * next block. [done] is told on the audio thread whether any hap was played. Does nothing while the program is not playing.
+     */
+    internal fun trigger(latencySeconds: Double, match: (Hap) -> Boolean, done: ((Boolean) -> Unit)? = null) {
+        commands.add(Command.Trigger(latencySeconds, match, done))
     }
 
     /**
@@ -155,6 +233,7 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
         startWaitingPreview()
         scheduler.schedule(renderedFrames + frames)
         renderSegments(out, frames)
+        scopes.endBlock(frames)
         renderedFrames += frames
         scheduler.highlights.expire(renderedFrames - HIGHLIGHT_KEEP_SECONDS * sampleRate)
 
@@ -176,6 +255,11 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
                 is Command.SetProgram -> scheduler.setProgram(command.pattern, command.cps, command.warnings)
                 is Command.SetCps -> scheduler.setCps(command.cps)
                 Command.Play -> if (!scheduler.playing) scheduler.play(renderedFrames + startDelayFrames)
+                is Command.PlayFrom -> {
+                    // a program that is playing starts over: what was queued for the old timeline goes, voices that sound keep sounding
+                    scheduler.stop()
+                    scheduler.play(renderedFrames, command.cycle)
+                }
                 Command.Stop -> {
                     scheduler.stop()
                     mixer.stopAll(STOP_FADE_MS)
@@ -184,6 +268,13 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
                 is Command.Preview -> {
                     waitingPreview = command
                     previewGivesUpAt = renderedFrames + PREVIEW_WAIT_SECONDS * sampleRate
+                }
+                is Command.Trigger -> {
+                    val latencyFrames = Math.round(command.latencySeconds * sampleRate)
+                    val played = scheduler.trigger(
+                        renderedFrames, latencyFrames, scheduler.anchor.cycleAt(renderedFrames), scheduler.cps, command.match,
+                    )
+                    command.done?.invoke(played)
                 }
             }
         }
@@ -237,7 +328,16 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
         return if (now.playing) max(0L, floor(now.cycleAt(now.renderedFrames)).toLong()) else 0L
     }
 
+    /** The metadata of [code] when there is a [metadataParser] and it can read it. */
+    private fun metadataOf(code: String): Map<String, Any> =
+        try {
+            metadataParser?.invoke(code) ?: emptyMap()
+        } catch (e: Exception) {
+            emptyMap()
+        }
+
     private fun failed(code: String, message: String, range: SourceRange?): EvalReport.Failed {
+        console.log("[eval] error: $message", "error")
         if (range == null) return EvalReport.Failed(message, null, 0, 0)
         val start = range.start.coerceIn(0, code.length)
         val line = 1 + code.take(start).count { it == '\n' }

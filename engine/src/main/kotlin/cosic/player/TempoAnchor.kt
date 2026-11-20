@@ -10,4 +10,7 @@ import cosic.pattern.Rational
 internal class TempoAnchor(val frame: Long, val cycle: Rational, val cps: Double, private val sampleRate: Int) {
     /** The frame at which cycle [at] sounds, rounded to the nearest. */
     fun frameAt(at: Rational): Long = frame + Math.round((at - cycle).toDouble() / cps * sampleRate)
+
+    /** The cycle that sounds at engine frame [at], as a number: before the anchor it is the cycle before [cycle]. */
+    fun cycleAt(at: Long): Double = cycle.toDouble() + (at - frame).toDouble() / sampleRate * cps
 }

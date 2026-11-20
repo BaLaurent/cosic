@@ -1,6 +1,8 @@
 package cosic.script
 
+import cosic.EvalEffects
 import cosic.SoundLibrary
+import cosic.detachedEffects
 import cosic.pattern.CosicError
 import cosic.pattern.JsFn
 import cosic.pattern.jsToString
@@ -43,6 +45,12 @@ internal interface ScriptHost {
 
     /** The sounds the program can reach: what `samples`, `soundAlias`, `getDuration` and the like read and register. */
     val library: SoundLibrary
+
+    /**
+     * What the engine shares with the outside world: the inputs, the outputs, the console and the report of the evaluation in progress.
+     * A host that has none gets inert ones shared by all such hosts.
+     */
+    val effects: EvalEffects get() = detachedEffects
 }
 
 /**

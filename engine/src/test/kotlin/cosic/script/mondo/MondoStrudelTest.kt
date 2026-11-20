@@ -6,6 +6,7 @@ import cosic.pattern.Rational
 import cosic.script.EmbeddedLanguage
 import cosic.script.EmbeddedLanguages
 import cosic.script.PatternValue
+import cosic.script.ProgramResult
 import cosic.script.ReplSession
 import cosic.script.evaluateProgram
 import cosic.script.js.PropFlags
@@ -21,7 +22,17 @@ import kotlin.test.assertTrue
  * Strudel's; these tests say what each rule is for.
  */
 class MondoStrudelTest {
-    private fun play(code: String, cycles: Int = 1): List<String> = shown(evaluateProgram(code).pattern, cycles)
+    /**
+     * [code] evaluated in the realm of the oracle's runtime, which has no editor: `markcss` is the identity there (test/runtime.mjs), so the
+     * haps are those of the notation alone. The realm of the app has the real `markcss`, which the last test here looks at.
+     */
+    private fun program(code: String): ProgramResult {
+        val session = ReplSession.create()
+        session.realm.patternPrototype.defineOwn("markcss", session.realm.function("markcss", 1) { self, _ -> self }, PropFlags.HIDDEN)
+        return session.evaluate(code)
+    }
+
+    private fun play(code: String, cycles: Int = 1): List<String> = shown(program(code).pattern, cycles)
 
     private fun fails(code: String, cycles: Int = 1): CosicError = assertFailsWith<CosicError> { play(code, cycles) }
 
@@ -278,5 +289,13 @@ class MondoStrudelTest {
         assertEquals("color: var(--caret,--foreground);text-decoration:underline", style)
         assertTrue(receiver is PatternValue)
         assertEquals(listOf("[ 0/1 → 1/1 | s:bd ]"), shown(pattern))
+    }
+
+    @Test
+    fun inTheRealmOfTheAppTheAtomsCarryTheMarkStyleOfTheEditor() {
+        assertEquals(
+            listOf("[ 0/1 → 1/1 | s:bd markcss:color: var(--caret --foreground);text-decoration:underline ]"),
+            shown(evaluateProgram("mondo`s bd`").pattern),
+        )
     }
 }

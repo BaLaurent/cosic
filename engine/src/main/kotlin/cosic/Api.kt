@@ -178,7 +178,17 @@ sealed interface EvalReport {
     data class Failed(val message: String, val range: SourceRange?, val line: Int, val column: Int) : EvalReport
 }
 
-class HighlightEvent(val startFrame: Long, val endFrame: Long, val ranges: List<SourceRange>)
+/**
+ * An event the editor may highlight while it sounds: from frame [startFrame] to [endFrame], marking the atoms of the code at [ranges]. [color]
+ * and [markcss] are the `color` and `markcss` controls of the event: the colour of the mark (white by default) and a style that replaces it.
+ */
+class HighlightEvent(
+    val startFrame: Long,
+    val endFrame: Long,
+    val ranges: List<SourceRange>,
+    val color: String? = null,
+    val markcss: String? = null,
+)
 
 /** A call of a widget method (`pat._scope()`): where it is and which widget it makes. */
 public data class WidgetConfig(
@@ -212,11 +222,18 @@ public data class SliderConfig(
     val id: String,
 )
 
-/** What the transpiler found in a program: where the atoms of its mini-notation strings are, and the sliders and widgets it makes. */
+/**
+ * What a program is as the editor needs to know it: where the atoms of its mini-notation strings are, the sliders and widgets it makes,
+ * the [visuals] its visual builtins made (null when none did), the [metadata] its comments declare (`// @title ...`; empty when the engine
+ * has no [CosicEngine.metadataParser]) and the [inputsUsed] the program reads (the app listens to those only).
+ */
 public data class ProgramInfo(
     val miniLocations: List<SourceRange>,
     val sliders: List<SliderConfig>,
     val widgets: List<WidgetConfig>,
+    val visuals: ProgramVisuals? = null,
+    val metadata: Map<String, Any> = emptyMap(),
+    val inputsUsed: Set<InputKind> = emptySet(),
 )
 
 class EngineSnapshot(

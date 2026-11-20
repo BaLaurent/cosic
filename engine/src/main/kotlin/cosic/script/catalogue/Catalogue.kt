@@ -1,5 +1,6 @@
 package cosic.script.catalogue
 
+import cosic.EvalEffects
 import cosic.SourceRange
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
@@ -43,6 +44,9 @@ internal class CallContext(val bridge: Bridge, val self: Any?, val args: List<An
     val realm: Realm get() = bridge.realm
 
     val host: ScriptHost get() = bridge.realm.host
+
+    /** What the engine shares with the outside world: inputs, outputs, console, the report of the evaluation (see [EvalEffects]). */
+    val effects: EvalEffects get() = host.effects
 
     fun arg(i: Int): Any? = args.getOrElse(i) { Undefined }
 
@@ -139,6 +143,7 @@ internal object Catalogue {
             registerMondo()
             registerTidal()
             registerLibrary()
+            registerHooks()
             registerKabelsalat() // before Language, after everything it could depend on: `K` is a transpiler hook and `worklet` needs only the kernel
             registerLanguage()
         }

@@ -1,5 +1,6 @@
 package cosic.script
 
+import cosic.EngineEffects
 import cosic.SoundLibrary
 import cosic.pattern.errorLogger
 import cosic.pattern.logger
@@ -19,7 +20,8 @@ internal class LogLine(val level: LogLevel, val message: String)
  * The host of one session ([ReplSession]): what the interpreter and the catalogue reach outside of the language. It holds
  * the tempo (setting it tells [onTempo], which is how the engine learns of a `setcps` while the program is still running,
  * as Strudel's scheduler does), the lines written to the console, the sliders, a timer and the sound [library] (the one the
- * engine plays from: `samples()` of a program registers into it).
+ * engine plays from: `samples()` of a program registers into it). The console, the sliders and the other
+ * inputs and outputs are those of [effects], which the engine shares with the app.
  *
  * Everything but the timer and [lock] is safe to use from any thread: patterns call back into the program from the
  * audio thread.
@@ -27,6 +29,7 @@ internal class LogLine(val level: LogLevel, val message: String)
 internal class SessionHost(
     override val library: SoundLibrary = emptyLibrary(),
     private val onTempo: (Double) -> Unit = {},
+    override val effects: EngineEffects = EngineEffects(),
 ) : ScriptHost {
     @Volatile
     private var tempo = DEFAULT_CPS
@@ -65,6 +68,15 @@ internal class SessionHost(
             while (recent.size > MAX_RECENT_LINES) recent.removeFirst()
         }
         onLog?.invoke(line)
+        effects.console.log(
+            message,
+            when (level) {
+                LogLevel.ERROR -> "error"
+                LogLevel.WARNING -> "warning"
+                LogLevel.DEBUG -> "debug"
+                LogLevel.INFO -> null
+            },
+        )
     }
 
     /** The last lines written to the console, oldest first. */
@@ -111,12 +123,10 @@ internal class SessionHost(
 
     // ---- sliders -------------------------------------------------------------------------------------------------------
 
-    private val sliders = ConcurrentHashMap<String, Double>()
-
-    override fun sliderGet(id: String): Double? = sliders[id]
+    override fun sliderGet(id: String): Double? = (effects.inputs.sliders.get(id) as? Number)?.toDouble()
 
     override fun sliderSet(id: String, value: Double) {
-        sliders[id] = value
+        effects.inputs.sliders.set(id, value)
     }
 
     private companion object {
