@@ -3,11 +3,13 @@ package cosic.player
 import cosic.BuiltinSound
 import cosic.SampleBank
 import cosic.SoundLibrary
+import cosic.WaveTableBank
 import cosic.audio.DRUM_VARIANTS
 import cosic.audio.DrumKit
 import cosic.audio.SampleSourceParams
 import cosic.audio.VoiceSource
 import cosic.audio.Waveform
+import cosic.audio.sources.asSourceControls
 import cosic.pattern.ControlMap
 import cosic.pattern.Undefined
 import cosic.pattern.getSoundIndex
@@ -45,7 +47,7 @@ private val REST_NAMES = setOf("-", "~", "_")
  * and logs a warning. For a bank, `n` and `note`/`freq` choose the file and its pitch ([commonSampleInfo]).
  *
  * Lookups ask the library for the sample, which starts loading it, and render drum sounds on first use (unless [drums] has been warmed up),
- * so doing one off the audio thread (see [dryRun]) warms up what it needs. Wavetable banks and soundfonts have no source yet and look unknown.
+ * so doing one off the audio thread (see [dryRun]) warms up what it needs. Soundfonts have no source yet and look unknown. A wavetable that is not decoded yet is [SoundLookup.Loading], as a sample is.
  */
 internal class SoundResolver(sampleRate: Int, val library: SoundLibrary, private val drums: DrumKit = DrumKit(sampleRate)) {
     /**
@@ -67,6 +69,11 @@ internal class SoundResolver(sampleRate: Int, val library: SoundLibrary, private
                 val choice = commonSampleInfo(entry.groups, controls)
                 val data = library.sample(entry, choice.group, choice.index) ?: return SoundLookup.Loading
                 SoundLookup.Ready(VoiceSource.Sample(SampleSourceParams(data, choice.transposeSemitones, nudgeSeconds = nudgeOf(controls))))
+            }
+            is WaveTableBank -> {
+                val choice = commonSampleInfo(entry.groups, controls)
+                val frames = library.wavetable(entry, choice.group, choice.index) ?: return SoundLookup.Loading
+                SoundLookup.Ready(VoiceSource.Wavetable(frames, controls.asSourceControls()))
             }
             is BuiltinSound -> builtin(entry.name, controls) ?: SoundLookup.Unknown(name)
             null -> builtin(name, controls) ?: SoundLookup.Unknown(name)

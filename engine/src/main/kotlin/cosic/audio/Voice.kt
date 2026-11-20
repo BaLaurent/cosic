@@ -1,5 +1,7 @@
 package cosic.audio
 
+import cosic.audio.sources.SourceSpec
+import cosic.audio.sources.WavetableSource
 import cosic.audio.sources.frequencyFromParams
 import kotlin.math.abs
 import kotlin.math.pow
@@ -53,6 +55,9 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     // The oscillator is the legacy synth source (Task 3.17 replaces it with SoundSource); the sampler is the player of superdough's.
     private val oscillator = Oscillator(sampleRate)
     private val player = SamplePlayer(sampleRate)
+
+    /** The wavetable source of a voice that plays one (it makes its own envelope, so the amplitude envelope of the voice stays at 1); null otherwise. */
+    private var wavetable: WavetableSource? = null
     private var isSynth = true
     private var sourceLevel = 1f
 
@@ -213,7 +218,17 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         val loopSet = main.has(Param.loop)
         val releaseSet = main.has(Param.release)
         when (val source = params.source) {
+            is VoiceSource.Wavetable -> {
+                val table = WavetableSource(SourceSpec(sampleRate, source.controls, params.durationSec, params.cps, seed.toLong()), source.frames)
+                table.start(Math.round(t * sampleRate))
+                wavetable = table
+                isSynth = false
+                isSample = false
+                ampEnv.reset(1.0)
+                return table.endSeconds
+            }
             is VoiceSource.Synth -> {
+                wavetable = null
                 oscillator.start(source.waveform, frequencyFromParams(main), seed)
                 isSynth = true
                 isSample = false
@@ -224,6 +239,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
                 )
             }
             is VoiceSource.Sample -> {
+                wavetable = null
                 val sample = source.params
                 player.start(sample, main)
                 isSynth = false
@@ -370,7 +386,11 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         val live = if (left < n) left.toInt() else n
 
         blk.channels = 1
-        val produced = if (isSynth) {
+        val wavetable = wavetable
+        val produced = if (wavetable != null) {
+            blk.channels = 2
+            wavetable.render(blk.l, blk.r, n)
+        } else if (isSynth) {
             oscillator.fill(blk.l, n)
             val level = sourceLevel
             for (i in 0 until n) blk.l[i] *= level

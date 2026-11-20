@@ -1,6 +1,8 @@
 package cosic.audio
 
 import cosic.SampleData
+import cosic.WavetableFrames
+import cosic.audio.sources.SourceControls
 
 /** What a voice plays. */
 internal sealed interface VoiceSource {
@@ -9,6 +11,12 @@ internal sealed interface VoiceSource {
 
     /** A recorded sample (a bank file, a drum-kit sound, a soundfont zone): the sampler of superdough, see [SampleSourceParams]. */
     class Sample(val params: SampleSourceParams) : VoiceSource
+
+    /**
+     * A wavetable (`s("wt_…")`): the [frames] of the table the sound lookup picked, played by a `WavetableSource` that reads its own controls
+     * (`wt`, `warp`, `warpmode`, `unison`, `detune`, …) from [controls], the event's control map. The source brings its own amplitude envelope.
+     */
+    class Wavetable(val frames: WavetableFrames, val controls: SourceControls) : VoiceSource
 }
 
 /**
