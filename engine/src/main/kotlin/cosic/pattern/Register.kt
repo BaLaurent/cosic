@@ -183,10 +183,19 @@ internal object Registry {
             .also { entries[name] = it }
     }
 
-    /** A global with its own function for the method form: `name(args)` is [global] and `pat.name(args)` is [method]. Neither is patternified. */
-    fun dual(names: List<String>, global: (List<Any?>) -> Any?, method: (Pattern, List<Any?>) -> Any?): List<Registered> = names.map { name ->
-        Registered(listOf(name), 0, true, false, { it.innerJoin() }, global, kind = RegisteredKind.FUNCTION, hasMethod = true, methodImpl = method)
-            .also { entries[name] = it }
+    /**
+     * A global with its own function for the method form: `name(args)` is [global] and `pat.name(args)` is [method]. Neither is
+     * patternified. [alignable] makes the method an alignment accessor, `pat.name.out(...)` (see [alignHook]).
+     */
+    fun dual(
+        names: List<String>,
+        alignable: Boolean = false,
+        global: (List<Any?>) -> Any?,
+        method: (Pattern, List<Any?>) -> Any?,
+    ): List<Registered> = names.map { name ->
+        Registered(
+            listOf(name), 0, true, false, { it.innerJoin() }, global, alignable, RegisteredKind.FUNCTION, hasMethod = true, methodImpl = method,
+        ).also { entries[name] = it }
     }
 
     /** A global that is a value, not a function (`silence`). */

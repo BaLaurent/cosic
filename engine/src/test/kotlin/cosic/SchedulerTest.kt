@@ -229,8 +229,8 @@ class SchedulerTest {
 
     @Test
     fun aChunkThatThrowsIsSkippedTheErrorIsRecordedAndSchedulingGoesOn() {
-        // cycle 2 of the three-cycle loop adds a word to a note: fine until that cycle is queried
-        val scheduler = scheduler("""cat(s("sine"), s("sine"), note("c").add("zz"))""")
+        // cycle 2 of the three-cycle loop adds a word that is not a note to a note: fine until that cycle is queried
+        val scheduler = scheduler("""cat(s("sine"), s("sine"), note("c").add(note("zz")))""")
         scheduler.play(0)
         scheduler.schedule(4 * CYCLE)
 
@@ -243,7 +243,7 @@ class SchedulerTest {
 
     @Test
     fun aNewProgramClearsTheRuntimeErrorAndReplacesTheWarnings() {
-        val scheduler = scheduler("""cat(s("nope"), note("c").add("zz"))""")
+        val scheduler = scheduler("""cat(s("nope"), note("c").add(note("zz")))""")
         scheduler.play(0)
         scheduler.schedule(2 * CYCLE)
         assertNotNull(scheduler.runtimeError)
@@ -257,7 +257,7 @@ class SchedulerTest {
 
     @Test
     fun playClearsTheRuntimeError() {
-        val scheduler = scheduler("""note("c").add("zz")""")
+        val scheduler = scheduler("""note("c").add(note("zz"))""")
         scheduler.play(0)
         scheduler.schedule(0)
         assertNotNull(scheduler.runtimeError)
@@ -395,13 +395,13 @@ class SchedulerTest {
 
     @Test
     fun theDryRunThrowsWhatTheSchedulerWouldHaveRecorded() {
-        val program = evaluateProgram("""cat(s("sine"), note("c").add("zz"))""")
+        val program = evaluateProgram("""cat(s("sine"), note("c").add(note("zz")))""")
         assertFailsWith<CosicError> { dryRun(program.pattern, 0, SoundResolver(SR, FakeLibrary())) }
     }
 
     @Test
     fun theDryRunDoesNotLookBeyondTwoCycles() {
-        val program = evaluateProgram("""cat(s("sine"), s("sine"), note("c").add("zz"))""") // the bad cycle is cycle 2
+        val program = evaluateProgram("""cat(s("sine"), s("sine"), note("c").add(note("zz")))""") // the bad cycle is cycle 2
         assertEquals(emptyList(), dryRun(program.pattern, 0, SoundResolver(SR, FakeLibrary())))
     }
 }

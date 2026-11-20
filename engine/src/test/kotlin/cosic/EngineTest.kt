@@ -58,7 +58,7 @@ class EngineTest {
 
     @Test
     fun anErrorFoundWhileQueryingTheProgramIsRejectedWithItsRangeToo() {
-        val report = assertIs<EvalReport.Failed>(engineOf().evaluate("""cat(s("sine"), note("c").add("zz"))"""))
+        val report = assertIs<EvalReport.Failed>(engineOf().evaluate("""cat(s("sine"), note("c").add(note("zz")))"""))
         assertContains(report.message, "zz")
         assertNotNull(report.range)
         assertEquals(1, report.line)
@@ -90,7 +90,7 @@ class EngineTest {
         engine.evaluateOk("""s("bd*4")""")
         engine.play()
         engine.renderFrames(CYCLE)
-        assertIs<EvalReport.Failed>(engine.evaluate("""cat(s("sine"), note("c").add("zz"))"""))
+        assertIs<EvalReport.Failed>(engine.evaluate("""cat(s("sine"), note("c").add(note("zz")))"""))
         val starts = engine.highlightStarts(2 * CYCLE)
         assertTrue(starts.size >= 8, "the kicks go on: $starts")
         assertNull(engine.snapshot.runtimeError)
@@ -299,8 +299,8 @@ class EngineTest {
     @Test
     fun aRuntimeErrorIsPublishedAndPlaybackGoesOn() {
         val engine = engineOf()
-        // cycle 2 of this loop adds a word to a note, so the two cycles of the dry run are fine
-        engine.evaluateOk("""cat(s("sine"), s("sine"), note("c").add("zz"))""")
+        // cycle 2 of this loop adds a word that is not a note to a note, so the two cycles of the dry run are fine
+        engine.evaluateOk("""cat(s("sine"), s("sine"), note("c").add(note("zz")))""")
         engine.play()
         val starts = engine.highlightStarts(4 * CYCLE)
         val error = assertNotNull(engine.snapshot.runtimeError)

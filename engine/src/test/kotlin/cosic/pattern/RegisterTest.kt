@@ -1,9 +1,11 @@
 package cosic.pattern
 
 import cosic.SourceRange
+import cosic.script.catalogue.registerOperators
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -158,7 +160,10 @@ class RegisterTest {
     }
 
     @Test
-    fun alignmentsAreNotAvailableUntilSomeoneSetsTheHook() {
-        assertNull(alignHook)
+    fun theOperatorCatalogueSetsTheAlignmentHook() {
+        registerOperators()
+        val hook = assertNotNull(alignHook)
+        val other = pure(10.0)
+        assertEquals(a.aligned("add", "out", listOf(other)).firstLines(), hook(a, "add", "out", listOf(other)).firstLines())
     }
 }

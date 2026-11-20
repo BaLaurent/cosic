@@ -159,6 +159,7 @@ internal object Catalogue {
             registerKernel()
             registerControls()
             registerTime()
+            registerOperators()
             registerStepwise()
             registerSampleFunctions()
             registerGenerators()

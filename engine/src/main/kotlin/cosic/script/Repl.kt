@@ -1,6 +1,7 @@
 package cosic.script
 
 import cosic.mini.getLeafLocations
+import cosic.pattern.Alignment
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.pattern.Registered
@@ -72,6 +73,8 @@ internal class ReplSession(val host: SessionHost = SessionHost(), val realm: Rea
 
     private fun evaluateHere(code: String, shouldHush: Boolean): ProgramResult {
         routeKernelLogsTo(host)
+        // `setDefaultJoin` is global in Strudel and leaks from one evaluation into the next; here every program starts with the default alignment
+        Alignment.reset()
         installReplFunctions()
         allTransforms.clear()
         if (shouldHush) hush()
