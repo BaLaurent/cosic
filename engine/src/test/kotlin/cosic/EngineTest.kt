@@ -77,9 +77,16 @@ class EngineTest {
     }
 
     @Test
-    fun samplesExplainsThatItIsNotSupported() {
+    fun samplesRegistersIntoTheLibraryTheEnginePlaysFrom() {
+        val library = FakeLibrary()
+        engineOf(library).evaluateOk("samples({ kit: 'k.wav' }, 'https://a.test/')\ns(\"kit\")")
+        assertEquals(listOf("https://a.test/k.wav"), assertIs<SampleBank>(library.sound("kit")).groups.single().urls)
+    }
+
+    @Test
+    fun aSampleMapThatCannotBeLoadedFailsTheProgram() {
         val report = assertIs<EvalReport.Failed>(engineOf().evaluate("samples('x')"))
-        assertEquals("samples() isn't supported yet \u2014 import a sample folder from the Sounds tab of the editor panel instead", report.message)
+        assertEquals("error loading \"x\"", report.message)
     }
 
     @Test

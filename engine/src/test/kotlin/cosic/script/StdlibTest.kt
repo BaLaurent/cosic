@@ -1,5 +1,7 @@
 package cosic.script
 
+import cosic.SoundLibrary
+import cosic.render.emptyLibrary
 import cosic.pattern.CosicError
 import cosic.script.js.JsObject
 import cosic.script.js.stdlib.JsInspectable
@@ -22,6 +24,7 @@ import kotlin.test.assertTrue
 /** A host whose `runLater` only remembers the task, so a test decides when the host's thread runs what the event loop asked for. */
 private class LoopHost : ScriptHost {
     override var cps: Double = 0.5
+    override val library: SoundLibrary = emptyLibrary()
     val logs = CopyOnWriteArrayList<Pair<LogLevel, String>>()
     val scheduled = ConcurrentLinkedQueue<() -> Unit>()
     @Volatile var clock = 0.0

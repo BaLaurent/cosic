@@ -172,6 +172,7 @@ internal object Catalogue {
             registerXen()
             registerMondo()
             registerTidal()
+            registerLibrary()
             registerKabelsalat() // before Language, after everything it could depend on: `K` is a transpiler hook and `worklet` needs only the kernel
             registerLanguage()
         }
@@ -222,10 +223,6 @@ internal object Catalogue {
 /**
  * The stand-ins: the functions that programs call whose real version a later task provides. They are defined before
  * everything else, so the real version replaces them without anyone deleting the stand-in (the task that makes the real
- * one removes its line here).
+ * one removes its line here). None is left at the moment.
  */
-private fun registerFallbacks() = catalogue("Fallbacks") {
-    fallback(listOf("samples"), 1) {
-        it.fail("samples() isn't supported yet \u2014 import a sample folder from the Sounds tab of the editor panel instead")
-    }
-}
+private fun registerFallbacks() = catalogue("Fallbacks") {}

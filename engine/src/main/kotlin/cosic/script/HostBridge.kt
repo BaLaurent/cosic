@@ -1,7 +1,9 @@
 package cosic.script
 
+import cosic.SoundLibrary
 import cosic.pattern.errorLogger
 import cosic.pattern.logger
+import cosic.render.emptyLibrary
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -16,12 +18,16 @@ internal class LogLine(val level: LogLevel, val message: String)
 /**
  * The host of one session ([ReplSession]): what the interpreter and the catalogue reach outside of the language. It holds
  * the tempo (setting it tells [onTempo], which is how the engine learns of a `setcps` while the program is still running,
- * as Strudel's scheduler does), the lines written to the console, the sliders and a timer.
+ * as Strudel's scheduler does), the lines written to the console, the sliders, a timer and the sound [library] (the one the
+ * engine plays from: `samples()` of a program registers into it).
  *
  * Everything but the timer and [lock] is safe to use from any thread: patterns call back into the program from the
  * audio thread.
  */
-internal class SessionHost(private val onTempo: (Double) -> Unit = {}) : ScriptHost {
+internal class SessionHost(
+    override val library: SoundLibrary = emptyLibrary(),
+    private val onTempo: (Double) -> Unit = {},
+) : ScriptHost {
     @Volatile
     private var tempo = DEFAULT_CPS
 

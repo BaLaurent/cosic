@@ -1,5 +1,7 @@
 package cosic.script
 
+import cosic.SoundLibrary
+import cosic.render.emptyLibrary
 import cosic.pattern.Undefined
 import cosic.script.js.JsArray
 import cosic.script.js.JsObject
@@ -9,6 +11,7 @@ import cosic.script.js.toStr
 /** A host that records what it is told and has no clock, no timers and no sliders. */
 internal class TestHost : ScriptHost {
     override var cps: Double = 0.5
+    override val library: SoundLibrary = emptyLibrary()
     val logs = ArrayList<Pair<LogLevel, String>>()
     val sliders = HashMap<String, Double>()
 

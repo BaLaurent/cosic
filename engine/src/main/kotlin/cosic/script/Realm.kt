@@ -1,5 +1,6 @@
 package cosic.script
 
+import cosic.SoundLibrary
 import cosic.pattern.CosicError
 import cosic.pattern.JsFn
 import cosic.pattern.jsToString
@@ -39,6 +40,9 @@ internal interface ScriptHost {
     fun sliderGet(id: String): Double?
 
     fun sliderSet(id: String, value: Double)
+
+    /** The sounds the program can reach: what `samples`, `soundAlias`, `getDuration` and the like read and register. */
+    val library: SoundLibrary
 }
 
 /**

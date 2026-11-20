@@ -74,7 +74,7 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
     private val startDelayFrames = Math.round(PLAY_START_DELAY_SECONDS * sampleRate)
 
     /** What a program can reach outside of the language; a `setcps` reaches the scheduler at once, even when the program fails later. */
-    private val host = SessionHost { cps -> commands.add(Command.SetCps(cps)) }
+    private val host = SessionHost(library) { cps -> commands.add(Command.SetCps(cps)) }
 
     /** The language session: the tempo and the patterns labelled by earlier programs live from one evaluation to the next. */
     private var session = ReplSession(host)

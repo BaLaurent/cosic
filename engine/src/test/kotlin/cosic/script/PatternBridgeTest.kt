@@ -177,8 +177,8 @@ class PatternBridgeTest {
     }
 
     @Test
-    fun samplesIsAFallbackUntilTheLibraryDefinesIt() {
-        assertTrue("samples() isn't supported yet" in failure("samples('github:a/b')").message.orEmpty())
+    fun samplesIsDefinedByTheLibraryCategory() {
+        assertTrue("error loading" in failure("samples('github:a/b')").message.orEmpty())
     }
 
     @Test
