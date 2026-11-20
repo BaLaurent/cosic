@@ -1,0 +1,918 @@
+## Hand-written programs for the Haskell parser of `tidal`. `node tools/strudel-ref/hs-oracle.mjs` parses each with
+## tree-sitter-haskell and evaluates it with hs2js over a symbolic scope; HsOracleTest compares the Kotlin parser and
+## evaluator with the result, tree and value alike.
+## Format: `### <name>` then the code; `### <name> !json` then one JSON string literal. `## ` lines are comments.
+
+## ---- the documented use
+### use.single
+d1 $ s "bd*4"
+### use.blog-post !json
+"\nd1 $ s \"bd*4\"\n\nd2 $ s \"[- hh]*4\"\n"
+### use.two-declarations !json
+"d1 $ s \"bd*2\"\n\nd2 $ s \"hh*4\""
+### use.three-declarations !json
+"d1 $ s \"bd*2\"\n\n\nd2 $ s \"hh*4\"\n\n\n\nd3 $ s \"cp\""
+### use.indented-program !json
+"\n  d1 $ s \"bd*4\"\n\n  d2 $ s \"hh*8\"\n"
+### use.first-indented !json
+"  d1 $ s \"bd*4\"\n\nd2 $ s \"hh*8\""
+### use.continuation !json
+"d1 $ s \"bd*4\"\n  # speed 2\n  # n 1"
+### use.continuation-after-blank-line !json
+"d1 $ s \"bd*4\"\n\n  # speed 2"
+### use.single-newlines-join !json
+"d1 $ s \"bd*4\"\nd2 $ s \"hh*8\""
+### use.hush
+hush
+### use.bind-then-use !json
+"x = s \"bd\"\n\nd1 $ x"
+### use.function-then-use !json
+"f p = fast 2 p\n\nd1 $ f $ s \"bd sn\""
+### use.two-parameters !json
+"f a p = fast a p\n\nd1 $ f 2 $ s \"bd sn\""
+### use.empty
+
+### use.spaces
+   
+### use.only-newlines !json
+"\n\n\n"
+
+## ---- operators
+### op.hash
+d1 $ s "bd" # speed 2
+### op.hash-chain
+d1 $ s "bd" # speed 2 # n 3
+### op.plus
+n "0 1" + n 2
+### op.alignments
+n "0 1" |+| n 2 |+ n 3 +| n 4 |-| n 1 |*| n 2 |/| n 4
+### op.set-alignments
+s "a" |>| n 1 |> n 2 >| n 3 |# n 4 #| n 5
+### op.late-early
+0.25 <~ s "bd"
+### op.late
+0.25 ~> s "bd"
+### op.fmap
+(+ 1) <$> n "0 1"
+### op.unknown
+a <> b
+### op.unknown-and
+a && b
+### op.unknown-eq
+a == b
+### op.unknown-bind
+a >>= b
+### op.unknown-cons
+a : b
+### op.unknown-lt
+n "0" |< n "1"
+### op.dollar
+d1 $ jux rev $ chop 4 $ s "bd sn"
+### op.dollar-tight
+d1$s "bd"
+### op.dollar-tight-1
+d1$ s "bd"
+### op.dollar-tight-2
+d1 $s "bd"
+### op.dollar-before-upper
+d1 $Foo
+### op.dollar-before-literal
+d1 $"bd"
+### op.dollar-double
+a $$ b
+### op.dollar-double-tight
+a$$b
+### op.compose
+fast 2 . rev
+### op.compose-right-nesting
+d1 $ fast 2 . rev $ s "bd"
+### op.compose-dollar
+(fast 2 . rev) $ s "bd"
+### op.compose-three
+rev . fast 2 . slow 4
+### op.compose-tight
+fast 2.rev
+### op.compose-tight-spaced-left
+fast 2 .rev
+### op.compose-tight-spaced-right
+fast 2. rev
+### op.compose-tight-paren
+(fast 2).rev
+### op.compose-tight-open
+rev.(fast 2)
+### op.compose-tight-list
+rev.[1]
+### op.amp
+a & b
+### op.amp-pattern
+s "bd" & rev
+### op.tilde-infix
+a ~ b
+### op.tilde-tight
+a~b
+### op.bang-infix
+a ! b
+### op.bang-tight
+x # a!b
+### op.at-infix
+a @ b
+### op.at-type
+x # a @b
+### op.at-tight
+x # a@b
+### op.question
+a ? b
+### op.question-var
+x # a?b
+### op.percent
+a % b
+### op.percent-tight
+a%b
+### op.star
+a * b
+### op.minus-spaced
+a - b
+### op.minus-tight
+a-b
+### op.minus-left
+a -b
+### op.minus-right
+a- b
+### op.minus-call
+f -1
+### op.minus-after-op
+a + -1
+### op.minus-after-minus
+a - -1
+### op.arrow-comment-like
+a --> b
+### op.double-dash-bar
+a --| b
+### op.dot-dot
+a .. b
+### op.backslash-op
+a \\ b
+### op.colon2
+a :: b
+### op.reserved-bar
+a | b
+### op.reserved-arrow
+a -> b
+### op.reserved-larrow
+a <- b
+### op.reserved-darrow
+a => b
+### op.backtick
+a `f` b
+### op.backtick-constructor
+a `Foo` b
+### op.backtick-section
+(`f` b)
+### op.unicode
+a ⊕ b
+
+## ---- numbers and strings
+### num.int
+5
+### num.float
+0.25
+### num.exp
+1e3
+### num.exp-upper
+1E3
+### num.exp-signed
+1.5e-3
+### num.exp-plus
+1e+3
+### num.hex
+0x1F
+### num.hex-upper
+0XFF
+### num.hex-float
+0x1.8p1
+### num.binary
+0b101
+### num.octal
+0o17
+### num.underscore
+1_000
+### num.underscore-double
+1__0
+### num.float-underscore
+1_0.5_0
+### num.magic-hash
+1#
+### num.magic-hash-double
+1##
+### num.magic-hash-float
+1.5##
+### num.magic-hash-triple
+1###
+### num.trailing-dot
+5.
+### num.leading-dot
+.5
+### num.two-dots
+1.5.2
+### num.binary-invalid
+0b2
+### num.hex-invalid
+0xg
+### num.exp-incomplete
+1e
+### num.in-call
+n 1e3
+### str.simple
+s "bd"
+### str.escape
+s "a\"b"
+### str.backslash
+s "a\\b"
+### str.newline-escape
+s "a\nb"
+### str.hash
+s "bd"#speed 2
+### str.hash-spaced
+s "bd"# speed 2
+### str.hash-double
+s "bd"##
+### str.unclosed
+s "bd
+### str.unclosed-then-more !json
+"d1 $ s \"bd\n\nd2 $ s \"hh\""
+### str.empty
+s ""
+### str.spaces
+s "  bd  sn  "
+### str.mini-chars
+s "bd*2 [sn cp]/2 <hh oh>!2 ~ -"
+### str.two-in-a-row
+"a" "b"
+### str.tab !json
+"s \"a\tb\""
+### str.gap !json
+"s \"a\\\n  \\b\""
+### str.blank-line-inside !json
+"s \"a\n\nb\""
+### str.char
+'a'
+### str.char-escape
+'\n'
+### str.char-quote
+'\''
+### str.char-in-call
+f 'a'
+### str.th-quote
+'f
+
+## ---- identifiers
+### id.simple
+foo
+### id.prime
+foo'
+### id.underscore-start
+_foo
+### id.wildcard
+_
+### id.wildcard-operand
+x $ _
+### id.hash-suffix
+a#
+### id.hash-suffix-apply
+a#b
+### id.hash-double
+a##
+### id.constructor
+Foo
+### id.constructor-apply
+Just 1
+### id.constructor-operand
+d1 $ s "bd" # Foo
+### id.qualified
+Foo.bar
+### id.qualified-constructor
+Foo.Bar
+### id.qualified-long
+Data.List.sort
+### id.projection
+a.b
+### id.projection-chain
+a.b.c
+### id.projection-argument
+f g.h
+### id.projection-paren
+(f x).y
+### id.projection-selector
+(.field)
+### id.label
+x #speed
+### id.label-after-paren
+(s "a")#n 1
+### id.label-in-parens
+(#speed 2)
+### id.label-section
+(# speed 2)
+### id.implicit
+x ?speed
+### id.unicode-lower
+ünïcode
+### id.unicode-upper
+Ünïcode
+### id.keyword-where
+x $ where
+### id.keyword-in
+x $ in
+### id.keyword-then
+x $ then
+### id.keyword-data
+x $ data
+### id.keyword-class
+x $ class
+### id.keyword-module
+x $ module
+### id.keyword-import
+x $ import
+### id.keyword-forall
+x $ forall
+### id.keyword-if
+x $ if
+### id.keyword-let
+x $ let
+### id.keyword-case
+x $ case
+### id.keyword-do
+x $ do
+### id.keyword-mdo
+x $ mdo
+### id.keyword-proc
+x $ proc
+### id.keyword-rec
+x $ rec
+
+## ---- application
+### app.one
+s "bd"
+### app.two
+every 2 (fast 2)
+### app.three
+every 2 (fast 2) $ s "bd sn"
+### app.nested
+f (g (h x))
+### app.parens-head
+(f x) y
+### app.list-argument
+stack [s "a", s "b"]
+### app.lambda-last
+every 2 \x -> x
+### app.lambda-last-dollar
+every 2 (\x -> fast 2 x) $ s "a"
+### app.string-head
+"a" 1
+### app.number-head
+1 2
+### app.projection-head
+a.b c
+
+## ---- sections
+### sec.right-hash
+(# speed 2)
+### sec.right-hash-apply
+(# speed 2) $ s "bd"
+### sec.right-two-hash
+(# speed 2) . (# n 3)
+### sec.right-chain
+(# speed 2 # n 3)
+### sec.right-plus
+(+ 1)
+### sec.right-plus-chain
+(+ 1 + 2)
+### sec.right-minus-negation
+(- 1)
+### sec.right-minus-tight
+(-1)
+### sec.right-operand-negation
+(+ -1)
+### sec.right-dollar
+($ s "bd")
+### sec.right-dot
+(. f)
+### sec.right-dot-tight
+(.f)
+### sec.right-late
+(<~ 0.25)
+### sec.right-late-tight
+(<~0.25)
+### sec.right-alignment
+(|+| n 1)
+### sec.right-alignment-apply
+(|+| n 1) $ n "0"
+### sec.right-backtick
+(`f` b)
+### sec.left-late
+(0.25 <~)
+### sec.left-late-tight
+(0.25<~)
+### sec.left-late-apply
+(0.25 <~) $ s "bd sn"
+### sec.left-minus
+(x -)
+### sec.left-minus-spaced
+(x - )
+### sec.left-chain
+(1 + 2 +)
+### sec.left-hash-chain
+(a # b #)
+### sec.left-apply
+(f x +)
+### sec.left-dollar
+(f $)
+### sec.left-dot
+(f .)
+### sec.left-negation
+(-1 #)
+### sec.left-two
+(1 +) . (2 +)
+### sec.prefix-plus
+(+)
+### sec.prefix-hash
+(#)
+### sec.prefix-minus
+(-)
+### sec.prefix-dot
+(.)
+### sec.prefix-apply
+(+) 1 2
+### sec.prefix-nested
+((+) 1)
+### sec.prefix-late
+(<~) 0.25
+### sec.empty-right
+(+ )
+### sec.double-op
+(+ +)
+
+## ---- parentheses, lists, tuples
+### par.simple
+(s "bd")
+### par.double
+((s "bd"))
+### par.triple
+(((s "bd")))
+### par.spaces
+( s "bd" )
+### par.unit
+()
+### par.tuple
+(1, 2)
+### par.tuple-three
+(1, 2, 3)
+### par.tuple-section-left
+(1,)
+### par.tuple-section-right
+(,1)
+### par.prefix-tuple
+(,)
+### par.prefix-tuple-three
+(,,)
+### par.tuple-in-call
+f (1, 2)
+### par.unit-in-call
+f ()
+### list.empty
+[]
+### list.one
+[1]
+### list.three
+[1, 2, 3]
+### list.tight
+[1,2,3]
+### list.nested
+[[1, 2], [3]]
+### list.trailing-comma
+[1, 2,]
+### list.leading-comma
+[,1]
+### list.double-comma
+[1,,2]
+### list.expressions
+[s "a" # n 1, s "b"]
+### list.lambda
+[\x -> x, rev]
+### list.negation-first
+[-1]
+### list.negation-second
+[1, -2]
+### list.in-call
+stack [s "bd", s "hh*2"]
+### list.range
+[1..4]
+### list.range-spaced
+[1 .. 4]
+### list.range-step
+[1,3..9]
+### list.range-open
+[1..]
+### list.comprehension
+[x | x <- xs]
+### list.unclosed
+[1, 2
+### list.unclosed-then-more !json
+"d1 $ [1, 2\n\nd2 $ s \"a\""
+### par.unclosed
+(s "bd"
+### par.unclosed-then-more !json
+"d1 $ (s \"bd\"\n\nd2 $ s \"hh\""
+### par.stray-close
+d1 $ s "bd" )
+### par.stray-close-first
+) s "bd"
+### par.stray-bracket
+d1 $ s "bd" ]
+### par.stray-brace
+d1 $ s "bd" }
+### par.brace-open
+d1 $ s "bd" {
+### par.stray-close-middle !json
+"d1 $ s \"a\"\n\nd2 $ ) s \"b\"\n\nd3 $ s \"c\""
+### par.mismatch
+(]
+
+## ---- negation
+### neg.literal
+-1
+### neg.spaced
+- 1
+### neg.apply
+-f x
+### neg.then-operator
+- f x # y
+### neg.literal-then-operator
+-1 # y
+### neg.parens
+(-1)
+### neg.in-call
+speed (-1)
+### neg.in-call-spaced
+speed (- 1)
+### neg.float
+speed (-1.5)
+### neg.variable
+speed (-x)
+### neg.double
+- - 1
+### neg.nested
+-(-1)
+### neg.after-dollar
+a $ -1
+### neg.before-dollar
+-1 $ a
+### neg.in-lambda
+\x -> -x
+### neg.tuple
+(a, -1)
+### neg.as-section-operand
+(# -1)
+### neg.in-program
+d1 $ s "bd" # speed (-1)
+### neg.minus-then-negation
+d1 $ n "0" - -1
+
+## ---- lambdas
+### lam.one
+\x -> x
+### lam.two
+\x y -> x
+### lam.nested
+\x -> \y -> x
+### lam.spaced
+\ x -> x
+### lam.tight
+\x->x
+### lam.wildcard
+\_ -> 1
+### lam.wildcard-second
+\x _ -> x
+### lam.paren-pattern
+\(x) -> x
+### lam.tuple-pattern
+\(x, y) -> x
+### lam.apply
+(\x -> x) 1
+### lam.apply-string
+(\p -> fast 2 p) (s "bd")
+### lam.compose
+(\x -> x) . (\y -> y)
+### lam.operand
+a # \x -> x
+### lam.after-dollar
+a $ \x -> x # y
+### lam.body-chain
+\x -> x # y $ z
+### lam.no-arrow
+\x x
+### lam.no-pattern
+\ -> x
+### lam.case
+\case a -> b
+### lam.in-program
+d1 $ every 2 (\p -> fast 2 p # speed 2) $ s "bd sn"
+### lam.param-shadows
+\s -> s
+### lam.curried-use
+(\a b -> a # b) (s "x") (n 1)
+### lam.unused-body-error
+\x -> (1, 2)
+### lam.applied-body-error
+(\x -> (1, 2)) 3
+
+## ---- declarations
+### decl.bind
+x = 1
+### decl.bind-string
+x = s "bd"
+### decl.bind-lambda
+f = \x -> x
+### decl.bind-expr
+x = s "bd" # speed 2
+### decl.function
+f x = x
+### decl.function-two
+f x y = x + y
+### decl.function-three
+f a b c = a
+### decl.function-wildcard
+f _ = 1
+### decl.function-literal
+f 1 = 2
+### decl.function-paren-pattern
+f (x:xs) = x
+### decl.function-list-pattern
+f [a, b] = a
+### decl.function-body-lambda
+f x = \y -> x
+### decl.function-infix
+x # y = 1
+### decl.function-infix-apply
+f x # g y = 1
+### decl.function-where
+f x = x where y = 1
+### decl.function-where-chain
+f x = x # y where y = 1
+### decl.bind-where
+x = 1 where y = 2
+### decl.bind-where-empty
+x = 1 where
+### decl.guard-function
+f x | x > 1 = 1 | otherwise = 2
+### decl.guard-bind
+x | True = 1
+### decl.guard-call !json
+"f x | x > 1 = 1 | otherwise = 2\n\nd1 $ f 2"
+### decl.pattern-bind
+(a, b) = c
+### decl.pattern-bind-constructor
+Just x = y
+### decl.paren-head
+(f x) = 1
+### decl.prefix-head
+(+) a b = 1
+### decl.signature
+f :: Int
+### decl.signature-two
+f, g :: Int
+### decl.signature-arrow
+f :: Int -> Int
+### decl.signature-then-use !json
+"f :: Int -> Int\n\nd1 $ s \"a\""
+### decl.expression-signature
+1 :: Int
+### decl.explicit-semicolon
+x = 1; y = 2
+### decl.explicit-semicolon-lines !json
+"x = 1;\ny = 2"
+### decl.double-semicolon
+x = 1;; y = 2
+### decl.leading-semicolon
+; x = 1
+### decl.redefine !json
+"x = 1\n\nx = 2\n\nd1 $ x"
+### decl.use-before-define !json
+"d1 $ x\n\nx = s \"bd\""
+### decl.function-recursion-global !json
+"f x = x\n\ng = f 1\n\nd1 $ g"
+### decl.shadow-global !json
+"s = 1\n\nd1 $ s"
+### decl.bind-then-apply !json
+"f = fast 2\n\nd1 $ f $ s \"bd\""
+### decl.fixity
+infixl 1 #
+### decl.import
+import Foo
+### decl.import-two !json
+"import Foo\nimport Bar"
+### decl.import-then-code !json
+"import Foo\n\nd1 $ s \"a\""
+### decl.module
+module Foo where
+### decl.data
+data X = A
+### decl.newtype
+newtype X = X Int
+### decl.type
+type X = Y
+### decl.class
+class X a where
+### decl.instance
+instance X Y where
+### decl.foreign
+foreign import ccall foo :: Int
+### decl.default
+default (Int)
+### decl.deriving
+deriving instance Eq X
+### decl.keyword-as-bind
+data = 1
+### decl.keyword-as-function
+type x = 1
+
+## ---- keywords that start an expression
+### kw.if
+if a then b else c
+### kw.if-nested
+if a then (if b then c else d) else e
+### kw.if-in-call
+d1 $ if True then s "a" else s "b"
+### kw.if-incomplete
+if a then b
+### kw.if-semicolons
+if a; then b; else c
+### kw.let-in
+let x = 1 in x
+### kw.let-in-expr
+d1 $ let x = s "a" in x
+### kw.let-bind
+x = let y = 1 in y
+### kw.let-only
+let x = 1
+### kw.let-two
+let x = 1; y = 2 in x
+### kw.let-nested
+let x = let y = 1 in y in x
+### kw.case
+case x of y -> z
+### kw.case-in-call
+d1 $ case x of y -> s "a"
+### kw.do
+do a
+### kw.do-in-call
+d1 $ do s "a"
+### kw.mdo
+mdo a
+### kw.do-in-parens
+(do a)
+### kw.do-in-list
+[do a, b]
+### kw.case-in-parens
+(case x of y -> z)
+
+## ---- comments
+### comment.only
+-- just a comment
+### comment.trailing
+d1 $ s "bd" -- kick
+### comment.leading !json
+"-- kick\nd1 $ s \"bd\""
+### comment.leading-blank-line !json
+"-- kick\n\nd1 $ s \"bd\""
+### comment.between !json
+"d1 $ s \"bd\"\n\n-- hats\n\nd2 $ s \"hh\""
+### comment.after-statement-blank-line !json
+"d1 $ s \"bd\" -- kick\n\nd2 $ s \"hh\""
+### comment.block
+{- c -} d1 $ s "bd"
+### comment.block-inside
+d1 {- c -} $ s "bd"
+### comment.block-after-op
+d1 $ {- c -} s "bd"
+### comment.block-end
+d1 $ s "bd" {- c -}
+### comment.block-only
+{- c -}
+### comment.block-nested
+{- a {- b -} c -} d1 $ s "bd"
+### comment.block-multiline !json
+"{- a\n\nb -}\n\nd1 $ s \"bd\""
+### comment.block-unclosed
+{- never closed
+### comment.pragma
+{-# LANGUAGE OverloadedStrings #-}
+### comment.pragma-then-code !json
+"{-# LANGUAGE X #-}\n\nd1 $ s \"bd\""
+### comment.haddock
+-- | doc
+### comment.haddock-caret
+-- ^ doc
+### comment.dashes-only
+---
+### comment.dashes-text
+--- text
+### comment.operator-like
+a --| b
+### comment.in-parens
+(a {- c -} b)
+### comment.in-list
+[1, {- c -} 2]
+### comment.in-lambda
+\x {- c -} -> x
+### comment.two-lines !json
+"-- a\n-- b\n\nd1 $ s \"bd\""
+### comment.after-comment !json
+"-- a\n\n-- b"
+### comment.mid-statement-line !json
+"d1 $ s \"bd\" -- kick\n  # speed 2"
+### comment.empty-line-comment
+--
+
+## ---- layout
+### layout.column-zero-after-blank !json
+"d1 $ s \"a\"\n\nd2 $ s \"b\""
+### layout.column-one-after-blank !json
+"d1 $ s \"a\"\n\n d2 $ s \"b\""
+### layout.column-two-after-blank !json
+"d1 $ s \"a\"\n\n  d2 $ s \"b\""
+### layout.tab-after-blank !json
+"d1 $ s \"a\"\n\n\td2 $ s \"b\""
+### layout.crlf !json
+"d1 $ s \"a\"\r\n\r\nd2 $ s \"b\""
+### layout.cr-only !json
+"d1 $ s \"a\"\rd2 $ s \"b\""
+### layout.formfeed !json
+"d1 $ s \"a\"\fd2 $ s \"b\""
+### layout.four-newlines !json
+"d1 $ s \"a\"\n\n\n\nd2 $ s \"b\""
+### layout.operator-at-column-zero !json
+"d1 $ s \"a\"\n\n# speed 2"
+### layout.dollar-at-column-zero !json
+"d1 \n\n$ s \"a\""
+### layout.dangling-operator !json
+"d1 $ s \"a\" #\n\nd2 $ s \"b\""
+### layout.dangling-operator-end !json
+"d1 $ s \"a\" #"
+### layout.dangling-dollar
+d1 $
+### layout.bracket-spans-blank-line !json
+"d1 $ stack [s \"a\",\n\ns \"b\"]"
+### layout.paren-spans-blank-line !json
+"d1 $ (s \"a\"\n\n# speed 2)"
+### layout.bind-spans-lines !json
+"x = s \"a\"\n  # speed 2\n\nd1 $ x"
+### layout.leading-blank-lines !json
+"\n\nd1 $ s \"a\""
+### layout.trailing-blank-lines !json
+"d1 $ s \"a\"\n\n\n"
+### layout.nbsp !json
+"d1\u00a0$\u00a0s \"a\""
+
+## ---- a function used as a value
+### value.function
+d1 $ s
+### value.partial
+every 2
+### value.partial-section
+every 2 (fast 2)
+### value.constant
+hush
+### value.unknown
+foo
+### value.unknown-apply
+foo 1
+### value.unknown-apply-twice
+foo 1 2
+### value.unknown-operand
+d1 $ s "bd" # foo
+### value.not-a-function
+1 2
+### value.string-not-a-function
+"a" "b"
+### value.dollar-not-function
+1 $ 2
+### value.dollar-unknown
+foo $ 1
+### value.amp-not-function
+1 & 2
+### value.compose-not-function
+(1 . 2) 3
+### value.compose-apply
+(rev . fast 2) 1
+### value.compose-left-not-function
+(1 . rev) 2
+### value.section-apply
+(# speed 2) 1
+### value.section-twice
+((# speed 2) 1) 2
+### value.d1-not-pattern
+d1 1
+### value.every-complete
+every 2 (fast 2) (s "a")
+### value.extra-argument
+every 2 (fast 2) (s "a") 3

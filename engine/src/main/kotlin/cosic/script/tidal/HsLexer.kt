@@ -38,6 +38,12 @@ internal enum class HsTokenKind {
     /** `?name`. */
     IMPLICIT_VARIABLE,
 
+    /** `@` after whitespace and before an opening token: a type application when it follows an operand, else an operator. */
+    PREFIX_AT,
+
+    /** The `'` of a Template Haskell name quote (`'f`), or the `''` of a type quote. */
+    TH_QUOTE,
+
     /** The `.` of `a.b`. */
     TIGHT_DOT,
 
@@ -216,6 +222,8 @@ internal class HsLexer(private val src: String) {
             i = end
         }
         addComment(kind, start, end)
+        // a line comment ends its line: a line break after it is what the next token is indented by
+        indent = -1
     }
 
     private fun blockComment() {
@@ -437,6 +445,14 @@ internal class HsLexer(private val src: String) {
                 return
             }
         }
+        // a quote that is no character literal: a Template Haskell name quote (`'f`, `''T`), or an error
+        val quoteLength = if (start + 1 < n && src[start + 1] == '\'') 2 else 1
+        val nameStart = start + quoteLength
+        if (nameStart < n && (isVaridStart(cp(nameStart)) || isConidStart(cp(nameStart)))) {
+            i = nameStart
+            add(HsTokenKind.TH_QUOTE, start, nameStart)
+            return
+        }
         i++
         add(HsTokenKind.ERROR, start, i)
     }
@@ -481,7 +497,15 @@ internal class HsLexer(private val src: String) {
                 '=' -> return finish(HsTokenKind.EQUALS)
                 '\\' -> return finish(HsTokenKind.BACKSLASH)
                 '$' -> if (after >= 0 && (isVaridStart(after) || after == '('.code)) return finish(HsTokenKind.SPLICE)
-                '.' -> if (!whitespaceBefore && after >= 0 && isIdChar(after)) return finish(HsTokenKind.TIGHT_DOT)
+                '.' -> if (after >= 0 && isIdChar(after) && !whitespaceBefore) {
+                    return finish(HsTokenKind.TIGHT_DOT)
+                } else if (whitespaceBefore && after >= 0 && (isIdChar(after) || isOpeningToken(end))) {
+                    // a prefix dot (`a .b`): an operator whose text, in the tree, starts where the whitespace before it does
+                    i = end
+                    add(HsTokenKind.VARSYM, minOf(tokens.lastOrNull()?.end ?: start, start), end)
+                    return
+                }
+                '@' -> if (whitespaceBefore && isOpeningToken(end)) return finish(HsTokenKind.PREFIX_AT)
             }
         } else if (run.length == 2) {
             when (run) {

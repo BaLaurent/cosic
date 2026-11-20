@@ -62,11 +62,8 @@ private val DECLARATION_KEYWORDS = mapOf(
     "infixl" to "fixity",
     "infixr" to "fixity",
     "default" to "default_types",
-    "deriving" to "deriving_declaration",
+    "deriving" to "deriving_instance",
 )
-
-/** The words that end an expression instead of being a variable in it. */
-private val EXPRESSION_ENDS = setOf("where", "in", "then", "else", "of")
 
 private val OPENERS = setOf(HsTokenKind.LPAREN, HsTokenKind.LBRACKET, HsTokenKind.LBRACE)
 private val CLOSERS = setOf(HsTokenKind.RPAREN, HsTokenKind.RBRACKET, HsTokenKind.RBRACE)
@@ -83,6 +80,11 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
     private var stmtStart = 0
     private var patternMode = false
 
+    /** The indentation up to which a token after a line break starts a new declaration: 0, except after a comment at the start (see [leadingIndent]). */
+    private var topIndent = 0
+
+    private fun startsLine(t: HsToken): Boolean = t.indent in 0..topIndent
+
     // ---- the tokens ----------------------------------------------------------------------------------------------------
 
     /**
@@ -93,7 +95,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         if (index >= limit) return eof
         val t = toks[index]
         if (t.kind == HsTokenKind.EOF) return t
-        if (depth == 0 && index != stmtStart && t.indent == 0) return eof
+        if (depth == 0 && index != stmtStart && startsLine(t)) return eof
         return t
     }
 
@@ -138,6 +140,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
     // ---- the program ---------------------------------------------------------------------------------------------------
 
     fun parse(): HsNode {
+        topIndent = leadingIndent()
         val root = ArrayList<HsNode>()
         val real = toks.size - 1
         if (real > 0) {
@@ -147,8 +150,10 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
                 parseDeclarations(root)
             }
         }
-        val tree = HsNode("haskell", if (root.isEmpty()) 0 else root.first().start, if (root.isEmpty()) src.length else root.last().end, root, src)
-        for (c in comments) insertComment(tree, HsNode(commentType(c), c.start, c.end, ArrayList(0), src))
+        val tree = HsNode("haskell", if (root.isEmpty()) 0 else root.first().start, if (root.isEmpty()) 0 else root.last().end, root, src)
+        val tail = maxOf(toks.lastOrNull { it.kind != HsTokenKind.EOF }?.end ?: 0, comments.lastOrNull()?.end ?: 0)
+        val lineBreakAtEnd = (tail until src.length).any { src[it] == '\n' || src[it] == '\r' || src[it] == '\u000c' }
+        for (c in comments) insertComment(tree, HsNode(commentType(c), c.start, c.end, ArrayList(0), src), lineBreakAtEnd)
         return tree
     }
 
@@ -156,6 +161,20 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         HsTokenKind.HADDOCK -> "haddock"
         HsTokenKind.PRAGMA -> "pragma"
         else -> "comment"
+    }
+
+    /**
+     * A block comment in front of the first token of the program, on its line, makes the column of that token the indentation
+     * of the top level: the scanner reads the indentation of the first line when it has to skip a comment to find the first
+     * token (scanner.c `newline_lookahead`). Without one the top level is at indentation 0, wherever the first token is.
+     */
+    private fun leadingIndent(): Int {
+        val first = toks[0]
+        if (first.kind == HsTokenKind.EOF) return 0
+        val comment = comments.lastOrNull { it.end <= first.start } ?: return 0
+        if (!src.startsWith("{-", comment.start)) return 0
+        for (j in comment.end until first.start) if (src[j] == '\n' || src[j] == '\r' || src[j] == '\u000c') return 0
+        return first.start - (src.lastIndexOf('\n', first.start - 1) + 1)
     }
 
     /** Whether a bracket stays open at the end of the program. */
@@ -170,20 +189,29 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
     private fun parseDeclarations(root: MutableList<HsNode>) {
         val declarations = ArrayList<HsNode>()
         val imports = ArrayList<HsNode>()
+        val leading = ArrayList<HsNode>()
+        var header: HsNode? = null
         while (toks[pos].kind != HsTokenKind.EOF) {
             val t = toks[pos]
             if (t.kind == HsTokenKind.SEMI) {
-                declarations.add(anon(t))
+                // semicolons before the first declaration belong to the program, not to its declarations
+                if (declarations.isEmpty() && imports.isEmpty() && header == null) leading.add(anon(t)) else declarations.add(anon(t))
                 pos++
                 continue
             }
             stmtStart = pos
+            // a declaration that starts at a smaller indentation than the top level has makes that the indentation of the top level
+            if (t.indent in 0..topIndent) topIndent = t.indent
             depth = 0
             patternMode = false
             limit = toks.size - 1
             try {
                 val decl = parseStatement()
-                if (decl.type == "import" && declarations.isEmpty()) imports.add(decl) else declarations.add(decl)
+                when {
+                    decl.type == "header" && header == null && imports.isEmpty() && declarations.isEmpty() -> header = decl
+                    decl.type == "import" && declarations.isEmpty() -> imports.add(decl)
+                    else -> declarations.add(decl)
+                }
                 val rest = cur()
                 if (rest.kind != HsTokenKind.EOF && rest.kind != HsTokenKind.SEMI) {
                     // something is left over that no declaration can use, such as a closing bracket
@@ -195,6 +223,8 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
                 skipDeclaration()
             }
         }
+        root.addAll(leading)
+        if (header != null) root.add(header)
         if (imports.isNotEmpty()) root.add(HsNode("imports", imports.first().start, imports.last().end, imports, src))
         if (declarations.isNotEmpty()) root.add(HsNode("declarations", declarations.first().start, declarations.last().end, declarations, src))
     }
@@ -215,7 +245,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         var rel = 0
         while (toks[pos].kind != HsTokenKind.EOF) {
             val t = toks[pos]
-            if (rel <= 0 && t.indent == 0) break
+            if (rel <= 0 && startsLine(t)) break
             if (rel <= 0 && t.kind == HsTokenKind.SEMI) break
             if (t.kind in OPENERS) rel++ else if (t.kind in CLOSERS) rel--
             pos++
@@ -224,8 +254,12 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
 
     // ---- comments ------------------------------------------------------------------------------------------------------
 
-    /** A comment is a child of the innermost node that has tokens on both sides of it; before the first and after the last it belongs to the root. */
-    private fun insertComment(root: HsNode, comment: HsNode) {
+    /**
+     * A comment is a child of the innermost node that has tokens on both sides of it; before the first token and after the last
+     * it belongs to the program, except that a comment after the last declaration is one of its children when a line break
+     * follows it ([lineBreakAtEnd]), where the declarations end with the layout.
+     */
+    private fun insertComment(root: HsNode, comment: HsNode, lineBreakAtEnd: Boolean) {
         var target = root
         while (true) {
             val inner = target.children.firstOrNull {
@@ -233,6 +267,8 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
             } ?: break
             target = inner
         }
+        val last = root.children.lastOrNull()
+        if (target === root && lineBreakAtEnd && last != null && last.type == "declarations" && comment.start >= last.end) target = last
         var index = target.children.indexOfFirst { it.start > comment.start }
         if (index < 0) index = target.children.size
         target.children.add(index, comment)
@@ -261,7 +297,50 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
                 else -> parseBinding(marker)
             }
         }
+        if (startsWithNegativeLiteral()) {
+            // `-1 # y`, `(-1)`, `[-1]`: tree-sitter reads a negative literal that starts a declaration as a pattern, which fails
+            val startToken = toks[pos]
+            val end = statementEnd()
+            val last = toks[end - 1]
+            pos = end
+            return errorNode(startToken.start, last.end)
+        }
         return node("top_splice", parseExp())
+    }
+
+    private fun isNumber(t: HsToken) = t.kind == HsTokenKind.INTEGER || t.kind == HsTokenKind.FLOAT
+
+    /**
+     * Whether the declaration starts with a negative number that something follows, or with a bracket that starts with one:
+     * tree-sitter reads such a start as the pattern of a declaration, unless it is a left section (`(-1 #)`) or a list whose
+     * first element is an infix expression (`[-1 + 2]`), which no pattern is.
+     */
+    private fun startsWithNegativeLiteral(): Boolean {
+        val t0 = cur()
+        val t1 = tokenAt(pos + 1)
+        val t2 = tokenAt(pos + 2)
+        if (isMinus(t0) && isNumber(t1)) return t2.kind != HsTokenKind.EOF
+        if (!(isMinus(t1) && isNumber(t2))) return false
+        return when (t0.kind) {
+            HsTokenKind.LPAREN -> !(isOperator(tokenAt(pos + 3)) && tokenAt(pos + 4).kind == HsTokenKind.RPAREN)
+            HsTokenKind.LBRACKET -> !isOperator(tokenAt(pos + 3))
+            else -> false
+        }
+    }
+
+    /** The index just after the last token of the declaration the parser is at. */
+    private fun statementEnd(): Int {
+        var rel = 0
+        var index = pos
+        while (index < limit) {
+            val t = toks[index]
+            if (t.kind == HsTokenKind.EOF) break
+            if (index != stmtStart && rel == 0 && startsLine(t) && depth == 0) break
+            if (rel == 0 && t.kind == HsTokenKind.SEMI) break
+            if (t.kind in OPENERS) rel++ else if (t.kind in CLOSERS) rel = maxOf(0, rel - 1)
+            index++
+        }
+        return maxOf(index, pos + 1)
     }
 
     private fun keywordDeclaration(type: String, keyword: HsToken): HsNode {
@@ -282,7 +361,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         while (index < limit) {
             val t = toks[index]
             if (t.kind == HsTokenKind.EOF) return -1
-            if (index != stmtStart && rel == 0 && t.indent == 0 && depth == 0) return -1
+            if (index != stmtStart && rel == 0 && startsLine(t) && depth == 0) return -1
             if (t.kind in OPENERS) rel++
             else if (t.kind in CLOSERS) {
                 rel--
@@ -331,8 +410,6 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         }
         if (pos != marker) fail(tokenAt(pos))
         limit = savedLimit
-        val matches = parseMatches()
-        val where = parseWhere()
         val headNodes = ArrayList<HsNode>()
         val type: String
         when {
@@ -340,7 +417,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
                 type = "bind"
                 headNodes.add(head)
             }
-            head.type == "apply" && applyHead(head).type == "variable" -> {
+            head.type == "apply" && isFunctionName(applyHead(head)) -> {
                 type = "function"
                 val arguments = ArrayList<HsNode>()
                 val name = flattenApply(head, arguments)
@@ -348,6 +425,8 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
                 headNodes.add(node("patterns", arguments))
             }
             head.type == "infix" && head.children[1].type == "operator" -> {
+                // a function head has one operator, between two patterns: no other operator of the same kind can be in them
+                if (hasOperatorBelow(head.children[0]) || hasOperatorBelow(head.children[2])) fail(toks[marker])
                 type = "function"
                 headNodes.add(head)
             }
@@ -356,10 +435,47 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
                 headNodes.add(head)
             }
         }
+        val rhsStart = pos
+        val matches = try {
+            stopping("where") { parseMatches() }
+        } catch (e: HsSyntaxError) {
+            // the body of a function is only evaluated when it is called: an error in it leaves the function there
+            // an error at the end of the declaration leaves nothing to resume from: all of it is an ERROR then
+            if (type != "function" || e.at.kind == HsTokenKind.EOF || e.at.kind in CLOSERS) throw e
+            pos = rhsStart
+            depth = 0
+            patternMode = false
+            val markerToken = toks[rhsStart]
+            val end = statementEnd()
+            pos = end
+            val rest = if (end > rhsStart + 1) errorNode(toks[rhsStart + 1].start, toks[end - 1].end) else errorNode(markerToken.end, markerToken.end)
+            listOf(node("match", anon(markerToken), rest))
+        }
+        val where = parseWhere()
         return node(type, headNodes + matches + where)
     }
 
+    /**
+     * Makes what the parser cannot read of a function or lambda body an ERROR: everything up to the end of the declaration, or
+     * of the bracket the body is in. Null when there is nothing to take.
+     */
+    private fun recoverBody(from: Int, atDepth: Int): HsNode? {
+        pos = from
+        depth = atDepth
+        patternMode = false
+        if (depth == 0) pos = statementEnd() else consumeOpaque()
+        if (pos <= from) return null
+        return errorNode(toks[from].start, toks[pos - 1].end)
+    }
+
     private fun applyHead(n: HsNode): HsNode = if (n.type == "apply") applyHead(n.children[0]) else n
+
+    /** The name a function is declared under: a variable or an operator in parentheses. */
+    private fun isFunctionName(n: HsNode): Boolean = n.type == "variable" || (n.type == "prefix_id" && n.children.getOrNull(1)?.type == "operator")
+
+    /** Whether an infix expression with an operator of the kind that names a function is somewhere in [n]. */
+    private fun hasOperatorBelow(n: HsNode): Boolean =
+        (n.type == "infix" && n.children.getOrNull(1)?.type == "operator") || n.children.any { hasOperatorBelow(it) }
 
     private fun flattenApply(n: HsNode, into: MutableList<HsNode>): HsNode {
         if (n.type != "apply") return n
@@ -378,7 +494,9 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         while (cur().kind == HsTokenKind.BAR) {
             val bar = advance()
             val from = pos
+            depth++ // the layout rule does not end a declaration inside a guard
             consumeGuard()
+            depth--
             val guards = opaque("guards", from) ?: fail()
             val eq = expect(HsTokenKind.EQUALS)
             matches.add(node("match", anon(bar), guards, anon(eq), parseExp()))
@@ -412,7 +530,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
     }
 
     /** Takes the tokens of a block whose structure is of no use to the evaluator, up to the end of the construct that holds it. */
-    private fun consumeOpaque() {
+    private fun consumeOpaque(stopAtComma: Boolean = true) {
         var rel = 0
         while (true) {
             val t = cur()
@@ -420,14 +538,34 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
             if (t.kind in OPENERS) rel++ else if (t.kind in CLOSERS) {
                 if (rel == 0) return
                 rel--
-            } else if (rel == 0 && t.kind == HsTokenKind.COMMA && depth > 0) return
+            } else if (rel == 0 && stopAtComma && t.kind == HsTokenKind.COMMA && depth > 0) return
             pos++
         }
     }
 
+    // ---- the words that end an expression --------------------------------------------------------------------------------
+
+    /**
+     * `then`, `else`, `of` and `where` are variables in an expression, until a construct that needs one is open (`if` needs
+     * `then` and `else`, `case` an `of`, a declaration may have a `where`): then they end the expression the construct is in.
+     */
+    private val stops = HashMap<String, Int>()
+
+    private inline fun <T> stopping(word: String, block: () -> T): T {
+        stops.merge(word, 1, Int::plus)
+        try {
+            return block()
+        } finally {
+            stops.merge(word, -1, Int::plus)
+        }
+    }
+
+    private fun isStop(t: HsToken): Boolean = t.kind == HsTokenKind.VARID && (stops[t.text] ?: 0) > 0
+
     // ---- expressions ---------------------------------------------------------------------------------------------------
 
-    private fun isOperator(t: HsToken): Boolean = t.kind == HsTokenKind.VARSYM || t.kind == HsTokenKind.CONSYM || t.kind == HsTokenKind.BACKTICK
+    private fun isOperator(t: HsToken): Boolean =
+        t.kind == HsTokenKind.VARSYM || t.kind == HsTokenKind.CONSYM || t.kind == HsTokenKind.BACKTICK || t.kind == HsTokenKind.PREFIX_AT
 
     /** Whether the operator the parser is at is the last thing before a closing parenthesis, which makes it the operator of a left section. */
     private fun operatorEndsSection(): Boolean {
@@ -441,7 +579,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
     private fun parseOperator(): HsNode {
         val t = advance()
         return when (t.kind) {
-            HsTokenKind.VARSYM -> leaf("operator", t)
+            HsTokenKind.VARSYM, HsTokenKind.PREFIX_AT -> leaf("operator", t)
             HsTokenKind.CONSYM -> leaf("constructor_operator", t)
             HsTokenKind.BACKTICK -> {
                 val name = advance()
@@ -476,15 +614,29 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         val t = cur()
         if (isMinus(t)) {
             val minus = advance()
+            if (patternMode && isNumber(cur())) {
+                // a negative number in a pattern is the number itself under the minus
+                val number = advance()
+                return node("negation", anon(minus), leaf(if (number.kind == HsTokenKind.INTEGER) "integer" else "float", number))
+            }
             return node("negation", anon(minus), parseOperand())
         }
         return parseApplication()
     }
 
     private fun parseApplication(): HsNode {
+        if (cur().kind == HsTokenKind.PREFIX_AT) fail()
         var head = parseArgument()
         if (head.type in GREEDY) return head
-        while (canStartArgument(cur())) {
+        while (true) {
+            if (patternMode && isMinus(cur()) && isNumber(tokenAt(pos + 1))) {
+                // in a pattern `f - 2` is `f` applied to the negative number
+                val minus = advance()
+                val number = advance()
+                head = node("apply", head, node("negation", anon(minus), leaf(if (number.kind == HsTokenKind.INTEGER) "integer" else "float", number)))
+                continue
+            }
+            if (!canStartArgument(cur())) break
             val arg = parseArgument()
             head = node("apply", head, arg)
             if (arg.type in GREEDY) break
@@ -493,10 +645,10 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
     }
 
     private fun canStartArgument(t: HsToken): Boolean = when (t.kind) {
-        HsTokenKind.VARID -> t.text !in EXPRESSION_ENDS
+        HsTokenKind.VARID -> !isStop(t)
         HsTokenKind.CONID, HsTokenKind.QUALIFIED, HsTokenKind.INTEGER, HsTokenKind.FLOAT, HsTokenKind.STRING, HsTokenKind.CHAR,
         HsTokenKind.LABEL, HsTokenKind.IMPLICIT_VARIABLE, HsTokenKind.SPLICE, HsTokenKind.LPAREN, HsTokenKind.LBRACKET,
-        HsTokenKind.BACKSLASH,
+        HsTokenKind.BACKSLASH, HsTokenKind.PREFIX_AT, HsTokenKind.TH_QUOTE,
         -> true
         else -> false
     }
@@ -506,6 +658,11 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         val t = cur()
         when {
             t.kind == HsTokenKind.BACKSLASH -> return parseLambda()
+            t.kind == HsTokenKind.PREFIX_AT -> {
+                // `f @Int`: a type application
+                val at = advance()
+                return node("type_application", anon(at), parseAtom())
+            }
             isWord(t, "if") -> return parseConditional()
             isWord(t, "let") -> return parseLet()
             isWord(t, "case") -> return parseCase()
@@ -530,6 +687,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
             HsTokenKind.LABEL -> leaf("label", advance())
             HsTokenKind.IMPLICIT_VARIABLE -> leaf("implicit_variable", advance())
             HsTokenKind.SPLICE -> parseSplice()
+            HsTokenKind.TH_QUOTE -> parseQuotedName()
             HsTokenKind.LPAREN -> parseParen()
             HsTokenKind.LBRACKET -> parseBracket()
             else -> fail()
@@ -542,6 +700,18 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
             e = node("projection", e, anon(dot), node("field_name", leaf("variable", field)))
         }
         return e
+    }
+
+    /** `'name` and `''Type` of Template Haskell. */
+    private fun parseQuotedName(): HsNode {
+        val quote = advance()
+        val name = cur()
+        val nameNode = when (name.kind) {
+            HsTokenKind.VARID -> leaf("variable", advance())
+            HsTokenKind.CONID -> leaf("constructor", advance())
+            else -> fail()
+        }
+        return node("th_quoted_name", anon(quote), nameNode)
     }
 
     /** `Foo.bar` or `Foo.Bar.baz`: a module path and a name. */
@@ -585,7 +755,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         val t = cur()
         if (t.kind == HsTokenKind.RPAREN) return node("unit", anon(open), anon(closeParen()))
         if (t.kind == HsTokenKind.COMMA) return parseTuple(open, null)
-        if (t.kind == HsTokenKind.TIGHT_DOT) return parseProjectionSelector(open)
+        if (t.kind == HsTokenKind.TIGHT_DOT || isPrefixDotSelector(t)) return parseProjectionSelector(open)
         val startsWithOperator = isOperator(t) && !(isMinus(t) && !operatorEndsSection())
         if (startsWithOperator) {
             val op = parseOperator()
@@ -624,20 +794,24 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         return node(if (onlyCommas) "prefix_tuple" else "tuple", kids)
     }
 
-    /** `(.field.other)`. */
+    /** `(.field.other)`: the dot that follows the bracket is a tight dot, or the operator `.` when whitespace is in between. */
     private fun parseProjectionSelector(open: HsToken): HsNode {
         val kids = ArrayList<HsNode>()
         kids.add(anon(open))
-        while (cur().kind == HsTokenKind.TIGHT_DOT) {
-            kids.add(anon(advance()))
+        while (cur().kind == HsTokenKind.TIGHT_DOT || (kids.size == 1 && isPrefixDotSelector(cur()))) {
+            val dot = advance()
+            kids.add(HsNode(".", dot.end - 1, dot.end, ArrayList(0), src))
             val field = cur()
             if (field.kind != HsTokenKind.VARID) fail()
-            advance()
-            kids.add(node("field_name", leaf("variable", field)))
+            kids.add(leaf("variable", advance()))
         }
         kids.add(anon(closeParen()))
         return node("projection_selector", kids)
     }
+
+    /** A `.` right after a bracket and before a name: the start of a projection selector. */
+    private fun isPrefixDotSelector(t: HsToken): Boolean =
+        t.kind == HsTokenKind.VARSYM && t.text.trim() == "." && tokenAt(pos + 1).let { it.kind == HsTokenKind.VARID && !it.spaceBefore }
 
     private fun closeBracket(): HsToken {
         val close = expect(HsTokenKind.RBRACKET)
@@ -654,7 +828,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         kids.add(parseExp())
         if (cur().kind == HsTokenKind.BAR) {
             val from = pos
-            consumeOpaque()
+            consumeOpaque(stopAtComma = false)
             kids.add(opaque("qualifiers", from) ?: fail())
             kids.add(anon(closeBracket()))
             return node("list_comprehension", kids)
@@ -700,21 +874,30 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         } finally {
             patternMode = false
         }
-        if (patterns.isEmpty()) fail()
-        val arrow = advance()
-        val body = parseExp()
-        return node("lambda", anon(slash), node("patterns", patterns), anon(arrow), body)
+        val arrow = expect(HsTokenKind.RARROW)
+        // a lambda without patterns is an error of the grammar that hs2js still evaluates: its `patterns` is empty
+        val patternsNode = if (patterns.isEmpty()) HsNode("patterns", arrow.start, arrow.start, ArrayList(0), src) else node("patterns", patterns)
+        val bodyStart = pos
+        val bodyDepth = depth
+        val body = try {
+            parseExp()
+        } catch (e: HsSyntaxError) {
+            // tree-sitter keeps what it could read and makes the rest of the body an ERROR; hs2js only fails once the function is called
+            if (e.at.kind == HsTokenKind.EOF || (e.at.kind in CLOSERS && bodyDepth == 0)) throw e
+            recoverBody(bodyStart, bodyDepth) ?: throw e
+        }
+        return node("lambda", anon(slash), patternsNode, anon(arrow), body)
     }
 
     private fun parseConditional(): HsNode {
         val kids = ArrayList<HsNode>()
         kids.add(anon(advance()))
-        kids.add(parseExp())
+        kids.add(stopping("then") { parseExp() })
         for (word in listOf("then", "else")) {
             while (cur().kind == HsTokenKind.SEMI) kids.add(anon(advance()))
             if (!isWord(cur(), word)) fail()
             kids.add(anon(advance()))
-            kids.add(parseExp())
+            kids.add(if (word == "then") stopping("else") { parseExp() } else parseExp())
         }
         return node("conditional", kids)
     }
@@ -743,7 +926,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
     private fun parseCase(): HsNode {
         val kids = ArrayList<HsNode>()
         kids.add(anon(advance()))
-        kids.add(parseExp())
+        kids.add(stopping("of") { parseExp() })
         if (!isWord(cur(), "of")) fail()
         kids.add(anon(advance()))
         val from = pos
@@ -756,8 +939,7 @@ internal class HsParser(private val src: String, lexed: HsLexed) {
         val keyword = advance()
         val from = pos
         consumeOpaque()
-        val statements = opaque("statements", from)
-        return if (statements == null) node("do", anon(keyword)) else node("do", anon(keyword), statements)
+        return node("do", anon(keyword), opaque("statements", from) ?: fail())
     }
 }
 
