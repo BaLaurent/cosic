@@ -30,6 +30,7 @@ import cosic.script.DEFAULT_CPS
 import cosic.script.ReplSession
 import cosic.script.SessionHost
 import cosic.script.onBigStack
+import cosic.visual.VisualSession
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
 import kotlin.math.floor
@@ -196,6 +197,8 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
             val program = session.evaluate(code)
             val warnings = host.quietly { dryRun(program.pattern, currentCycle(), sounds, program.cps, outputs) }
             commands.add(Command.SetProgram(program.pattern, program.cps, warnings))
+            // the visuals follow the program that plays, and read the sound of their analysers from the engine
+            (effects.visuals as? VisualSession)?.attach(program.pattern, scopes)
             val info = ProgramInfo(
                 program.miniLocations, program.sliders, program.widgets, effects.visuals, metadataOf(code), effects.inputsUsed(),
             )

@@ -3,7 +3,5 @@
 # ParityTest fails on a case that mismatches and is not listed, and on a listed case that now matches.
 # Regenerate: ./gradlew :engine:test --tests 'cosic.parity.*' -Dcosic.parity.writeGaps=true
 
-examples:fscope#0  # Task 4.2: visuals (`.fscope()`)
-examples:print#0  # Task 4.2: visuals (`.print()`)
 examples:setGainCurve#0  # Task 3.4: gain (`setGainCurve(fn)`)
 examples:setMaxPolyphony#0  # Task 3.4: polyphony (`setMaxPolyphony(n)`)

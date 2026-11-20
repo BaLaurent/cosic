@@ -2096,8 +2096,7 @@
   "params": "time",
   "doc": "Begin to loop at a specific point in the sample (inbetween begin and end).",
   "example": "s(\"space\").loop(1)\n.loopBegin(\"<0 .125 .25>\")._scope()",
-  "snippet": "$: s(\"space\").loop(1)\n.loopBegin(\"<0 .125 .25>\")._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: s(\"space\").loop(1)\n.loopBegin(\"<0 .125 .25>\")._scope()"
  },
  {
   "name": "loopEnd",
@@ -2109,8 +2108,7 @@
   "params": "time",
   "doc": "End the looping section at a specific point in the sample (inbetween begin and end).",
   "example": "s(\"space\").loop(1)\n.loopEnd(\"<1 .75 .5 .25>\")._scope()",
-  "snippet": "$: s(\"space\").loop(1)\n.loopEnd(\"<1 .75 .5 .25>\")._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: s(\"space\").loop(1)\n.loopEnd(\"<1 .75 .5 .25>\")._scope()"
  },
  {
   "name": "n",
@@ -2241,8 +2239,7 @@
   "params": "byteBeatStartTime",
   "doc": "Create byte beats with custom expressions.",
   "example": "note(\"c3!8\".add(\"{0 0 12 0 7 5 3}%8\")).s(\"bytebeat:5\").bbst(\"<3 1>\".mul(10000))._scope()",
-  "snippet": "$: note(\"c3!8\".add(\"{0 0 12 0 7 5 3}%8\")).s(\"bytebeat:5\").bbst(\"<3 1>\".mul(10000))._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: note(\"c3!8\".add(\"{0 0 12 0 7 5 3}%8\")).s(\"bytebeat:5\").bbst(\"<3 1>\".mul(10000))._scope()"
  },
  {
   "name": "clip",
@@ -3258,8 +3255,7 @@
   "params": "frequency",
   "doc": "Applies a vibrato to the frequency of the oscillator.",
   "example": "note(\"a e\")\n.vib(\"<.5 1 2 4 8 16>\")\n._scope()",
-  "snippet": "$: note(\"a e\")\n.vib(\"<.5 1 2 4 8 16>\")\n._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: note(\"a e\")\n.vib(\"<.5 1 2 4 8 16>\")\n._scope()"
  },
  {
   "name": "vibmod",
@@ -3271,8 +3267,7 @@
   "params": "depth",
   "doc": "Sets the vibrato depth in semitones.",
   "example": "note(\"a e\").vib(4)\n.vibmod(\"<.25 .5 1 2 12>\")\n._scope()",
-  "snippet": "$: note(\"a e\").vib(4)\n.vibmod(\"<.25 .5 1 2 12>\")\n._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: note(\"a e\").vib(4)\n.vibmod(\"<.25 .5 1 2 12>\")\n._scope()"
  },
  {
   "name": "fm",
@@ -3284,8 +3279,7 @@
   "params": "brightness",
   "doc": "Sets the Frequency Modulation of the synth.",
   "example": "note(\"c e g b g e\")\n.fm(\"<0 1 2 8 32>\")\n._scope()",
-  "snippet": "$: note(\"c e g b g e\")\n.fm(\"<0 1 2 8 32>\")\n._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: note(\"c e g b g e\")\n.fm(\"<0 1 2 8 32>\")\n._scope()"
  },
  {
   "name": "fmattack",
@@ -3297,8 +3291,7 @@
   "params": "time",
   "doc": "Attack time for the FM envelope: time it takes to reach maximum modulation.",
   "example": "note(\"c e g b g e\")\n.fm(4)\n.fmattack(\"<0 .05 .1 .2>\")\n._scope()",
-  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmattack(\"<0 .05 .1 .2>\")\n._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmattack(\"<0 .05 .1 .2>\")\n._scope()"
  },
  {
   "name": "fmdecay",
@@ -3310,8 +3303,7 @@
   "params": "time",
   "doc": "Decay time for the FM envelope: seconds until the sustain level is reached after the attack phase.",
   "example": "note(\"c e g b g e\")\n.fm(4)\n.fmdecay(\"<.01 .05 .1 .2>\")\n.fmsustain(.4)\n._scope()",
-  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmdecay(\"<.01 .05 .1 .2>\")\n.fmsustain(.4)\n._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmdecay(\"<.01 .05 .1 .2>\")\n.fmsustain(.4)\n._scope()"
  },
  {
   "name": "fmenv",
@@ -3323,8 +3315,7 @@
   "params": "type",
   "doc": "Ramp type of fm envelope.",
   "example": "note(\"c e g b g e\")\n.fm(4)\n.fmdecay(.2)\n.fmsustain(0)\n.fmenv(\"<exp lin>\")\n._scope()",
-  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmdecay(.2)\n.fmsustain(0)\n.fmenv(\"<exp lin>\")\n._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmdecay(.2)\n.fmsustain(0)\n.fmenv(\"<exp lin>\")\n._scope()"
  },
  {
   "name": "fmh",
@@ -3334,8 +3325,7 @@
   "params": "harmonicity",
   "doc": "Sets the Frequency Modulation Harmonicity Ratio.",
   "example": "note(\"c e g b g e\")\n.fm(4)\n.fmh(\"<1 2 1.5 1.61>\")\n._scope()",
-  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmh(\"<1 2 1.5 1.61>\")\n._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmh(\"<1 2 1.5 1.61>\")\n._scope()"
  },
  {
   "name": "fmsustain",
@@ -3347,8 +3337,7 @@
   "params": "level",
   "doc": "Sustain level for the FM envelope: how much modulation is applied after the decay phase.",
   "example": "note(\"c e g b g e\")\n.fm(4)\n.fmdecay(.1)\n.fmsustain(\"<1 .75 .5 0>\")\n._scope()",
-  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmdecay(.1)\n.fmsustain(\"<1 .75 .5 0>\")\n._scope()",
-  "excluded": "the example ends in ._scope()"
+  "snippet": "$: note(\"c e g b g e\")\n.fm(4)\n.fmdecay(.1)\n.fmsustain(\"<1 .75 .5 0>\")\n._scope()"
  },
  {
   "name": "fmwave",

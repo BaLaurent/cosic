@@ -5,6 +5,7 @@ import cosic.SourceRange
 import cosic.WidgetConfig
 import cosic.parity.ParityData
 import cosic.pattern.CosicError
+import cosic.script.catalogue.Catalogue
 import cosic.script.kabel.Kabelsalat
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -56,6 +57,8 @@ class TranspileOracleTest {
 
     @BeforeTest
     fun registerLanguages() {
+        // `tidal` is registered with the catalogue, which another test may or may not have installed before this one (Gradle runs the classes that failed last time first)
+        Catalogue.installAll()
         for (tag in listOf("mondo", "mondolang")) EmbeddedLanguages.register(tag, WholeCodeLanguage)
         Kabelsalat.install()
     }

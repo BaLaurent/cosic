@@ -144,6 +144,7 @@ internal object Catalogue {
             registerMondo()
             registerTidal()
             registerLibrary()
+            registerVisuals()
             registerHooks()
             registerOsc()
             registerSerial()
