@@ -11,6 +11,9 @@ COMMIT=84ef32eec8074f90c6690ab8d6a6c204f508b182
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SRC="$HERE/strudel"
 
+# A missing or moved remote must fall through to the next method, not wait for a username.
+export GIT_TERMINAL_PROMPT=0
+
 # ---- 1. checkout --------------------------------------------------------------------------------------------
 # Each method is a && chain on purpose: inside `if method; then`, `set -e` is ignored, so a failing step in the
 # middle of a function body would not stop it.
