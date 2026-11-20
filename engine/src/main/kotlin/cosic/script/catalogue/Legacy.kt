@@ -28,7 +28,6 @@ import cosic.pattern.legacy.iter
 import cosic.pattern.legacy.iterBack
 import cosic.pattern.legacy.lastOf
 import cosic.pattern.legacy.late
-import cosic.pattern.legacy.legacyNoteToMidi
 import cosic.pattern.legacy.legacyStack
 import cosic.pattern.legacy.mask
 import cosic.pattern.legacy.off
@@ -59,7 +58,6 @@ import cosic.pattern.reg3
 import cosic.pattern.reg4
 import cosic.pattern.silence
 import cosic.pattern.slowcat
-import cosic.pattern.soundControl
 import cosic.pattern.withControls
 import cosic.script.js.JsArray
 import kotlin.math.abs
@@ -68,8 +66,8 @@ import kotlin.math.roundToInt
 /*
  * Every function of the language Cosic had before it ran Strudel's (the old `BuiltinCatalogue`), registered in the one
  * catalogue so that the interpreter serves the app's current programs. They are registered first, so every function of
- * the parity plan replaces the entry of the same name; Task 2.12 deletes this file. Behaviour, keys and messages are
- * the old ones: control maps use Cosic's own keys (`lpf`, `lpq`, ...), `note` turns note names into MIDI numbers.
+ * the parity plan replaces the entry of the same name; Task 2.12 deletes this file. Behaviour and messages are the old
+ * ones. The controls (`s`, `lpf`, `note`, ...) are not here any more: they are Strudel's, see `Controls.kt`.
  *
  * The program settings of the old catalogue (`setcps`, `setcpm`, `hush`, `samples`) are not here: they change the
  * program, not a pattern, and are globals of the language catalogue.
@@ -166,7 +164,6 @@ internal fun registerLegacy() {
     registerLegacyStructure()
     registerLegacyRandom()
     registerLegacyValues()
-    registerLegacyControls()
 }
 
 // ---- constructors and signals -----------------------------------------------------------------------------------------
@@ -314,7 +311,7 @@ private fun registerLegacyValues() {
         p.fmap { number("range", it) * (high - low) + low }
     }
     method2("scale") { s, p ->
-        val scale = text("scale", s)
+        val scale = if (s is List<*>) s.joinToString(":") { jsToString(it) } else text("scale", s)
         scaleNote(0, scale)
         p.fmap { scaled(it, scale) }
     }
@@ -328,74 +325,4 @@ private fun scaled(value: Any?, scale: String): ControlMap = when (value) {
         (asControlMap(value) - "n") + ("note" to scaleNote(Math.round(degree).toInt(), scale))
     }
     else -> throw CosicError("'scale' expects a number, got ${describe(value)}")
-}
-
-// ---- controls -------------------------------------------------------------------------------------------------------------
-
-/**
- * A control. Called as a global it is a pattern of control maps; called as a method it sets the control on every value
- * of the receiver, with the structure of the receiver. A plain number or string is converted once, so mistakes in it are
- * reported right away.
- */
-private fun control(names: List<String>, convert: (String, Any?) -> ControlMap) {
-    val name = names[0]
-    fun build(self: Pattern?, args: List<Any?>): Pattern {
-        if (args.size != 1) throw CosicError("'$name' expects 1 arguments, got ${args.size}")
-        val arg = args[0]
-        return guarded(name) {
-            val constant: ControlMap? = if (arg is Double || arg is String) convert(name, arg) else null
-            val set: (Any?) -> ControlMap = { convert(name, it) }
-            when {
-                self == null -> if (constant != null) pure(constant) else patternArg(arg).fmap(set)
-                constant != null -> self.fmap { asControlMap(it) + constant }
-                else -> self.zipLeft(patternArg(arg).fmap(set)) { value, other -> asControlMap(value) + asControlMap(other) }
-            }
-        }
-    }
-    Registry.dual(names, global = { a -> build(null, a) }, method = { self, a -> build(self, a) })
-}
-
-private fun numericControl(key: String, vararg aliases: String) =
-    control(listOf(key) + aliases) { name, value -> mapOf(key to number(name, value)) }
-
-private fun registerLegacyControls() {
-    control(listOf("s", "sound")) { name, value -> soundControl(text(name, value)) }
-    control(listOf("n")) { name, value -> mapOf("n" to number(name, value)) }
-    control(listOf("note")) { name, value ->
-        mapOf(
-            "note" to when (value) {
-                is Double -> value
-                is String -> legacyNoteToMidi(value)?.toDouble() ?: throw CosicError("Not a note: '$value'")
-                else -> throw CosicError("'$name' expects a number or a note name, got ${describe(value)}")
-            },
-        )
-    }
-    control(listOf("bank")) { name, value -> mapOf("bank" to text(name, value)) }
-    numericControl("speed")
-    numericControl("begin")
-    numericControl("end")
-    numericControl("cut")
-    numericControl("gain")
-    numericControl("velocity")
-    numericControl("postgain")
-    numericControl("pan")
-    numericControl("clip", "legato")
-    numericControl("attack", "att")
-    numericControl("decay", "dec")
-    numericControl("sustain", "sus")
-    numericControl("release", "rel")
-    numericControl("lpf", "cutoff", "ctf")
-    numericControl("lpq", "resonance")
-    numericControl("hpf", "hcutoff")
-    numericControl("hpq", "hresonance")
-    numericControl("bpf", "bandf")
-    numericControl("bpq", "bandq")
-    numericControl("shape")
-    numericControl("crush")
-    numericControl("coarse")
-    numericControl("delay")
-    numericControl("delaytime", "delayt")
-    numericControl("delayfeedback", "delayfb")
-    numericControl("room")
-    numericControl("size", "roomsize")
 }

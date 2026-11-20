@@ -234,7 +234,7 @@ class MiniTest {
     @Test
     fun numbersAreDoublesAndEverythingElseIsAString() {
         assertEquals(listOf<Any>(1.0, 2.5, 0.5, -1.0, 3.0), mini("1 2.5 .5 -1 3.").cycleValues())
-        assertEquals(listOf<Any>("bd:3", "C:major", "eb3", "e3", "c#4"), mini("bd:3 C:major eb3 e3 c#4").cycleValues())
+        assertEquals(listOf<Any>(listOf("bd", 3.0), listOf("C", "major"), "eb3", "e3", "c#4"), mini("bd:3 C:major eb3 e3 c#4").cycleValues())
     }
 
     @Test

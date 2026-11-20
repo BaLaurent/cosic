@@ -252,11 +252,15 @@ private class MiniParser(private val src: String, private val base: Int) {
         val text = src.substring(start, pos)
         if (text.all { it == '-' }) return Term(silence)
         val number = if (NUMBER_TEXT.matches(text)) text.toDouble() else null
-        val value: Any = number ?: text
+        val value: Any = number ?: colonList(text) ?: text
         val at = SourceRange(base + start, base + pos)
         leaves.add(intArrayOf(at.start, at.end))
         return Term(pure(value).withLoc(at), number)
     }
+
+    /** `bd:3` is the list `["bd", 3]` (the `:` operator of the mini-notation): the parts that read as numbers are numbers. */
+    private fun colonList(text: String): List<Any>? =
+        if (':' in text) text.split(':').map { part -> if (NUMBER_TEXT.matches(part)) part.toDouble() else part } else null
 
     // ---- modifier arguments -------------------------------------------------------------
 

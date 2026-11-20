@@ -70,25 +70,18 @@ internal fun composeOp(a: Any?, b: Any?, func: (Any?, Any?) -> Any?): Any? {
 
 // ---- the language Cosic had before Strudel's: removed together with the old evaluator (Task 1.2) ------------------------
 
-/** `bd:3` is sound `bd`, sample number 3; a name without a numeric suffix is kept whole. */
-internal fun soundControl(name: String): ControlMap {
-    val colon = name.lastIndexOf(':')
-    if (colon > 0) {
-        val suffix = name.substring(colon + 1)
-        if (NUMBER_TEXT.matches(suffix)) return mapOf("s" to name.substring(0, colon), "n" to suffix.toDouble())
-    }
-    return mapOf("s" to name)
-}
-
 /** A number as it is written in a program's text: `3`, `-0.5`, `.5` or `2.`. */
 internal val NUMBER_TEXT = Regex("-?(\\d+\\.?\\d*|\\.\\d+)")
 
-/** A pattern value as a control map: maps stay as they are, numbers become notes and strings sounds. */
+/**
+ * A pattern value as a control map: maps stay as they are, numbers become notes, strings sounds, and lists (`bd:3` of the
+ * mini-notation) the controls of `s`: a sound and its sample number.
+ */
 @Suppress("UNCHECKED_CAST")
 internal fun asControlMap(value: Any?): ControlMap = when (value) {
     is Map<*, *> -> value as ControlMap
     is Double -> mapOf("note" to value)
-    is String -> soundControl(value)
+    is String, is List<*> -> Controls.valueOf(checkNotNull(Controls.method("s")), value)
     else -> throw CosicError("Expected sounds or notes, got '${jsToString(value)}'")
 }
 
@@ -127,7 +120,7 @@ private fun change(op: ArithOp, map: ControlMap, by: Double): ControlMap {
         "n" in map -> "n"
         else -> throw CosicError("${op.word}: nothing numeric to change")
     }
-    return jsMerge(map, mapOf(key to op.apply(map.getValue(key) as Double, by)))
+    return jsMerge(map, mapOf(key to op.apply(numeric(op, map.getValue(key)), by)))
 }
 
 private fun combine(op: ArithOp, left: ControlMap, right: ControlMap): ControlMap {

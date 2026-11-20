@@ -6,6 +6,8 @@ import cosic.audio.VoiceSource
 import cosic.audio.Waveform
 import cosic.audio.bankEntry
 import cosic.pattern.ControlMap
+import cosic.pattern.jsStringToNumber
+import cosic.pattern.noteToMidi
 import kotlin.math.floor
 
 /** The outcome of looking up the sound an event asks for. */
@@ -29,11 +31,14 @@ private val DEFAULT_SOUND = SoundLookup.Ready(VoiceSource.Synth(Waveform.TRIANGL
  * up), so doing one off the audio thread (see [dryRun]) warms up what it needs.
  */
 internal class SoundResolver(sampleRate: Int, private val library: SoundLibrary, private val drums: DrumKit = DrumKit(sampleRate)) {
-    /** The sound of an event's controls: `s`, prefixed with `bank_` when `bank` is set, with `n` and `note` choosing the sample. */
+    /**
+     * The sound of an event's controls: `s`, prefixed with `bank_` when `bank` is set, with `n` and `note` choosing the sample.
+     * `note` is kept as the pattern wrote it (`c3`) and becomes its MIDI number here; a name that is not a note is an error.
+     */
     fun resolve(controls: ControlMap): SoundLookup {
         val name = controls["s"] as? String ?: return DEFAULT_SOUND
         val bank = controls["bank"] as? String
-        return resolve(if (bank == null) name else "${bank}_$name", controls["n"] as? Double ?: 0.0, controls["note"] as? Double)
+        return resolve(if (bank == null) name else "${bank}_$name", sampleNumber(controls["n"]), noteNumber(controls["note"]))
     }
 
     /** The sound called [key]; [n] counts samples (or drum variants) and [note] picks the entry of a pitched bank. */
@@ -47,4 +52,18 @@ internal class SoundResolver(sampleRate: Int, private val library: SoundLibrary,
         drums.sample(key, floor(n).toInt())?.let { return SoundLookup.Ready(VoiceSource.Sample(it, null)) }
         return SoundLookup.Unknown(key)
     }
+}
+
+/** The sample number of an `n`: a number, or text that reads as one (anything else is sample 0). */
+private fun sampleNumber(n: Any?): Double = when (n) {
+    is Double -> n
+    is String -> jsStringToNumber(n).let { if (it.isNaN()) 0.0 else it }
+    else -> 0.0
+}
+
+/** The MIDI number of a `note`: a number as it is, a note name converted; null when none is set. */
+private fun noteNumber(note: Any?): Double? = when (note) {
+    is Double -> note
+    is String -> noteToMidi(note)
+    else -> null
 }

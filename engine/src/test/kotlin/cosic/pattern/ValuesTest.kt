@@ -10,21 +10,17 @@ class ValuesTest {
     // ---- sounds and control maps ------------------------------------------------------
 
     @Test
-    fun soundNamesWithANumericSuffixSetN() {
-        assertEquals(mapOf<String, Any>("s" to "bd"), soundControl("bd"))
-        assertEquals(mapOf<String, Any>("s" to "bd", "n" to 3.0), soundControl("bd:3"))
-        assertEquals(mapOf<String, Any>("s" to "bd", "n" to 2.5), soundControl("bd:2.5"))
-        assertEquals(mapOf<String, Any>("s" to "bd", "n" to -1.0), soundControl("bd:-1"))
-        assertEquals(mapOf<String, Any>("s" to "a:b", "n" to 3.0), soundControl("a:b:3"))
+    fun aListIsTheControlsOfS() {
+        assertEquals(mapOf<String, Any>("s" to "bd", "n" to 3.0), asControlMap(listOf("bd", 3.0)))
+        assertEquals(mapOf<String, Any>("s" to "bd", "n" to 2.5, "gain" to 0.3), asControlMap(listOf("bd", 2.5, 0.3)))
+        assertEquals(mapOf<String, Any>("s" to "bd", "n" to -1.0), asControlMap(listOf("bd", -1.0)))
     }
 
     @Test
-    fun soundNamesWithoutANumericSuffixStayWhole() {
-        assertEquals(mapOf<String, Any>("s" to "bd:x"), soundControl("bd:x"))
-        assertEquals(mapOf<String, Any>("s" to ":3"), soundControl(":3"))
-        assertEquals(mapOf<String, Any>("s" to "bd:"), soundControl("bd:"))
-        assertEquals(mapOf<String, Any>("s" to "bd:1e3"), soundControl("bd:1e3"))
-        assertEquals(mapOf<String, Any>("s" to "bd:NaN"), soundControl("bd:NaN"))
+    fun aStringIsASoundNameKeptWhole() {
+        assertEquals(mapOf<String, Any>("s" to "bd"), asControlMap("bd"))
+        assertEquals(mapOf<String, Any>("s" to "bd:3"), asControlMap("bd:3"))
+        assertEquals(mapOf<String, Any>("s" to ":3"), asControlMap(":3"))
     }
 
     @Test
@@ -32,7 +28,7 @@ class ValuesTest {
         val map = mapOf<String, Any>("gain" to 0.5)
         assertEquals(map, asControlMap(map))
         assertEquals(mapOf<String, Any>("note" to 60.0), asControlMap(60.0))
-        assertEquals(mapOf<String, Any>("s" to "bd", "n" to 3.0), asControlMap("bd:3"))
+        assertEquals(mapOf<String, Any>("s" to "bd", "n" to 3.0), asControlMap(listOf("bd", 3.0)))
         val e = assertFailsWith<CosicError> { asControlMap(true) }
         assertEquals("Expected sounds or notes, got 'true'", e.message)
     }
@@ -75,6 +71,8 @@ class ValuesTest {
         assertEquals(mapOf<String, Any>("note" to 60.0, "n" to 2.0), arith(ArithOp.ADD, both, 12.0))
         assertEquals(mapOf<String, Any>("n" to 6.0), arith(ArithOp.MUL, mapOf<String, Any>("n" to 2.0), 3.0))
         assertEquals(mapOf<String, Any>("note" to 90.0), arith(ArithOp.ADD, mapOf<String, Any>("note" to 48.0), "f#2"))
+        // `note("c3")` keeps its name; the legacy arithmetic reads it as its MIDI number
+        assertEquals(mapOf<String, Any>("note" to 60.0), arith(ArithOp.ADD, mapOf<String, Any>("note" to "c3"), 12.0))
     }
 
     @Test
