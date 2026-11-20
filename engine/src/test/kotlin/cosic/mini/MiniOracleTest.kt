@@ -7,6 +7,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
@@ -36,6 +37,9 @@ class MiniOracleTest {
         val haps: List<String> get() = json["haps"]!!.jsonArray.map { it.jsonPrimitive.content }
         val locs: List<List<List<Int>>> get() = json["locs"]!!.jsonArray.map { hap -> ranges(hap.jsonArray) }
         val steps: String? get() = json["steps"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.contentOrNull
+
+        /** Evaluating the string changed Strudel's global `silence`, which makes its steps depend on how that leak went. */
+        val sharedMutated: Boolean get() = json["sharedMutated"]?.jsonPrimitive?.booleanOrNull == true
         val leaves: List<List<Int>>? get() = json["leaves"]?.let { ranges(it.jsonArray) }
         val usesEuclid: Boolean get() = '(' in src
 
@@ -93,7 +97,7 @@ class MiniOracleTest {
             val first = actual.locs.zip(c.locs).indexOfFirst { (a, b) -> a != b }
             return "source ranges differ at hap $first\n    expected ${c.locs[first]}\n    actual   ${actual.locs[first]}"
         }
-        if (actual.steps != c.steps) return "steps differ: expected ${c.steps}, actual ${actual.steps}"
+        if (!c.sharedMutated && actual.steps != c.steps) return "steps differ: expected ${c.steps}, actual ${actual.steps}"
         val leaves = c.leaves
         if (leaves != null) {
             val here = try {

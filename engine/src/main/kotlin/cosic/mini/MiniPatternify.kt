@@ -112,6 +112,8 @@ private class Patternifier(private val code: String, private val onEnter: ((Mini
                     weight = weightSum
                 } else {
                     pat = fastcat(children.map { it.pat }).setSteps(Rational(children.size.toLong()))
+                    // `sequence(...children)` is the child itself when there is only one, and so keeps its weight (`<[a b]@0>`)
+                    if (children.size == 1) weight = children[0].weight
                 }
                 if (ast.stepsFlag) stepsSource = true
             }

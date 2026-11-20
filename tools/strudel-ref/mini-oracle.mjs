@@ -19,6 +19,7 @@
 //   haps     the haps of the cycles in order, `hap.show(true)` (the strings of the snapshot tests)
 //   locs     for each hap the source ranges of its context, sorted
 //   steps    the number of steps per cycle (`pattern._steps`), if it has any
+//   sharedMutated   set when evaluating the string changed Strudel's global `silence` (see below): its steps are not compared
 //   leaves   `getLeafLocations('"src"', 10)`: the ranges of the atoms in the order Strudel visits them
 //   error    the message of the error that evaluating the string gave, instead of all of the above
 //
@@ -40,7 +41,7 @@ const log = console.log;
 const warn = console.warn;
 console.log = () => {};
 console.warn = () => {};
-await import(pkg('core/index.mjs'));
+const core = await import(pkg('core/index.mjs'));
 await import(pkg('core/euclid.mjs'));
 const mini = await import(pkg('mini/mini.mjs'));
 console.log = log;
@@ -114,14 +115,39 @@ ${lines.join('\n')}
 
 // ---- running a string ---------------------------------------------------------------------------------------------
 
+// `fast(0)` and `slow(0)` return Strudel's one global `silence`, and the machinery that registers a function then
+// writes the steps of the pattern it was called on into it (`result._steps = pat._steps`); mini.mjs marks it as a source of
+// steps the same way. The shared pattern then carries those steps into every later use of `~`. That leak between programs
+// is not something to reproduce: every string starts from the pristine globals, and one that changed them is marked
+// (`sharedMutated`), so that only its steps (which the leak may have changed) are left out of the comparison.
+const SHARED = [
+  [core.silence, 1],
+  [core.nothing, 0],
+];
+
+function resetShared() {
+  for (const [pattern, steps] of SHARED) {
+    pattern._steps = steps;
+    pattern.__steps_source = undefined;
+  }
+}
+
+function sharedMutated() {
+  return SHARED.some(([pattern, steps]) => String(pattern._steps) !== String(core.Fraction ? core.Fraction(steps) : steps) || pattern.__steps_source !== undefined);
+}
+
 const MAX_HAPS = 100;
 
 function runCase(src, wantedCycles = 4) {
   const [l, e] = [console.log, console.error];
   console.log = console.error = () => {};
   try {
-    return runCaseQuietly(src, wantedCycles);
+    resetShared();
+    const result = runCaseQuietly(src, wantedCycles);
+    if (result && sharedMutated()) result.sharedMutated = true;
+    return result;
   } finally {
+    resetShared();
     console.log = l;
     console.error = e;
   }
