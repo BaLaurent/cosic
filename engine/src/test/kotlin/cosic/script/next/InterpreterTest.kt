@@ -8,6 +8,7 @@ import cosic.script.next.js.JsUndefined
 import cosic.script.next.js.JsArray
 import cosic.script.next.js.JsFunction
 import cosic.script.next.js.JsObject
+import cosic.script.next.js.stdlib.JsPromise
 import cosic.script.next.js.JsThrow
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -200,10 +201,11 @@ class InterpreterTest {
     }
 
     @Test
-    fun awaitReturnsItsOperandAndAnAsyncFunctionRunsWhenCalledUnlessTheRealmHasPromises() {
+    fun anAsyncFunctionReturnsAPromiseThatAwaitUnwrapsUnlessTheHostReplacesTheRealmsAsyncSupport() {
         val realm = testRealm()
         assertEquals(5.0, realm.runRaw("return await 5"))
-        assertEquals(6.0, realm.runRaw("const f = async (x) => (await x) + 1; return f(5)"))
+        assertEquals(6.0, realm.runRaw("const f = async (x) => (await x) + 1; return await f(5)"))
+        assertIs<JsPromise>(realm.runRaw("const f = async (x) => x; return f(5)"))
 
         val log = ArrayList<String>()
         realm.async = object : AsyncSupport {

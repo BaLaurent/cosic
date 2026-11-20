@@ -15,6 +15,7 @@ import cosic.script.next.js.ScriptLimitExceeded
 import cosic.script.next.js.describe
 import cosic.script.next.js.describeThrown
 import cosic.script.next.js.toStr
+import cosic.script.next.js.stdlib.installStdlib
 
 /** How serious a line the program wrote to the console is. */
 internal enum class LogLevel { DEBUG, INFO, WARNING, ERROR }
@@ -82,7 +83,7 @@ internal object SynchronousAsync : AsyncSupport {
  * `JSON`, `console`...), in order. The core of the language (Object.prototype, Function.prototype, the errors) is
  * installed first by [installCoreIntrinsics]. Whoever adds a library file appends its `install` function here.
  */
-private val BASE_INSTALLERS: List<(Realm) -> Unit> = listOf()
+private val BASE_INSTALLERS: List<(Realm) -> Unit> = listOf(::installStdlib)
 
 /**
  * One world of JavaScript: a global object, the prototypes of the built-ins, and the interpreter that runs programs in
