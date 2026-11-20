@@ -89,7 +89,7 @@ class ReferenceItemsTest {
         val synth = items.first { it.name == "sine" && it.category == "Synths" }
 
         assertEquals("\$: note(\"c3 e3 g3\").s(\"sine\")", synth.snippet)
-        assertEquals(SoundTarget("sine", pitched = true), synth.sound)
+        assertEquals(SoundTarget("sine", pitched = true, count = null), synth.sound)
     }
 
     @Test
@@ -97,7 +97,7 @@ class ReferenceItemsTest {
         val drum = item("bd")
 
         assertEquals("\$: s(\"bd*4\")", drum.snippet)
-        assertEquals(SoundTarget("bd", pitched = false), drum.sound)
+        assertEquals(SoundTarget("bd", pitched = false, count = 4), drum.sound)
     }
 
     @Test
@@ -105,7 +105,7 @@ class ReferenceItemsTest {
         val piano = item("piano")
 
         assertEquals("\$: note(\"c3 e3 g3\").s(\"piano\")", piano.snippet)
-        assertEquals(SoundTarget("piano", pitched = true), piano.sound)
+        assertEquals(SoundTarget("piano", pitched = true, count = 26), piano.sound)
         assertEquals("instrument doc", piano.doc)
     }
 
@@ -114,7 +114,7 @@ class ReferenceItemsTest {
         val kick = item("kick")
 
         assertEquals("\$: s(\"kick:0 kick:1\")", kick.snippet)
-        assertEquals(SoundTarget("kick", pitched = false), kick.sound)
+        assertEquals(SoundTarget("kick", pitched = false, count = 8), kick.sound)
         assertEquals("Percussion", kick.category)
     }
 
@@ -170,5 +170,36 @@ class ReferenceItemsTest {
             listOf("Synths", "Drum kit", "Instruments", "Percussion", "Imported", "Scales", "Time", "Sound", "Values"),
             chipOrder(categories, functions.map { it.category }.toSet()),
         )
+    }
+
+    @Test
+    fun soundsGoToTheSoundsTabAndEverythingElseToTheReference() {
+        assertEquals(PanelTab.SOUNDS, items.tabFor(OpenOn.Group("Synths")))
+        assertEquals(PanelTab.SOUNDS, items.tabFor(OpenOn.Item(item("bd"))))
+        assertEquals(PanelTab.REFERENCE, items.tabFor(OpenOn.Group("Scales")))
+        assertEquals(PanelTab.REFERENCE, items.tabFor(OpenOn.Item(item("fast"))))
+        assertEquals(PanelTab.REFERENCE, items.tabFor(null))
+    }
+
+    @Test
+    fun eachTabListsOnlyItsOwnItems() {
+        assertTrue(items.inTab(PanelTab.SOUNDS).all { it.sound != null })
+        assertTrue(items.inTab(PanelTab.REFERENCE).none { it.sound != null })
+        assertEquals(items.size, items.inTab(PanelTab.SOUNDS).size + items.inTab(PanelTab.REFERENCE).size)
+    }
+
+    @Test
+    fun aBankKnowsHowManySamplesItHasAndADrumItsVariants() {
+        assertEquals(26, item("piano").sound?.count)
+        assertEquals(4, item("bd").sound?.count)
+        assertNull(items.first { it.name == "sine" && it.category == "Synths" }.sound?.count)
+    }
+
+    @Test
+    fun theButtonOfTheEditorPicksTheTabUnlessTheCursorIsOnASound() {
+        assertEquals(PanelTab.SOUNDS, items.tabOnOpen(PanelTab.REFERENCE, OpenOn.Item(item("bd"))))
+        assertEquals(PanelTab.SOUNDS, items.tabOnOpen(PanelTab.SOUNDS, OpenOn.Item(item("fast"))))
+        assertEquals(PanelTab.REFERENCE, items.tabOnOpen(PanelTab.REFERENCE, OpenOn.Item(item("fast"))))
+        assertEquals(PanelTab.REFERENCE, items.tabOnOpen(PanelTab.REFERENCE, null))
     }
 }

@@ -219,5 +219,8 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
     companion object {
         val SYNTHS: List<String> = SYNTH_NAMES
         val DRUMS: List<String> = DRUM_NAMES
+
+        /** How many variants each of [DRUMS] has: `bd:0` to `bd:3`. */
+        const val DRUM_VARIANTS: Int = cosic.audio.DRUM_VARIANTS
     }
 }

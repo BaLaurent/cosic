@@ -23,7 +23,7 @@ import com.octopusman.cosic.ui.tagged
 internal object ReferenceSplit {
     const val DEFAULT = 0.45f
     const val MIN = 0.2f
-    const val MAX = 0.9f
+    const val MAX = 0.95f
 
     // Above this the panel counts as tall already, and a tap on the handle brings it back.
     private const val TALL = 0.7f
@@ -31,6 +31,13 @@ internal object ReferenceSplit {
     /** [fraction] after the handle was dragged by [dragPx] (negative is up) in a layout [totalPx] high. */
     fun dragged(fraction: Float, dragPx: Float, totalPx: Float): Float =
         if (totalPx <= 0f) fraction else (fraction - dragPx / totalPx).coerceIn(MIN, MAX)
+
+    /**
+     * [fraction] when the panel opens in a layout [totalPx] high: at least enough for [minPanelPx], so
+     * the list shows on a short screen, and at most [MAX].
+     */
+    fun onOpen(fraction: Float, minPanelPx: Float, totalPx: Float): Float =
+        if (totalPx <= 0f) fraction else maxOf(fraction, (minPanelPx / totalPx).coerceAtMost(MAX))
 
     fun toggled(fraction: Float): Float = if (fraction >= TALL) DEFAULT else MAX
 }
@@ -42,7 +49,7 @@ internal fun ReferenceHandle(onDrag: (Float) -> Unit, onTap: () -> Unit, modifie
     Box(
         modifier
             .fillMaxWidth()
-            .height(28.dp)
+            .height(16.dp)
             .background(MaterialTheme.colorScheme.surface)
             .draggable(rememberDraggableState(onDrag), Orientation.Vertical)
             .clickable(onClickLabel = label, onClick = onTap)

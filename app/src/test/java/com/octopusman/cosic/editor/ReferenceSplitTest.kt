@@ -32,4 +32,21 @@ class ReferenceSplitTest {
         assertEquals(ReferenceSplit.DEFAULT, ReferenceSplit.toggled(0.8f))
         assertEquals(ReferenceSplit.MAX, ReferenceSplit.toggled(0.25f))
     }
+
+    @Test
+    fun onAShortScreenThePanelOpensTallEnoughToShowItsList() {
+        // 600 px high, the panel needs 400 px: two thirds.
+        assertEquals(400f / 600f, ReferenceSplit.onOpen(ReferenceSplit.DEFAULT, minPanelPx = 400f, totalPx = 600f), 0.0001f)
+    }
+
+    @Test
+    fun onATallScreenTheSizeTheUserLeftItAtIsKept() {
+        assertEquals(0.45f, ReferenceSplit.onOpen(0.45f, minPanelPx = 400f, totalPx = 2000f), 0.0001f)
+    }
+
+    @Test
+    fun theOpeningSizeNeverExceedsTheLargestAndUnmeasuredChangesNothing() {
+        assertEquals(ReferenceSplit.MAX, ReferenceSplit.onOpen(0.45f, minPanelPx = 900f, totalPx = 600f))
+        assertEquals(0.45f, ReferenceSplit.onOpen(0.45f, minPanelPx = 400f, totalPx = 0f))
+    }
 }

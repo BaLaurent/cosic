@@ -44,6 +44,10 @@
     <string name="editor_menu_sounds">Sounds</string>
     <string name="editor_reference_show">Show reference</string>
     <string name="editor_reference_hide">Hide reference</string>
+    <string name="editor_sounds_show">Show sounds</string>
+    <string name="editor_sounds_hide">Hide sounds</string>
+    <string name="panel_tab_reference">Reference</string>
+    <string name="panel_tab_sounds">Sounds</string>
     <string name="editor_status_error">Line %1$d:%2$d — %3$s</string>
     <string name="editor_status_playing">%1$s cpm · cycle %2$d</string>
 

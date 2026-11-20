@@ -15,7 +15,8 @@ import kotlin.math.tanh
 internal val DRUM_NAMES: List<String> = listOf("bd", "sd", "hh", "oh", "cp", "rim", "lt", "mt", "ht", "cr")
 
 /** Every sound exists in this many variants, picked by `n` modulo this count. */
-private const val VARIANTS = 4
+/** How many variants of each drum sound there are, picked with `bd:0` to `bd:3`. */
+internal const val DRUM_VARIANTS = 4
 
 private const val PEAK = 0.9f
 private const val TWO_PI = 2.0 * PI
@@ -34,8 +35,8 @@ internal class DrumKit(private val sampleRate: Int) {
     fun sample(name: String, variant: Int): SampleData? {
         val id = DRUM_NAMES.indexOf(name)
         if (id < 0) return null
-        val v = Math.floorMod(variant, VARIANTS)
-        return cache.getOrPut(id * VARIANTS + v) { SampleData(normalised(render(name, v, ((id * VARIANTS + v + 1) * 0x2545F491) or 1)), sampleRate) }
+        val v = Math.floorMod(variant, DRUM_VARIANTS)
+        return cache.getOrPut(id * DRUM_VARIANTS + v) { SampleData(normalised(render(name, v, ((id * DRUM_VARIANTS + v + 1) * 0x2545F491) or 1)), sampleRate) }
     }
 
     /** How many of the kit's sounds (every name in every variant) are rendered and cached so far. */
@@ -43,7 +44,7 @@ internal class DrumKit(private val sampleRate: Int) {
 
     /** Renders every sound in every variant that is not rendered yet, so that no lookup has to do it later. */
     fun warmUp() {
-        for (name in DRUM_NAMES) for (variant in 0 until VARIANTS) sample(name, variant)
+        for (name in DRUM_NAMES) for (variant in 0 until DRUM_VARIANTS) sample(name, variant)
     }
 
     private fun render(name: String, v: Int, seed: Int): FloatArray = when (name) {

@@ -5,8 +5,14 @@ import com.octopusman.cosic.audio.BankSummary
 import cosic.CosicEngine
 import cosic.script.ReferenceEntry
 
-/** The sound a reference item can be previewed as; [pitched] sounds are played at a note. */
-internal data class SoundTarget(val name: String, val pitched: Boolean)
+/**
+ * The sound a reference item can be previewed as; [pitched] sounds are played at a note. [count] is
+ * how many samples (or drum variants) `name:n` can pick from, null for a synth.
+ */
+internal data class SoundTarget(val name: String, val pitched: Boolean, val count: Int?)
+
+/** The two tabs of the panel: the functions and scales of the language, and the sounds. */
+internal enum class PanelTab { REFERENCE, SOUNDS }
 
 /** For a function that takes a name from a list (a sound, a scale): the group that lists them, and the button label. */
 internal data class ValuesLink(val category: String, val label: String)
@@ -59,8 +65,8 @@ internal fun referenceItems(
         "scale" to ValuesLink(texts.scale.category, texts.showScales),
     )
 
-    fun sound(name: String, text: GroupText, pitched: Boolean, snippet: String) =
-        ReferenceItem(name, emptyList(), text.category, "s(\"$name\")", text.doc, snippet, SoundTarget(name, pitched))
+    fun sound(name: String, text: GroupText, pitched: Boolean, count: Int?, snippet: String) =
+        ReferenceItem(name, emptyList(), text.category, "s(\"$name\")", text.doc, snippet, SoundTarget(name, pitched, count))
 
     fun notes(name: String) = "\$: note(\"$NOTES\").s(\"$name\")"
 
@@ -71,7 +77,7 @@ internal fun referenceItems(
             BankKind.PERCUSSION -> texts.percussion
         }
         val snippet = if (bank.pitched) notes(bank.name) else "\$: s(\"${bank.name}:0 ${bank.name}:1\")"
-        return sound(bank.name, text, bank.pitched, snippet)
+        return sound(bank.name, text, bank.pitched, bank.count, snippet)
     }
 
     fun scale(mode: String) = ReferenceItem(
@@ -87,8 +93,8 @@ internal fun referenceItems(
         ReferenceItem(it.name, it.aliases, it.category, it.signature, it.doc, it.snippet, values = links[it.name])
     }
     return functionItems +
-        CosicEngine.SYNTHS.map { sound(it, texts.synth, pitched = true, snippet = notes(it)) } +
-        CosicEngine.DRUMS.map { sound(it, texts.drum, pitched = false, snippet = "\$: s(\"$it*4\")") } +
+        CosicEngine.SYNTHS.map { sound(it, texts.synth, pitched = true, count = null, snippet = notes(it)) } +
+        CosicEngine.DRUMS.map { sound(it, texts.drum, pitched = false, count = CosicEngine.DRUM_VARIANTS, snippet = "\$: s(\"$it*4\")") } +
         BankKind.entries.flatMap { kind -> banks.filter { it.kind == kind }.map(::bank) } +
         scales.map(::scale)
 }
@@ -129,3 +135,25 @@ internal fun List<ReferenceItem>.openOn(hit: CursorHit?): OpenOn? {
  */
 internal fun chipOrder(categories: List<String>, functionGroups: Set<String>): List<String> =
     categories.filter { it !in functionGroups } + categories.filter { it in functionGroups }
+
+/** The items listed in [tab]. */
+internal fun List<ReferenceItem>.inTab(tab: PanelTab): List<ReferenceItem> =
+    filter { (it.sound != null) == (tab == PanelTab.SOUNDS) }
+
+/** The tab that shows [openOn]. */
+internal fun List<ReferenceItem>.tabFor(openOn: OpenOn?): PanelTab {
+    val isSound = when (openOn) {
+        is OpenOn.Item -> openOn.item.sound != null
+        is OpenOn.Group -> any { it.category == openOn.category && it.sound != null }
+        null -> false
+    }
+    return if (isSound) PanelTab.SOUNDS else PanelTab.REFERENCE
+}
+
+/**
+ * The tab the panel opens on when the editor's [button] for that tab is tapped: the sounds whenever
+ * the cursor is on a sound or in `s(…)`/`bank(…)`, since that is what is being looked for, else the
+ * tab of the button.
+ */
+internal fun List<ReferenceItem>.tabOnOpen(button: PanelTab, openOn: OpenOn?): PanelTab =
+    if (tabFor(openOn) == PanelTab.SOUNDS) PanelTab.SOUNDS else button

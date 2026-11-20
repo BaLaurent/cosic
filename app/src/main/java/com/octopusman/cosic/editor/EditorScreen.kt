@@ -1,23 +1,26 @@
 package com.octopusman.cosic.editor
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
-import android.content.res.Configuration
+import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -36,17 +39,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
@@ -56,9 +61,10 @@ import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,17 +72,27 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.octopusman.cosic.R
-import androidx.compose.runtime.saveable.rememberSaveable
 import com.octopusman.cosic.monetization.AdsController
+import com.octopusman.cosic.reference.OpenOn
+import com.octopusman.cosic.reference.PanelTab
+import com.octopusman.cosic.reference.ReferencePanel
+import com.octopusman.cosic.reference.functionAtCursor
+import com.octopusman.cosic.reference.named
+import com.octopusman.cosic.reference.openOn
+import com.octopusman.cosic.reference.rememberReferenceItems
+import com.octopusman.cosic.reference.tabOnOpen
 import com.octopusman.cosic.ui.AdBannerBar
 import com.octopusman.cosic.ui.BackButton
 import com.octopusman.cosic.ui.CosicColors
 import com.octopusman.cosic.ui.RenameDialog
 import com.octopusman.cosic.ui.findActivity
 import com.octopusman.cosic.ui.shareText
-import com.octopusman.cosic.reference.ReferencePanel
 import com.octopusman.cosic.ui.tagged
+
+/** The least height the side panel opens at in portrait: its tabs, search, group chips and a few lines of its list. */
+private val MIN_PANEL_HEIGHT = 380.dp
 
 /**
  * The code editor for one project. [onBack] pops the screen; it is called after the music has been
@@ -101,6 +117,7 @@ fun EditorScreen(
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val focusRequester = remember { FocusRequester() }
     var renaming by remember { mutableStateOf(false) }
+    var codeFocused by remember { mutableStateOf(false) }
     val playing = vm.playing
 
     // System back and the top bar's back arrow take the same way out. A second tap while the screen
@@ -114,9 +131,35 @@ fun EditorScreen(
     }
     BackHandler(onBack = leave)
 
-    var showReference by rememberSaveable { mutableStateOf(false) }
+    // The side panel: closed (null), or showing its reference or sounds tab.
+    var panelTab by rememberSaveable { mutableStateOf<PanelTab?>(null) }
+    var panelTarget by remember { mutableStateOf<OpenOn?>(null) }
+    val banks by vm.banks.collectAsStateWithLifecycle()
+    val referenceItems by rememberUpdatedState(rememberReferenceItems(banks))
     var referenceShare by rememberSaveable { mutableFloatStateOf(ReferenceSplit.DEFAULT) }
     var splitHeight by remember { mutableIntStateOf(0) }
+    // Room for the tabs, the search, the group chips and a few lines of the list.
+    val minPanelPx = with(LocalDensity.current) { MIN_PANEL_HEIGHT.toPx() }
+
+    // A button of the top bar closes the panel when it shows that button's tab, and switches to that
+    // tab when it shows the other one. When the panel opens, it opens on what the cursor is on; on the
+    // sounds whenever the cursor is on a sound or inside s(…) or bank(…).
+    fun togglePanel(button: PanelTab) {
+        when (panelTab) {
+            button -> panelTab = null
+            null -> {
+                val code = vm.textValue
+                val hit = functionAtCursor(code.text, code.selection.start) { referenceItems.named(it) != null }
+                panelTarget = referenceItems.openOn(hit)
+                panelTab = referenceItems.tabOnOpen(button, panelTarget)
+                referenceShare = ReferenceSplit.onOpen(referenceShare, minPanelPx, splitHeight.toFloat())
+            }
+            else -> {
+                panelTarget = null
+                panelTab = button
+            }
+        }
+    }
 
     // Nothing keeps playing in the background. A rotation restarts the activity but is not leaving.
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
@@ -156,7 +199,8 @@ fun EditorScreen(
                     IconButton(onClick = vm::stop, modifier = Modifier.tagged("stop", stringResource(R.string.editor_stop))) {
                         Icon(Icons.Filled.Stop, contentDescription = null)
                     }
-                    ReferenceToggle(shown = showReference, onClick = { showReference = !showReference })
+                    PanelToggle(PanelTab.SOUNDS, panelTab, onClick = { togglePanel(PanelTab.SOUNDS) })
+                    PanelToggle(PanelTab.REFERENCE, panelTab, onClick = { togglePanel(PanelTab.REFERENCE) })
                     OverflowMenu(
                         onSounds = onOpenSounds,
                         onShare = { context.shareText(vm.textValue.text) },
@@ -166,18 +210,23 @@ fun EditorScreen(
             )
         },
         bottomBar = {
-            // The keyboard takes the place of the banner, and the symbol bar sits right above it.
+            // The keyboard takes the place of the banner. While the code is edited the symbol bar sits
+            // right above it; while the panel's search is typed in, only room for the keyboard is kept.
             // The banner stays composed (collapsed and paused) so it is not reloaded on every edit.
             Column {
                 if (WindowInsets.isImeVisible) {
-                    SymbolBar(
-                        canUndo = vm.canUndo,
-                        canRedo = vm.canRedo,
-                        onUndo = vm::undo,
-                        onRedo = vm::redo,
-                        onSymbol = vm::insertSymbol,
-                        modifier = Modifier.navigationBarsPadding().imePadding(),
-                    )
+                    if (codeFocused) {
+                        SymbolBar(
+                            canUndo = vm.canUndo,
+                            canRedo = vm.canRedo,
+                            onUndo = vm::undo,
+                            onRedo = vm::redo,
+                            onSymbol = vm::insertSymbol,
+                            modifier = Modifier.navigationBarsPadding().imePadding(),
+                        )
+                    } else {
+                        Spacer(Modifier.navigationBarsPadding().imePadding())
+                    }
                 }
                 AdBannerBar(ads)
             }
@@ -195,39 +244,46 @@ fun EditorScreen(
                         value = vm.textValue,
                         onValueChange = vm::onTextChange,
                         activeRanges = { vm.activeRanges },
-                        modifier = modifier.focusRequester(focusRequester),
+                        modifier = modifier.focusRequester(focusRequester).onFocusChanged { codeFocused = it.hasFocus },
                     )
                 }
             }
-            val banks by vm.banks.collectAsStateWithLifecycle()
             val reference = remember {
                 movableContentOf<Modifier> { modifier ->
                     ReferencePanel(
-                        banks = banks,
-                        // What the cursor was on when the panel opened: the panel opens on that function or sound.
-                        codeAtOpen = remember { vm.textValue },
+                        items = referenceItems,
+                        tab = panelTab ?: PanelTab.REFERENCE,
+                        onTabChange = { panelTab = it },
+                        openOn = panelTarget,
                         onInsert = vm::insertSnippet,
                         onPreview = vm::previewSound,
-                        onClose = { showReference = false },
+                        onClose = { panelTab = null },
                         modifier = modifier,
                     )
                 }
             }
             val sideBySide = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+            // The area under the status line, measured even while the panel is closed so that it can
+            // open at a size that fits.
+            val area = Modifier.weight(1f).fillMaxWidth().onSizeChanged { splitHeight = it.height }
+            // Typing in the panel's search: the keyboard leaves little room, so the panel takes all of
+            // it. Only the sizes change, never the layout, so the search field keeps its focus.
+            val searchingInPanel = WindowInsets.isImeVisible && !codeFocused
             when {
-                !showReference -> editor(Modifier.weight(1f).fillMaxWidth())
-                sideBySide -> Row(Modifier.weight(1f).fillMaxWidth()) {
+                panelTab == null -> editor(area)
+                sideBySide -> Row(area) {
                     editor(Modifier.weight(1f).fillMaxHeight())
                     reference(Modifier.weight(1f).fillMaxHeight())
                 }
                 // Portrait: the reference grows upwards when its handle is dragged.
-                else -> Column(Modifier.weight(1f).fillMaxWidth().onSizeChanged { splitHeight = it.height }) {
-                    editor(Modifier.weight(1f - referenceShare).fillMaxWidth())
+                else -> Column(area) {
+                    val panelShare = if (searchingInPanel) 1f else referenceShare
+                    editor(if (searchingInPanel) Modifier.height(0.dp) else Modifier.weight(1f - panelShare).fillMaxWidth())
                     ReferenceHandle(
                         onDrag = { referenceShare = ReferenceSplit.dragged(referenceShare, it, splitHeight.toFloat()) },
                         onTap = { referenceShare = ReferenceSplit.toggled(referenceShare) },
                     )
-                    reference(Modifier.weight(referenceShare).fillMaxWidth())
+                    reference(Modifier.weight(panelShare).fillMaxWidth())
                 }
             }
         }
@@ -254,11 +310,19 @@ private fun PlayButton(playing: Boolean, onClick: () -> Unit) {
     }
 }
 
+/** The book (reference) or the note (sounds) of the top bar; lit while the panel shows its tab. */
 @Composable
-private fun ReferenceToggle(shown: Boolean, onClick: () -> Unit) {
-    val label = stringResource(if (shown) R.string.editor_reference_hide else R.string.editor_reference_show)
-    IconButton(onClick = onClick, modifier = Modifier.tagged("reference", label)) {
-        Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = if (shown) MaterialTheme.colorScheme.primary else LocalContentColor.current)
+private fun PanelToggle(tab: PanelTab, shownTab: PanelTab?, onClick: () -> Unit) {
+    val shown = shownTab == tab
+    val label = stringResource(
+        when (tab) {
+            PanelTab.REFERENCE -> if (shown) R.string.editor_reference_hide else R.string.editor_reference_show
+            PanelTab.SOUNDS -> if (shown) R.string.editor_sounds_hide else R.string.editor_sounds_show
+        },
+    )
+    val icon = if (tab == PanelTab.SOUNDS) Icons.Filled.LibraryMusic else Icons.AutoMirrored.Filled.MenuBook
+    IconButton(onClick = onClick, modifier = Modifier.tagged(if (tab == PanelTab.SOUNDS) "sounds_panel" else "reference", label)) {
+        Icon(icon, contentDescription = null, tint = if (shown) MaterialTheme.colorScheme.primary else LocalContentColor.current)
     }
 }
 

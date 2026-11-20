@@ -64,8 +64,6 @@ import com.octopusman.cosic.ui.tagged
 import cosic.CosicEngine
 import kotlinx.coroutines.launch
 
-private const val DRUM_VARIANTS = 4
-
 /**
  * Everything the engine can play: synth waveforms, the drum kit, the bundled instruments and
  * percussion, and the folders the user imported. Tap a row to copy its name, the arrow to hear it.
@@ -119,7 +117,7 @@ fun SoundsScreen(
                         Column {
                             Text(stringResource(R.string.sounds_drum_variants), style = MaterialTheme.typography.bodySmall)
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                for (variant in 0 until DRUM_VARIANTS) {
+                                for (variant in 0 until CosicEngine.DRUM_VARIANTS) {
                                     val label = "$name:$variant"
                                     AssistChip(
                                         onClick = { preview(name, variant, pitched = false) },
