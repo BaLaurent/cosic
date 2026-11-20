@@ -94,6 +94,16 @@ class SamplesSpecTest {
     }
 
     @Test
+    fun chopChargesTheBudgetOfTheQueryBeforeItBuildsThePiecesOfEveryEvent() {
+        // 10 000 events, each cut into 10 000 pieces again: `fmap` builds the pattern of every event before the join has seen one, so the charge
+        // is made as each is built and the query is refused after a few of them, where building them all (10^8 pieces) runs out of memory
+        val doubled = SampleFunctions.chop(10_000.0, SampleFunctions.chop(10_000.0, sound("s" to "bd")))
+        assertEquals(TOO_DENSE, assertFailsWith<CosicError> { withQueryBudget { doubled.firstCycle() } }.message)
+        // outside of a budget nothing is limited, a modest chop is not
+        assertEquals(8, SampleFunctions.chop(2.0, SampleFunctions.chop(4.0, sound("s" to "bd"))).firstCycle().size)
+    }
+
+    @Test
     fun chopThroughAProgram() {
         assertEquals(
             listOf(

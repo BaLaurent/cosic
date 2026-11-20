@@ -3,6 +3,8 @@ package cosic.script.catalogue
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.pattern.Registry
+import cosic.pattern.Timelines
+import cosic.pattern.Undefined
 import cosic.pattern._apply
 import cosic.pattern._bite
 import cosic.pattern._brak
@@ -46,6 +48,7 @@ import cosic.pattern._segment
 import cosic.pattern._stut
 import cosic.pattern._swing
 import cosic.pattern._swingBy
+import cosic.pattern._timeline
 import cosic.pattern._when
 import cosic.pattern._within
 import cosic.pattern._zoom
@@ -134,6 +137,10 @@ internal fun registerTime() {
     Registry.reg2("filter") { test, pat -> pat._filter(test) }
     Registry.reg2("filterWhen") { test, pat -> pat._filterWhen(test) }
     Registry.reg4("within") { a, b, fn, pat -> pat._within(a, b, fn) }
+
+    // the stateful `timeline` of impure.mjs; it is registered without patternify, so the timeline numbers are a pattern that may change
+    Registry.reg2("timeline", patternify = false) { tpat, pat -> pat._timeline(tpat) }
+    Registry.function(listOf("reset_timelines", "reset_state")) { Timelines.reset(); Undefined }
 
     // `superimpose` is a method of patterns that lists its functions, and a global that takes them as an array and the pattern
     // last (`superimpose([f, g], pat)`, curried like the registered functions are)

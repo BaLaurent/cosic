@@ -117,10 +117,17 @@ internal object SampleFunctions {
         return jsMerge(spread(a), merged)
     }
 
-    /** Cuts each event into [n] parts, each with its own `begin` and `end`, played one after the other inside the event (`chop`). */
+    /**
+     * Cuts each event into [n] parts, each with its own `begin` and `end`, played one after the other inside the event (`chop`).
+     * Every event gets a pattern of [n] pieces, and `fmap` builds all of them before the join has seen one, so the budget of the query
+     * is charged here, before a pattern is built: `chop(10000).chop(10000)` is refused, where Strudel would build a hundred million.
+     */
     fun chop(n: Any?, pat: Pattern): Pattern {
         val slices = sliceObjects(n)
-        return pat.squeezeBind { o -> sequence(slices.map { slice -> chopMerge(o, slice) }) }.setSteps(stepsTimes(n, pat))
+        return pat.squeezeBind { o ->
+            chargeQuery(slices.size.toLong())
+            sequence(slices.map { slice -> chopMerge(o, slice) })
+        }.setSteps(stepsTimes(n, pat))
     }
 
     /** Cuts each event into [n] parts and plays the first part of every event, then the second part of every event, and so on (`striate`). `begin` and `end` are overwritten. */

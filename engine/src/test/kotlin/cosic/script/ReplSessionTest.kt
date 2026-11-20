@@ -87,7 +87,31 @@ class ReplSessionTest {
         assertEquals(1.0, session.evaluate("\$: s(\"hh\")").cps)
         assertEquals(2.0, session.evaluate("setcpm(120)").cps)
         assertEquals(0.5, session.evaluate("setCps(0.5)").cps)
-        assertEquals(1.0, session.evaluate("""setcps("1")""").cps)
+        // `unpure` of the REPL gives the constant a pattern was made of
+        assertEquals(1.0, session.evaluate("setcps(pure(1))").cps)
+        assertEquals(2.0, session.evaluate("setcpm(pure(120))").cps)
+    }
+
+    @Test
+    fun aPatternThatIsNoConstantSetsTheDefaultTempoAsInStrudel() {
+        // `unpure("2")` is undefined (the notation is a pattern of its own, not `pure("2")`), and `setCps(undefined)` takes the default parameter 0.5
+        val session = ReplSession.create()
+        session.evaluate("setcps(2)")
+        assertEquals(0.5, session.evaluate("""setcps("2")""").cps)
+        session.evaluate("setcps(2)")
+        assertEquals(0.5, session.evaluate("""setcps("<1 2>")""").cps)
+    }
+
+    @Test
+    fun noTempoAtAllIsATypeErrorAsInStrudel() {
+        // `unpure(x)` reads `x._Pattern`, which fails for undefined and null, and the tempo stays what it was
+        val session = ReplSession.create()
+        session.evaluate("setcps(2)")
+        for ((code, what) in listOf("setcps()" to "undefined", "setcpm(undefined)" to "undefined", "setcps(null)" to "null")) {
+            val error = assertFailsWith<CosicError>(code) { session.evaluate(code) }
+            assertEquals("Cannot read properties of $what (reading '_Pattern')", error.message, code)
+            assertEquals(2.0, session.host.cps, code)
+        }
     }
 
     @Test
@@ -100,7 +124,8 @@ class ReplSessionTest {
 
     @Test
     fun theTempoCanBeAskedForOnlyInTheRangeTheEngineCanPlay() {
-        for (code in listOf("""setcps("<1 2>")""", "setcps(0)", "setcps(-1)", "setcps(11)", "setcpm('x')")) {
+        // Strudel takes any of these (and plays none of them); Cosic does not set a tempo it cannot play
+        for (code in listOf("setcps(0)", "setcps(-1)", "setcps(11)", "setcpm('x')", """setcpm("120")""", "setcpm(pure(0))", "setcps(pure(11))")) {
             val error = assertFailsWith<CosicError>(code) { evaluateProgram(code) }
             assertEquals("Tempo out of range", error.message, code)
         }

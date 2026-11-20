@@ -124,6 +124,30 @@ class RegisterTest {
     }
 
     @Test
+    fun aGlobalThatGetsMoreArgumentsThanItsArityFailsWithAnErrorOfTheProgram() {
+        Registry.reg1("t_rh1") { pat -> pat.fmap { v -> "$v!" } }
+        Registry.reg2("t_rh2") { x, pat -> pat.fmap { v -> "$v+${jsToString(x)}" } }
+        Registry.reg3("t_rh3") { x, y, pat -> pat.fmap { v -> "$v+${jsToString(x)}+${jsToString(y)}" } }
+        Registry.reg4("t_rh4") { _, _, _, pat -> pat }
+        Registry.reg5("t_rh5") { _, _, _, _, pat -> pat }
+        // `f(2, "a", "b")` puts the plain value "a" where the function expects the pattern: a TypeError in JavaScript, never a ClassCastException
+        for ((name, args) in listOf(
+            "t_rh2" to listOf<Any?>(2.0, "x", a),
+            "t_rh3" to listOf<Any?>(2.0, 3.0, "x", a),
+            "t_rh4" to listOf<Any?>(1.0, 2.0, 3.0, "x", a),
+            "t_rh5" to listOf<Any?>(1.0, 2.0, 3.0, 4.0, "x", a),
+        )) {
+            val failure = assertFailsWith<CosicError>(name) { Registry.call(name, args) }
+            assertTrue(failure.message!!.endsWith("is not a pattern"), "$name: ${failure.message}")
+        }
+        // the plain method is called with the arguments as they are, so a stray one is the same error
+        assertTrue(assertFailsWith<CosicError> { Registry.lookup("t_rh2")!!.plain(a, listOf(2.0, 3.0)) }.message!!.endsWith("is not a pattern"))
+        // called as it should be they work
+        assertEquals(listOf("[ 0/1 → 1/1 | a+2 ]"), (Registry.call("t_rh2", listOf(2.0, a)) as Pattern).firstLines())
+        assertEquals(listOf("[ 0/1 → 1/1 | a+2+3 ]"), (Registry.call("t_rh3", listOf(2.0, 3.0, a)) as Pattern).firstLines())
+    }
+
+    @Test
     fun thePlainMethodTakesTheArgumentsAsTheyAre() {
         val plain = Registry.lookup("t_rf")!!.plain(a, listOf(2.0)) as Pattern
         assertEquals(listOf("[ 0/1 → 1/1 | a+2 ]"), plain.firstLines())

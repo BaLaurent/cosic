@@ -223,9 +223,11 @@ internal fun Pattern.callMethod(name: String, vararg args: Any?): Pattern {
 }
 
 // ---- shorthands for registering functions of 1 to 5 parameters, the pattern being the last --------------------------
+// The last argument is a pattern when the function is called as it should be; a curried global that gets more arguments than its
+// arity (`fast(2, "a", "b")`) puts a plain value there, which is an error of the program like any other (`TypeError` in JavaScript).
 
 internal fun Registry.reg1(vararg names: String, keep: Boolean = false, alignable: Boolean = false, f: (Pattern) -> Any?): List<Registered> =
-    register(names.asList(), 1, true, keep, alignable = alignable) { a -> f(a[0] as Pattern) }
+    register(names.asList(), 1, true, keep, alignable = alignable) { a -> f(patternOf(a[0])) }
 
 internal fun Registry.reg2(
     vararg names: String,
@@ -234,7 +236,7 @@ internal fun Registry.reg2(
     join: (Pattern) -> Pattern = { it.innerJoin() },
     alignable: Boolean = false,
     f: (Any?, Pattern) -> Any?,
-): List<Registered> = register(names.asList(), 2, patternify, keep, join, alignable) { a -> f(a[0], a[1] as Pattern) }
+): List<Registered> = register(names.asList(), 2, patternify, keep, join, alignable) { a -> f(a[0], patternOf(a[1])) }
 
 internal fun Registry.reg3(
     vararg names: String,
@@ -243,7 +245,7 @@ internal fun Registry.reg3(
     join: (Pattern) -> Pattern = { it.innerJoin() },
     alignable: Boolean = false,
     f: (Any?, Any?, Pattern) -> Any?,
-): List<Registered> = register(names.asList(), 3, patternify, keep, join, alignable) { a -> f(a[0], a[1], a[2] as Pattern) }
+): List<Registered> = register(names.asList(), 3, patternify, keep, join, alignable) { a -> f(a[0], a[1], patternOf(a[2])) }
 
 internal fun Registry.reg4(
     vararg names: String,
@@ -252,7 +254,7 @@ internal fun Registry.reg4(
     join: (Pattern) -> Pattern = { it.innerJoin() },
     alignable: Boolean = false,
     f: (Any?, Any?, Any?, Pattern) -> Any?,
-): List<Registered> = register(names.asList(), 4, patternify, keep, join, alignable) { a -> f(a[0], a[1], a[2], a[3] as Pattern) }
+): List<Registered> = register(names.asList(), 4, patternify, keep, join, alignable) { a -> f(a[0], a[1], a[2], patternOf(a[3])) }
 
 internal fun Registry.reg5(
     vararg names: String,
@@ -261,7 +263,7 @@ internal fun Registry.reg5(
     join: (Pattern) -> Pattern = { it.innerJoin() },
     alignable: Boolean = false,
     f: (Any?, Any?, Any?, Any?, Pattern) -> Any?,
-): List<Registered> = register(names.asList(), 5, patternify, keep, join, alignable) { a -> f(a[0], a[1], a[2], a[3], a[4] as Pattern) }
+): List<Registered> = register(names.asList(), 5, patternify, keep, join, alignable) { a -> f(a[0], a[1], a[2], a[3], patternOf(a[4])) }
 
 /** `stepRegister`: like `reg2`, but the patterned arguments are joined by steps (`stepJoin`) instead of `innerJoin`. */
 internal fun Registry.stepReg2(

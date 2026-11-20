@@ -12,6 +12,7 @@ import cosic.pattern._fast
 import cosic.pattern.jsKeyOrder
 import cosic.pattern.jsNumberToString
 import cosic.pattern.jsToNumber
+import cosic.pattern.patternOf
 import cosic.pattern.reportingExhaustion
 import cosic.pattern.silence
 import cosic.pattern.stack
@@ -55,7 +56,7 @@ internal class ReplSession(val host: SessionHost = SessionHost(), val realm: Rea
     /** `register('cpm', (cpm, pat) => pat._fast(cpm / 60 / scheduler.cps))` of the REPL: it reads the tempo when it is called. */
     private val cpm = Registered(
         listOf("cpm"), 2, true, false, { it.innerJoin() },
-        { a -> (a[1] as Pattern)._fast(jsToNumber(a[0]) / 60.0 / host.cps) },
+        { a -> patternOf(a[1])._fast(jsToNumber(a[0]) / 60.0 / host.cps) },
     )
 
     init {
@@ -157,10 +158,18 @@ internal class ReplSession(val host: SessionHost = SessionHost(), val realm: Rea
         }
     }
 
-    /** `setcps(x)`, and `setcpm(x)` with [divisor] 60: [x] is a number or a constant pattern (`"1"`), and the tempo changes at once. */
+    /**
+     * `setcps(x)`, and `setcpm(x)` with [divisor] 60, as repl.mjs:98-136 does them: `scheduler.setCps(unpure(x))` and
+     * `scheduler.setCps(unpure(x) / 60)`, the tempo changing at once. `unpure` reads `x._Pattern` (so `undefined` and `null` are
+     * TypeErrors), gives a pattern's constant value (`pure(2)` has one, a mini-notation string like `"2"` has none, which makes
+     * `setcps("2")` the default `setCps(cps = 0.5)` and `setcpm("120")` NaN) and anything else as it is. Strudel's scheduler takes
+     * any number; Cosic refuses the tempos it cannot play, which are zero, negative and NaN ones and those above [MAX_CPS]:
+     * `Tempo out of range`.
+     */
     private fun setTempo(x: Any?, divisor: Double) {
+        if (x === Undefined || x == null) throw realm.typeError("Cannot read properties of ${if (x == null) "null" else "undefined"} (reading '_Pattern')")
         val raw = if (x is PatternValue) x.pattern.pureValue ?: Undefined else x
-        val cps = jsToNumber(raw) / divisor
+        val cps = if (raw === Undefined && divisor == 1.0) DEFAULT_CPS else jsToNumber(raw) / divisor
         if (!(cps > 0.0 && cps <= MAX_CPS)) throw CosicError("Tempo out of range")
         host.cps = cps
     }
