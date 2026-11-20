@@ -5,16 +5,21 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * A JavaScript function value: what a hap can hold (`pickF`, the partially applied functions of `register`) and what
  * `register` and friends receive. [arity] is `func.length`, the number of parameters before the first default or rest
- * parameter. The interpreter's function objects extend this, so pattern code calls user lambdas directly.
+ * parameter. It is an interface so that the interpreter's function objects, which are objects as well, can implement
+ * it: pattern code then calls user lambdas directly.
  */
-internal abstract class JsFn(val arity: Int) {
-    abstract fun call(args: List<Any?>): Any?
+internal interface JsFn {
+    val arity: Int
+
+    fun call(args: List<Any?>): Any?
 
     operator fun invoke(vararg a: Any?): Any? = call(a.asList())
 }
 
 /** A native function of [arity] parameters. */
-internal fun jsFn(arity: Int, body: (List<Any?>) -> Any?): JsFn = object : JsFn(arity) {
+internal fun jsFn(arity: Int, body: (List<Any?>) -> Any?): JsFn = NativeJsFn(arity, body)
+
+private class NativeJsFn(override val arity: Int, private val body: (List<Any?>) -> Any?) : JsFn {
     override fun call(args: List<Any?>): Any? = body(args)
 }
 
@@ -30,11 +35,9 @@ internal fun callFn(f: Any?, vararg args: Any?): Any? {
  */
 internal fun curry(arity: Int, f: (List<Any?>) -> Any?): JsFn = curried(arity, emptyList(), f)
 
-private fun curried(arity: Int, have: List<Any?>, f: (List<Any?>) -> Any?): JsFn = object : JsFn(arity - have.size) {
-    override fun call(args: List<Any?>): Any? {
-        val all = if (have.isEmpty()) args else have + args
-        return if (all.size >= arity) f(all) else curried(arity, all, f)
-    }
+private fun curried(arity: Int, have: List<Any?>, f: (List<Any?>) -> Any?): JsFn = NativeJsFn(arity - have.size) { args ->
+    val all = if (have.isEmpty()) args else have + args
+    if (all.size >= arity) f(all) else curried(arity, all, f)
 }
 
 /** How a [Registered] function is called. */
