@@ -65,12 +65,12 @@ class AudioBusesTest {
     fun aVoiceWithABusModulatorIsAReader() {
         val orbits = OrbitSet(SR, IrExecutor.INLINE)
         val voice = Voice(SR, orbits, AudioBuses(SR), FxGroupPool(SR))
-        val plain = vp(synth(Waveform.SINE), 0.1)
-        voice.start(plain, 0L, 1L, 1, false)
+        val plain = synthVp("sine", 0.1)
+        voice.start(plain, 0L, 1L, false)
         assertFalse(voice.isBusReader)
         val modulator = ModSpec(ModKind.BMOD, "0", "main", "cutoff", null, mapOf("bus" to 1.0), emptyMap())
         val reader = VoiceParams(plain.source, plain.durationSec, plain.cps, plain.cycle, plain.main, plain.fx, listOf(modulator))
-        voice.start(reader, 0L, 2L, 1, false)
+        voice.start(reader, 0L, 2L, false)
         assertTrue(voice.isBusReader)
     }
 }

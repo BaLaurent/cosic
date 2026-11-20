@@ -16,19 +16,19 @@ internal fun interface FmFactory {
  * Names are those of the registry: lowercase, with `tri`, `sqr`, `saw` and `sin` as aliases. The wavetables (`wt_*`), ZZFX (`zzfx`, `z_*`), `bus` and the sample
  * banks are other sources.
  */
-internal object StockSynths {
+internal object StockSynths : SynthFamily {
     /** The canonical names, in the order superdough registers them. */
-    val names: List<String> = listOf(
+    override val names: List<String> = listOf(
         "triangle", "square", "sawtooth", "sine", "user", "one", "sbd", "supersaw", "bytebeat", "pulse", "pink", "white", "brown", "crackle",
     )
 
     /** The alternative names of the oscillator sounds. */
-    val aliases: Map<String, String> = mapOf("tri" to "triangle", "sqr" to "square", "saw" to "sawtooth", "sin" to "sine")
+    override val aliases: Map<String, String> = mapOf("tri" to "triangle", "sqr" to "square", "saw" to "sawtooth", "sin" to "sine")
 
     private val whitespace = Regex("\\s+")
 
     /** The canonical name of a sound that this object builds (the registry's normalisation: lowercase, whitespace becomes `_`, aliases resolved), or null. */
-    fun canonical(name: String): String? {
+    override fun canonical(name: String): String? {
         val normal = name.lowercase().replace(whitespace, "_")
         val actual = aliases[normal] ?: normal
         return if (actual in names) actual else null
@@ -45,7 +45,7 @@ internal object StockSynths {
      * `getFrequencyFromValue`, a negative partial count the RangeError of the typed array, as the sound would throw in Strudel. A bytebeat whose program does not
      * compile is a source like any other: it is silent (and, like the worklet, still counts for as long as its envelope).
      */
-    fun create(name: String, spec: SourceSpec, fm: FmFactory? = null): SoundSource? {
+    override fun create(name: String, spec: SourceSpec, fm: FmFactory?): SoundSource? {
         val sound = canonical(name) ?: return null
         return when (sound) {
             "triangle", "square", "sawtooth", "sine", "user" -> {

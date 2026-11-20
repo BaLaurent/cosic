@@ -8,7 +8,7 @@ package cosic.audio
  *
  * **Append-only.** A task that needs another numeric control adds a line at the end of the list (never in the middle, never a
  * reordering); when two tasks add lines at the same place, a merge keeps both. Before adding, check the list: the entries of the
- * legacy sources (`note`, `freq`, `octave`, `speed`, `begin`, `end`) and of the amplitude envelope (`attack`, `decay`,
+ * sampler (`speed`, `begin`, `end`) and of the amplitude envelope (`attack`, `decay`,
  * `sustain`, `release`, `clip`, `loop`, `cut`) are already here. String and list controls are not entries; see [STRING_KEYS] and [LIST_KEYS].
  */
 internal enum class Param {
@@ -127,10 +127,7 @@ internal enum class Param {
     loop,
     cut,
 
-    // the sources: pitch and sample playback
-    note,
-    freq,
-    octave,
+    // the sampler: playback
     speed,
     begin,
     end,

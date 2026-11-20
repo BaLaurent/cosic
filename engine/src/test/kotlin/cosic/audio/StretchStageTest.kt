@@ -180,8 +180,7 @@ class StretchStageTest {
     @Test
     fun everyVoiceWithStretchGetsAVocoderEvenWhenThePoolStartedEmpty() {
         val mixer = Mixer(SR)
-        val source = synth(Waveform.SINE)
-        repeat(12) { assertTrue(mixer.startVoice(vp(source, 1.0, "note" to 69.0, "stretch" to 1.0, "gain" to 0.05))) }
+        repeat(12) { assertTrue(mixer.startVoice(synthVp("sine", 1.0, "note" to 69.0, "stretch" to 1.0, "gain" to 0.05))) }
         assertEquals(12, mixer.fxPool.vocoders.inUse)
         assertEquals(12, mixer.fxPool.vocoders.madeOnTheSpot, "nobody prepared the pool, and no voice went without")
         mixer.renderFrames(SR * 3) // all over
@@ -191,19 +190,18 @@ class StretchStageTest {
     @Test
     fun aPreparedMixerHasTheVocodersBeforeTheEventsStart() {
         val mixer = Mixer(SR)
-        val voice = vp(synth(Waveform.SINE), 1.0, "note" to 69.0, "stretch" to 1.0)
+        val voice = synthVp("sine", 1.0, "note" to 69.0, "stretch" to 1.0)
         val demand = ChainDemand().also { d -> repeat(10) { d.add(voice) } }
         mixer.prepare(demand)
         assertTrue(mixer.fxPool.vocoders.capacity >= 10)
-        repeat(10) { mixer.startVoice(voice) }
+        repeat(10) { mixer.startVoice(synthVp("sine", 1.0, "note" to 69.0, "stretch" to 1.0)) }
         assertEquals(0, mixer.fxPool.vocoders.madeOnTheSpot)
     }
 
     @Test
     fun aVoiceWithStretchSoundsAnOctaveHigherAndTheSourceIsTheSameVoiceAsWithout() {
-        val source = synth(Waveform.SINE)
-        val plain = renderLeft(vp(source, 1.5, "note" to 69.0, "gain" to 1.0), SR)
-        val stretched = renderLeft(vp(source, 1.5, "note" to 69.0, "stretch" to 1.0, "gain" to 1.0), SR)
+        val plain = renderLeft(synthVp("sine", 1.5, "note" to 69.0, "gain" to 1.0), SR)
+        val stretched = renderLeft(synthVp("sine", 1.5, "note" to 69.0, "stretch" to 1.0, "gain" to 1.0), SR)
         assertEquals(440.0, estimateFrequency(plain, 12_000, 40_000), 0.5)
         assertEquals(440.0 + 19 * bin, estimateFrequency(stretched, 12_000, 40_000), 1.5)
         assertTrue(rms(stretched, 12_000, 40_000) > 0.5 * rms(plain, 12_000, 40_000), "and it is not silent")

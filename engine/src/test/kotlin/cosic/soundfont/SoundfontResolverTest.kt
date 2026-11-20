@@ -8,6 +8,7 @@ import cosic.pattern.CosicError
 import cosic.pattern.Undefined
 import cosic.player.SoundLookup
 import cosic.player.SoundResolver
+import cosic.player.resolve
 import cosic.sound.RegistryLibrary
 import java.util.concurrent.Executor
 import kotlin.math.pow

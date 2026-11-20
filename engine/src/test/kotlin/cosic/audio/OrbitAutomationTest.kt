@@ -53,7 +53,7 @@ class OrbitAutomationTest {
         val mixer = Mixer(SR)
         mixer.startVoice(vp(dcSource(10.0), 10.0, "orbit" to 2.0, "gain" to 1.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0))
         val before = mixer.renderFrames(SR / 2)
-        mixer.startVoice(vp(synth(Waveform.SINE), 0.01, "gain" to 0.0, *duck))
+        mixer.startVoice(synthVp("sine", 0.01, "gain" to 0.0, *duck))
         val after = mixer.renderFrames(SR)
         return mixer to channel(before + after, 0)
     }
@@ -108,7 +108,7 @@ class OrbitAutomationTest {
         mixer.startVoice(vp(dcSource(10.0), 10.0, "orbit" to 2.0, "gain" to 0.5, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0))
         mixer.startVoice(vp(dcSource(10.0), 10.0, "orbit" to 3.0, "gain" to 0.5, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0))
         mixer.renderFrames(SR / 4)
-        mixer.startVoice(vp(synth(Waveform.SINE), 0.01, "gain" to 0.0, "duckorbit" to listOf(2.0, 3.0), "duckdepth" to listOf(1.0, 0.5), "duckattack" to 0.5))
+        mixer.startVoice(synthVp("sine", 0.01, "gain" to 0.0, "duckorbit" to listOf(2.0, 3.0), "duckdepth" to listOf(1.0, 0.5), "duckattack" to 0.5))
         val out = channel(mixer.renderFrames(100), 0)
         // orbit 2 at 0.01, orbit 3 at 1 - sqrt(.5), straight after the event
         assertEquals(0.5 * 0.01 + 0.5 * (1 - Math.sqrt(0.5)), out[2].toDouble(), 2e-3)

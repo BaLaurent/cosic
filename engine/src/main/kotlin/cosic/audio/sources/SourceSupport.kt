@@ -3,6 +3,7 @@ package cosic.audio.sources
 import cosic.audio.AParam
 import cosic.audio.BLOCK_FRAMES
 import cosic.audio.QUANTUM
+import cosic.audio.STEAL_RAMP_SECONDS
 import cosic.audio.getADSRValues
 import cosic.audio.getParamADSR
 
@@ -76,6 +77,11 @@ internal class SourceEnvelope(private val sampleRate: Int, controls: SourceContr
         return holdEnd + release + SOURCE_TAIL_SECONDS
     }
 
+    /** The source is stolen by a voice that starts at [tNew]: `gain.linearRampToValueAtTime(0, tNew + 0.25)` (superdough.mjs:546-555), on the same timeline as the envelope. */
+    fun steal(tNew: Double) {
+        gain.linearRampToValueAtTime(0.0, tNew + STEAL_RAMP_SECONDS, tNew)
+    }
+
     /** Writes the gain of frames `firstFrame until firstFrame + n` (absolute) to `out[0 until n]`. */
     fun fill(out: FloatArray, firstFrame: Long, n: Int) {
         gain.timeline.fillBlock(out, firstFrame, sampleRate, n, gain.base)
@@ -122,7 +128,7 @@ internal class WorkletGate(private val sampleRate: Int) {
 
 /**
  * A [SoundSource] that renders in blocks of at most [BLOCK_FRAMES] frames (the size of every per-block buffer of a voice) and produces nothing from [endFrame] on.
- * A subclass starts by setting [frame] and [endFrame] in `start`, and fills one block in [renderBlock].
+ * A subclass starts by setting [frame], [endFrame] and [endSeconds] in `start`, and fills one block in [renderBlock].
  */
 internal abstract class BlockSource : SoundSource {
     /** The absolute engine frame the next block starts at. */
@@ -130,6 +136,9 @@ internal abstract class BlockSource : SoundSource {
 
     /** The first frame the source no longer produces. Before the source is started it never finishes. */
     protected var endFrame = Long.MAX_VALUE
+
+    final override var endSeconds = 0.0
+        protected set
 
     final override val isFinished: Boolean get() = frame >= endFrame
 

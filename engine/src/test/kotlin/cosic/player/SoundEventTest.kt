@@ -3,9 +3,7 @@ package cosic.player
 import cosic.audio.MAX_FX
 import cosic.audio.ModKind
 import cosic.audio.Param
-import cosic.audio.VoiceSource
-import cosic.audio.Waveform
-import cosic.pattern.CosicError
+import cosic.audio.synth
 import cosic.pattern.Rational
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -17,7 +15,7 @@ import kotlin.test.assertTrue
 
 /** How the controls of a hap become the parameters of a voice, and how long the hap lasts. */
 class SoundEventTest {
-    private val source = VoiceSource.Synth(Waveform.SINE)
+    private val source = synth("sine", 1.5, emptyMap())
 
     private fun params(vararg controls: Pair<String, Any?>) = voiceParams(mapOf(*controls), source, 1.5, 0.5, 2.0)
 
@@ -54,11 +52,11 @@ class SoundEventTest {
     }
 
     @Test
-    fun aNoteNameBecomesItsMidiNumberAndABadNameIsAnError() {
-        assertEquals(48.0, params("note" to "c").main[Param.note])
-        assertEquals(63.0, params("note" to "eb4").main[Param.note])
-        assertEquals(60.0, params("note" to 60.0).main[Param.note])
-        assertEquals("not a note: \"foo\"", assertFailsWith<CosicError> { params("note" to "foo") }.message)
+    fun aPitchIsNoParameterAndABadNoteNameIsNotThisFunctionsError() {
+        // `note`, `freq` and `octave` are read from the control map by the sound that plays the event (a source, or the sound lookup of a bank), as superdough does:
+        // a name that is no note is an error there, and a sound that has no pitch does not mind
+        val main = params("note" to "foo", "freq" to 440.0, "octave" to 1.0).main
+        assertTrue(Param.entries.all { main[it].isNaN() })
     }
 
     @Test

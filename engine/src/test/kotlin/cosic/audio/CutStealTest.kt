@@ -11,8 +11,6 @@ import kotlin.test.assertTrue
  * ramps, the keys of a group, who is cut and who is stolen, and the ledger that decides it.
  */
 class CutStealTest {
-    private val sine = synth(Waveform.SINE)
-
     /** Voice [a] on the left only, voice [b] on the right only, both full scale, so each channel reads one voice. */
     private fun dc(vararg c: Pair<String, Any?>, seconds: Double = 5.0, pan: Double) =
         vp(dcSource(), seconds, "gain" to 1.0, "pan" to pan, *c)
@@ -120,12 +118,12 @@ class CutStealTest {
     @Test
     fun synthsNeitherCutNorAreCut() {
         val mixer = Mixer(SR)
-        mixer.startVoice(vp(sine, 5.0, "note" to 69.0, "gain" to 1.0, "cut" to 1.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0, "pan" to 0.0))
+        mixer.startVoice(synthVp("sine", 5.0, "note" to 69.0, "gain" to 1.0, "cut" to 1.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0, "pan" to 0.0))
         mixer.renderFrames(SR / 10)
         mixer.startVoice(dc("cut" to 1.0, pan = 1.0)) // a sample of group 1 does not cut the synth
         val left = channel(mixer.renderFrames(SR / 10), 0)
-        assertTrue(peak(left, frame(0.05), left.size) > 0.3f)
-        mixer.startVoice(vp(sine, 5.0, "note" to 69.0, "gain" to 1.0, "cut" to 1.0, "pan" to 1.0)) // a synth of group 1 does not cut the sample
+        assertTrue(peak(left, frame(0.05), left.size) > 0.25f)
+        mixer.startVoice(synthVp("sine", 5.0, "note" to 69.0, "gain" to 1.0, "cut" to 1.0, "pan" to 1.0)) // a synth of group 1 does not cut the sample
         val right = channel(mixer.renderFrames(SR / 10), 1)
         assertTrue(right[frame(0.05)] > 0.9f)
         assertEquals(3, mixer.activeVoices)
@@ -177,13 +175,13 @@ class CutStealTest {
     fun aStolenSynthRampsItsAmplitudeEnvelopeNotItsSourceLevel() {
         val mixer = Mixer(SR)
         mixer.maxPolyphony = 1
-        mixer.startVoice(vp(sine, 5.0, "note" to 69.0, "gain" to 1.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0, "pan" to 0.0))
+        mixer.startVoice(synthVp("sine", 5.0, "note" to 69.0, "gain" to 1.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0, "pan" to 0.0))
         mixer.renderFrames(SR / 10)
         mixer.startVoice(dc("gain" to 0.001, pan = 1.0))
         val left = channel(mixer.renderFrames(SR / 2), 0)
         // the ramp is inserted into the envelope's timeline (Web Audio rules): it runs from the last event before it, the end of the 1 ms decay at
-        // 2 ms, to 0 at tNew + 0.25 = 0.35 s, so the level is 1 - (t - 0.002) / 0.348 where the source level of 0.35 multiplies it
-        fun expected(t: Double) = 0.35 * (1.0 - (t - 0.002) / 0.348)
+        // 2 ms, to 0 at tNew + 0.25 = 0.35 s, so the level is 1 - (t - 0.002) / 0.348 where the source level of 0.3 multiplies it
+        fun expected(t: Double) = 0.3 * (1.0 - (t - 0.002) / 0.348)
         assertEquals(expected(0.1), peak(left, 0, 100).toDouble(), 0.01)
         assertEquals(expected(0.225), peak(left, frame(0.1245), frame(0.1255)).toDouble(), 0.004)
         assertTrue(peak(left, frame(0.2501), left.size) < 1e-6f)
@@ -194,7 +192,7 @@ class CutStealTest {
         val mixer = Mixer(SR)
         mixer.maxPolyphony = 2
         mixer.startVoice(dc(pan = 0.0, seconds = 5.0)) // A: lives long
-        mixer.startVoice(vp(sine, 0.1, "note" to 69.0, "gain" to 0.001)) // B: gate 0.1 s, chain over at ~0.12 s
+        mixer.startVoice(synthVp("sine", 0.1, "note" to 69.0, "gain" to 0.001)) // B: gate 0.1 s, chain over at ~0.12 s
         mixer.renderFrames(SR / 2)
         assertEquals(1, mixer.countedVoices)
         mixer.startVoice(dc("gain" to 0.001, pan = 1.0)) // C: 2 counted, no steal

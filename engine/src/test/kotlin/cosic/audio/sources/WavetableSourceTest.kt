@@ -204,7 +204,7 @@ class WavetableSourceTest {
     @Test
     fun aVoiceInTheMixerPlaysTheTableThroughTheChain() {
         val controls = arrayOf<Pair<String, Any?>>("note" to 69.0, "pan" to 0.5)
-        val params = vp(VoiceSource.Wavetable(sine, mapOf(*controls).asSourceControls()), 0.5, *controls)
+        val params = vp(VoiceSource.Synth("wavetable", source(sine, 0.5, *controls)), 0.5, *controls)
         val mixer = Mixer(SR)
         assertTrue(mixer.startVoice(params))
         val out = mixer.renderFrames(SR / 2)

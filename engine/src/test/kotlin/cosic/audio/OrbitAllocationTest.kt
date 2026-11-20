@@ -13,29 +13,35 @@ import kotlin.test.assertTrue
 class OrbitAllocationTest {
     private val threads = ManagementFactory.getThreadMXBean() as com.sun.management.ThreadMXBean
 
+    /** Each kind of voice three times: a source plays once, so each voice has the source of its own, made here, off the measured path. */
+    private fun workloadVoices(): List<VoiceParams> {
+        val element = mapOf("delay" to 0.4, "delaytime" to 0.07, "delayfeedback" to 0.5, "room" to 0.3, "roomsize" to 0.5, "gain" to 0.8)
+        val kinds = listOf<() -> VoiceParams>(
+            { synthVp("sawtooth", 0.4, "note" to 50.0, "delay" to 0.5, "delaytime" to 0.2, "delayfeedback" to 0.7, "room" to 0.4, "roomsize" to 1.0) },
+            { synthVp("square", 0.4, "note" to 62.0, "FX" to listOf(element), "orbit" to 2.0, "delay" to 0.3, "delaytime" to 0.1) },
+            { synthVp("pink", 0.3, "room" to 0.6, "roomsize" to 1.0, "dry" to 0.5, "djf" to 0.3) },
+            { synthVp("sine", 0.3, "note" to 64.0, "bus" to 1.0, "analyze" to 2.0, "fft" to 6.0, "djf" to 0.7) },
+            { synthVp("sine", 0.2, "note" to 67.0, "duckorbit" to listOf(1.0, 2.0), "duckdepth" to 0.5, "duckattack" to 0.1, "gain" to 0.1) },
+        )
+        return List(3 * kinds.size) { kinds[it % kinds.size]() }
+    }
+
     @Test
     fun theOrbitEffectsDoNotAllocateWhileRendering() {
         val mixer = Mixer(SR)
         val out = FloatArray(512)
-        val element = mapOf("delay" to 0.4, "delaytime" to 0.07, "delayfeedback" to 0.5, "room" to 0.3, "roomsize" to 0.5, "gain" to 0.8)
-        val voices = arrayOf(
-            vp(synth(Waveform.SAWTOOTH), 0.4, "note" to 50.0, "delay" to 0.5, "delaytime" to 0.2, "delayfeedback" to 0.7, "room" to 0.4, "roomsize" to 1.0),
-            vp(synth(Waveform.SQUARE), 0.4, "note" to 62.0, "FX" to listOf(element), "orbit" to 2.0, "delay" to 0.3, "delaytime" to 0.1),
-            vp(synth(Waveform.PINK), 0.3, "room" to 0.6, "roomsize" to 1.0, "dry" to 0.5, "djf" to 0.3),
-            vp(synth(Waveform.SINE), 0.3, "note" to 64.0, "bus" to 1.0, "analyze" to 2.0, "fft" to 6.0, "djf" to 0.7),
-            vp(synth(Waveform.SINE), 0.2, "note" to 67.0, "duckorbit" to listOf(1.0, 2.0), "duckdepth" to 0.5, "duckattack" to 0.1, "gain" to 0.1),
-        )
 
-        fun workload() {
-            for (i in 0 until 3) for (v in voices) mixer.startVoice(v)
+        fun workload(voices: List<VoiceParams>) {
+            for (i in voices.indices) mixer.startVoice(voices[i])
             for (block in 0 until 200) mixer.render(out, 256)
             mixer.stopAll(5)
             mixer.render(out, 256)
         }
 
-        repeat(3) { workload() } // warm up: orbits, analysers, the rooms, the in-chain pools, class loading, the JIT
+        repeat(3) { workload(workloadVoices()) } // warm up: orbits, analysers, the rooms, the in-chain pools, class loading, the JIT
+        val measured = listOf(workloadVoices(), workloadVoices())
         val before = threads.currentThreadAllocatedBytes
-        repeat(2) { workload() }
+        for (i in measured.indices) workload(measured[i])
         val allocated = threads.currentThreadAllocatedBytes - before
         assertTrue(allocated < 2048, "two workloads allocated $allocated bytes")
     }

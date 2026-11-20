@@ -180,7 +180,7 @@ class ChainPoolsTest {
         val out = FloatArray(512)
         val voices = arrayOf(
             vp(dcSource(), 0.2, "gain" to 0.1, "FX" to List(3) { mapOf("gain" to 0.5, "pan" to 0.3) }, "pan" to 0.8),
-            vp(synth(Waveform.SINE), 0.3, "note" to 62.0, "gain" to 0.1, "FX" to List(MAX_FX) { mapOf("gain" to 0.7) }),
+            synthVp("sine", 0.3, "note" to 62.0, "gain" to 0.1, "FX" to List(MAX_FX) { mapOf("gain" to 0.7) }),
             vp(dcSource(), 0.1, "FX" to listOf(mapOf("velocity" to 0.5)), "FXrelease" to 0.2),
         )
         val demand = ChainDemand()

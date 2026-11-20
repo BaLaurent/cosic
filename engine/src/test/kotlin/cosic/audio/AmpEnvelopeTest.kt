@@ -9,45 +9,25 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * The amplitude envelope of a voice (CHAIN Task B step 4, sampler.mjs:312-359, synth.mjs:47-71): the defaults of `getADSRValues` per kind of
- * source, the gate (`clip`, `loop`, `release`, `duration`), the three shapes of `getParamADSR` and the end of the source.
+ * The amplitude envelope of a sample voice (CHAIN Task B step 4, sampler.mjs:312-359): the gate (`clip`, `loop`, `release`, `duration`), the shapes of
+ * `getParamADSR` and the end of the source. The built-in sounds make their own envelope inside their source (`SourceEnvelope`, checked against superdough's
+ * own code in the source tests); one of them goes through a mixer at the end of this file.
  */
 class AmpEnvelopeTest {
     private fun env() = AParam(0.0, -3.4e38, 3.4e38)
 
+    /** The gate is the hap's duration unless [clip] says otherwise (it is the length of the [slice] when none of [clip], [loop] and [release] is set). */
     private fun schedule(
-        env: AParam, kind: AmpKind, a: Double = Double.NaN, d: Double = Double.NaN, s: Double = Double.NaN, r: Double = Double.NaN,
-        t: Double = 2.0, duration: Double = 1.0, slice: Double = Double.NaN, clip: Boolean = false, loop: Boolean = false, release: Boolean = false,
-    ): Double = AmpEnvelope.schedule(env, kind, a, d, s, r, t, duration, slice, clip, loop, release)
+        env: AParam, a: Double = Double.NaN, d: Double = Double.NaN, s: Double = Double.NaN, r: Double = Double.NaN,
+        t: Double = 2.0, duration: Double = 1.0, slice: Double = Double.NaN, clip: Boolean = true, loop: Boolean = false, release: Boolean = false,
+    ): Double = AmpEnvelope.schedule(env, a, d, s, r, t, duration, slice, clip, loop, release)
 
     // ------------------------------------------------------------------------------------------------ defaults
 
     @Test
-    fun aSynthDefaultsTo1ms50msSustain06Release10ms() {
-        val e = env()
-        val end = schedule(e, AmpKind.SYNTH)
-        assertEquals(0.0, e.valueAt(2.0), 1e-12)
-        assertEquals(1.0, e.valueAt(2.001), 1e-9)
-        assertEquals(0.6, e.valueAt(2.051), 1e-9)
-        assertEquals(0.6, e.valueAt(2.5), 1e-9)
-        assertEquals(0.6, e.valueAt(3.0), 1e-9, "at the end of the gate")
-        assertEquals(0.3, e.valueAt(3.005), 1e-9, "halfway down the 10 ms release")
-        assertEquals(0.0, e.valueAt(3.01), 1e-9)
-        assertEquals(3.0 + 0.01 + 0.01, end, 1e-12, "the source stops at holdEnd + release + 0.01")
-    }
-
-    @Test
-    fun theDecayIsLinearBetweenTheAttackAndSustainLevels() {
-        val e = env()
-        schedule(e, AmpKind.SYNTH)
-        assertEquals(0.8, e.valueAt(2.001 + 0.025), 1e-9, "half of the decay: halfway from 1 to 0.6 is 0.8")
-        assertEquals(0.5, e.valueAt(2.0005), 1e-9, "half of the attack")
-    }
-
-    @Test
     fun aSampleHasNoDefaultEnvelopeOfItsOwnSoItIsAFlatGate() {
         val e = env()
-        val end = schedule(e, AmpKind.SAMPLE, slice = 0.1, duration = 1.0)
+        val end = schedule(e, slice = 0.1, duration = 1.0, clip = false)
         assertEquals(1.0, e.valueAt(2.001), 1e-9)
         assertEquals(1.0, e.valueAt(2.05), 1e-9)
         assertEquals(1.0, e.valueAt(2.1), 1e-9)
@@ -55,21 +35,12 @@ class AmpEnvelopeTest {
         assertEquals(2.1 + 0.01 + 0.01, end, 1e-12)
     }
 
-    @Test
-    fun aBusStartsLikeASynthButSustainsAtOne() {
-        val e = env()
-        schedule(e, AmpKind.BUS)
-        assertEquals(1.0, e.valueAt(2.001), 1e-9)
-        assertEquals(1.0, e.valueAt(2.051), 1e-9)
-        assertEquals(1.0, e.valueAt(2.9), 1e-9)
-    }
-
     // ------------------------------------------------------------------------------------------------ gate
 
     @Test
     fun aSampleGateIsTheSliceUnlessClipLoopOrReleaseIsSet() {
         fun end(clip: Boolean = false, loop: Boolean = false, release: Boolean = false): Double =
-            schedule(env(), AmpKind.SAMPLE, slice = 0.1, duration = 1.0, clip = clip, loop = loop, release = release)
+            schedule(env(), slice = 0.1, duration = 1.0, clip = clip, loop = loop, release = release)
         assertEquals(2.12, end(), 1e-12)
         assertEquals(3.02, end(clip = true), 1e-12)
         assertEquals(3.02, end(loop = true), 1e-12)
@@ -77,15 +48,9 @@ class AmpEnvelopeTest {
     }
 
     @Test
-    fun aSynthGateIsAlwaysTheHapDuration() {
-        assertEquals(3.02, schedule(env(), AmpKind.SYNTH, slice = 0.1), 1e-12)
-        assertEquals(3.02, schedule(env(), AmpKind.BUS, slice = 0.1), 1e-12)
-    }
-
-    @Test
     fun theReleaseEndsTheSourceAtHoldEndPlusReleasePlusTenMilliseconds() {
         val e = env()
-        val end = schedule(e, AmpKind.SYNTH, a = 0.0, d = 0.0, s = 1.0, r = 0.5)
+        val end = schedule(e, a = 0.0, d = 0.0, s = 1.0, r = 0.5)
         assertEquals(3.0 + 0.5 + 0.01, end, 1e-12)
         assertEquals(1.0, e.valueAt(3.0), 1e-9)
         assertEquals(0.5, e.valueAt(3.25), 1e-9, "linear release")
@@ -108,11 +73,10 @@ class AmpEnvelopeTest {
 
     @Test
     fun adsrOfOneValueThroughTheMixerSustainsAtFullLevel() {
-        val sine = synth(Waveform.SINE)
-        val level = 0.35 * 0.8
-        val left = renderLeft(vp(sine, 1.0, "note" to 69.0, "attack" to 0.1, "decay" to Undefined, "sustain" to Undefined, "release" to Undefined))
+        val level = 0.3 * 0.8
+        val left = renderLeft(synthVp("sine", 1.0, "note" to 69.0, "attack" to 0.1, "decay" to Undefined, "sustain" to Undefined, "release" to Undefined))
         assertEquals(level, peak(left, 6000, 12000).toDouble(), 0.004)
-        val full = renderLeft(vp(sine, 1.0, "note" to 69.0, "attack" to 0.1, "decay" to 0.1, "sustain" to 0.5, "release" to 0.2), SR * 14 / 10)
+        val full = renderLeft(synthVp("sine", 1.0, "note" to 69.0, "attack" to 0.1, "decay" to 0.1, "sustain" to 0.5, "release" to 0.2), SR * 14 / 10)
         assertEquals(0.5 * level, peak(full, 12000, 40000).toDouble(), 0.004, "sustain after the 0.1 s decay")
         assertEquals(0.25 * level, peak(full, (1.1 * SR).toInt() - 200, (1.1 * SR).toInt()).toDouble(), 0.006, "halfway down the release")
         assertEquals(0f, peak(full, (1.22 * SR).toInt(), full.size))
@@ -123,7 +87,7 @@ class AmpEnvelopeTest {
     @Test
     fun anAttackLongerThanTheGateIsCutOnTheStraightLine() {
         val e = env()
-        schedule(e, AmpKind.SYNTH, a = 1.0, duration = 0.5)
+        schedule(e, a = 1.0, duration = 0.5)
         assertEquals(0.25, e.valueAt(2.25), 1e-9)
         assertEquals(0.5, e.valueAt(2.5), 1e-9, "the gate ends at duration / attack")
         assertEquals(0.25, e.valueAt(2.505), 1e-9, "and the release starts from there")
@@ -132,7 +96,7 @@ class AmpEnvelopeTest {
     @Test
     fun anAttackAndDecayLongerThanTheGateAreCutDuringTheDecay() {
         val e = env()
-        schedule(e, AmpKind.SYNTH, a = 0.1, d = 0.5, s = 0.0, r = 0.0, duration = 0.3)
+        schedule(e, a = 0.1, d = 0.5, s = 0.0, r = 0.0, duration = 0.3)
         assertEquals(1.0, e.valueAt(2.1), 1e-9)
         assertEquals(0.8, e.valueAt(2.2), 1e-9)
         assertEquals(0.6, e.valueAt(2.3), 1e-9, "1 - (0.3 - 0.1) * 1 / 0.5")
@@ -141,7 +105,7 @@ class AmpEnvelopeTest {
     @Test
     fun aZeroLengthGateStillGetsItsReleaseRamp() {
         val e = env()
-        val end = schedule(e, AmpKind.SYNTH, duration = 0.0)
+        val end = schedule(e, duration = 0.0)
         assertEquals(2.0 + 0.01 + 0.01, end, 1e-12)
         assertTrue(e.valueAt(2.0) <= 1.0)
         assertEquals(0.0, e.valueAt(2.02), 1e-9)
@@ -162,8 +126,7 @@ class AmpEnvelopeTest {
 
     @Test
     fun holdIsNotReadByTheSoundEngine() {
-        val sine = synth(Waveform.SINE)
-        assertContentEquals(renderLeft(vp(sine, 1.0, "note" to 69.0)), renderLeft(vp(sine, 1.0, "note" to 69.0, "hold" to 0.5)))
+        assertContentEquals(renderLeft(synthVp("sine", 1.0, "note" to 69.0)), renderLeft(synthVp("sine", 1.0, "note" to 69.0, "hold" to 0.5)))
     }
 
     @Test

@@ -63,6 +63,7 @@ internal class PulseSource(spec: SourceSpec, private val pitch: PitchModulator?,
         frame = startFrame
         val t = startFrame.toDouble() / sampleRate
         val end = envelope.schedule(t, durationSec)
+        endSeconds = end
         gate.open(t, end, startFrame)
         endFrame = gate.to
         phi = -Math.PI
@@ -82,6 +83,8 @@ internal class PulseSource(spec: SourceSpec, private val pitch: PitchModulator?,
         }
         (pitch as? PitchModulation)?.restart()
     }
+
+    override fun steal(tNew: Double) = envelope.steal(tNew)
 
     override fun renderBlock(left: FloatArray, right: FloatArray, offset: Int, m: Int) {
         val bus = this.bus

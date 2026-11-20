@@ -6,8 +6,8 @@ import cosic.audio.ChainDemand
 import cosic.audio.DrumKit
 import cosic.audio.IrExecutor
 import cosic.audio.Mixer
-import cosic.audio.SYNTH_NAMES
 import cosic.audio.VoiceParams
+import cosic.audio.sources.SynthRegistry
 import cosic.io.ClockBridge
 import cosic.io.ConsoleLog
 import cosic.io.InputState
@@ -143,8 +143,11 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     private var publishedAt = 0L
 
     init {
-        // Rendering a drum sound takes milliseconds, which the audio thread must not spend on one it meets first.
-        thread(name = "cosic-drum-warm-up", isDaemon = true, priority = Thread.MIN_PRIORITY, block = drums::warmUp)
+        // Rendering a drum sound takes milliseconds, and so does building the tables of a wave or the loop of a noise, which the audio thread must not spend on one it meets first.
+        thread(name = "cosic-sound-warm-up", isDaemon = true, priority = Thread.MIN_PRIORITY) {
+            drums.warmUp()
+            SynthRegistry.warmUp(sampleRate)
+        }
     }
 
     /** The engine's state as of a moment ago; republished at most every 256 rendered frames. */
@@ -229,7 +232,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
      * sample that is still being decoded is waited for, up to a second. A newer preview replaces one still waiting.
      */
     fun preview(sound: String, index: Int = 0, note: Double? = null) {
-        sounds.resolve(sound, index.toDouble(), note) // loads or renders the sound here, off the audio thread
+        sounds.resolve(sound, index.toDouble(), note, PREVIEW_SECONDS, DEFAULT_CPS) // loads or renders the sound here, off the audio thread
         commands.add(Command.Preview(sound, index, note))
     }
 
@@ -307,7 +310,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     /** Starts the waiting preview as soon as its sound is ready, giving a sample that is still being decoded its time. */
     private fun startWaitingPreview() {
         val preview = waitingPreview ?: return
-        when (val lookup = sounds.resolve(preview.sound, preview.index.toDouble(), preview.note)) {
+        when (val lookup = sounds.resolve(preview.sound, preview.index.toDouble(), preview.note, PREVIEW_SECONDS, scheduler.cps)) {
             is SoundLookup.Ready -> {
                 waitingPreview = null
                 start(voiceParams(preview.note?.let { mapOf("note" to it) } ?: emptyMap(), lookup.source, PREVIEW_SECONDS, scheduler.cps, 0.0))
@@ -370,7 +373,8 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     }
 
     companion object {
-        val SYNTHS: List<String> = SYNTH_NAMES
+        /** The names of the engine's own synths and noises in display order (`SynthRegistry`), for the sound lists of the app: `s("sawtooth")`, `s("supersaw")`, `s("white")`. */
+        val SYNTHS: List<String> = SynthRegistry.names
         val DRUMS: List<String> = DRUM_NAMES
 
         /**
@@ -387,6 +391,6 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
          * library made for this engine takes as its `builtins`.
          */
         val BUILTIN_SOUNDS: Set<String> =
-            (SYNTHS + listOf("saw", "tri") + DRUMS + DRUM_MACHINES.flatMap { (machine, names) -> names.map { "${machine}_$it" } }).toSet()
+            (SYNTHS + SynthRegistry.aliases.keys + DRUMS + DRUM_MACHINES.flatMap { (machine, names) -> names.map { "${machine}_$it" } }).toSet()
     }
 }

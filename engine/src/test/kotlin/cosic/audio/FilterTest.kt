@@ -536,8 +536,8 @@ class FilterTest {
 
     @Test
     fun aVoiceWithACutoffLosesItsHighs() {
-        val dry = renderLeft(vp(synth(Waveform.SAWTOOTH), 0.5, "note" to 45.0), SR)
-        val wet = renderLeft(vp(synth(Waveform.SAWTOOTH), 0.5, "note" to 45.0, "cutoff" to 400.0), SR)
+        val dry = renderLeft(synthVp("sawtooth", 0.5, "note" to 45.0), SR)
+        val wet = renderLeft(synthVp("sawtooth", 0.5, "note" to 45.0, "cutoff" to 400.0), SR)
         val highDry = 1.0 - energyBelow(dry, 2000.0)
         val highWet = 1.0 - energyBelow(wet, 2000.0)
         assertTrue(highWet < 0.2 * highDry, "the share of the energy above 2 kHz falls from $highDry to $highWet")
@@ -545,10 +545,10 @@ class FilterTest {
 
     @Test
     fun aVoiceWithACutoffOfZeroIsSilentAndAVoiceWithAnEnormousOneIsUnchanged() {
-        val silent = renderLeft(vp(synth(Waveform.SAWTOOTH), 0.5, "note" to 45.0, "cutoff" to 0.0), SR / 2)
+        val silent = renderLeft(synthVp("sawtooth", 0.5, "note" to 45.0, "cutoff" to 0.0), SR / 2)
         assertEquals(0f, peak(silent))
-        val dry = renderLeft(vp(synth(Waveform.SAWTOOTH), 0.5, "note" to 45.0), SR / 2)
-        val open = renderLeft(vp(synth(Waveform.SAWTOOTH), 0.5, "note" to 45.0, "cutoff" to 1e9), SR / 2)
+        val dry = renderLeft(synthVp("sawtooth", 0.5, "note" to 45.0), SR / 2)
+        val open = renderLeft(synthVp("sawtooth", 0.5, "note" to 45.0, "cutoff" to 1e9), SR / 2)
         assertContentEquals(dry, open)
     }
 
@@ -560,7 +560,7 @@ class FilterTest {
             controls.add("note" to 45.0)
             controls.add("FX" to listOf(mapOf("cutoff" to 600.0)))
             if (ftype != null) controls.add("ftype" to ftype)
-            val out = renderLeft(vp(synth(Waveform.SAWTOOTH), 0.5, *controls.toTypedArray()), SR)
+            val out = renderLeft(synthVp("sawtooth", 0.5, *controls.toTypedArray()), SR)
             val first = biquad(BiquadType.HIGHPASS, 3000.0, -3.0103)
             val second = biquad(BiquadType.HIGHPASS, 3000.0, -3.0103)
             first.process(out, out.size, 0)
@@ -575,14 +575,14 @@ class FilterTest {
 
     @Test
     fun everyFilterOfAVoiceTogetherStaysFiniteAndAudible() {
-        val params = vp(
-            synth(Waveform.SAWTOOTH), 0.4, "note" to 50.0, "cutoff" to 1500.0, "lpenv" to 2.0, "hcutoff" to 200.0, "hpdepth" to 0.5, "hprate" to 5.0,
+        val params = synthVp(
+            "sawtooth", 0.4, "note" to 50.0, "cutoff" to 1500.0, "lpenv" to 2.0, "hcutoff" to 200.0, "hpdepth" to 0.5, "hprate" to 5.0,
             "bandf" to 900.0, "bandq" to 2.0, "vowel" to "a", "ftype" to "24db",
         )
         val out = renderLeft(params, SR)
         assertTrue(allFinite(out))
         assertTrue(peak(out) > 0.001f)
-        val ladder = renderLeft(vp(synth(Waveform.SAWTOOTH), 0.4, "note" to 50.0, "cutoff" to 1500.0, "lpenv" to 3.0, "ftype" to "ladder", "lpdepth" to 0.5, "lprate" to 6.0), SR)
+        val ladder = renderLeft(synthVp("sawtooth", 0.4, "note" to 50.0, "cutoff" to 1500.0, "lpenv" to 3.0, "ftype" to "ladder", "lpdepth" to 0.5, "lprate" to 6.0), SR)
         assertTrue(allFinite(ladder))
         assertTrue(peak(ladder) > 0.001f)
     }
@@ -644,9 +644,9 @@ class FilterTest {
         val previous = logger
         logger = { _, _, _ -> }
         try {
-            val out = renderLeft(vp(synth(Waveform.SAWTOOTH), 0.3, "note" to 50.0, "vowel" to "zz"), SR / 2)
+            val out = renderLeft(synthVp("sawtooth", 0.3, "note" to 50.0, "vowel" to "zz"), SR / 2)
             assertEquals(0f, peak(out))
-            val vowel = renderLeft(vp(synth(Waveform.SAWTOOTH), 0.3, "note" to 50.0, "vowel" to "a"), SR / 2)
+            val vowel = renderLeft(synthVp("sawtooth", 0.3, "note" to 50.0, "vowel" to "a"), SR / 2)
             assertTrue(peak(vowel) > 0.01f)
         } finally {
             logger = previous

@@ -2,6 +2,7 @@ package cosic.audio.sources
 
 import cosic.audio.AParam
 import cosic.audio.BLOCK_FRAMES
+import cosic.audio.STEAL_RAMP_SECONDS
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -72,9 +73,15 @@ internal class SbdSource(spec: SourceSpec, noiseBuffer: FloatArray? = null) : Bl
         // prevent clicking
         mixGain.setValueAtTime(1.0, end - 0.01)
         mixGain.linearRampToValueAtTime(0.0, end, 0.0)
+        endSeconds = end
         endFrame = frameAtOrAfter(end, sampleRate)
         oscillator.reset()
         noise.reset()
+    }
+
+    /** The handle superdough returns for `sbd` is its last gain node (`mix`): the steal ramps it, on the timeline of its fade-out. */
+    override fun steal(tNew: Double) {
+        mixGain.linearRampToValueAtTime(0.0, tNew + STEAL_RAMP_SECONDS, tNew)
     }
 
     override fun renderBlock(left: FloatArray, right: FloatArray, offset: Int, m: Int) {
@@ -104,15 +111,15 @@ internal class SbdSource(spec: SourceSpec, noiseBuffer: FloatArray? = null) : Bl
         return (1f - fraction) * curve[index] + fraction * curve[index + 1]
     }
 
-    private companion object {
-        const val LIMIT = 3.4028234663852886e38
-        const val DEFAULT_DECAY = 0.5
-        const val DEFAULT_PITCH_DECAY = 0.5
-        const val DEFAULT_PITCH_SEMITONES = 36.0
-        const val ATTACK_HOLD = 0.02
-        const val NOISE_LEVEL = 1.2
-        const val NOISE_DECAY = 0.025
-        const val FLOOR = 0.001
+    internal companion object {
+        private const val LIMIT = 3.4028234663852886e38
+        private const val DEFAULT_DECAY = 0.5
+        private const val DEFAULT_PITCH_DECAY = 0.5
+        private const val DEFAULT_PITCH_SEMITONES = 36.0
+        private const val ATTACK_HOLD = 0.02
+        private const val NOISE_LEVEL = 1.2
+        private const val NOISE_DECAY = 0.025
+        private const val FLOOR = 0.001
 
         private val curves = ConcurrentHashMap<Int, FloatArray>()
 

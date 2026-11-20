@@ -57,8 +57,21 @@ internal interface SoundSource {
     /** True once the source has produced its last frame. */
     val isFinished: Boolean
 
+    /**
+     * When the source stops, in seconds on the engine's clock: the end of its envelope's release and 10 ms more (`envEnd` of synth.mjs; for `sbd`, its own end). The voice
+     * counts toward polyphony, and can be heard, until then. Valid once [start] has been called.
+     */
+    val endSeconds: Double
+
     /** Starts the source; [startFrame] is the absolute engine frame of the first frame it renders. Allocation-free. */
     fun start(startFrame: Long)
+
+    /**
+     * The voice is stolen by one that starts at [tNew] seconds (superdough.mjs:546-555): the source's amplitude ramps to 0 at `tNew + 0.25`, as
+     * `source.node.gain.linearRampToValueAtTime(0, tNew + 0.25)` does, so the ramp joins the automation of the source's own envelope (and starts from the last event
+     * before it, as Web Audio's does) instead of multiplying it. Allocation-free.
+     */
+    fun steal(tNew: Double)
 
     /** Overwrites `left[0 until n]` (and `right`, when stereo) and returns how many frames it produced; fewer than [n] means it finished. */
     fun render(left: FloatArray, right: FloatArray, n: Int): Int

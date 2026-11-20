@@ -46,6 +46,41 @@ private val METAL_HZ = doubleArrayOf(270.0, 382.0, 468.0, 604.0, 714.0, 895.0)
 /** [METAL_HZ] with every fundamental multiplied by [pitch]. */
 private fun metal(pitch: Double) = DoubleArray(METAL_HZ.size) { METAL_HZ[it] * pitch }
 
+/** Highest square wave frequency as a fraction of the sample rate; keeps the PolyBLEP edge width below half a period. */
+private const val MAX_FREQUENCY_RATIO = 0.49
+
+/** One step of xorshift32; [state] must be non-zero. */
+private fun xorshift32(state: Int): Int {
+    var x = state
+    x = x xor (x shl 13)
+    x = x xor (x ushr 17)
+    x = x xor (x shl 5)
+    return x
+}
+
+/** Maps a random 32-bit word onto `[-1, 1]`. */
+private fun Int.toBipolar(): Float = this * (1f / 2_147_483_648f)
+
+/**
+ * The triangle wave at [phase], a fraction of a period in `[0, 1)`: 0 at the start, 1 a quarter period in, -1 at
+ * three quarters, and back to 0 at the end.
+ */
+private fun triangleWave(phase: Double): Double =
+    if (phase < 0.25) 4.0 * phase else if (phase < 0.75) 2.0 - 4.0 * phase else 4.0 * phase - 4.0
+
+/** Polynomial band-limited step correction around the phase wrap; [t] in `[0, 1)`, [dt] the phase increment. */
+private fun polyBlep(t: Double, dt: Double): Double = when {
+    t < dt -> {
+        val x = t / dt
+        x + x - x * x - 1.0
+    }
+    t > 1.0 - dt -> {
+        val x = (t - 1.0) / dt
+        x * x + x + x + 1.0
+    }
+    else -> 0.0
+}
+
 /**
  * A synthesised drum kit and the drum machines that go with it. Each sound is rendered on first use at the engine
  * sample rate, normalised to a 0.9 peak and cached per (name, variant); rendering is deterministic, so the same name
@@ -101,8 +136,16 @@ internal class DrumKit(private val sampleRate: Int) {
 
     private fun time(frame: Int) = frame.toDouble() / sampleRate
 
-    private fun whiteNoise(n: Int, seed: Int): FloatArray =
-        FloatArray(n).also { Oscillator(sampleRate).apply { start(Waveform.WHITE, 0.0, seed) }.fill(it, n) }
+    /** Uniform white noise from xorshift32 of [seed] (0 counts as 1), [n] frames long. */
+    private fun whiteNoise(n: Int, seed: Int): FloatArray {
+        val out = FloatArray(n)
+        var state = if (seed == 0) 1 else seed
+        for (i in out.indices) {
+            state = xorshift32(state)
+            out[i] = state.toBipolar()
+        }
+        return out
+    }
 
     private fun filtered(x: FloatArray, kind: FilterKind, cutoffHz: Double, q: Double = 0.707): FloatArray {
         SvFilter(sampleRate, kind).also { it.configure(cutoffHz, q) }.process(x, x.size)
@@ -148,13 +191,19 @@ internal class DrumKit(private val sampleRate: Int) {
         for (i in click.indices) out[i] += (click[i] * level * (1.0 - i.toDouble() / click.size)).toFloat()
     }
 
-    /** Adds a square wave at each of [frequencies] to [out], each at level [gain]. */
+    /** Adds a square wave at each of [frequencies] to [out], each at level [gain]: band-limited with PolyBLEP, starting at phase 0. */
     private fun addSquares(out: FloatArray, gain: Float, frequencies: DoubleArray) {
         val partial = FloatArray(out.size)
-        val oscillator = Oscillator(sampleRate)
         for (hz in frequencies) {
-            oscillator.start(Waveform.SQUARE, hz, 1)
-            oscillator.fill(partial, partial.size)
+            val dt = if (hz > 0.0) Math.min(hz, MAX_FREQUENCY_RATIO * sampleRate) / sampleRate else 0.0
+            var p = 0.0
+            for (i in partial.indices) {
+                val shifted = if (p >= 0.5) p - 0.5 else p + 0.5
+                val level = if (p < 0.5) 1.0 else -1.0
+                partial[i] = (level + polyBlep(p, dt) - polyBlep(shifted, dt)).toFloat()
+                p += dt
+                if (p >= 1.0) p -= 1.0
+            }
             for (i in out.indices) out[i] += partial[i] * gain
         }
     }

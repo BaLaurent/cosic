@@ -6,14 +6,16 @@ package cosic.audio.sources
  * `zzfx` and `z_square` (which is a triangle with `curve` 0). Vibrato, the pitch envelope and FM do not reach them (the buffer is played as it is), and there is no envelope:
  * a voice must not add the amplitude envelope of a synth to these sounds, only the gain, the filters and the effects of its chain.
  */
-internal object ZzfxSynths {
+internal object ZzfxSynths : SynthFamily {
     /** The names, in the order superdough registers them. */
-    val names: List<String> = listOf("zzfx", "z_sine", "z_sawtooth", "z_triangle", "z_square", "z_tan", "z_noise")
+    override val names: List<String> = listOf("zzfx", "z_sine", "z_sawtooth", "z_triangle", "z_square", "z_tan", "z_noise")
+
+    override val aliases: Map<String, String> = emptyMap()
 
     private val whitespace = Regex("\\s+")
 
     /** The canonical name of a sound that this object builds (the registry's normalisation: lowercase, whitespace becomes `_`), or null. */
-    fun canonical(name: String): String? {
+    override fun canonical(name: String): String? {
         val normal = name.lowercase().replace(whitespace, "_")
         return if (normal in names) normal else null
     }
@@ -23,7 +25,7 @@ internal object ZzfxSynths {
      * `getZZFX` does. [fm] is accepted to call this as [StockSynths.create]; FM does not reach ZZFX.
      */
     @Suppress("UNUSED_PARAMETER")
-    fun create(name: String, spec: SourceSpec, fm: FmFactory? = null): SoundSource? {
+    override fun create(name: String, spec: SourceSpec, fm: FmFactory?): SoundSource? {
         val sound = canonical(name) ?: return null
         return ZzfxSource(spec, sound)
     }

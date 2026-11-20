@@ -89,11 +89,14 @@ internal class OscillatorSource(
 
     override fun start(startFrame: Long) {
         frame = startFrame
-        endFrame = frameAtOrAfter(envelope.schedule(startFrame.toDouble() / sampleRate, durationSec), sampleRate)
+        endSeconds = envelope.schedule(startFrame.toDouble() / sampleRate, durationSec)
+        endFrame = frameAtOrAfter(endSeconds, sampleRate)
         oscillator?.reset()
         noise?.reset()
         (pitch as? PitchModulation)?.restart()
     }
+
+    override fun steal(tNew: Double) = envelope.steal(tNew)
 
     override fun renderBlock(left: FloatArray, right: FloatArray, offset: Int, m: Int) {
         val block = this.block
@@ -139,9 +142,16 @@ internal class OscillatorSource(
             else -> BasicWave.SINE
         }
 
-        /** The magnitudes of `waveformN(partials, ...)`: the list itself, or a count of 1s (`new Float32Array(count).fill(1)`; a negative count is a RangeError). */
+        /**
+         * The magnitudes of `waveformN(partials, ...)`: the list itself, or a count of 1s (`new Float32Array(count).fill(1)`; a negative count is a RangeError). An object that
+         * is no list (the doc example `partials(partials([1, 1, 1]))` gives one) has no `length`: the arrays of `waveformN` are `new Float32Array(NaN)`, empty, and
+         * `createPeriodicWave` refuses them.
+         */
         fun partialsOf(partials: Any?): DoubleArray {
             if (partials is List<*>) return DoubleArray(partials.size) { jsToNumber(partials[it]) }
+            if (partials is Map<*, *>) {
+                throw CosicError("Failed to execute 'createPeriodicWave' on 'BaseAudioContext': The length of the real array provided (0) is less than the minimum bound (2).")
+            }
             val count = jsToNumber(partials)
             val length = if (count.isNaN()) 0.0 else if (count < 0.0) -Math.floor(-count) else Math.floor(count)
             if (length < 0.0) throw CosicError("RangeError: Invalid typed array length: ${length.toLong()}")

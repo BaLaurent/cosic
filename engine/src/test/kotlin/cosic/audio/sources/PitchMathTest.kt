@@ -30,16 +30,6 @@ class PitchMathTest {
     }
 
     @Test
-    fun theVoicePathGivesTheSameFrequenciesFromAParamSet() {
-        fun fromParams(vararg controls: Pair<String, Any?>) = frequencyFromParams(cosic.player.paramSetOf(mapOf(*controls)))
-        assertEquals(65.40639132514966, fromParams(), 1e-9)
-        assertEquals(130.8127826502993, fromParams("note" to "c3"), 1e-9)
-        assertEquals(65.4064, fromParams("note" to 0.0), 1e-3)
-        assertEquals(261.6255653006, fromParams("note" to 48.0, "octave" to 1.0), 1e-8)
-        assertEquals(123.0, fromParams("freq" to 123.0, "note" to 60.0), 1e-9)
-    }
-
-    @Test
     fun sourceControlsReadNumbersLeniently() {
         val c = mapOf<String, Any?>("a" to 2.0, "b" to "3.5", "c" to true, "d" to "x", "e" to Double.NaN, "f" to listOf(1.0, "2"), "g" to "text").asSourceControls()
         assertEquals(2.0, c.number("a"))

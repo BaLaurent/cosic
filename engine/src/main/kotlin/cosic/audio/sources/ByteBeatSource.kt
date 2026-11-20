@@ -78,6 +78,7 @@ internal class ByteBeatSource(spec: SourceSpec) : BlockSource() {
         frame = startFrame
         val t = startFrame.toDouble() / sampleRate
         val end = envelope.schedule(t, durationSec)
+        endSeconds = end
         gate.open(t, end, startFrame)
         endFrame = gate.to
         beginParam = asParam(t)
@@ -85,6 +86,8 @@ internal class ByteBeatSource(spec: SourceSpec) : BlockSource() {
         timeSet = hasStartTime
         failed = false
     }
+
+    override fun steal(tNew: Double) = envelope.steal(tNew)
 
     override fun renderBlock(left: FloatArray, right: FloatArray, offset: Int, m: Int) {
         val from = (gate.from - frame).coerceIn(0L, m.toLong()).toInt()

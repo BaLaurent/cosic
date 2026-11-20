@@ -1,11 +1,7 @@
 package cosic.audio
 
-import cosic.audio.sources.SourceSpec
-import cosic.audio.sources.WavetableSource
-import cosic.audio.sources.frequencyFromParams
+import cosic.audio.sources.SoundSource
 import cosic.soundfont.sf2.PresetPlayer
-import kotlin.math.abs
-import kotlin.math.pow
 
 private const val MAX_GAIN_PARAM = 3.4e38
 
@@ -41,11 +37,11 @@ internal fun VoiceParams.canSound(): Boolean {
 }
 
 /**
- * One sounding note: the `superdough()` graph of one event. A source (an oscillator or a sample) is multiplied by the amplitude
- * envelope and the cut/steal gain, runs through the effect chains of the event's `FX(...)` elements and then through the main
- * chain (each a [StageGroup]), through the `FXrelease` fade and the `post` gain, and is mixed into its orbit: the direct sound with the
- * `dry` gain, plus the sends to the orbit's delay and reverb, to a bus and to an analyser. Modulators (`lfo`, `env`, `bmod`) are connected to
- * the parameters of all of it.
+ * One sounding note: the `superdough()` graph of one event. A source (a built-in sound, which brings its own pitch, level and amplitude
+ * envelope, or a sample, which is multiplied by the amplitude envelope here) is multiplied by the cut/steal gain, runs through the
+ * effect chains of the event's `FX(...)` elements and then through the main chain (each a [StageGroup]), through the `FXrelease` fade and
+ * the `post` gain, and is mixed into its orbit: the direct sound with the `dry` gain, plus the sends to the orbit's delay and reverb, to a
+ * bus and to an analyser. Modulators (`lfo`, `env`, `bmod`) are connected to the parameters of all of it.
  *
  * Time is absolute: the voice starts at engine frame `startFrame`, `t = startFrame / sampleRate`, and every parameter lives on the same
  * clock, so its sound does not depend on how blocks are cut. Instances live in a pool and are restarted with [start]; nothing here
@@ -55,18 +51,15 @@ internal fun VoiceParams.canSound(): Boolean {
  * until then it counts toward `maxPolyphony`.
  */
 internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, private val buses: AudioBuses, private val fxPool: FxGroupPool) {
-    // The oscillator is the legacy synth source (Task 3.17 replaces it with SoundSource); the sampler is the player of superdough's.
-    private val oscillator = Oscillator(sampleRate)
+    // The sampler is the player of superdough's; the sources of the built-in sounds are made per event and carried by the VoiceSource.
     private val player = SamplePlayer(sampleRate)
-
-    /** The wavetable source of a voice that plays one (it makes its own envelope, so the amplitude envelope of the voice stays at 1); null otherwise. */
-    private var wavetable: WavetableSource? = null
     private val presetPlayer = PresetPlayer(sampleRate)
-    private var isSynth = true
-    private var isPreset = false
-    private var sourceLevel = 1f
 
-    /** The amplitude envelope that multiplies the source (stage 0 of the chain, inside the source node in Strudel). */
+    /** The source of a voice that plays a built-in sound: it makes its own envelope, so the amplitude envelope of the voice stays at 1. Null for a sample or a preset. */
+    private var synth: SoundSource? = null
+    private var isPreset = false
+
+    /** The amplitude envelope that multiplies a sample (stage 0 of the chain, inside the source node in Strudel); the constant 1 for a built-in sound, whose source makes its own. */
     val ampEnv = AParam(0.0, -MAX_GAIN_PARAM, MAX_GAIN_PARAM, 8)
 
     /** The gain of the source's output node: 1, except for the ramps of a cut or a steal. */
@@ -156,7 +149,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
      * Starts the voice at engine frame [startFrame] from [params] and returns the time in seconds until which it counts toward polyphony
      * (`activeUntil`), or NaN when it cannot start (more than [MAX_ORBITS] orbits). [params] must be able to sound, see [canSound].
      */
-    fun start(params: VoiceParams, startFrame: Long, order: Long, seed: Int, multiChannelOrbits: Boolean): Double {
+    fun start(params: VoiceParams, startFrame: Long, order: Long, multiChannelOrbits: Boolean): Double {
         isActive = false
         releaseFxGroups()
         // a soundfont preset note ignores the controls of its event: sfumato plays it straight to the output at the gain it has
@@ -183,7 +176,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         // The source and its envelope.
         ampEnv.reset(0.0)
         outGain.reset(1.0)
-        val envEnd = startSource(params, main, t, duration, seed)
+        val envEnd = startSource(params, main, startFrame, t, duration)
 
         // The effect chains: FX elements first (each takes a group from the shared pool; when it is empty the rest are dropped), the main chain last.
         val fx = if (preset) emptyList() else params.fx
@@ -231,53 +224,38 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     }
 
     /** Starts the source and schedules the amplitude envelope; returns when the source ends. */
-    private fun startSource(params: VoiceParams, main: ParamSet, t: Double, duration: Double, seed: Int): Double {
-        val clipSet = main.has(Param.clip)
+    private fun startSource(params: VoiceParams, main: ParamSet, startFrame: Long, t: Double, duration: Double): Double {
         val loopSet = main.has(Param.loop)
         val releaseSet = main.has(Param.release)
         when (val source = params.source) {
-            is VoiceSource.Wavetable -> {
-                val table = WavetableSource(SourceSpec(sampleRate, source.controls, params.durationSec, params.cps, seed.toLong()), source.frames)
-                table.start(Math.round(t * sampleRate))
-                wavetable = table
-                isSynth = false
+            is VoiceSource.Synth -> {
+                // the source brings its pitch, level and envelope; the voice's own envelope stays at 1 (a steal ramps it down)
+                val sound = source.source
+                synth = sound
+                isPreset = false
                 isSample = false
                 ampEnv.reset(1.0)
-                return table.endSeconds
-            }
-            is VoiceSource.Synth -> {
-                wavetable = null
-                oscillator.start(source.waveform, frequencyFromParams(main), seed)
-                isSynth = true
-                isPreset = false
-                isSample = false
-                sourceLevel = source.waveform.baseLevel
-                return AmpEnvelope.schedule(
-                    ampEnv, AmpKind.SYNTH, main[Param.attack], main[Param.decay], main[Param.sustain], main[Param.release],
-                    t, duration, Double.NaN, clipSet, loopSet, releaseSet,
-                )
+                sound.start(startFrame)
+                return sound.endSeconds
             }
             is VoiceSource.Sample -> {
-                wavetable = null
+                synth = null
                 val sample = source.params
                 player.start(sample, main)
-                isSynth = false
                 isPreset = false
                 isSample = sample.honoursSampleControls
-                sourceLevel = 1f
                 // The gate of a sample is the length of its slice unless clip, loop or release is set; a soundfont's is always the hap's.
                 val hapGate = Sampler.gateIsHap(sample, main)
                 val sliceSec = if (hapGate) Double.NaN else Sampler.sliceSeconds(sample, main, Sampler.playbackRate(sample, main))
                 return AmpEnvelope.schedule(
-                    ampEnv, AmpKind.SAMPLE, main[Param.attack], main[Param.decay], main[Param.sustain], main[Param.release],
+                    ampEnv, main[Param.attack], main[Param.decay], main[Param.sustain], main[Param.release],
                     t, duration, sliceSec, hapGate, loopSet, releaseSet,
                 )
             }
             is VoiceSource.Preset -> {
-                isSynth = false
+                synth = null
                 isPreset = true
                 isSample = false
-                sourceLevel = 1f
                 ampEnv.reset(1.0)
                 // sfumato stops the note at `deadline + h.duration`: the length of the hap in cycles, added to a time in seconds
                 return presetPlayer.start(source.zones, t, t + duration * params.cps)
@@ -366,14 +344,20 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     }
 
     /**
-     * Steals the voice for one that starts at [tNew]: its amplitude (the out gain for a sample) ramps to 0 at `tNew + 0.25` and it stops
-     * there, if it had not ended before.
+     * Steals the voice for one that starts at [tNew]: its amplitude ramps to 0 at `tNew + 0.25` and it stops there, if it had not ended before. A built-in sound
+     * ramps the envelope inside its source (`source.node.gain` of superdough: the ramp is part of the envelope's automation), a sample the out gain, a
+     * preset note the voice's own envelope.
      */
     fun steal(tNew: Double) {
         if (!isActive) return
         isFading = true
-        val target = if (isSample) outGain else ampEnv
-        target.linearRampToValueAtTime(0.0, tNew + STEAL_RAMP_SECONDS, tNew)
+        val sound = synth
+        if (sound != null) {
+            sound.steal(tNew)
+        } else {
+            val target = if (isSample) outGain else ampEnv
+            target.linearRampToValueAtTime(0.0, tNew + STEAL_RAMP_SECONDS, tNew)
+        }
         activeUntilFrame = Math.min(activeUntilFrame, frameAtOrAfter(tNew + STEAL_RAMP_SECONDS))
         audibleUntilFrame = Math.min(audibleUntilFrame, activeUntilFrame)
     }
@@ -387,10 +371,11 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     }
 
     /**
-     * Gives back what the voice's chains hold: the pooled chains of the `FX(...)` elements, and what the stages of the main chain took from shared
-     * pools. The voice has ended, or is about to start again.
+     * Gives back what the voice holds: the pooled chains of the `FX(...)` elements, what the stages of the main chain took from shared pools, and the source of a built-in
+     * sound (a source plays once, and some hold a lot). The voice has ended, or is about to start again.
      */
     private fun releaseFxGroups() {
+        synth = null
         mainGroup.release()
         for (i in 0 until fxCount) {
             fxPool.give(fxGroups[i]!!)
@@ -403,6 +388,18 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     private fun frameAtOrAfter(seconds: Double): Long {
         val frame = Math.ceil(seconds * sampleRate)
         return if (frame > HORIZON_FRAMES) HORIZON_FRAMES.toLong() else frame.toLong()
+    }
+
+    /** Multiplies the block by the gain [param]: not at all while it is the constant 1 (a source that makes its own envelope, a voice that is not being cut), by a number while it is constant. */
+    private fun multiplyBy(param: AParam, ctx: BlockContext, blk: AudioBlock, n: Int) {
+        if (param.isConstant) {
+            if (param.constantValue != 1.0) blk.mulBy(param.constantValue.toFloat(), n)
+            return
+        }
+        val gains = ctx.borrow()
+        param.fill(gains, ctx)
+        blk.mulBy(gains, n)
+        ctx.release()
     }
 
     /**
@@ -419,18 +416,13 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         val live = if (left < n) left.toInt() else n
 
         blk.channels = 1
-        val wavetable = wavetable
-        val produced = if (wavetable != null) {
-            blk.channels = 2
-            wavetable.render(blk.l, blk.r, n)
+        val synth = synth
+        val produced = if (synth != null) {
+            blk.channels = synth.channels
+            synth.render(blk.l, blk.r, n)
         } else if (isPreset) {
             blk.channels = 2
             presetPlayer.fill(blk.l, blk.r, ctx)
-            n
-        } else if (isSynth) {
-            oscillator.fill(blk.l, n)
-            val level = sourceLevel
-            for (i in 0 until n) blk.l[i] *= level
             n
         } else {
             if (player.stereo) blk.channels = 2
@@ -441,16 +433,8 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
             if (blk.channels == 2) blk.r.fill(0f, produced, n)
         }
 
-        val gains = ctx.borrow()
-        ampEnv.fill(gains, ctx)
-        blk.mulBy(gains, n)
-        if (outGain.isConstant) {
-            if (outGain.constantValue != 1.0) blk.mulBy(outGain.constantValue.toFloat(), n)
-        } else {
-            outGain.fill(gains, ctx)
-            blk.mulBy(gains, n)
-        }
-        ctx.release()
+        multiplyBy(ampEnv, ctx, blk, n)
+        multiplyBy(outGain, ctx, blk, n)
 
         for (i in 0 until fxCount) fxGroups[i]!!.process(blk, ctx)
         mainGroup.process(blk, ctx)

@@ -6,6 +6,7 @@ import cosic.audio.BLOCK_FRAMES
 import cosic.audio.BlockContext
 import cosic.audio.LfoOsc
 import cosic.audio.QUANTUM
+import cosic.audio.STEAL_RAMP_SECONDS
 import cosic.audio.adsrComponent
 import cosic.audio.getParamADSR
 import cosic.audio.lfoDefaultMax
@@ -36,7 +37,7 @@ private val ENVELOPE_DEFAULTS = doubleArrayOf(0.0, 0.5, 0.0, 0.1)
  */
 internal class WavetableSource(
     private val spec: SourceSpec,
-    frames: WavetableFrames,
+    val frames: WavetableFrames,
     private val pitch: PitchModulator? = null,
     private val fm: FrequencyModulator? = null,
 ) : SoundSource {
@@ -66,7 +67,7 @@ internal class WavetableSource(
     private var started = false
 
     /** The time in seconds at which the source ends: the end of the release and `0.01 s` more (`envEnd`). Valid after [start]. */
-    var endSeconds = 0.0
+    override var endSeconds = 0.0
         private set
 
     override val isFinished: Boolean get() = started && frame >= endFrame
@@ -114,6 +115,11 @@ internal class WavetableSource(
         // The worklet runs the quanta that start before its `end`: the last one is the one that contains it.
         endFrame = Math.max(startFrame, Math.ceil(envEnd * sampleRate / QUANTUM).toLong() * QUANTUM)
         started = true
+    }
+
+    /** The note is stolen by a voice that starts at [tNew]: `node.gain.linearRampToValueAtTime(0, tNew + 0.25)`, on the timeline of the envelope. */
+    override fun steal(tNew: Double) {
+        envelope.linearRampToValueAtTime(0.0, tNew + STEAL_RAMP_SECONDS, tNew)
     }
 
     /**

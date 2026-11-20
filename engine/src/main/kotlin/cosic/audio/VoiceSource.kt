@@ -1,23 +1,21 @@
 package cosic.audio
 
 import cosic.SampleData
-import cosic.WavetableFrames
-import cosic.audio.sources.SourceControls
+import cosic.audio.sources.SoundSource
 import cosic.soundfont.sf2.PresetZoneVoice
 
 /** What a voice plays. */
 internal sealed interface VoiceSource {
-    /** A built-in oscillator or noise source; `note` sets its pitch and `speed`, `begin` and `end` do not apply. */
-    class Synth(val waveform: Waveform) : VoiceSource
+    /**
+     * A sound the engine makes itself: an oscillator, a noise, a supersaw, a pulse, a bytebeat, `sbd` or a wavetable. The [source] was made for this event by the sound lookup from the
+     * event's controls (`SynthRegistry`), and brings everything of its own: its pitch (`note`, `freq`, vibrato, FM), its level and its amplitude envelope, so the voice does not apply one.
+     * `speed`, `begin` and `end` do not apply to it. [name] is the name of the sound: the canonical one for a synth (`sawtooth` for `saw`), the bank's for a wavetable.
+     * A source plays once, so a [Synth] belongs to the event it was made for.
+     */
+    class Synth(val name: String, val source: SoundSource) : VoiceSource
 
     /** A recorded sample (a bank file, a drum-kit sound, a soundfont zone): the sampler of superdough, see [SampleSourceParams]. */
     class Sample(val params: SampleSourceParams) : VoiceSource
-
-    /**
-     * A wavetable (`s("wt_…")`): the [frames] of the table the sound lookup picked, played by a `WavetableSource` that reads its own controls
-     * (`wt`, `warp`, `warpmode`, `unison`, `detune`, …) from [controls], the event's control map. The source brings its own amplitude envelope.
-     */
-    class Wavetable(val frames: WavetableFrames, val controls: SourceControls) : VoiceSource
 
     /** A note of a soundfont preset loaded by the program (`.soundfont(sf)`): the zones that sound, played and summed as sfumato does, without the effects of the event. */
     class Preset(val zones: List<PresetZoneVoice>) : VoiceSource

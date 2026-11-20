@@ -31,9 +31,12 @@ internal class NoiseSource(spec: SourceSpec, type: NoiseType, buffer: FloatArray
 
     override fun start(startFrame: Long) {
         frame = startFrame
-        endFrame = frameAtOrAfter(envelope.schedule(startFrame.toDouble() / sampleRate, durationSec), sampleRate)
+        endSeconds = envelope.schedule(startFrame.toDouble() / sampleRate, durationSec)
+        endFrame = frameAtOrAfter(endSeconds, sampleRate)
         noise.reset()
     }
+
+    override fun steal(tNew: Double) = envelope.steal(tNew)
 
     override fun renderBlock(left: FloatArray, right: FloatArray, offset: Int, m: Int) {
         noise.render(block, m)

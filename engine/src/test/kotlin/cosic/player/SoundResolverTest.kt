@@ -8,7 +8,7 @@ import cosic.audio.DRUM_MACHINES
 import cosic.audio.SR
 import cosic.audio.SampleSourceParams
 import cosic.audio.VoiceSource
-import cosic.audio.Waveform
+import cosic.audio.sources.SynthRegistry
 import cosic.libraryWithBank
 import cosic.pattern.ControlMap
 import cosic.pattern.CosicError
@@ -34,23 +34,62 @@ class SoundResolverTest {
         assertIs<VoiceSource.Sample>(source(*entries)).params
 
     @Test
-    fun synthNamesResolveToTheirWaveformIncludingTheAliasesInAnyCase() {
+    fun synthNamesResolveToTheSourceOfTheirSoundIncludingTheAliasesInAnyCase() {
         val expected = mapOf(
-            "sine" to Waveform.SINE, "sawtooth" to Waveform.SAWTOOTH, "saw" to Waveform.SAWTOOTH,
-            "square" to Waveform.SQUARE, "triangle" to Waveform.TRIANGLE, "tri" to Waveform.TRIANGLE,
-            "white" to Waveform.WHITE, "pink" to Waveform.PINK, "brown" to Waveform.BROWN,
+            "sine" to "sine", "sin" to "sine", "sawtooth" to "sawtooth", "saw" to "sawtooth", "square" to "square", "sqr" to "square", "triangle" to "triangle", "tri" to "triangle",
+            "user" to "user", "one" to "one", "sbd" to "sbd", "supersaw" to "supersaw", "bytebeat" to "bytebeat", "pulse" to "pulse",
+            "white" to "white", "pink" to "pink", "brown" to "brown", "crackle" to "crackle",
         )
-        for ((name, waveform) in expected) {
-            assertEquals(waveform, assertIs<VoiceSource.Synth>(resolver().source("s" to name)).waveform, name)
-            assertEquals(waveform, assertIs<VoiceSource.Synth>(resolver().source("s" to name.uppercase())).waveform, name.uppercase())
+        for ((name, sound) in expected) {
+            assertEquals(sound, assertIs<VoiceSource.Synth>(resolver().source("s" to name)).name, name)
+            assertEquals(sound, assertIs<VoiceSource.Synth>(resolver().source("s" to name.uppercase())).name, name.uppercase())
         }
+    }
+
+    @Test
+    fun everyNameOfTheSynthRegistryResolvesAndNoOtherDoes() {
+        val resolver = resolver()
+        for (name in SynthRegistry.names + SynthRegistry.aliases.keys) assertIs<VoiceSource.Synth>(resolver.source("s" to name), name)
+        assertIs<SoundLookup.Unknown>(resolver.resolve(controls("s" to "supersaws")))
     }
 
     @Test
     fun aRegisteredBankBeatsASynthOfTheSameNameBecauseTheLastRegistrationWins() {
         val mine = sample(0.5f)
         assertSame(mine, resolver(libraryWithBank("sine", listOf(mine))).sample("s" to "sine").data)
-        assertEquals(Waveform.SQUARE, assertIs<VoiceSource.Synth>(resolver(libraryWithBank("sine", listOf(mine))).source("s" to "square")).waveform)
+        assertSame(mine, resolver(libraryWithBank("supersaw", listOf(mine))).sample("s" to "supersaw").data)
+        assertEquals("square", assertIs<VoiceSource.Synth>(resolver(libraryWithBank("sine", listOf(mine))).source("s" to "square")).name)
+    }
+
+    @Test
+    fun theBankControlPrefixesASynthToo() {
+        val mine = sample(0.5f)
+        assertSame(mine, resolver(libraryWithBank("my_sine", listOf(mine))).sample("s" to "sine", "bank" to "my").data)
+        assertEquals("sine", assertIs<VoiceSource.Synth>(resolver().source("s" to "sine", "bank" to "")).name, "an empty bank is not one")
+    }
+
+    @Test
+    fun everyEventGetsASourceOfItsOwn() {
+        val resolver = resolver()
+        val first = assertIs<VoiceSource.Synth>(resolver.source("s" to "sawtooth", "note" to 69.0))
+        val second = assertIs<VoiceSource.Synth>(resolver.source("s" to "sawtooth", "note" to 69.0))
+        assertNotSame(first.source, second.source, "a source plays once")
+        assertEquals(1, first.source.channels, "a mono oscillator")
+    }
+
+    @Test
+    fun theSourceLastsAsLongAsTheEventsDurationAndItsRelease() {
+        val lookup = resolver().resolve(controls("s" to "sine", "release" to 0.2), 0.5, 0.5)
+        val source = assertIs<VoiceSource.Synth>(assertIs<SoundLookup.Ready>(lookup).source).source
+        source.start(48_000)
+        assertEquals(1.0 + 0.5 + 0.2 + 0.01, source.endSeconds, 1e-9, "starts at 1 s, is held for 0.5 s, released for 0.2 s, and stops 10 ms after")
+    }
+
+    @Test
+    fun aNoteThatIsNoNoteIsTheErrorOfAPitchedSynthButNotOfANoise() {
+        assertEquals("not a note: \"hello\"", assertFailsWith<CosicError> { resolver().resolve(controls("s" to "sine", "note" to "hello")) }.message)
+        assertEquals("not a note: \"hello\"", assertFailsWith<CosicError> { resolver().resolve(controls("s" to "supersaw", "note" to "hello")) }.message)
+        assertIs<SoundLookup.Ready>(resolver().resolve(controls("s" to "white", "note" to "hello")), "a noise has no pitch to read")
     }
 
     @Test
@@ -126,8 +165,8 @@ class SoundResolverTest {
 
     @Test
     fun withoutASoundNameEventsPlayTheDefaultTriangle() {
-        assertEquals(Waveform.TRIANGLE, assertIs<VoiceSource.Synth>(resolver().source("note" to 60.0)).waveform)
-        assertEquals(Waveform.TRIANGLE, assertIs<VoiceSource.Synth>(resolver().source()).waveform)
+        assertEquals("triangle", assertIs<VoiceSource.Synth>(resolver().source("note" to 60.0)).name)
+        assertEquals("triangle", assertIs<VoiceSource.Synth>(resolver().source()).name)
     }
 
     @Test
@@ -136,8 +175,8 @@ class SoundResolverTest {
         val saved = logger
         logger = { message, type, _ -> log += message to type }
         try {
-            assertEquals(Waveform.TRIANGLE, assertIs<VoiceSource.Synth>(resolver().source("s" to 808.0)).waveform)
-            assertEquals(Waveform.TRIANGLE, assertIs<VoiceSource.Synth>(resolver().source("s" to listOf(1.0, 2.0))).waveform)
+            assertEquals("triangle", assertIs<VoiceSource.Synth>(resolver().source("s" to 808.0)).name)
+            assertEquals("triangle", assertIs<VoiceSource.Synth>(resolver().source("s" to listOf(1.0, 2.0))).name)
         } finally {
             logger = saved
         }
@@ -277,10 +316,10 @@ class SoundResolverTest {
     @Test
     fun theKeyFormOfLookupServesPreviews() {
         val resolver = resolver()
-        assertIs<SoundLookup.Ready>(resolver.resolve("sine", 0.0, 60.0))
-        assertIs<SoundLookup.Ready>(resolver.resolve("bd", 2.0, null))
-        assertIs<SoundLookup.Ready>(resolver.resolve("cosic909_bd", 2.0, null))
-        assertIs<SoundLookup.Unknown>(resolver.resolve("nope", 0.0, null))
-        assertEquals(24.0, assertIs<VoiceSource.Sample>(assertIs<SoundLookup.Ready>(resolver.resolve("bd", 0.0, 60.0)).source).params.transposeSemitones)
+        assertIs<SoundLookup.Ready>(resolver.resolve("sine", 0.0, 60.0, 0.5, 0.5))
+        assertIs<SoundLookup.Ready>(resolver.resolve("bd", 2.0, null, 0.5, 0.5))
+        assertIs<SoundLookup.Ready>(resolver.resolve("cosic909_bd", 2.0, null, 0.5, 0.5))
+        assertIs<SoundLookup.Unknown>(resolver.resolve("nope", 0.0, null, 0.5, 0.5))
+        assertEquals(24.0, assertIs<VoiceSource.Sample>(assertIs<SoundLookup.Ready>(resolver.resolve("bd", 0.0, 60.0, 0.5, 0.5)).source).params.transposeSemitones)
     }
 }

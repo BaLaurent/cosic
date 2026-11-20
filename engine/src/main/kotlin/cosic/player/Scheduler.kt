@@ -126,9 +126,9 @@ private fun tempoOf(value: Any?): Double? {
  * Looks ahead the way the [Scheduler] will, over two cycles from [fromCycle], without making a sound. Returns the
  * warnings playing those cycles would raise (unknown sounds, a pattern too dense), and throws a
  * [cosic.pattern.CosicError] or other exception for whatever would fail, so a program that would fail is rejected when
- * it is evaluated. Resolving each sound also makes the library start loading the samples and renders the drum sounds,
- * which keeps that work off the audio thread. Haps that are not played (those a dominant hook takes over, and every hap while the
- * [outputs] route everything to OSC) are not looked at.
+ * it is evaluated. Resolving each sound also makes the library start loading the samples, renders the drum sounds and makes the source of every
+ * synth, noise and wavetable (the first of each wave builds its tables), which keeps that work off the audio thread. Haps that are not played
+ * (those a dominant hook takes over, and every hap while the [outputs] route everything to OSC) are not looked at.
  */
 internal fun dryRun(
     pattern: Pattern,
@@ -143,7 +143,9 @@ internal fun dryRun(
     while (begin < end) {
         for (hap in onsets(pattern, begin, cps, warnings)) {
             if (outputs?.oscTarget == true || takenOver(hap)) continue
-            val lookup = sounds.resolve(controlsOf(hap))
+            val controls = controlsOf(hap)
+            val whole = checkNotNull(hap.whole)
+            val lookup = sounds.resolve(controls, hapSeconds(controls, whole.end - whole.begin, cps), cps)
             if (lookup is SoundLookup.Unknown) warnings.add(unknownSoundWarning(lookup.key))
         }
         begin += CHUNK
@@ -374,11 +376,12 @@ internal class Scheduler(
     private fun play(hap: Hap, wholeLength: Rational, start: Long, tempo: Double, events: MutableList<SoundEvent>) {
         // a value that is no object is the hap's own error (`expected hap.value to be an object, but got "c3". Hint: append .note() or .s() to the end`)
         val controls = controlsOf(hap)
-        when (val lookup = sounds.resolve(controls)) {
+        val seconds = hapSeconds(controls, wholeLength, tempo)
+        when (val lookup = sounds.resolve(controls, seconds, tempo)) {
             is SoundLookup.Ready -> {
                 val cycle = checkNotNull(hap.whole).begin.toDouble()
                 // an event with `stretch` starts early by the vocoder's latency (superdough.mjs:468-473); its highlight stays where it is heard
-                events.add(SoundEvent(start - stretchLeadFrames(controls), voiceParams(controls, lookup.source, hapSeconds(controls, wholeLength, tempo), tempo, cycle)))
+                events.add(SoundEvent(start - stretchLeadFrames(controls), voiceParams(controls, lookup.source, seconds, tempo, cycle)))
             }
             is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))
             SoundLookup.Loading, SoundLookup.Silent -> Unit

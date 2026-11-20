@@ -88,7 +88,7 @@ internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.IN
         val voice = claimVoice()
         ledger.remove(voice)
         started++
-        val activeUntil = voice.start(params, frame, started, (started.toInt() * -1640531527) or 1, multiChannelOrbits)
+        val activeUntil = voice.start(params, frame, started, multiChannelOrbits)
         if (activeUntil.isNaN()) return false
         ledger.admit(voice, t, activeUntil, maxPolyphony, stealAction)
         if (voice.isSample && voice.hasCut) {

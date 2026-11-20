@@ -15,7 +15,6 @@ import cosic.pattern.jsStringToNumber
 import cosic.pattern.jsToNumber
 import cosic.pattern.jsToString
 import cosic.pattern.logger
-import cosic.pattern.noteToMidi
 
 /** A voice to start at engine frame [startFrame]. */
 internal class SoundEvent(val startFrame: Long, val voice: VoiceParams)
@@ -28,8 +27,8 @@ internal class SoundEvent(val startFrame: Long, val voice: VoiceParams)
  *
  * What a control becomes: a number is a [Param] when the name is one (unknown names are ignored); a string is a text control when the name is
  * in [STRING_KEYS] and otherwise read as a number if it looks like one; a boolean is 1 or 0; a list control ([LIST_KEYS]) is kept as a list, a number
- * as a list of one. `note` may be a name and becomes its MIDI number here, as it does in Strudel's output stage, so that patterns keep the names
- * they were written with; a name that is not a note is an error. A `gain` that is not a number counts as 1 (`nanFallback(gain, 1)`). Controls that
+ * as a list of one. `note`, `freq` and `octave` are not parameters: the sound that plays the event reads them from the control map, as superdough's sources do
+ * (a `note` that is a name and no note is an error of the sound lookup, see [SoundResolver]). A `gain` that is not a number counts as 1 (`nanFallback(gain, 1)`). Controls that
  * were not set stay NaN, so the voice applies its own defaults.
  */
 internal fun voiceParams(controls: ControlMap, source: VoiceSource, durationSec: Double, cps: Double, cycle: Double): VoiceParams {
@@ -65,13 +64,6 @@ internal fun paramSetOf(controls: Map<String, Any?>): ParamSet {
                 if (lists == null) lists = HashMap()
                 lists[key] = list
                 if (param != null && value !is List<*>) values[param.ordinal] = list[0]
-            }
-            continue
-        }
-        if (key == "note") {
-            when (value) {
-                is String -> values[Param.note.ordinal] = noteToMidi(value)
-                is Double -> values[Param.note.ordinal] = value
             }
             continue
         }

@@ -1,6 +1,8 @@
 package cosic.audio
 
 import cosic.SampleData
+import cosic.audio.sources.SynthRegistry
+import cosic.pattern.CosicError
 import cosic.player.voiceParams
 import java.util.Random
 import kotlin.math.abs
@@ -17,14 +19,12 @@ import kotlin.test.assertTrue
  * and reverb and modulators have their own tests.)
  */
 class MixerTest {
-    private val sine = synth(Waveform.SINE)
+    /** The peak of a sine voice: the source's level of 0.3 (the gain node superdough puts after an oscillator) times the default gain of 0.8. */
+    private val sineLevel = 0.3 * 0.8
 
-    /** The peak of a sine voice: the source's level of 0.35 times the default gain of 0.8. */
-    private val sineLevel = 0.35 * 0.8
-
-    /** A 440 Hz sine with a flat envelope (sustain 1 after 1 ms), so level assertions do not depend on the ADSR shape. */
-    private fun flat(vararg extra: Pair<String, Any?>, source: VoiceSource = sine, duration: Double = 2.0) =
-        vp(source, duration, "note" to 69.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0, *extra)
+    /** A 440 Hz sine (or another [sound]) with a flat envelope (sustain 1 after 1 ms), so level assertions do not depend on the ADSR shape. */
+    private fun flat(vararg extra: Pair<String, Any?>, sound: String = "sine", duration: Double = 2.0, sampleRate: Int = SR) =
+        synthVp(sound, duration, "note" to 69.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0, *extra, sampleRate = sampleRate)
 
     private fun leftPeak(params: VoiceParams) = peak(renderLeft(params), 4800)
 
@@ -43,10 +43,11 @@ class MixerTest {
     }
 
     @Test
-    fun noiseVoicesUseTheLowerBaseLevel() {
-        val white = renderLeft(flat(source = synth(Waveform.WHITE)))
-        assertTrue(peak(white) <= 0.25f * 0.8f + 1e-4f)
-        assertTrue(peak(white) > 0.2f * 0.8f)
+    fun noiseVoicesHaveTheSameBaseLevelAsTheTones() {
+        // the cached white loop is uniform in [-1, 1): its peak is within a hair of 1, times the 0.3 of the source and the gain of 0.8
+        val white = renderLeft(flat(sound = "white"))
+        assertTrue(peak(white) <= 0.3f * 0.8f + 1e-4f)
+        assertTrue(peak(white) > 0.28f * 0.8f)
     }
 
     @Test
@@ -70,21 +71,21 @@ class MixerTest {
 
     @Test
     fun gainVelocityAndPostgainMultiply() {
-        assertEquals(0.35 * 0.5, leftPeak(flat("gain" to 0.5)).toDouble(), 0.002)
-        assertEquals(0.35 * 0.25, leftPeak(flat("gain" to 0.5, "velocity" to 0.5)).toDouble(), 0.002)
-        assertEquals(0.35 * 0.5, leftPeak(flat("gain" to 0.5, "velocity" to 0.5, "postgain" to 2.0)).toDouble(), 0.002)
+        assertEquals(0.3 * 0.5, leftPeak(flat("gain" to 0.5)).toDouble(), 0.002)
+        assertEquals(0.3 * 0.25, leftPeak(flat("gain" to 0.5, "velocity" to 0.5)).toDouble(), 0.002)
+        assertEquals(0.3 * 0.5, leftPeak(flat("gain" to 0.5, "velocity" to 0.5, "postgain" to 2.0)).toDouble(), 0.002)
     }
 
     @Test
     fun aGainThatIsNoNumberCountsAsOneNotAsTheDefault() {
-        assertEquals(0.35, leftPeak(flat("gain" to Double.NaN)).toDouble(), 0.002)
-        assertEquals(0.35, leftPeak(flat("gain" to "loud")).toDouble(), 0.002)
+        assertEquals(0.3, leftPeak(flat("gain" to Double.NaN)).toDouble(), 0.002)
+        assertEquals(0.3, leftPeak(flat("gain" to "loud")).toDouble(), 0.002)
     }
 
     @Test
     fun levelsAreNotClampedBeforeTheMasterOutput() {
-        assertEquals(1.0, leftPeak(flat("gain" to 100.0)).toDouble(), 0.0, "35 at the master, hard-clamped to full scale")
-        assertEquals(1.0, leftPeak(flat("gain" to -3.0)).toDouble(), 0.0, "an inverted sine of 1.05 is clamped the same way")
+        assertEquals(1.0, leftPeak(flat("gain" to 100.0)).toDouble(), 0.0, "30 at the master, hard-clamped to full scale")
+        assertEquals(1.0, leftPeak(flat("gain" to -5.0)).toDouble(), 0.0, "an inverted sine of 1.5 is clamped the same way")
         val out = renderStereo(flat("gain" to Double.POSITIVE_INFINITY))
         assertTrue(allFinite(out) && peak(out) <= 1f)
     }
@@ -98,7 +99,7 @@ class MixerTest {
     @Test
     fun aSynthPlaysNote36WhenNoNoteIsSetAndNoteZeroMeansTheSame() {
         fun hz(vararg controls: Pair<String, Any?>) =
-            estimateFrequency(renderLeft(vp(sine, 2.0, *controls, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0)), 4800, 24_000)
+            estimateFrequency(renderLeft(synthVp("sine", 2.0, *controls, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0)), 4800, 24_000)
         assertEquals(65.406, hz(), 0.2)
         assertEquals(65.406, hz("note" to 0.0), 0.2)
         assertEquals(220.0, hz("note" to "a"), 0.5)
@@ -110,8 +111,8 @@ class MixerTest {
 
     @Test
     fun aSynthEnvelopeSustainsAtPointSixByDefault() {
-        val left = renderLeft(vp(sine, 1.0, "note" to 69.0))
-        // the 0.05 s decay is over after 51 ms; sustain 0.6 x level 0.35 x gain 0.8
+        val left = renderLeft(synthVp("sine", 1.0, "note" to 69.0))
+        // the 0.05 s decay is over after 51 ms; sustain 0.6 x level 0.3 x gain 0.8
         assertEquals(0.6 * sineLevel, peak(left, 4800, 9600).toDouble(), 0.004)
     }
 
@@ -134,7 +135,7 @@ class MixerTest {
     @Test
     fun aSynthGateEndsTheVoiceAfterItsReleaseAndTheVoiceStaysCountedUntilTheSourceEnds() {
         val mixer = Mixer(SR)
-        mixer.startVoice(vp(sine, 0.1)) // gate 0.1 s, release 0.01 s: silent at 0.11 s, source and chain released at 0.12 s
+        mixer.startVoice(synthVp("sine", 0.1)) // gate 0.1 s, release 0.01 s: silent at 0.11 s, source and chain released at 0.12 s
         mixer.renderFrames(SR * 115 / 1000)
         assertEquals(1, mixer.activeVoices, "the source node stops 10 ms after the envelope ends")
         val tail = channel(mixer.renderFrames(SR / 10), 0)
@@ -213,7 +214,7 @@ class MixerTest {
         assertEquals(0f, peak(left, SR * 103 / 100), "the second of audio takes a second at any rate")
 
         val cd = Mixer(44_100)
-        cd.startVoice(flat())
+        cd.startVoice(flat(sampleRate = 44_100))
         assertEquals(440.0, estimateFrequency(channel(cd.renderFrames(22_050), 0), 4410, 22_050, 44_100), 0.3)
     }
 
@@ -266,7 +267,7 @@ class MixerTest {
 
         assertTrue(mixer.startVoice(vp(plain(data), 1.0)))
         // begin, end and speed only describe sample playback; synths ignore them.
-        assertTrue(mixer.startVoice(vp(sine, 1.0, "begin" to 0.6, "end" to 0.4, "speed" to 0.0)))
+        assertTrue(mixer.startVoice(synthVp("sine", 1.0, "begin" to 0.6, "end" to 0.4, "speed" to 0.0)))
         assertEquals(2, mixer.activeVoices)
     }
 
@@ -319,8 +320,8 @@ class MixerTest {
         mixer.startVoice(vp(dcSource(), 2.0, "pan" to 0.0, "cut" to 1.0, "gain" to 0.2))
         mixer.startVoice(vp(dcSource(), 2.0, "pan" to 0.0, "gain" to 0.2)) // no group
         mixer.startVoice(vp(dcSource(), 2.0, "pan" to 0.0, "cut" to 2.0, "gain" to 0.2)) // another group
-        mixer.startVoice(vp(sine, 2.0, "cut" to 1.0, "gain" to 0.2)) // synths ignore cut
-        mixer.startVoice(vp(sine, 2.0, "cut" to 1.0, "gain" to 0.2))
+        mixer.startVoice(synthVp("sine", 2.0, "cut" to 1.0, "gain" to 0.2)) // synths ignore cut
+        mixer.startVoice(synthVp("sine", 2.0, "cut" to 1.0, "gain" to 0.2))
         val left = channel(mixer.renderFrames(2400), 0)
         assertEquals(5, mixer.activeVoices)
         assertEquals(0.6, left[2399].toDouble(), 0.15) // 3 x 0.2 of DC plus the two sines (0.07 each at most)
@@ -510,8 +511,8 @@ class MixerTest {
     }
 
     private fun busyPatch(mixer: Mixer) {
-        mixer.startVoice(vp(sine, 0.5, "note" to 60.0, "cutoff" to 2000.0, "resonance" to 4.0, "delay" to 0.5, "delaytime" to 0.05, "delayfeedback" to 0.6, "room" to 0.4, "pan" to 0.2))
-        mixer.startVoice(vp(synth(Waveform.WHITE), 0.3, "hcutoff" to 3000.0, "bandf" to 5000.0, "shape" to 0.4, "crush" to 6.0, "coarse" to 3.0, "pan" to 0.8, "room" to 0.3))
+        mixer.startVoice(synthVp("sine", 0.5, "note" to 60.0, "cutoff" to 2000.0, "resonance" to 4.0, "delay" to 0.5, "delaytime" to 0.05, "delayfeedback" to 0.6, "room" to 0.4, "pan" to 0.2))
+        mixer.startVoice(synthVp("white", 0.3, "hcutoff" to 3000.0, "bandf" to 5000.0, "shape" to 0.4, "crush" to 6.0, "coarse" to 3.0, "pan" to 0.8, "room" to 0.3))
         mixer.startVoice(
             vp(VoiceSource.Sample(SampleSourceParams(sineSample(150.0, 0.4), transposeSemitones = 7.0)), 0.4, "speed" to 1.5, "begin" to 0.1, "end" to 0.9, "cut" to 2.0, "orbit" to 2.0),
         )
@@ -564,10 +565,10 @@ class MixerTest {
     }
 
     @Test
-    fun everySynthWaveformStaysFiniteForTenSeconds() {
-        for (waveform in Waveform.entries) {
+    fun everySynthStaysFiniteForTenSeconds() {
+        for (name in SynthRegistry.names) {
             val mixer = Mixer(SR)
-            mixer.startVoice(vp(synth(waveform), 10.0, "note" to 55.0, "cutoff" to 1200.0, "delay" to 0.6, "room" to 0.8))
+            mixer.startVoice(synthVp(name, 10.0, "note" to 55.0, "cutoff" to 1200.0, "delay" to 0.6, "room" to 0.8))
             val out = FloatArray(512)
             var finite = true
             var worst = 0f
@@ -576,8 +577,8 @@ class MixerTest {
                 if (!allFinite(out)) finite = false
                 worst = max(worst, peak(out))
             }
-            assertTrue(finite, "$waveform produced NaN or infinity")
-            assertTrue(worst in 0.01f..1.0f, "$waveform peaked at $worst")
+            assertTrue(finite, "$name produced NaN or infinity")
+            assertTrue(worst in 0.01f..1.0f, "$name peaked at $worst")
         }
     }
 
@@ -591,18 +592,29 @@ class MixerTest {
 
         fun pick(): Any? = nasty[rng.nextInt(nasty.size)]
         val samples = listOf(sineSample(220.0, 0.3), constantSample(0.001), SampleData(floatArrayOf(0.5f), SR), SampleData(FloatArray(0), SR))
+        // the controls the sources read themselves, which are not parameters of the chain: they get hostile values too
+        val sourceKeys = listOf(
+            "note", "freq", "octave", "n", "detune", "unison", "spread", "pw", "pwrate", "pwsweep", "vib", "vibmod", "penv", "pattack", "pdecay", "psustain", "prelease", "panchor",
+            "fmi", "fmh", "fmi2", "fmh2", "noise", "density", "wt", "warp",
+        )
+        val sounds = SynthRegistry.names + SynthRegistry.aliases.keys
         val mixer = Mixer(SR)
         val out = FloatArray(512)
         repeat(300) { step ->
+            val controls = LinkedHashMap<String, Any?>()
+            for (key in keys + sourceKeys) if (rng.nextInt(4) == 0 && key != "orbit" && key != "bus" && key != "channels" && key != "duckorbit") controls[key] = pick()
+            if (rng.nextInt(6) == 0) controls["orbit"] = (rng.nextInt(3) + 1).toDouble()
+            val duration = if (rng.nextInt(5) == 0) pick() as Double else abs(rng.nextGaussian()) * 0.3
             val source = if (rng.nextBoolean()) {
-                VoiceSource.Synth(Waveform.entries[rng.nextInt(Waveform.entries.size)])
+                // a sound that cannot be made from these controls (a negative count of partials) is no event: the scheduler reports it and goes on
+                try {
+                    synth(sounds[rng.nextInt(sounds.size)], duration, controls)
+                } catch (e: CosicError) {
+                    return@repeat
+                }
             } else {
                 VoiceSource.Sample(SampleSourceParams(samples[rng.nextInt(samples.size)], transposeSemitones = rng.nextInt(-12, 13).toDouble()))
             }
-            val controls = LinkedHashMap<String, Any?>()
-            for (key in keys) if (rng.nextInt(4) == 0 && key != "orbit" && key != "bus" && key != "channels" && key != "duckorbit") controls[key] = pick()
-            if (rng.nextInt(6) == 0) controls["orbit"] = (rng.nextInt(3) + 1).toDouble()
-            val duration = if (rng.nextInt(5) == 0) pick() as Double else abs(rng.nextGaussian()) * 0.3
             mixer.startVoice(voiceParams(controls, source, duration, 0.5, 0.0))
             mixer.render(out, 256)
             assertTrue(allFinite(out), "NaN or infinity after step $step")

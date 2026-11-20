@@ -11,10 +11,8 @@ import kotlin.test.assertTrue
  * order, in `FX(...)` elements as in the main chain, and hostile values never make NaN or a sample beyond the master's clamp.
  */
 class ChainStagesVoiceTest {
-    private val saw = synth(Waveform.SAWTOOTH)
-
     private fun voice(vararg extra: Pair<String, Any?>, duration: Double = 0.5) =
-        vp(saw, duration, "note" to 50.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0, *extra)
+        synthVp("sawtooth", duration, "note" to 50.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0, *extra)
 
     private val baseline by lazy { renderLeft(voice(), SR / 2) }
 

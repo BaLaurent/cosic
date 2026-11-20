@@ -79,7 +79,7 @@ class OrbitTest {
         val first = render(mixer, 2000)
         assertTrue(peaks(first).isEmpty())
         // a silent voice that asks for another delay time: the line reads 9600 frames back from here on, so the first voice's echo is not heard at 4900 but at 9700
-        mixer.startVoice(vp(synth(Waveform.SINE), 0.01, "gain" to 0.0, "delay" to 0.1, "delaytime" to 0.2, "delayfeedback" to 0.1))
+        mixer.startVoice(synthVp("sine", 0.01, "gain" to 0.0, "delay" to 0.1, "delaytime" to 0.2, "delayfeedback" to 0.1))
         val rest = render(mixer, 12000)
         val all = peaks(rest, 0.01f).map { it + 2000 }
         assertEquals(listOf(9700), all)
@@ -109,7 +109,7 @@ class OrbitTest {
         render(mixer, 4000)
         mixer.stopAll(20)
         render(mixer, 2000)
-        mixer.startVoice(vp(synth(Waveform.SINE), 0.01, "gain" to 0.0))
+        mixer.startVoice(synthVp("sine", 0.01, "gain" to 0.0))
         assertTrue(peak(render(mixer, 3 * SR)) < 1e-6f, "the echoes that were under way are gone")
     }
 
@@ -150,7 +150,7 @@ class OrbitTest {
         other.configureReverb(ReverbParams(), 0.0)
         assertEquals(3 * SR, other.reverbBus!!.impulseFrames, "the default room is 2 s")
         // `room("0.9:1")` is room 0.9 and size 1, which voiceParams does not read: the room stays 2 s
-        val voice = vp(synth(Waveform.SINE), 0.1, "room" to 0.9, "size" to 1.0)
+        val voice = synthVp("sine", 0.1, "room" to 0.9, "size" to 1.0)
         assertTrue(voice.main[Param.roomsize].isNaN())
     }
 
@@ -198,7 +198,7 @@ class OrbitTest {
         assertTrue(peak(first, 200) > 0f, "the room rings")
         mixer.stopAll(10)
         render(mixer, 4000)
-        mixer.startVoice(vp(synth(Waveform.SINE), 0.01, "gain" to 0.0))
+        mixer.startVoice(synthVp("sine", 0.01, "gain" to 0.0))
         assertTrue(peak(render(mixer, SR)) < 1e-6f, "no tail survives a stop")
     }
 
@@ -235,7 +235,7 @@ class OrbitTest {
         mixer.startVoice(vp(wave, 4.0, "gain" to 1.0, "attack" to 0.001, "decay" to 0.0, "sustain" to 1.0))
         val before = render(mixer, SR / 2)
         // a short voice sets the knob to a low-pass: the first voice goes on, filtered
-        mixer.startVoice(vp(synth(Waveform.SINE), 0.01, "gain" to 0.0, "djf" to 0.2))
+        mixer.startVoice(synthVp("sine", 0.01, "gain" to 0.0, "djf" to 0.2))
         val after = render(mixer, SR)
         assertTrue(rms(before, SR / 4, SR / 2) > 0.5)
         assertTrue(rms(after, SR / 2, SR) < 0.02, "the knob stays where the last voice put it")

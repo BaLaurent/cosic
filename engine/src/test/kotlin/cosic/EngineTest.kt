@@ -499,7 +499,10 @@ class EngineTest {
 
     @Test
     fun theSoundListsForTheSoundsScreen() {
-        assertEquals(listOf("sine", "sawtooth", "square", "triangle", "white", "pink", "brown"), CosicEngine.SYNTHS)
+        assertEquals(
+            listOf("triangle", "square", "sawtooth", "sine", "user", "one", "sbd", "supersaw", "bytebeat", "pulse", "pink", "white", "brown", "crackle", "zzfx", "z_sine", "z_sawtooth", "z_triangle", "z_square", "z_tan", "z_noise"),
+            CosicEngine.SYNTHS,
+        )
         assertEquals(listOf("bd", "sd", "hh", "oh", "cp", "rim", "lt", "mt", "ht", "cr"), CosicEngine.DRUMS)
         assertEquals(listOf("cosic808", "cosic909"), CosicEngine.DRUM_MACHINES.keys.toList())
         assertEquals(listOf("bd", "sd", "hh", "oh", "cp", "rim", "lt", "mt", "ht", "cr", "cb", "cl"), CosicEngine.DRUM_MACHINES["cosic808"])

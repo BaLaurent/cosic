@@ -2,7 +2,6 @@ package cosic
 
 import cosic.audio.SR
 import cosic.audio.VoiceSource
-import cosic.audio.Waveform
 import cosic.pattern.CosicError
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
@@ -34,7 +33,7 @@ private fun Scheduler.load(code: String) {
 
 private fun Scheduler.drain(): List<SoundEvent> = generateSequence { takeDue(Long.MAX_VALUE) }.toList()
 
-private fun SoundEvent.waveform(): Waveform = (voice.source as VoiceSource.Synth).waveform
+private fun SoundEvent.sound(): String = (voice.source as VoiceSource.Synth).name
 
 /** Where events go in time: the frame each one starts at, for the plan's `s("bd*4")` examples and tempo changes. */
 class SchedulerTest {
@@ -69,8 +68,8 @@ class SchedulerTest {
         val events = scheduler.drain()
         assertEquals(events.map { it.startFrame }.sorted(), events.map { it.startFrame })
         assertEquals(
-            listOf(Waveform.SINE, Waveform.SQUARE, Waveform.TRIANGLE),
-            events.take(3).map { it.waveform() },
+            listOf("sine", "square", "triangle"),
+            events.take(3).map { it.sound() },
             "three events start together on the first frame, in the order of the stack",
         )
     }
@@ -206,11 +205,11 @@ class SchedulerTest {
         val events = scheduler.drain()
         assertEquals(listOf(0L, 24_000, 48_000, 72_000), events.take(4).map { it.startFrame })
         assertEquals(
-            listOf(Waveform.SINE, Waveform.SINE, Waveform.SQUARE, Waveform.SQUARE),
-            events.take(4).map { it.waveform() },
+            listOf("sine", "sine", "square", "square"),
+            events.take(4).map { it.sound() },
             "events before cycle 6/16 were queued from the old program, the rest come from the new one",
         )
-        assertTrue(events.drop(2).all { it.waveform() == Waveform.SQUARE })
+        assertTrue(events.drop(2).all { it.sound() == "square" })
     }
 
     @Test
@@ -331,7 +330,7 @@ class SchedulerTest {
         scheduler.play(0)
         scheduler.schedule(3 * CYCLE)
         assertEquals(listOf("sound nope not found! Is it loaded?"), scheduler.warnings)
-        assertTrue(scheduler.drain().all { it.waveform() == Waveform.SINE })
+        assertTrue(scheduler.drain().all { it.sound() == "sine" })
     }
 
     @Test

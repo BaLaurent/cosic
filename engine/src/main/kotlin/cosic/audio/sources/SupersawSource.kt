@@ -84,11 +84,14 @@ internal class SupersawSource(
     override fun start(startFrame: Long) {
         frame = startFrame
         val end = envelope.schedule(startFrame.toDouble() / sampleRate, durationSec)
+        endSeconds = end
         gate.open(startFrame.toDouble() / sampleRate, end, startFrame)
         endFrame = gate.to
         phasesDrawn = false
         (pitch as? PitchModulation)?.restart()
     }
+
+    override fun steal(tNew: Double) = envelope.steal(tNew)
 
     override fun renderBlock(left: FloatArray, right: FloatArray, offset: Int, m: Int) {
         val bus = this.bus
