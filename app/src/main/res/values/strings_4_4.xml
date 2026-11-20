@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Slider card: %1$d is the 1-based line of the program that makes the slider -->
+    <string name="slider_card_label">Slider, line %1$d</string>
+</resources>
