@@ -217,8 +217,9 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
             }
         }
 
-        // A kit's sound folders keep their own names only where no built-in sound has that name.
-        val builtIn = { name: String -> name in CosicEngine.SYNTHS || name in CosicEngine.DRUMS || name in bundled }
+        // A kit's sound folders keep their own names, like any import, except where that name is a built-in
+        // sound of the engine: mykit/bd must not replace the bd every project plays.
+        val builtIn = { name: String -> name in CosicEngine.SYNTHS || name in CosicEngine.DRUMS }
         val rootEntries = root.entries()
         addBanks(importedBanks(root.name), rootEntries)
         for ((name, file) in rootEntries) {
