@@ -16,12 +16,12 @@ examples:addVoicings#0  # not implemented yet
 examples:almostAlways#0  # not implemented yet
 examples:almostNever#0  # not implemented yet
 examples:always#0  # not implemented yet
-examples:anchor#0  # not implemented yet
-examples:anchor#1  # not implemented yet
+examples:anchor#0  # needs voicing()
+examples:anchor#1  # needs n("0 .. 7") and scale() with anchor
 examples:apply#0  # not implemented yet
 examples:arp#0  # not implemented yet
 examples:arpWith#0  # not implemented yet
-examples:as#1  # not implemented yet
+examples:as#1  # needs the mini-notation polymeter {a b}%8
 examples:base#0  # not implemented yet
 examples:beat#0  # not implemented yet
 examples:beat#1  # not implemented yet
@@ -42,7 +42,7 @@ examples:chooseInWith#1  # not implemented yet
 examples:chooseWith#0  # not implemented yet
 examples:chooseWith#1  # not implemented yet
 examples:chop#0  # not implemented yet
-examples:chord#0  # not implemented yet
+examples:chord#0  # needs voicing()
 examples:chunk#0  # not implemented yet
 examples:chunkBack#0  # not implemented yet
 examples:chunkBackInto#0  # not implemented yet
@@ -61,28 +61,28 @@ examples:degradeBy#2  # not implemented yet
 examples:degradeByWith#0  # not implemented yet
 examples:degradeByWith#1  # not implemented yet
 examples:degradeByWith#2  # not implemented yet
-examples:dictionary#0  # not implemented yet
-examples:distorttype#1  # not implemented yet
-examples:djf#0  # not implemented yet
+examples:dictionary#0  # needs addVoicings()
+examples:distorttype#1  # needs the random signal rand (Strudel's RNG)
+examples:djf#0  # needs seg() and irand
 examples:dough#0  # not implemented yet
 examples:drawLine#0  # not implemented yet
 examples:drop#0  # not implemented yet
 examples:drop#1  # not implemented yet
 examples:drop#2  # not implemented yet
 examples:drop#3  # not implemented yet
-examples:duckattack#0  # not implemented yet
-examples:duckattack#1  # not implemented yet
-examples:duckdepth#0  # not implemented yet
-examples:duckdepth#1  # not implemented yet
-examples:duckorbit#0  # not implemented yet
-examples:duckorbit#1  # not implemented yet
+examples:duckattack#0  # needs beat()
+examples:duckattack#1  # needs beat()
+examples:duckdepth#0  # needs beat()
+examples:duckdepth#1  # needs beat()
+examples:duckorbit#0  # needs beat()
+examples:duckorbit#1  # needs beat()
 examples:echo#0  # not implemented yet
 examples:echoWith#0  # not implemented yet
 examples:edoScale#0  # not implemented yet
 examples:edoScale#1  # not implemented yet
 examples:edoScale#2  # not implemented yet
-examples:env#3  # not implemented yet
-examples:env#4  # not implemented yet
+examples:env#3  # needs sometimes() (Strudel's RNG)
+examples:env#4  # needs sometimes() (Strudel's RNG)
 examples:euclidLegato#0  # not implemented yet
 examples:euclidLegatoRot#0  # not implemented yet
 examples:euclidRot#0  # not implemented yet
@@ -94,10 +94,10 @@ examples:filterHaps#0  # not implemented yet
 examples:filterWhen#0  # not implemented yet
 examples:fit#0  # not implemented yet
 examples:floor#0  # not implemented yet
-examples:fm#1  # not implemented yet
-examples:fmwave#0  # not implemented yet
-examples:fmwave#1  # not implemented yet
-examples:freq#1  # not implemented yet
+examples:fm#1  # needs seg()
+examples:fmwave#0  # needs scale() with note names
+examples:fmwave#1  # needs voicing()
+examples:freq#1  # needs mul.out (alignments)
 examples:fscope#0  # not implemented yet
 examples:ftranspose#0  # not implemented yet
 examples:ftranspose#1  # not implemented yet
@@ -109,7 +109,7 @@ examples:grow#1  # not implemented yet
 examples:grow#2  # not implemented yet
 examples:grow#3  # not implemented yet
 examples:hush#0  # not implemented yet
-examples:i#0  # not implemented yet
+examples:i#0  # needs xen()
 examples:inhabit#0  # not implemented yet
 examples:inhabit#1  # not implemented yet
 examples:initDough#0  # not implemented yet
@@ -117,8 +117,8 @@ examples:inside#0  # not implemented yet
 examples:into#0  # not implemented yet
 examples:invert#0  # not implemented yet
 examples:irand#0  # not implemented yet
-examples:irbegin#0  # not implemented yet
-examples:irspeed#0  # not implemented yet
+examples:irbegin#0  # needs fit()
+examples:irspeed#0  # needs fit()
 examples:isaw#0  # not implemented yet
 examples:isaw#1  # not implemented yet
 examples:isobite#0  # not implemented yet
@@ -136,37 +136,37 @@ examples:juxFlipBy#0  # not implemented yet
 examples:keep#0  # not implemented yet
 examples:keyDown#0  # not implemented yet
 examples:layer#0  # not implemented yet
-examples:lfo#3  # not implemented yet
-examples:lfo#4  # not implemented yet
+examples:lfo#3  # needs sometimes() (Strudel's RNG)
+examples:lfo#4  # needs sometimes() (Strudel's RNG)
 examples:linger#0  # not implemented yet
 examples:loopAt#0  # not implemented yet
 examples:loopAtCps#0  # not implemented yet
-examples:midibend#0  # not implemented yet
+examples:midibend#0  # needs signals sampled at the start of the query (sine)
 examples:midin#1  # not implemented yet
-examples:miditouch#0  # not implemented yet
-examples:mode#0  # not implemented yet
+examples:miditouch#0  # needs signals sampled at the start of the query (sine)
+examples:mode#0  # needs voicing()
 examples:morph#0  # not implemented yet
 examples:morph#1  # not implemented yet
 examples:mousex#0  # not implemented yet
 examples:mousey#0  # not implemented yet
 examples:never#0  # not implemented yet
-examples:octave#0  # not implemented yet
-examples:octaves#0  # not implemented yet
+examples:octave#0  # needs scale() with note names
+examples:octaves#0  # needs voicing()
 examples:off#0  # not implemented yet
 examples:often#0  # not implemented yet
 examples:onTriggerTime#0  # not implemented yet
 examples:open#0  # not implemented yet
 examples:outside#0  # not implemented yet
 examples:pace#0  # not implemented yet
-examples:pan#1  # not implemented yet
+examples:pan#1  # needs signals sampled at the start of the query (sine)
 examples:partials#0  # not implemented yet
 examples:partials#1  # not implemented yet
 examples:per#0  # not implemented yet
 examples:perlin#0  # not implemented yet
-examples:phaser#0  # not implemented yet
-examples:phasercenter#0  # not implemented yet
-examples:phaserdepth#0  # not implemented yet
-examples:phasersweep#0  # not implemented yet
+examples:phaser#0  # needs scale() with pentatonic
+examples:phasercenter#0  # needs scale() with pentatonic
+examples:phaserdepth#0  # needs scale() with pentatonic
+examples:phasersweep#0  # needs scale() with pentatonic
 examples:phases#0  # not implemented yet
 examples:pick#0  # not implemented yet
 examples:pick#1  # not implemented yet
@@ -184,9 +184,9 @@ examples:polymeter#0  # not implemented yet
 examples:press#0  # not implemented yet
 examples:pressBy#0  # not implemented yet
 examples:print#0  # not implemented yet
-examples:pw#1  # not implemented yet
-examples:pwrate#0  # not implemented yet
-examples:pwsweep#0  # not implemented yet
+examples:pw#1  # needs scale() with pentatonic
+examples:pwrate#0  # needs scale() with pentatonic
+examples:pwsweep#0  # needs scale() with pentatonic
 examples:rand#0  # not implemented yet
 examples:randL#0  # not implemented yet
 examples:range#0  # not implemented yet
@@ -217,8 +217,8 @@ examples:scale#5  # not implemented yet
 examples:scaleTranspose#0  # not implemented yet
 examples:scramble#0  # not implemented yet
 examples:scramble#1  # not implemented yet
-examples:scrub#0  # not implemented yet
-examples:scrub#1  # not implemented yet
+examples:scrub#0  # needs the mini-notation polymeter {a b}%8
+examples:scrub#1  # needs fit()
 examples:seed#0  # not implemented yet
 examples:segment#0  # not implemented yet
 examples:seqPLoop#0  # not implemented yet
@@ -259,9 +259,9 @@ examples:sub#0  # not implemented yet
 examples:superimpose#0  # not implemented yet
 examples:swing#0  # not implemented yet
 examples:swingBy#0  # not implemented yet
-examples:sysex#0  # not implemented yet
-examples:sysexdata#0  # not implemented yet
-examples:sysexid#0  # not implemented yet
+examples:sysex#0  # needs mini-notation hexadecimal numbers (0x77)
+examples:sysexdata#0  # needs mini-notation hexadecimal numbers (0x77)
+examples:sysexid#0  # needs mini-notation hexadecimal numbers (0x77)
 examples:tag#0  # not implemented yet
 examples:take#0  # not implemented yet
 examples:take#1  # not implemented yet
@@ -278,13 +278,13 @@ examples:undegrade#1  # not implemented yet
 examples:undegradeBy#0  # not implemented yet
 examples:undegradeBy#1  # not implemented yet
 examples:useRNG#0  # not implemented yet
-examples:vib#1  # not implemented yet
-examples:vibmod#1  # not implemented yet
+examples:vib#1  # needs the mini-notation ':' after a group (<a b>:12)
+examples:vibmod#1  # needs the mini-notation ':' after a group (<a b>:12)
 examples:voicing#0  # not implemented yet
 examples:voicings#0  # not implemented yet
-examples:vowel#1  # not implemented yet
-examples:warp#0  # not implemented yet
-examples:warpmode#0  # not implemented yet
+examples:vowel#1  # needs mini-notation random choice [a|b] with Strudel's RNG
+examples:warp#0  # needs seg()
+examples:warpmode#0  # needs seg()
 examples:wchoose#0  # not implemented yet
 examples:wchooseCycles#0  # not implemented yet
 examples:wchooseCycles#1  # not implemented yet
@@ -293,8 +293,8 @@ examples:when#0  # not implemented yet
 examples:whenKey#0  # not implemented yet
 examples:withBase#0  # not implemented yet
 examples:withBase#1  # not implemented yet
-examples:wt#0  # not implemented yet
-examples:wtphaserand#0  # not implemented yet
+examples:wt#0  # needs seg()
+examples:wtphaserand#0  # needs seg()
 examples:xen#0  # not implemented yet
 examples:xen#1  # not implemented yet
 examples:xen#2  # not implemented yet
