@@ -16,6 +16,7 @@ import com.octopusman.cosic.CosicApp
 import com.octopusman.cosic.audio.AudioOutput
 import com.octopusman.cosic.audio.BankSummary
 import com.octopusman.cosic.audio.SampleRepository
+import com.octopusman.cosic.audio.SoundsStatus
 import com.octopusman.cosic.audio.playPreview
 import com.octopusman.cosic.library.Project
 import com.octopusman.cosic.reference.InsertText
@@ -41,6 +42,10 @@ private const val SAVE_DEBOUNCE_MS = 1_000L
 // focus, no output device), the start is given up after a timeout.
 private const val SETTLE_FRAMES = 1_024L
 private const val START_TIMEOUT_MS = 3_000L
+
+// The samples a program names are fetched when it is evaluated (the engine plays the next two cycles without sound to find
+// them). The first start waits for them this long, so that the first bar is not missing the hits whose files are still coming.
+private const val SAMPLES_WAIT_MS = 5_000L
 
 /** A project as it should be on disk, with the edit it stands for. */
 private class PendingSave(val version: Long, val project: Project)
@@ -113,8 +118,22 @@ class EditorViewModel(
     /** The sample banks the reference lists next to the built-in sounds. */
     val banks: StateFlow<List<BankSummary>> = sampleRepository.banks
 
-    /** Plays sample [index] of a sound once from the reference, without touching the music that is playing. */
-    fun previewSound(name: String, index: Int, pitched: Boolean) = engine.playPreview(audioOutput, name, index, pitched)
+    /** How loading the sounds goes: the Sounds tab says so. */
+    val soundsStatus: StateFlow<SoundsStatus> = sampleRepository.status
+
+    private var previewJob: Job? = null
+
+    /**
+     * Plays sample [index] of a sound once from the reference, without touching the music that is playing. A sound that has to be
+     * downloaded first plays when it is there; a newer preview replaces one that is still waiting.
+     */
+    fun previewSound(name: String, index: Int, pitched: Boolean) {
+        previewJob?.cancel()
+        previewJob = viewModelScope.launch(Dispatchers.Default) { engine.playPreview(sampleRepository, audioOutput, name, index, pitched) }
+    }
+
+    /** Tries again to load the default sounds that could not be loaded. */
+    fun retrySounds() = sampleRepository.retryDefaults()
 
     /** Adds a folder of samples picked on the Sounds tab; its sounds are listed once it is indexed. */
     fun importFolder(uri: Uri) = sampleRepository.importTree(uri)
@@ -162,12 +181,14 @@ class EditorViewModel(
         val code = textValue.text
         evalJob = viewModelScope.launch {
             // withContext rethrows cancellation instead of returning when stop() cancelled this
-            // job meanwhile, so a late result is discarded and never reaches play().
-            when (val report = withContext(Dispatchers.Default) { engine.evaluate(code) }) {
+            // job meanwhile, so a late result is discarded and never reaches play(). Evaluating can wait
+            // for the network (samples() and the default sounds), which is what the IO threads are for.
+            when (val report = withContext(Dispatchers.IO) { engine.evaluate(code) }) {
                 is EvalReport.Ok -> {
                     highlightMapper = HighlightMapper(code)
                     evalStatus = EvalStatus.Ok(report.warnings)
                     if (!playing) {
+                        sampleRepository.awaitDownloads(SAMPLES_WAIT_MS)
                         engine.play()
                         playing = true
                         playRequestedAt = SystemClock.uptimeMillis()

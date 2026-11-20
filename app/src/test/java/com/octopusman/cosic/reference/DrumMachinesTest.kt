@@ -1,6 +1,7 @@
 package com.octopusman.cosic.reference
 
-import com.octopusman.cosic.audio.BankOrigin
+import com.octopusman.cosic.audio.BankKind
+import com.octopusman.cosic.audio.DRUM_MACHINES_TAG
 import cosic.CosicEngine
 import cosic.EvalReport
 import cosic.NoSampleStore
@@ -15,30 +16,31 @@ import kotlin.test.assertTrue
 private val NoSounds: SoundLibrary = RegistryLibrary(NoSampleStore, emptySet())
 
 class DrumMachinesTest {
-    private fun kit(vararg sounds: String) = Kit("k", sounds.toList(), folder = null)
+    private fun kit(vararg sounds: String) = Kit("k", sounds.toList())
+    private fun machineSound(name: String) = testBank(name, tag = DRUM_MACHINES_TAG)
 
     @Test
     fun aMachineOfTheEngineIsAKitWithItsSoundsInTheOrderTheEngineGivesThem() {
         val machines = mapOf("cosic808" to listOf("bd", "sd", "hh"), "cosic909" to listOf("sd", "bd"))
 
         assertEquals(
-            listOf(Kit("cosic808", listOf("bd", "sd", "hh"), null), Kit("cosic909", listOf("sd", "bd"), null)),
+            listOf(Kit("cosic808", listOf("bd", "sd", "hh")), Kit("cosic909", listOf("sd", "bd"))),
             kits(machines, emptyList()),
         )
     }
 
     @Test
     fun theBanksOfAKitAreItsSoundsInDrumOrderWithOtherNamesLastInAlphabeticalOrder() {
-        val banks = listOf("cr", "zap", "bd", "hh", "aaa", "sd", "rim").map { testBank("vcsl_$it", kit = "vcsl") }
+        val banks = listOf("cr", "zap", "bd", "hh", "aaa", "sd", "rim").map { machineSound("vcsl_$it") }
 
         assertEquals(listOf("bd", "sd", "hh", "rim", "cr", "aaa", "zap"), kits(emptyMap(), banks).single().sounds)
     }
 
     @Test
-    fun theKitNameIsTakenOffEachBankNameEvenWhenTheSoundNameHasUnderscores() {
-        val banks = listOf(testBank("my_kit_closed_hat", kit = "my_kit"), testBank("my_kit_bd", kit = "my_kit"))
+    fun theKitIsWhatComesBeforeTheFirstUnderscoreAndTheSoundMayHoldMore() {
+        val banks = listOf(machineSound("my_closed_hat"), machineSound("my_bd"))
 
-        assertEquals(Kit("my_kit", listOf("bd", "closed_hat"), null), kits(emptyMap(), banks).single())
+        assertEquals(Kit("my", listOf("bd", "closed_hat")), kits(emptyMap(), banks).single())
     }
 
     @Test
@@ -47,11 +49,29 @@ class DrumMachinesTest {
     }
 
     @Test
+    fun aBankIsOnlyASoundOfAKitWhenTheLibraryTagsItAsADrumMachine() {
+        // VCSL has snare_modern and tom_mallet: names with an underscore that no kit has.
+        assertEquals(emptyList(), kits(emptyMap(), listOf(testBank("snare_modern"), testBank("tom_mallet"))))
+        // What the user imports is never a kit, however it is called.
+        assertEquals(emptyList(), kits(emptyMap(), listOf(testBank("mykit_bd", kind = BankKind.USER, tag = DRUM_MACHINES_TAG))))
+    }
+
+    @Test
+    fun theNamesOfTheKitsKeepTheirCaseAndAreSortedWithoutRegardToIt() {
+        val banks = listOf("RolandTR909_bd", "AkaiLinn_sd", "mridangam_ka", "BossDR55_bd").map(::machineSound)
+
+        assertEquals(listOf("AkaiLinn", "BossDR55", "mridangam", "RolandTR909"), kits(emptyMap(), banks).map { it.name })
+        assertEquals("RolandTR909_bd", kits(emptyMap(), banks).last().previewSound())
+    }
+
+    @Test
+    fun aKeyWithNothingAfterTheUnderscoreIsNoSoundOfAKit() {
+        assertEquals(emptyList(), kits(emptyMap(), listOf(machineSound("OberheimDMX_"))))
+    }
+
+    @Test
     fun machinesComeFirstThenTheKitsOfTheBanksByName() {
-        val banks = listOf(
-            testBank("vcsl_bd", kit = "vcsl"),
-            testBank("acme_bd", origin = BankOrigin.IMPORTED, kit = "acme"),
-        )
+        val banks = listOf(machineSound("vcsl_bd"), machineSound("acme_bd"))
 
         assertEquals(listOf("cosic808", "acme", "vcsl"), kits(mapOf("cosic808" to listOf("bd")), banks).map { it.name })
     }
@@ -59,9 +79,9 @@ class DrumMachinesTest {
     @Test
     fun banksOfAKitNamedLikeAMachineAddTheirSoundsToTheMachine() {
         val machines = mapOf("cosic808" to listOf("bd", "sd", "hh"))
-        val banks = listOf(testBank("cosic808_rd", kit = "cosic808"), testBank("cosic808_bd", kit = "cosic808"))
+        val banks = listOf(machineSound("cosic808_rd"), machineSound("cosic808_bd"))
 
-        assertEquals(listOf(Kit("cosic808", listOf("bd", "sd", "hh", "rd"), null)), kits(machines, banks))
+        assertEquals(listOf(Kit("cosic808", listOf("bd", "sd", "hh", "rd"))), kits(machines, banks))
     }
 
     @Test
@@ -112,7 +132,7 @@ class DrumMachinesTest {
             listOf("closed_hat", "kick"),
         )
         for (sounds in sets) {
-            val snippet = Kit("k", sounds, null).snippet()
+            val snippet = Kit("k", sounds).snippet()
             val pattern = snippet.substringAfter("s(\"").substringBefore("\")")
             val used = Regex("[a-z_][a-z0-9_]*").findAll(pattern).map { it.value }.toSet()
 

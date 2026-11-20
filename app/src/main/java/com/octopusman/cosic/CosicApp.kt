@@ -28,10 +28,18 @@ private val Context.cosicPrefs: DataStore<Preferences> by preferencesDataStore(
 class CosicApp : Application() {
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    val sampleRepository by lazy { SampleRepository(this, cosicPrefs) }
+    /** The sounds of the app. Created with the app, so that the default sounds are loading by the time a project is opened. */
+    lateinit var sampleRepository: SampleRepository
+        private set
+
     val projects by lazy { ProjectRepository(File(filesDir, "projects"), System::currentTimeMillis) }
     val engine by lazy { CosicEngine(AudioOutput.nativeSampleRate(this), sampleRepository) }
     val audioOutput by lazy { AudioOutput(engine, this) }
     val entitlements by lazy { EntitlementRepository(this, cosicPrefs, appScope) }
     val ads by lazy { AdsController(this, entitlements.adsRemoved, appScope) }
+
+    override fun onCreate() {
+        super.onCreate()
+        sampleRepository = SampleRepository(this, cosicPrefs)
+    }
 }

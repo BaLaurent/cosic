@@ -6,6 +6,7 @@ import cosic.EvalReport
 import cosic.SampleBank
 import cosic.SampleData
 import cosic.SampleStore
+import cosic.SoundEntry
 import cosic.SoundLibrary
 import cosic.sound.RegistryLibrary
 import java.io.File
@@ -16,12 +17,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.boolean
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 private const val SAMPLE_RATE = 48_000
 
@@ -38,25 +33,17 @@ private object ClickStore : SampleStore {
     override fun decode(bytes: ByteArray, nameHint: String): SampleData = click
 }
 
-/** The banks the app bundles, read from `assets/samples/index.json`, each file decoded to a short constant click. */
-private fun bundledBanks(): SoundLibrary {
-    val library = RegistryLibrary(ClickStore, CosicEngine.BUILTIN_SOUNDS)
-    Json.parseToJsonElement(File("src/main/assets/samples/index.json").readText())
-        .jsonObject.getValue("banks").jsonArray.map { it.jsonObject }.forEach { bank ->
-            val name = bank.getValue("name").jsonPrimitive.content
-            val files = bank.getValue("files").jsonArray
-            val groups = if (bank.getValue("pitched").jsonPrimitive.boolean) {
-                files.indices.map { i ->
-                    val root = files[i].jsonObject.getValue("root").jsonPrimitive.int
-                    BankGroup("midi$root", root.toDouble(), listOf("$name/$i"))
-                }
-            } else {
-                listOf(BankGroup(null, null, files.indices.map { "$name/$it" }))
-            }
-            library.register(SampleBank(name, groups, null, true))
-        }
-    return library
+/**
+ * A library that has every sound: the engine's own (synths, drums) are the engine's, any other name is a bank of one file that is a short
+ * constant click. What the default library really holds is the network's to say, so the examples are checked against the sounds they
+ * name only as far as the engine is concerned.
+ */
+private class UniversalLibrary(private val inner: RegistryLibrary) : SoundLibrary by inner {
+    override fun sound(name: String): SoundEntry =
+        inner.sound(name) ?: SampleBank(name, listOf(BankGroup(null, null, listOf(name))), null, true)
 }
+
+private fun universalLibrary(): SoundLibrary = UniversalLibrary(RegistryLibrary(ClickStore, CosicEngine.BUILTIN_SOUNDS))
 
 /** The examples on the Library screen are the first code users run: all of them must evaluate and play cleanly. */
 class ExamplesEvaluateTest {
@@ -84,16 +71,16 @@ class ExamplesEvaluateTest {
     @Test
     fun everyExampleEvaluatesWithoutWarnings() {
         for (file in files) {
-            val report = CosicEngine(SAMPLE_RATE, bundledBanks()).evaluate(file.readText())
+            val report = CosicEngine(SAMPLE_RATE, universalLibrary()).evaluate(file.readText())
             val ok = assertIs<EvalReport.Ok>(report, "${file.name}: $report")
-            assertEquals(emptyList(), ok.warnings, "${file.name} uses a sound that is not bundled")
+            assertEquals(emptyList(), ok.warnings, "${file.name} warns")
         }
     }
 
     @Test
     fun everyExamplePlaysForEightCyclesWithoutErrorsAndMakesSound() {
         for (file in files) {
-            val engine = CosicEngine(SAMPLE_RATE, bundledBanks())
+            val engine = CosicEngine(SAMPLE_RATE, universalLibrary())
             val ok = assertIs<EvalReport.Ok>(engine.evaluate(file.readText()), file.name)
             engine.play()
             val buffer = FloatArray(256 * 2)

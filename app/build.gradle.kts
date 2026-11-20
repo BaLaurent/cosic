@@ -31,6 +31,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -63,11 +64,6 @@ android {
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"${monetizationValue("admob.interstitialId")}\"")
             buildConfigField("long", "INTERSTITIAL_MIN_INTERVAL_MS", "180000L")
         }
-    }
-
-    androidResources {
-        // Bundled samples are opened by file descriptor, which needs them stored uncompressed.
-        noCompress += "ogg"
     }
 
     compileOptions {
@@ -121,10 +117,11 @@ dependencies {
     implementation(libs.ump)
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
 }
 
 // ExamplesEvaluateTest reads these files from disk, so Gradle must rerun the unit tests when they change.
 tasks.withType<Test>().configureEach {
     inputs.dir("src/main/assets/examples")
-    inputs.file("src/main/assets/samples/index.json")
 }

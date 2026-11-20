@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +68,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.octopusman.cosic.R
 import com.octopusman.cosic.audio.BankSummary
+import com.octopusman.cosic.audio.SoundsStatus
 import com.octopusman.cosic.ui.ConfirmDialog
 import com.octopusman.cosic.ui.tagged
 import cosic.script.reference
@@ -80,6 +83,7 @@ internal fun rememberReferenceItems(banks: List<BankSummary>): List<ReferenceIte
         drum = GroupText(stringResource(R.string.sounds_drums), stringResource(R.string.reference_doc_drum)),
         instrument = GroupText(stringResource(R.string.sounds_instruments), stringResource(R.string.reference_doc_instrument)),
         percussion = GroupText(stringResource(R.string.sounds_percussion), stringResource(R.string.reference_doc_percussion)),
+        wavetable = GroupText(stringResource(R.string.sounds_wavetables), stringResource(R.string.reference_doc_wavetable)),
         imported = GroupText(stringResource(R.string.sounds_imported), stringResource(R.string.reference_doc_imported)),
         scale = GroupText(stringResource(R.string.reference_scales), stringResource(R.string.reference_doc_scale)),
         showSounds = stringResource(R.string.reference_show_sounds),
@@ -93,7 +97,8 @@ internal fun rememberReferenceItems(banks: List<BankSummary>): List<ReferenceIte
  * The panel the editor shows next to the code, with two tabs: the reference of the language
  * (functions and scales) and the sounds. Each tab can be searched and has a row of groups to jump
  * to. Insert adds an example under the cursor's line; tapping a sound plays it. The Sounds tab also
- * imports folders of samples and removes them again. The panel scrolls to [openOn] when it opens.
+ * says how the loading of sounds goes ([soundsStatus]), and imports folders of samples and removes them
+ * again. The panel scrolls to [openOn] when it opens.
  * The music keeps playing.
  */
 @Composable
@@ -107,6 +112,8 @@ internal fun ReferencePanel(
     onPreview: (name: String, index: Int, pitched: Boolean) -> Unit,
     onImportFolder: (Uri) -> Unit,
     onRemoveFolder: (Uri) -> Unit,
+    soundsStatus: SoundsStatus,
+    onRetrySounds: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -145,18 +152,21 @@ internal fun ReferencePanel(
                     onPickGroup = { target = OpenOn.Group(it) },
                     chips = { categories -> chipOrder(categories, reference().map { it.category }.toSet()) },
                 ) { item, selected -> FunctionCard(item, selected, onInsert, onInsertExample, onShowValues = ::showGroup) }
-                PanelTab.SOUNDS -> TabContent(
-                    items = items.inTab(PanelTab.SOUNDS),
-                    query = soundQuery,
-                    onQueryChange = { soundQuery = it },
-                    listState = soundList,
-                    target = target,
-                    onTargetReached = { target = null },
-                    onPickGroup = { target = OpenOn.Group(it) },
-                    chips = { it },
-                    importCategory = stringResource(R.string.sounds_imported),
-                    importRow = { ImportRow(onImport = { folderPicker.launch(null) }) },
-                ) { item, selected -> SoundRow(item, selected, onInsert, onInsertExample, onPreview, onRemove = { removing = it }) }
+                PanelTab.SOUNDS -> {
+                    SoundsStatusRow(soundsStatus, onRetrySounds)
+                    TabContent(
+                        items = items.inTab(PanelTab.SOUNDS),
+                        query = soundQuery,
+                        onQueryChange = { soundQuery = it },
+                        listState = soundList,
+                        target = target,
+                        onTargetReached = { target = null },
+                        onPickGroup = { target = OpenOn.Group(it) },
+                        chips = { it },
+                        importCategory = stringResource(R.string.sounds_imported),
+                        importRow = { ImportRow(onImport = { folderPicker.launch(null) }) },
+                    ) { item, selected -> SoundRow(item, selected, onInsert, onInsertExample, onPreview, onRemove = { removing = it }) }
+                }
             }
         }
     }
@@ -173,6 +183,42 @@ internal fun ReferencePanel(
             },
             onDismiss = { removing = null },
         )
+    }
+}
+
+/**
+ * One line about the loading of sounds, above the list of the Sounds tab: the default sounds are being loaded, or some could not be (with a
+ * button to try again), or sample files are being downloaded. Nothing when everything is there.
+ */
+@Composable
+private fun SoundsStatusRow(status: SoundsStatus, onRetry: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val rowModifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+    when {
+        status.loading -> StatusRow(stringResource(R.string.sounds_status_loading), rowModifier)
+        status.failed.isNotEmpty() -> {
+            val text = stringResource(R.string.sounds_status_failed)
+            Row(rowModifier.tagged("sounds_status", text), verticalAlignment = Alignment.CenterVertically) {
+                Text(text, style = MaterialTheme.typography.bodySmall, color = colors.error, modifier = Modifier.weight(1f))
+                TextButton(onClick = onRetry, modifier = Modifier.tagged("sounds_retry", stringResource(R.string.sounds_status_retry))) {
+                    Text(stringResource(R.string.sounds_status_retry))
+                }
+            }
+        }
+        status.downloading > 0 -> StatusRow(
+            pluralStringResource(R.plurals.sounds_status_downloading, status.downloading, status.downloading),
+            rowModifier,
+        )
+    }
+}
+
+/** [text] next to a small spinner: something is going on. */
+@Composable
+private fun StatusRow(text: String, modifier: Modifier) {
+    Row(modifier.tagged("sounds_status", text), verticalAlignment = Alignment.CenterVertically) {
+        CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp)
+        Spacer(Modifier.width(8.dp))
+        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

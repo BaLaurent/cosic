@@ -134,6 +134,7 @@ fun EditorScreen(
     var panelTab by rememberSaveable { mutableStateOf<PanelTab?>(null) }
     var panelTarget by remember { mutableStateOf<OpenOn?>(null) }
     val banks by vm.banks.collectAsStateWithLifecycle()
+    val soundsStatus by vm.soundsStatus.collectAsStateWithLifecycle()
     val referenceItems by rememberUpdatedState(rememberReferenceItems(banks))
     var referenceShare by rememberSaveable { mutableFloatStateOf(ReferenceSplit.DEFAULT) }
     var splitHeight by remember { mutableIntStateOf(0) }
@@ -258,6 +259,8 @@ fun EditorScreen(
                         onPreview = vm::previewSound,
                         onImportFolder = vm::importFolder,
                         onRemoveFolder = vm::removeFolder,
+                        soundsStatus = soundsStatus,
+                        onRetrySounds = vm::retrySounds,
                         onClose = { panelTab = null },
                         modifier = modifier,
                     )

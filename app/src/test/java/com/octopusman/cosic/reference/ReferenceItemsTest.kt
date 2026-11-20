@@ -1,6 +1,7 @@
 package com.octopusman.cosic.reference
 
-import com.octopusman.cosic.audio.BankOrigin
+import com.octopusman.cosic.audio.BankKind
+import com.octopusman.cosic.audio.DRUM_MACHINES_TAG
 import cosic.CosicEngine
 import cosic.script.ReferenceEntry
 import kotlin.test.Test
@@ -16,6 +17,7 @@ class ReferenceItemsTest {
         drum = GroupText("Drum kit", "drum doc"),
         instrument = GroupText("Instruments", "instrument doc"),
         percussion = GroupText("Percussion", "percussion doc"),
+        wavetable = GroupText("Wavetables", "wavetable doc"),
         imported = GroupText("Imported", "imported doc"),
         scale = GroupText("Scales", "scale doc"),
         showSounds = "Show sounds",
@@ -34,12 +36,13 @@ class ReferenceItemsTest {
     private val banks = listOf(
         testBank("piano", 26, pitched = true),
         testBank("kick", 8),
-        testBank("mine", 3, origin = BankOrigin.IMPORTED),
-        testBank("vcsl_bd", 3, kit = "vcsl"),
-        testBank("vcsl_sd", 2, kit = "vcsl"),
-        testBank("vcsl_hh", 2, kit = "vcsl"),
-        testBank("mykit_cb", 1, origin = BankOrigin.IMPORTED, kit = "mykit"),
-        testBank("mykit_bd", 2, origin = BankOrigin.IMPORTED, kit = "mykit"),
+        testBank("mine", 3, kind = BankKind.USER),
+        testBank("vcsl_bd", 3, tag = DRUM_MACHINES_TAG),
+        testBank("vcsl_sd", 2, tag = DRUM_MACHINES_TAG),
+        testBank("vcsl_hh", 2, tag = DRUM_MACHINES_TAG),
+        testBank("sd", 5, tag = DRUM_MACHINES_TAG),
+        testBank("wt_saw", 4, pitched = true, wavetable = true),
+        testBank("mykit_bd", 2, kind = BankKind.USER),
     )
     private val scales = listOf("major", "minor", "blues")
     private val items = referenceItems(functions, banks, scales, texts)
@@ -52,7 +55,7 @@ class ReferenceItemsTest {
         val categories = items.map { it.category }.distinct()
 
         assertEquals(
-            listOf("Time", "Sound", "Values", "Drum machines", "Synths", "Drum kit", "Instruments", "Percussion", "Imported", "Scales"),
+            listOf("Time", "Sound", "Values", "Drum machines", "Synths", "Drum kit", "Instruments", "Percussion", "Wavetables", "Imported", "Scales"),
             categories,
         )
     }
@@ -136,7 +139,7 @@ class ReferenceItemsTest {
 
     @Test
     fun noImportedBanksMeansNoImportedGroup() {
-        val withoutImports = referenceItems(functions, banks.filter { it.origin == BankOrigin.BUNDLED }, scales, texts)
+        val withoutImports = referenceItems(functions, banks.filter { it.kind == BankKind.DEFAULT }, scales, texts)
 
         assertFalse("Imported" in withoutImports.map { it.category })
     }
@@ -178,7 +181,7 @@ class ReferenceItemsTest {
         val categories = items.map { it.category }.distinct()
 
         assertEquals(
-            listOf("Drum machines", "Synths", "Drum kit", "Instruments", "Percussion", "Imported", "Scales", "Time", "Sound", "Values"),
+            listOf("Drum machines", "Synths", "Drum kit", "Instruments", "Percussion", "Wavetables", "Imported", "Scales", "Time", "Sound", "Values"),
             chipOrder(categories, functions.map { it.category }.toSet()),
         )
     }
@@ -229,7 +232,7 @@ class ReferenceItemsTest {
     }
 
     @Test
-    fun aKitOfBundledBanksIsOneRowWithItsSoundsInDrumOrder() {
+    fun aKitOfTheDefaultLibraryIsOneRowWithItsSoundsInDrumOrder() {
         val vcsl = item("vcsl")
 
         assertEquals("Drum machines", vcsl.category)
@@ -239,20 +242,60 @@ class ReferenceItemsTest {
     }
 
     @Test
-    fun aKitOfImportedBanksIsListedTheSameWay() {
-        val mykit = item("mykit")
-
-        assertEquals("Drum machines", mykit.category)
-        assertEquals(listOf("bd", "cb"), mykit.members)
+    fun whatTheUserImportsIsNeverAKitHoweverItIsCalled() {
+        // A folder mykit/bd is the bank bd, as in the REPL; a bank called mykit_bd is just that.
+        assertTrue(items.none { it.name == "mykit" })
+        assertEquals("Imported", item("mykit_bd").category)
     }
 
     @Test
     fun theSoundsOfAKitAreNotListedAgainAsPercussionOrImportedBanks() {
         val names = items.map { it.name }
 
-        for (member in listOf("vcsl_bd", "vcsl_sd", "vcsl_hh", "mykit_bd", "mykit_cb")) assertFalse(member in names, member)
+        for (member in listOf("vcsl_bd", "vcsl_sd", "vcsl_hh")) assertFalse(member in names, member)
         assertEquals(listOf("kick"), items.filter { it.category == "Percussion" }.map { it.name })
-        assertEquals(listOf("mine"), items.filter { it.category == "Imported" }.map { it.name })
+        assertEquals(listOf("mine", "mykit_bd"), items.filter { it.category == "Imported" }.map { it.name })
+    }
+
+    @Test
+    fun aDrumNameOfTheLibraryStandsInForTheEnginesDrumOfThatName() {
+        val drums = items.filter { it.category == "Drum kit" }
+        val sd = drums.single { it.name == "sd" }
+
+        assertEquals(SoundTarget("sd", pitched = false, count = 5), sd.sound)
+        assertEquals("\$: s(\"sd:0 sd:1\")", sd.snippet)
+        // The others keep the engine's drum, with its four variants.
+        assertEquals(CosicEngine.DRUMS.toSet(), drums.map { it.name }.toSet())
+        assertEquals(CosicEngine.DRUM_VARIANTS, drums.single { it.name == "bd" }.sound?.variants)
+    }
+
+    @Test
+    fun theDrumKitIsListedInDrumOrder() {
+        assertEquals(CosicEngine.DRUMS, items.filter { it.category == "Drum kit" }.map { it.name })
+    }
+
+    @Test
+    fun aDrumBankThatTheUserAddedTakesTheNameFromTheEnginesDrumToo() {
+        val withUserBd = referenceItems(functions, banks + testBank("bd", 3, kind = BankKind.USER), scales, texts)
+
+        assertEquals(listOf("bd"), withUserBd.filter { it.category == "Imported" && it.name == "bd" }.map { it.name })
+        assertTrue(withUserBd.none { it.category == "Drum kit" && it.name == "bd" })
+    }
+
+    @Test
+    fun wavetablesAreListedAsPitchedBanksOfTheirOwn() {
+        val wavetable = item("wt_saw")
+
+        assertEquals("Wavetables", wavetable.category)
+        assertEquals("\$: note(\"c3 e3 g3\").s(\"wt_saw\")", wavetable.snippet)
+        assertEquals(SoundTarget("wt_saw", pitched = true, count = 4), wavetable.sound)
+    }
+
+    @Test
+    fun aBankWhoseKeyEndsInAnUnderscoreIsNotListed() {
+        val junk = referenceItems(functions, banks + testBank("OberheimDMX_", 3), scales, texts)
+
+        assertTrue(junk.none { it.name == "OberheimDMX_" })
     }
 
     @Test
@@ -263,7 +306,7 @@ class ReferenceItemsTest {
     @Test
     fun aKitIsInsertedAsAGrooveOfTheSoundsItHas() {
         assertEquals("\$: s(\"bd sd [~ bd] sd, hh*8\").bank(\"vcsl\")", item("vcsl").snippet)
-        assertEquals("\$: s(\"bd ~ [~ bd] ~\").bank(\"mykit\")", item("mykit").snippet)
+        assertEquals("\$: s(\"bd ~ [~ bd] ~\").bank(\"k\")", Kit("k", listOf("bd", "cb")).snippet())
     }
 
     @Test
@@ -289,12 +332,12 @@ class ReferenceItemsTest {
     fun theSoundGroupsAreListedInTheOrderOfTheirItems() {
         val headings = soundItems.rows("", "Imported").filterIsInstance<ListRow.Heading>().map { it.category }
 
-        assertEquals(listOf("Drum machines", "Synths", "Drum kit", "Instruments", "Percussion", "Imported"), headings)
+        assertEquals(listOf("Drum machines", "Synths", "Drum kit", "Instruments", "Percussion", "Wavetables", "Imported"), headings)
     }
 
     @Test
     fun theImportedGroupIsListedWithItsImportRowEvenWhenNothingIsImported() {
-        val bundled = referenceItems(functions, banks.filter { it.origin == BankOrigin.BUNDLED }, scales, texts).inTab(PanelTab.SOUNDS)
+        val bundled = referenceItems(functions, banks.filter { it.kind == BankKind.DEFAULT }, scales, texts).inTab(PanelTab.SOUNDS)
 
         assertEquals(listOf(ListRow.Heading("Imported"), ListRow.Import("Imported")), bundled.rows("", "Imported").takeLast(2))
     }
@@ -304,7 +347,7 @@ class ReferenceItemsTest {
         val rows = soundItems.rows("", "Imported")
 
         assertEquals(
-            listOf(ListRow.Heading("Imported"), ListRow.Doc("Imported", "imported doc"), ListRow.Import("Imported"), ListRow.Entry(item("mine"))),
+            listOf(ListRow.Heading("Imported"), ListRow.Doc("Imported", "imported doc"), ListRow.Import("Imported"), ListRow.Entry(item("mine")), ListRow.Entry(item("mykit_bd"))),
             rows.dropWhile { it != ListRow.Heading("Imported") },
         )
     }

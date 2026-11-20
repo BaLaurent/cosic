@@ -7,215 +7,172 @@ import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.core.net.toUri
 import androidx.datastore.preferences.core.stringSetPreferencesKey
-import androidx.documentfile.provider.DocumentFile
-import cosic.BankGroup
 import cosic.CosicEngine
 import cosic.SampleBank
-import cosic.SampleData
-import cosic.SampleStore
+import cosic.SoundEntry
 import cosic.SoundLibrary
+import cosic.soundfont.SoundfontBank
+import cosic.WaveTableBank
 import cosic.sound.RegistryLibrary
+import cosic.sound.registryKey
 import java.io.IOException
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 private const val TAG = "CosicSamples"
-private const val INDEX_ASSET = "samples/index.json"
-private const val MAX_IMPORT_FILES = 1000
-private const val IMPORT_MAX_SECONDS = 20
-private const val CACHE_BUDGET_FLOATS = 16L * 1024 * 1024
-private val AUDIO_EXTENSIONS = setOf("wav", "mp3", "ogg", "flac", "m4a", "aac", "opus")
 private val IMPORTED_TREES = stringSetPreferencesKey("imported_trees")
-private val json = Json { ignoreUnknownKeys = true }
 
-@Serializable
-private class SampleIndex(val banks: List<IndexBank>)
+/** A folder that takes longer to index than this after the default sounds are loaded does not hold up the first program: its sounds appear when it is done. */
+private const val IMPORT_WAIT_MS = 3_000L
 
-@Serializable
-private class IndexBank(val name: String, val pitched: Boolean, val files: List<IndexFile>, val kit: String? = null)
+/** How often the lists of sounds look at the library for news; they only do while somebody shows them. */
+private const val REVISION_POLL_MS = 500L
 
-@Serializable
-private class IndexFile(val file: String, val root: Int? = null)
-
-enum class BankOrigin { BUNDLED, IMPORTED }
-
-/** How a bank is grouped wherever sounds are listed. */
-enum class BankKind { INSTRUMENT, PERCUSSION, IMPORTED }
+/** Where a sound comes from in the lists: the default library, or the user (an imported folder, `samples()` in a program). */
+enum class BankKind { DEFAULT, USER }
 
 /**
- * A sample bank as listed in the Sounds tab; [treeUri] is the imported folder it came from. A bank named
- * `<kit>_<sound>` is a sound of the drum machine [kit], played with `s("<sound>").bank("<kit>")`.
+ * A sample bank as listed in the Sounds tab. [pitched] banks are played with notes (one recording per note), [count] is how many files `name:n`
+ * can pick from, [tag] and [prebake] are what the map it came from said (see `SampleMapOptions`), [treeUri] is the imported folder a user
+ * bank was made from, [wavetable] says it is a `wt_*` bank.
  */
 data class BankSummary(
     val name: String,
     val count: Int,
     val pitched: Boolean,
-    val origin: BankOrigin,
+    val kind: BankKind,
+    val tag: String?,
+    val prebake: Boolean,
     val treeUri: Uri?,
-    val kit: String?,
+    val wavetable: Boolean = false,
 ) {
-    val kind: BankKind
-        get() = when {
-            origin == BankOrigin.IMPORTED -> BankKind.IMPORTED
-            pitched -> BankKind.INSTRUMENT
-            else -> BankKind.PERCUSSION
+    /**
+     * The drum machine this is a sound of: a bank of the default library that is tagged as a drum machine and called `<machine>_<sound>`
+     * (`RolandTR909_bd`, `mridangam_ka`) is `s("<sound>").bank("<machine>")`; null for any other bank.
+     */
+    val kit: String?
+        get() {
+            if (kind != BankKind.DEFAULT || tag != DRUM_MACHINES_TAG) return null
+            val underscore = name.indexOf('_')
+            return if (underscore in 1 until name.length - 1) name.substring(0, underscore) else null
         }
 }
 
-private sealed interface SampleSource {
-    /** Sources with the same key share one decoded copy in the cache. */
-    val key: String
+/** The sample banks in [entries] (the sounds of the library that are made of files), by name. A user bank is listed under its registry key. */
+internal fun bankSummaries(entries: List<SoundEntry>, treeOf: (registryKey: String) -> Uri?): List<BankSummary> =
+    entries.mapNotNull { entry ->
+        val kind = if (entry.prebake) BankKind.DEFAULT else BankKind.USER
+        val key = registryKey(entry.name)
+        val name = if (entry.prebake) entry.name else key
+        val tree = if (entry.prebake) null else treeOf(key)
+        when (entry) {
+            is SampleBank -> BankSummary(name, entry.count, entry.pitched, kind, entry.tag, entry.prebake, tree)
+            is WaveTableBank -> BankSummary(name, entry.groups.sumOf { it.urls.size }, true, kind, entry.tag, entry.prebake, tree, wavetable = true)
+            is SoundfontBank -> BankSummary(name, entry.fonts.size, true, kind, entry.tag, entry.prebake, tree)
+            else -> null
+        }
+    }.sortedWith(compareBy({ it.name.lowercase() }, { it.name }))
 
-    data class Asset(val path: String) : SampleSource {
-        override val key = "asset:$path"
-    }
-
-    data class Document(val uri: Uri) : SampleSource {
-        override val key = uri.toString()
-    }
-}
-
-/** The shape of an indexed bank: [rootNotes] is ascending for pitched banks, null for unpitched ones. */
-private class BankShape(val name: String, val count: Int, val rootNotes: IntArray?)
-
-private class BankRecord(
-    val info: BankShape,
-    val origin: BankOrigin,
-    val treeUri: Uri?,
-    val sources: List<SampleSource>,
-    val kit: String?,
-)
-
-private class CacheEntry(val data: SampleData, @Volatile var lastAccess: Long)
-
-private val NOTE_NAMES = arrayOf("c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b")
-
-/** The name of MIDI note [midi] as the engine reads it: `60` is `c4`. */
-private fun noteName(midi: Int): String = NOTE_NAMES[Math.floorMod(midi, 12)] + (Math.floorDiv(midi, 12) - 1)
-
-/** The sound the engine's library knows a bank as: files in index order, one note key per file for a pitched bank. */
-private fun BankRecord.toEntry(): SampleBank {
-    val urls = sources.map { it.key }
-    val roots = info.rootNotes
-    val groups = if (roots == null) {
-        listOf(BankGroup(null, null, urls))
-    } else {
-        roots.indices.map { BankGroup(noteName(roots[it]), roots[it].toDouble(), listOf(urls[it])) }
-    }
-    return SampleBank(info.name, groups, null, origin == BankOrigin.BUNDLED)
-}
+/** How loading the default sounds went: [failed] are the packs (see [DefaultLibrary]) that could not be loaded. */
+private class DefaultsState(val loading: Boolean, val failed: List<String>)
 
 /**
- * Decodes the bundled and imported files the library's banks point at: a url is `asset:<path>` or the uri of a document. Lookups never
- * block: a sample that is not decoded yet is reported as missing and decoded in the background, so asking for it once also preloads it.
+ * What the Sounds tab says about loading: the default sounds are being loaded ([loading]) or some of them could not be ([failed], the
+ * packs by name: the network is down, most likely), and [downloading] sample files are being fetched or decoded right now.
  */
-private class RepositoryStore(context: Context) : SampleStore {
-    private val appContext = context.applicationContext
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val decoders = Dispatchers.IO.limitedParallelism(2)
-    private val cache = ConcurrentHashMap<String, CacheEntry>()
-    private val cacheLock = Any()
-    private val accessClock = AtomicLong()
-    private val loading = ConcurrentHashMap.newKeySet<String>()
-    private val broken = ConcurrentHashMap.newKeySet<String>()
-
-    override fun sample(url: String): SampleData? {
-        cache[url]?.let {
-            it.lastAccess = accessClock.incrementAndGet()
-            return it.data
-        }
-        if (url !in broken && loading.add(url)) scope.launch(decoders) { load(url) }
-        return null
-    }
-
-    override fun fetchText(url: String): String = throw IOException("no network access yet: $url")
-
-    override fun awaitSample(url: String): SampleData = throw IOException("no network access yet: $url")
-
-    override fun decode(bytes: ByteArray, nameHint: String): SampleData = throw IOException("no decoder for $nameHint yet")
-
-    private fun load(url: String) {
-        try {
-            val data = if (url.startsWith("asset:")) {
-                appContext.assets.openFd(url.removePrefix("asset:")).use { AudioDecoder.decode(it) }
-            } else {
-                AudioDecoder.decode(appContext, Uri.parse(url), IMPORT_MAX_SECONDS)
-            }
-            cacheSample(url, data)
-        } catch (e: Exception) {
-            Log.w(TAG, "cannot decode $url", e)
-            broken.add(url)
-        } finally {
-            loading.remove(url)
-        }
-    }
-
-    /** Evicts the least recently used samples once the cache outgrows its budget; playing voices keep their own array. */
-    private fun cacheSample(key: String, data: SampleData) {
-        synchronized(cacheLock) {
-            cache[key] = CacheEntry(data, accessClock.incrementAndGet())
-            var total = cache.values.sumOf { it.data.samples.size.toLong() }
-            while (total > CACHE_BUDGET_FLOATS && cache.size > 1) {
-                val oldest = cache.entries.minBy { it.value.lastAccess }
-                cache.remove(oldest.key)
-                total -= oldest.value.data.samples.size
-            }
-        }
-    }
-}
+data class SoundsStatus(val loading: Boolean, val failed: List<String>, val downloading: Int)
 
 /**
- * Bundled and imported sample banks for the engine, as the sounds of a [RegistryLibrary] (which this is, for everything the engine asks).
- * Lookups never block: see [RepositoryStore].
+ * The sounds of the app, as the library the engine plays from: the default sounds, loaded from the network at start (see [DefaultLibrary]),
+ * and the folders the user imported. Everything the engine asks of a [SoundLibrary] is answered by the [RegistryLibrary] this holds;
+ * lookups of samples never block (see [HttpSampleStore]).
+ *
+ * An imported folder is Strudel's: every folder of audio files in it, at any depth, is a bank named after the folder, and replaces a
+ * bank of that name, `bd` of the default sounds included. The folders are kept in the settings, and indexed again at every start.
  */
-class SampleRepository(
+class SampleRepository internal constructor(
     context: Context,
     private val prefs: DataStore<Preferences>,
-    private val registry: RegistryLibrary = RegistryLibrary(RepositoryStore(context), CosicEngine.BUILTIN_SOUNDS),
+    private val store: HttpSampleStore = HttpSampleStore(context),
+    private val registry: RegistryLibrary = RegistryLibrary(store, CosicEngine.BUILTIN_SOUNDS, ready = false),
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ) : SoundLibrary by registry {
+    constructor(context: Context, prefs: DataStore<Preferences>) : this(context, prefs, HttpSampleStore(context))
+
     private val appContext = context.applicationContext
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val indexLock = Mutex()
+    private val imported = ImportedBanks(registry)
+    private val importLock = Mutex()
+    private val defaults = MutableStateFlow(DefaultsState(loading = true, failed = emptyList()))
+    private val retrying = AtomicBoolean()
 
-    private val bundled: Map<String, BankRecord> by lazy { readBundledBanks() }
+    // The folders are indexed while the maps load, which takes longer.
+    private val walked: Deferred<List<ImportedTree>> = scope.async { walkAll() }
 
-    // Immutable snapshot, replaced as a whole whenever the index changes.
-    @Volatile
-    private var records: Map<String, BankRecord> = emptyMap()
-    private val _banks = MutableStateFlow<List<BankSummary>>(emptyList())
-
-    val banks: StateFlow<List<BankSummary>> = _banks.asStateFlow()
-
-    init {
-        scope.launch {
-            // Bundled banks are usable at once; scanning imported folders can take a while.
-            indexLock.withLock { publish(bundled) }
-            reindex()
+    /** Ends when the default sounds are loaded (or failed to be) and the imported folders are in. */
+    private val installed: Job = DefaultLibrary.install(registry, scope) { failed ->
+        defaults.value = DefaultsState(loading = false, failed = failed)
+        // Folders go on top of the default sounds, so that they win their names; the first program does not wait for a huge one.
+        safely("importing folders") {
+            val trees = withTimeoutOrNull(IMPORT_WAIT_MS) { walked.await() }
+            if (trees != null) {
+                importLock.withLock { imported.replaceAll(trees) }
+            } else {
+                scope.launch { safely("importing folders") { importLock.withLock { imported.replaceAll(walked.await()) } } }
+            }
         }
     }
 
-    /** Adds a folder picked with the system folder picker; its banks override bundled ones of the same name. */
+    /** The sample banks, sorted by name; the list follows the library, so it also shows what a program registers with `samples()`. */
+    val banks: StateFlow<List<BankSummary>> = flow {
+        var seen = -1L
+        while (true) {
+            val revision = registry.revision
+            if (revision != seen) {
+                seen = revision
+                emit(bankSummaries(registry.entries()) { key -> imported.treeOf(key)?.toUri() })
+            }
+            delay(REVISION_POLL_MS)
+        }
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Whether the default sounds are loaded, and how many files are being fetched. */
+    val status: StateFlow<SoundsStatus> = combine(defaults, store.loading) { state, downloading ->
+        SoundsStatus(state.loading, state.failed, downloading)
+    }.stateIn(scope, SharingStarted.Eagerly, SoundsStatus(loading = true, failed = emptyList(), downloading = 0))
+
+    /** Adds a folder picked with the system folder picker; its banks replace those of the same names, default ones included. */
     fun importTree(uri: Uri) {
         appContext.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         scope.launch {
-            prefs.edit { it[IMPORTED_TREES] = it[IMPORTED_TREES].orEmpty() + uri.toString() }
-            reindex()
+            safely("importing $uri") {
+                prefs.edit { it[IMPORTED_TREES] = it[IMPORTED_TREES].orEmpty() + uri.toString() }
+                reindex()
+            }
         }
     }
 
+    /** Takes an imported folder, and every sound made from it, away again; the sounds it replaced come back. */
     fun removeImported(uri: Uri) {
         try {
             appContext.contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -223,84 +180,75 @@ class SampleRepository(
             // The grant is already gone, for example because the folder was deleted.
         }
         scope.launch {
-            prefs.edit { it[IMPORTED_TREES] = it[IMPORTED_TREES].orEmpty() - uri.toString() }
-            reindex()
-        }
-    }
-
-    private suspend fun reindex() = indexLock.withLock {
-        val resolved = LinkedHashMap(bundled)
-        // The stored set keeps import order, so a later import replaces banks of an earlier one.
-        for (tree in prefs.data.first()[IMPORTED_TREES].orEmpty()) {
-            for (bank in indexTree(Uri.parse(tree))) resolved[bank.info.name] = bank
-        }
-        publish(resolved)
-    }
-
-    /** Makes [banks] the banks of the library: every one is registered (a removed import gives its name back to the bundled bank), the ones that are gone are removed. */
-    private fun publish(banks: Map<String, BankRecord>) {
-        val previous = records
-        records = banks
-        for (name in previous.keys) if (name !in banks) registry.unregister(name)
-        for (record in banks.values) registry.register(record.toEntry())
-        _banks.value = banks.values.sortedBy { it.info.name }.map {
-            BankSummary(it.info.name, it.info.count, it.info.rootNotes != null, it.origin, it.treeUri, it.kit)
-        }
-    }
-
-    private fun readBundledBanks(): Map<String, BankRecord> {
-        val text = appContext.assets.open(INDEX_ASSET).bufferedReader().use { it.readText() }
-        return json.decodeFromString<SampleIndex>(text).banks.associate { bank ->
-            val files = if (bank.pitched) bank.files.sortedBy { it.root } else bank.files
-            val roots = if (bank.pitched) {
-                IntArray(files.size) { requireNotNull(files[it].root) { "Pitched bank '${bank.name}' needs root notes" } }
-            } else {
-                null
+            safely("removing $uri") {
+                prefs.edit { it[IMPORTED_TREES] = it[IMPORTED_TREES].orEmpty() - uri.toString() }
+                reindex()
             }
-            bank.name to BankRecord(
-                BankShape(bank.name, files.size, roots),
-                BankOrigin.BUNDLED,
-                null,
-                files.map { SampleSource.Asset("samples/${it.file}") },
-                bank.kit,
-            )
+        }
+    }
+
+    /** Loads again the default sounds that could not be loaded (and the aliases), for when the network is back. */
+    fun retryDefaults() {
+        scope.launch {
+            installed.join()
+            if (!retrying.compareAndSet(false, true)) return@launch
+            try {
+                val previous = defaults.value.failed
+                defaults.value = DefaultsState(loading = true, failed = previous)
+                var failed = previous
+                try {
+                    failed = DefaultLibrary.load(registry, only = previous.toSet() - DefaultLibrary.ALIASES)
+                } finally {
+                    defaults.value = DefaultsState(loading = false, failed = failed)
+                }
+                // What was loaded now is registered over the imported banks of the same names: they go on top again.
+                safely("importing folders") { importLock.withLock { imported.replaceAll(walkAll()) } }
+            } finally {
+                retrying.set(false)
+            }
         }
     }
 
     /**
-     * A tree is a bank of its own audio files plus one bank per direct subfolder that has audio files.
-     * Those subfolders are also the sounds of a kit named after the tree (see [importedBanks]).
+     * Waits for file [index] of group [group] of [bank] to be on the device and decoded, fetching it first if need be (up to a minute). It
+     * never throws: a file that cannot be loaded is simply not there afterwards.
      */
-    private fun indexTree(treeUri: Uri): List<BankRecord> {
-        // A tree that is no longer accessible (folder removed, drive gone) simply drops out of the index.
-        val root = DocumentFile.fromTreeUri(appContext, treeUri)?.takeIf { it.canRead() } ?: return emptyList()
-        val banks = ArrayList<BankRecord>()
-        var remaining = MAX_IMPORT_FILES
-
-        fun addBanks(names: List<ImportedBank>, entries: List<Pair<String, DocumentFile>>) {
-            val audio = entries.filter { isAudio(it.first) }.sortedBy { it.first.lowercase() }.take(remaining)
-            if (names.isEmpty() || audio.isEmpty()) return
-            // The banks of one folder share its files, which count against the limit once.
-            remaining -= audio.size
-            val sources = audio.map { SampleSource.Document(it.second.uri) }
-            for (bank in names) {
-                banks += BankRecord(BankShape(bank.name, audio.size, null), BankOrigin.IMPORTED, treeUri, sources, bank.kit)
+    suspend fun load(bank: SampleBank, group: Int, index: Int) {
+        val url = bank.groups.getOrNull(group)?.urls?.getOrNull(index) ?: return
+        withContext(Dispatchers.IO) {
+            try {
+                store.awaitSample(url)
+            } catch (_: IOException) {
             }
         }
+    }
 
-        // A kit's sound folders keep their own names, like any import, except where that name is a built-in
-        // sound of the engine: mykit/bd must not replace the bd every project plays.
-        val builtIn = { name: String -> name in CosicEngine.SYNTHS || name in CosicEngine.DRUMS }
-        val rootEntries = root.entries()
-        addBanks(importedBanks(root.name), rootEntries)
-        for ((name, file) in rootEntries) {
-            if (remaining <= 0) break
-            if (!isAudio(name) && file.isDirectory) addBanks(importedBanks(file.name, parent = root.name, builtIn), file.entries())
+    /** Waits until no sample file is being fetched or decoded, at most [timeoutMillis]; true when that is so. */
+    suspend fun awaitDownloads(timeoutMillis: Long): Boolean = store.awaitIdle(timeoutMillis)
+
+    private suspend fun reindex() {
+        installed.join() // folders go on top of the default sounds, however long those take
+        importLock.withLock { imported.replaceAll(walkAll()) }
+    }
+
+    private suspend fun walkAll(): List<ImportedTree> {
+        val trees = try {
+            prefs.data.first()[IMPORTED_TREES].orEmpty()
+        } catch (e: IOException) {
+            Log.w(TAG, "cannot read the imported folders", e)
+            return emptyList()
         }
-        return banks
+        return trees.map { tree -> ImportedTree(tree, walkDocumentTree(appContext, tree.toUri())) }
+    }
+
+    /** Background work must never take the app down: what goes wrong is logged, and the sounds stay as they were. */
+    private inline fun safely(what: String, block: () -> Unit) {
+        try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "$what failed", e)
+        }
     }
 }
-
-private fun isAudio(fileName: String) = fileName.substringAfterLast('.', "").lowercase() in AUDIO_EXTENSIONS
-
-private fun DocumentFile.entries(): List<Pair<String, DocumentFile>> = listFiles().map { (it.name ?: "") to it }

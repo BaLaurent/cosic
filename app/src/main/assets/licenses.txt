@@ -1,37 +1,54 @@
 Cosic third-party notices
 =========================
 
-1. Bundled sample sounds: VCSL (Versilian Community Sample Library)
--------------------------------------------------------------------
-License: CC0 1.0 Universal (public domain dedication)
-Author: Sam Gossner and contributors
-Source: https://github.com/sgossner/VCSL
-Commit: c1ea7bcc3c7309650ab0da9d15c9cd1fbc4a4c7e
-The instrument and percussion samples under assets/samples, and the "vcsl"
-drum kit, are a trimmed, normalised and re-encoded subset of this library.
+1. Sound library (loaded from the network, not bundled)
+--------------------------------------------------------
+Cosic carries no sound files. When it starts, it reads the lists of the sounds below
+from a public file server, and it fetches the file of a sound the first time that sound
+is played; the files it fetched stay on the device until the system clears them.
+Each pack has its own license, and its own authors:
 
-2. Bundled drum machine kits: smpldsnds/drum-machines
------------------------------------------------------
-License: public domain. The collection's README states: "A collection of
-public domain samples of different drum machines". The repository carries no
-separate license file.
-Source: https://github.com/smpldsnds/drum-machines
-Commit: a894cb8c72abe15b05e7b4fd4b8ee561c0f9e960
-Machines included: 808-mini, Casio-RZ1, Casio-SK1, LM-2, MFB-512,
-Micro-Rhythmer-12, Roland-CR-8000, Sequential-Circuits-Drumtraks, TR-808 and
-Yamaha-MR10. The TR-808 set was originally released by Michael Fischer
-(Technopolis) as "Roland TR-808 Rhythm Composer Sound Sample Set 1.0.0".
-The samples are trimmed, normalised and re-encoded; each machine becomes a kit
-named after its folder (lowercase letters and digits only).
+- Piano: Salamander Grand Piano V3, by Alexander Holm.
+  License: CC BY 3.0 (http://creativecommons.org/licenses/by/3.0/).
+  Source: https://archive.org/details/SalamanderGrandPianoV3
 
-3. Reverb algorithm: Freeverb
+- Instruments and percussion: VCSL, the Versilian Community Sample Library, by Sam
+  Gossner and contributors.
+  License: CC0 1.0 Universal (public domain dedication).
+  Source: https://github.com/sgossner/VCSL
+
+- Drum machines (RolandTR909_bd, AkaiLinn_sd, ...): tidal-drum-machines.
+  The repository carries no license text.
+  Source: https://github.com/ritchse/tidal-drum-machines
+
+- Drum kit (bd, sd, hh, ...): uzu-drumkit.
+  License: The Unlicense (public domain).
+  Source: https://github.com/tidalcycles/uzu-drumkit
+
+- Wavetables (wt_*): uzu-wavetables. The repository carries no license text.
+  Source: https://github.com/tidalcycles/uzu-wavetables
+
+- Mridangam (mridangam_*): mrid.
+  License: CC BY-SA (the version is not stated in the repository).
+  Source: https://github.com/yaxu/mrid
+
+- Samples such as casio, crow, jazz, metal, numbers, wind: Dirt-Samples.
+  The repository carries no license text.
+  Source: https://github.com/tidalcycles/Dirt-Samples
+
+- General MIDI instruments (gm_*): the sound fonts of WebAudioFont, by Sergey Surikov,
+  converted from GeneralUser GS (license: http://www.schristiancollins.com/generaluser.php)
+  and FluidR3 (license: https://github.com/musescore/MuseScore/blob/master/share/sound/FluidR3Mono_License.md).
+  Source: https://github.com/surikov/webaudiofontdata
+
+2. Reverb algorithm: Freeverb
 -----------------------------
 License: public domain
 Author: Jezar at Dreampoint
 Cosic's reverb is an independent implementation of the published Freeverb
 design (8 parallel comb filters and 4 series allpass filters per channel).
 
-4. Libraries under the Apache License 2.0
+3. Libraries under the Apache License 2.0
 -----------------------------------------
 - AndroidX (Compose, Activity, Lifecycle, Navigation, DataStore, Core, DocumentFile)
 - Kotlin standard library
@@ -218,7 +235,7 @@ The full text of the Apache License 2.0 follows.
    END OF TERMS AND CONDITIONS
 
 
-5. Google Play Billing Library and Google Mobile Ads SDK
+4. Google Play Billing Library and Google Mobile Ads SDK
 --------------------------------------------------------
 - Google Play Billing Library (com.android.billingclient:billing-ktx)
 - Google Mobile Ads SDK (com.google.android.gms:play-services-ads)

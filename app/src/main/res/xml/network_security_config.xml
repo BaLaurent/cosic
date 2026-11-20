@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Sounds come from https hosts. Plain http is allowed here only because a sample server of the developer (`local:`) or of the local
+    network cannot have a certificate; the loading of sounds refuses http to anything that is not a local or private address
+    (HttpSampleStore, see isCleartextAllowed).
+-->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <base-config cleartextTrafficPermitted="true" tools:ignore="InsecureBaseConfiguration">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

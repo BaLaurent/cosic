@@ -3,6 +3,7 @@ package com.octopusman.cosic.reference
 import android.net.Uri
 import com.octopusman.cosic.audio.BankKind
 import com.octopusman.cosic.audio.BankSummary
+import com.octopusman.cosic.audio.DRUM_MACHINES_TAG
 import cosic.CosicEngine
 import cosic.script.ReferenceEntry
 
@@ -59,6 +60,7 @@ internal class ReferenceTexts(
     val drum: GroupText,
     val instrument: GroupText,
     val percussion: GroupText,
+    val wavetable: GroupText,
     val imported: GroupText,
     val scale: GroupText,
     val showSounds: String,
@@ -72,6 +74,11 @@ private const val NOTES = "c3 e3 g3"
  * The whole reference: the [functions] of the language, then the drum machines, the synths and drum kit
  * of the engine, the sample [banks] and the [scales], each with an example that plays it. The functions
  * that take a sound, a drum machine or a scale name lead to the group that lists them.
+ *
+ * A bank of the default library is listed where it belongs: the sounds of a drum machine with the machine (a kit of its own), the
+ * plain drum names (`bd`, `sd`) with the drum kit of the engine, which they replace where the library has them, and the others
+ * as instruments (one recording per note), percussion (hits picked by number) and wavetables. What the user added (imported
+ * folders, `samples()` in a program) is listed apart.
  */
 internal fun referenceItems(
     functions: List<ReferenceEntry>,
@@ -90,12 +97,7 @@ internal fun referenceItems(
 
     fun notes(name: String) = "\$: note(\"$NOTES\").s(\"$name\")"
 
-    fun bank(bank: BankSummary): ReferenceItem {
-        val text = when (bank.kind) {
-            BankKind.IMPORTED -> texts.imported
-            BankKind.INSTRUMENT -> texts.instrument
-            BankKind.PERCUSSION -> texts.percussion
-        }
+    fun bank(bank: BankSummary, text: GroupText): ReferenceItem {
         val snippet = if (bank.pitched) notes(bank.name) else "\$: s(\"${bank.name}:0 ${bank.name}:1\")"
         return sound(bank.name, text, bank.pitched, bank.count, snippet).copy(folder = bank.treeUri)
     }
@@ -109,7 +111,6 @@ internal fun referenceItems(
         snippet = kit.snippet(),
         sound = SoundTarget(kit.previewSound(), pitched = false, count = null),
         members = kit.sounds,
-        folder = kit.folder,
     )
 
     fun scale(mode: String) = ReferenceItem(
@@ -124,19 +125,26 @@ internal fun referenceItems(
     val functionItems = functions.map {
         ReferenceItem(it.name, it.aliases, it.category, it.signature, it.doc, it.snippet, values = links[it.name], entry = callEntry(it.name, it.signature))
     }
-    // The sounds of a kit are listed with the kit, not again as banks of their own.
-    val samples = banks.filter { it.kit == null }
-    val kitItems = kits(CosicEngine.DRUM_MACHINES, banks).map(::kit)
-    // A kit the user imported also shows under Imported, where the folder was imported and can be removed.
-    val importedKits = kitItems.filter { it.folder != null }.map { it.copy(category = texts.imported.category, doc = texts.imported.doc) }
-    return functionItems +
-        kitItems +
-        CosicEngine.SYNTHS.map { sound(it, texts.synth, pitched = true, count = null, snippet = notes(it)) } +
-        CosicEngine.DRUMS.map {
+
+    val library = banks.filter { it.kind == BankKind.DEFAULT && it.kit == null && !it.name.endsWith("_") }
+    // A plain drum name of the library (`bd`) is a sound of the drum kit, and stands in for the engine's drum of that name.
+    val drumBanks = library.filter { it.tag == DRUM_MACHINES_TAG && !it.wavetable }
+    val others = library - drumBanks.toSet()
+    val named = banks.map { it.name.lowercase() }.toSet()
+    val drumItems = (
+        CosicEngine.DRUMS.filter { it.lowercase() !in named }.map {
             sound(it, texts.drum, pitched = false, count = null, snippet = "\$: s(\"$it*4\")", variants = CosicEngine.DRUM_VARIANTS)
-        } +
-        BankKind.entries.flatMap { kind -> samples.filter { it.kind == kind }.map(::bank) } +
-        importedKits +
+        } + drumBanks.map { bank(it, texts.drum) }
+        ).sortedWith(compareBy(drumOrder) { it.name })
+
+    return functionItems +
+        kits(CosicEngine.DRUM_MACHINES, banks).map(::kit) +
+        CosicEngine.SYNTHS.map { sound(it, texts.synth, pitched = true, count = null, snippet = notes(it)) } +
+        drumItems +
+        others.filter { !it.wavetable && it.pitched }.map { bank(it, texts.instrument) } +
+        others.filter { !it.wavetable && !it.pitched }.map { bank(it, texts.percussion) } +
+        others.filter { it.wavetable }.map { bank(it, texts.wavetable) } +
+        banks.filter { it.kind == BankKind.USER }.map { bank(it, texts.imported) } +
         scales.map(::scale)
 }
 
