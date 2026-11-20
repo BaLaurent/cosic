@@ -1,0 +1,128 @@
+{
+ "connect": [
+  {
+   "clientId": "c",
+   "userName": null,
+   "password": null,
+   "url": "ws://localhost:9001/mqtt",
+   "protocols": [
+    "mqtt"
+   ],
+   "hex": "100d00044d5154540402003c000163"
+  },
+  {
+   "clientId": "c",
+   "userName": "u",
+   "password": "p",
+   "url": "ws://localhost:9001/mqtt",
+   "protocols": [
+    "mqtt"
+   ],
+   "hex": "101300044d51545404c2003c000163000175000170"
+  },
+  {
+   "clientId": "c",
+   "userName": "u",
+   "password": null,
+   "url": "ws://localhost:9001/mqtt",
+   "protocols": [
+    "mqtt"
+   ],
+   "hex": "101000044d5154540482003c000163000175"
+  },
+  {
+   "clientId": "strudel-123456",
+   "userName": "üser",
+   "password": "pässwörd",
+   "url": "ws://localhost:9001/mqtt",
+   "protocols": [
+    "mqtt"
+   ],
+   "hex": "102d00044d51545404c2003c000e7374727564656c2d3132333435360005c3bc736572000a70c3a4737377c3b67264"
+  },
+  {
+   "clientId": "",
+   "userName": null,
+   "password": null,
+   "url": "ws://localhost:9001/mqtt",
+   "protocols": [
+    "mqtt"
+   ],
+   "hex": "100c00044d5154540402003c0000"
+  }
+ ],
+ "publish": [
+  {
+   "topic": "/t",
+   "payload": "hi",
+   "hex": "300600022f746869"
+  },
+  {
+   "topic": "/strudel-pattern",
+   "payload": "{\"s\":\"sax\",\"speed\":2,\"duration\":0.5,\"cps\":0.5}",
+   "hex": "304000102f7374727564656c2d7061747465726e7b2273223a22736178222c227370656564223a322c226475726174696f6e223a302e352c22637073223a302e357d"
+  },
+  {
+   "topic": "/a/b",
+   "payload": "{\"topic\":[\"a\",\"b\"],\"n\":1,\"duration\":0.5,\"cps\":0.5}",
+   "hex": "303800042f612f627b22746f706963223a5b2261222c2262225d2c226e223a312c226475726174696f6e223a302e352c22637073223a302e357d"
+  },
+  {
+   "topic": "/ü/€",
+   "payload": "héllo €",
+   "hex": "301300072fc3bc2fe282ac68c3a96c6c6f20e282ac"
+  },
+  {
+   "topic": "/t",
+   "payload": "",
+   "hex": "300400022f74"
+  },
+  {
+   "topic": "/e",
+   "payload": "😀 ok",
+   "hex": "300b00022f65f09f9880206f6b"
+  }
+ ],
+ "publishLengths": [
+  {
+   "payloadBytes": 0,
+   "totalBytes": 6,
+   "head": "300400022f74"
+  },
+  {
+   "payloadBytes": 1,
+   "totalBytes": 7,
+   "head": "300500022f74"
+  },
+  {
+   "payloadBytes": 123,
+   "totalBytes": 129,
+   "head": "307f00022f74"
+  },
+  {
+   "payloadBytes": 124,
+   "totalBytes": 131,
+   "head": "30800100022f"
+  },
+  {
+   "payloadBytes": 16379,
+   "totalBytes": 16386,
+   "head": "30ff7f00022f"
+  },
+  {
+   "payloadBytes": 16380,
+   "totalBytes": 16388,
+   "head": "308080010002"
+  },
+  {
+   "payloadBytes": 2097147,
+   "totalBytes": 2097155,
+   "head": "30ffff7f0002"
+  },
+  {
+   "payloadBytes": 2097148,
+   "totalBytes": 2097157,
+   "head": "308080800100"
+  }
+ ]
+}
