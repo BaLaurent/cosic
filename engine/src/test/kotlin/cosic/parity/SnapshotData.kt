@@ -37,7 +37,7 @@ internal class ExpectedOutcome(
 )
 
 /**
- * One program to run and compare. [id] is `examples:<function>#<index>`, `tunes:<tune>` or `extra:<snippet>`, the form
+ * One program to run and compare. [id] is `examples:<function>#<index>`, `tunes:<tune>` or `extra:<file>/<snippet>` (the file stem of parity/extra/<file>.json, so two tasks can use the same snippet name), the form
  * known-gaps.txt uses. A case with no [expected] has nothing to compare against and is skipped for [skipReason].
  */
 internal class ParityCase(
@@ -141,7 +141,7 @@ internal object ParityData {
                 val name = o.string("name")
                 val repl = o["mode"]?.jsonPrimitive?.contentOrNull == "repl"
                 ParityCase(
-                    id = "${CaseSource.EXTRA.prefix}:$name",
+                    id = "${CaseSource.EXTRA.prefix}:${file.nameWithoutExtension}/$name",
                     source = CaseSource.EXTRA,
                     name = name,
                     index = position,
