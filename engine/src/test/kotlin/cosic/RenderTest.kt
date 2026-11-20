@@ -110,6 +110,68 @@ class RenderTest {
         assertEquals(0f, peak(OfflineRenderer.render("""s("kick")""", 1.0)), "an unknown sound is silent")
     }
 
+    // ------------------------------------------------------------------------------ export
+
+    private fun firstAbove(x: FloatArray, level: Float = 0.01f): Int = x.indexOfFirst { abs(it) > level }
+
+    @Test
+    fun aRangeStartsOnItsFirstFrameAndIsAsLongAsItsCyclesPlusTheTail() {
+        val library = libraryWithBank("kit", listOf(constantSample(0.05, 0.5f)))
+        val out = OfflineRenderer.render("""s("kit*4")""", 1.0, 3.0, 48_000, library) // 2 cycles at 0.5 cps: 4 seconds
+        val main = (2 / 0.5 * 48_000).toInt() * 2
+        assertTrue(out.size >= main, "at least the cycles: ${out.size}")
+        assertEquals(0, (out.size - main) % (4096 * 2), "the tail is whole blocks")
+        assertTrue(out.size - main <= 10 * 48_000 * 2, "the tail is 10 seconds at the most")
+        val left = channel(out, 0)
+        assertTrue(firstAbove(left) in 0 until 48, "the first onset is on frame 0, not after the 50 ms of play(): ${firstAbove(left)}")
+        assertEquals(0.4, peak(out, 48 * 2, 480 * 2).toDouble(), 0.01, "a constant 0.5 sample times the gain 0.8")
+        // four hits per cycle are half a second apart: cycle 1.25 is the second hit, and nothing starts at the end cycle
+        assertTrue(abs(left[24_000 + 100]) > 0.01f, "the second hit")
+        assertEquals(0f, peak(left, 192_000 + 4096, left.size), "nothing starts after the last frame of the end cycle")
+    }
+
+    @Test
+    fun aRangeFromCycleZeroHasNoStartDelayWherePlayHasOne() {
+        val library = libraryWithBank("kit", listOf(constantSample(0.05, 0.5f)))
+        val code = """s("kit")"""
+        assertTrue(firstAbove(channel(OfflineRenderer.render(code, 0.0, 1.0, 48_000, library), 0)) < 48)
+        assertTrue(firstAbove(channel(OfflineRenderer.render(code, 1.0, 48_000, library), 0)) >= 2400, "play() waits 50 ms")
+    }
+
+    @Test
+    fun aRangeStartsInTheMiddleOfThePattern() {
+        val code = "setcps(1)\n\$: s(\"kit\").struct(\"1 0 0 0\").add(note(0))"
+        val library = libraryWithBank("kit", listOf(constantSample(0.05, 0.5f)))
+        // cycle 1.5 has no hit; the next is at 2.0, half a second in
+        val out = channel(OfflineRenderer.render(code, 1.5, 3.0, 48_000, library), 0)
+        assertEquals(24_000, firstAbove(out).let { if (it in 24_000..24_048) 24_000 else it }, "the first hit")
+    }
+
+    @Test
+    fun aRangeWaitsForTheSamplesItNeedsToBeDecoded() {
+        val library = SlowLibrary(readyOnRequest = 3)
+        val out = OfflineRenderer.render("""s("kit")""", 0.0, 1.0, 48_000, library)
+        assertTrue(firstAbove(channel(out, 0)) in 0 until 48, "the sample played, from the first frame")
+    }
+
+    @Test
+    fun aRangeReportsItsProgressAndCanBeCancelled() {
+        val seen = ArrayList<Double>()
+        OfflineRenderer.render("""s("bd")""", 0.0, 1.0, 48_000, emptyLibrary(), progress = { seen.add(it) })
+        assertEquals(1.0, seen.last())
+        assertTrue(seen.zipWithNext().all { (a, b) -> b >= a }, "progress only grows")
+        assertFailsWith<java.util.concurrent.CancellationException> {
+            OfflineRenderer.render("""s("bd")""", 0.0, 1.0, 48_000, emptyLibrary(), cancelled = { true })
+        }
+    }
+
+    @Test
+    fun aRangeRejectsBadCyclesAndCodeWithErrors() {
+        assertFailsWith<IllegalArgumentException> { OfflineRenderer.render("""s("bd")""", 2.0, 1.0) }
+        assertFailsWith<IllegalArgumentException> { OfflineRenderer.render("""s("bd")""", -1.0, 1.0) }
+        assertEquals("foo is not defined", assertFailsWith<IllegalStateException> { OfflineRenderer.render("foo(1)", 0.0, 1.0) }.message)
+    }
+
     // -------------------------------------------------------------------------------- WAV
 
     @Test

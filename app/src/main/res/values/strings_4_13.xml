@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="export_menu_item">Export audio</string>
+    <string name="export_title">Export audio</string>
+    <string name="export_file_name">File name</string>
+    <string name="export_start_cycle">Start cycle</string>
+    <string name="export_end_cycle">End cycle</string>
+    <string name="export_range_invalid">The end cycle must be a number after the start cycle.</string>
+    <string name="export_sample_rate">Sample rate</string>
+    <string name="export_rate_hz">%1$d Hz</string>
+    <string name="export_action">Export</string>
+    <string name="export_cancel">Cancel</string>
+    <string name="export_close">Close</string>
+    <string name="export_progress">Rendering… %1$d%%</string>
+    <string name="export_done">Exported %1$.1f seconds of audio.</string>
+    <string name="export_failed">Export failed: %1$s</string>
+</resources>

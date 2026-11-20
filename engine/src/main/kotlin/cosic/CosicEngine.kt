@@ -24,6 +24,7 @@ import cosic.player.Scheduler
 import cosic.player.SoundLookup
 import cosic.player.SoundResolver
 import cosic.player.dryRun
+import cosic.player.lookAhead
 import cosic.player.errorMessage
 import cosic.player.voiceParams
 import cosic.script.DEFAULT_CPS
@@ -65,6 +66,9 @@ private sealed interface Command {
     class PlayFrom(val cycle: Rational) : Command
 
     data object Stop : Command
+
+    /** Stops querying the program but leaves the voices and the effect tails to ring out (the end of an offline render). */
+    data object Halt : Command
 
     class Preview(val sound: String, val index: Int, val note: Double?) : Command
 
@@ -143,6 +147,9 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     var program: ProgramInfo? = null
         private set
 
+    /** The pattern and tempo of the last program that [evaluate] accepted, for [soundsLoading]. */
+    private var lastPattern: Pair<Pattern, Double>? = null
+
     private val effects = EngineEffects(inputs, console, outputs) { remote }
     private val scheduler = Scheduler(sampleRate, sounds, outputs)
     private val chainDemand = ChainDemand()
@@ -199,6 +206,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
             commands.add(Command.SetProgram(program.pattern, program.cps, warnings))
             // the visuals follow the program that plays, and read the sound of their analysers from the engine
             (effects.visuals as? VisualSession)?.attach(program.pattern, scopes)
+            lastPattern = program.pattern to program.cps
             val info = ProgramInfo(
                 program.miniLocations, program.sliders, program.widgets, effects.visuals, metadataOf(code), effects.inputsUsed(),
             )
@@ -240,6 +248,23 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
         if (!playRequested) console.log("[cyclist] start")
         playRequested = true
         commands.add(Command.PlayFrom(Rational.of(cycle)))
+    }
+
+    /**
+     * How many of the events the last accepted program plays from cycle [beginCycle] to [endCycle] have a sound that is still being decoded; looking asks the library
+     * for those, so calling this again after a moment finds fewer. The offline export waits for 0 before it renders. Not while the engine is rendering.
+     */
+    @Synchronized
+    internal fun soundsLoading(beginCycle: Double, endCycle: Double): Int {
+        val (pattern, cps) = lastPattern ?: return 0
+        return onBigStack {
+            host.quietly { lookAhead(pattern, Rational.of(beginCycle), Rational.of(endCycle), sounds, cps, outputs).loading }
+        }
+    }
+
+    /** Stops scheduling events but lets the voices and the delay and reverb tails sound out, which [stop] would fade away. */
+    internal fun halt() {
+        commands.add(Command.Halt)
     }
 
     /** Stops the program: voices and effect tails fade out over 20 ms, and the delay and reverb are emptied after it. */
@@ -323,6 +348,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
                     mixer.stopAll(STOP_FADE_MS)
                     waitingPreview = null
                 }
+                Command.Halt -> scheduler.stop()
                 is Command.Preview -> {
                     waitingPreview = command
                     previewGivesUpAt = renderedFrames + PREVIEW_WAIT_SECONDS * sampleRate

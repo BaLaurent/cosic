@@ -136,21 +136,35 @@ internal fun dryRun(
     sounds: SoundResolver,
     cps: Double = DEFAULT_CPS,
     outputs: OutputBus? = null,
-): List<String> = reportingExhaustion {
+): List<String> = lookAhead(pattern, Rational(fromCycle), Rational(fromCycle + DRY_RUN_CYCLES), sounds, cps, outputs).warnings
+
+/** What [lookAhead] found: the [warnings] of [dryRun] and how many of the events it looked at have a sound that is still being decoded. */
+internal class LookAhead(val warnings: List<String>, val loading: Int)
+
+/** [dryRun] over the cycles from [from] to [until], which also counts the events whose sound is [SoundLookup.Loading] (the offline export waits until none is). */
+internal fun lookAhead(
+    pattern: Pattern,
+    from: Rational,
+    until: Rational,
+    sounds: SoundResolver,
+    cps: Double = DEFAULT_CPS,
+    outputs: OutputBus? = null,
+): LookAhead = reportingExhaustion {
     val warnings = Warnings()
-    var begin = Rational(fromCycle)
-    val end = begin + Rational(DRY_RUN_CYCLES)
-    while (begin < end) {
+    var loading = 0
+    var begin = from
+    while (begin < until) {
         for (hap in onsets(pattern, begin, cps, warnings)) {
             if (outputs?.oscTarget == true || takenOver(hap)) continue
             val controls = controlsOf(hap)
             val whole = checkNotNull(hap.whole)
             val lookup = sounds.resolve(controls, hapSeconds(controls, whole.end - whole.begin, cps), cps)
             if (lookup is SoundLookup.Unknown) warnings.add(unknownSoundWarning(lookup.key))
+            if (lookup is SoundLookup.Loading) loading++
         }
         begin += CHUNK
     }
-    warnings.list
+    LookAhead(warnings.list, loading)
 }
 
 /** Whether a dominant hook takes the hap's place at the audio output (the rule of `getSchedule`: no default output when `dominantSchedule`). */
