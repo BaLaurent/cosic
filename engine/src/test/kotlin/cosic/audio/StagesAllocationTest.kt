@@ -19,7 +19,7 @@ class StagesAllocationTest {
                 "transsustain" to -0.3, "release" to 0.2,
             ),
             vp(
-                VoiceSource.Sample(sineSample(300.0, 0.5), null), 0.5, "distort" to 2.0, "distorttype" to 4.0, "distortvol" to 0.5, "tremolosync" to 2.0, "tremoloskew" to 0.3,
+                plain(sineSample(300.0, 0.5)), 0.5, "distort" to 2.0, "distorttype" to 4.0, "distortvol" to 0.5, "tremolosync" to 2.0, "tremoloskew" to 0.3,
                 "tremolophase" to 0.2, "tremoloshape" to 3.0, "compressor" to -10.0, "compressorKnee" to 3.0, "compressorAttack" to 0.01, "compressorRelease" to 0.1, "phaserrate" to 5.0,
                 "phaserdepth" to 0.9, "phasercenter" to 700.0, "phasersweep" to 500.0, "pan" to 0.2, "coarse" to 2.5,
             ),
