@@ -1,8 +1,7 @@
 // Reference data for the transpiler of the script engine (engine/src/test/kotlin/cosic/script/next/TranspileOracleTest.kt).
 //
 // It runs programs through Strudel's own transpiler (packages/transpiler at the pinned commit: transpiler.mjs with the
-// mini-notation, bare-samples and widget plugins, the ones the website REPL loads; not the kabelsalat plugin, whose
-// `K(...)` rewrite is Cosic's own task) and stores what came out, so the Kotlin transpiler can be compared with it:
+// mini-notation, bare-samples, widget and kabelsalat plugins, the ones the website REPL loads) and stores what came out, so the Kotlin transpiler can be compared with it:
 //
 //   node tools/strudel-ref/transpile-oracle.mjs [--show <case or program id>]
 //
@@ -43,6 +42,7 @@ console.log = () => {};
 const T = await import(pkg('transpiler/transpiler.mjs'));
 await import(pkg('transpiler/plugin-mini.mjs'));
 await import(pkg('transpiler/plugin-sample.mjs'));
+await import(pkg('transpiler/plugin-kabelsalat.mjs'));
 const W = await import(pkg('transpiler/plugin-widgets.mjs'));
 const { getLeafLocations } = await import(pkg('mini/mini.mjs'));
 console.log = log;

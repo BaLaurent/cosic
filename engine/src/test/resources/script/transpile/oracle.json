@@ -15611,14 +15611,14 @@
   ]
  },
  {
-  "name": "misc.kabel-call-untouched",
+  "name": "misc.kabel-call",
   "code": "K(\"a b\")",
   "variants": [
    {
     "options": {},
-    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=K\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=2",
-    "digest": "1a3565fb0978d9ab",
-    "output": "return K(m('a b', 2));",
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=2",
+    "digest": "076c5f4e49819223",
+    "output": "return worklet('pat[0]', m('a b', 2));",
     "miniLocations": [
      [
       3,
@@ -15652,9 +15652,9 @@
     "options": {
      "addReturn": false
     },
-    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=K\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=2",
-    "digest": "108d8165db076006",
-    "output": "K(m('a b', 2));",
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=2",
+    "digest": "d88fe582840b2c36",
+    "output": "worklet('pat[0]', m('a b', 2));",
     "miniLocations": [
      [
       3,
@@ -15689,9 +15689,9 @@
      "id": "ed",
      "emitWidgets": false
     },
-    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=K\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=2",
-    "digest": "1a3565fb0978d9ab",
-    "output": "return K(m('a b', 2));",
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=2",
+    "digest": "076c5f4e49819223",
+    "output": "return worklet('pat[0]', m('a b', 2));",
     "miniLocations": [
      [
       3,
@@ -15725,9 +15725,2490 @@
     "options": {
      "emitMiniLocations": false
     },
-    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=K\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=2",
-    "digest": "1a3565fb0978d9ab",
-    "output": "return K(m('a b', 2));"
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=2",
+    "digest": "076c5f4e49819223",
+    "output": "return worklet('pat[0]', m('a b', 2));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.number-expression",
+  "code": "K(1 + 2)",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"1 + 2\"",
+    "digest": "aa3a0e4c0ae323a3",
+    "output": "return worklet('1 + 2');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"1 + 2\"",
+    "digest": "c48a5664e86ac887",
+    "output": "worklet('1 + 2');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"1 + 2\"",
+    "digest": "aa3a0e4c0ae323a3",
+    "output": "return worklet('1 + 2');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"1 + 2\"",
+    "digest": "aa3a0e4c0ae323a3",
+    "output": "return worklet('1 + 2');"
+   }
+  ]
+ },
+ {
+  "name": "kabel.arrow-block",
+  "code": "K(() => { const a = \"x y\"; return a })",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    const a = pat[0];\\n    return a\\n})()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x y\"\n        Literal value=20",
+    "digest": "032936112010e4d3",
+    "output": "return worklet('(() => {\\n    const a = pat[0];\\n    return a\\n})()', m('x y', 20));",
+    "miniLocations": [
+     [
+      21,
+      22
+     ],
+     [
+      23,
+      24
+     ]
+    ],
+    "literals": [
+     [
+      20,
+      "\"x y\"",
+      [
+       [
+        21,
+        22
+       ],
+       [
+        23,
+        24
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    const a = pat[0];\\n    return a\\n})()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x y\"\n        Literal value=20",
+    "digest": "17d1f4c13f718703",
+    "output": "worklet('(() => {\\n    const a = pat[0];\\n    return a\\n})()', m('x y', 20));",
+    "miniLocations": [
+     [
+      21,
+      22
+     ],
+     [
+      23,
+      24
+     ]
+    ],
+    "literals": [
+     [
+      20,
+      "\"x y\"",
+      [
+       [
+        21,
+        22
+       ],
+       [
+        23,
+        24
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    const a = pat[0];\\n    return a\\n})()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x y\"\n        Literal value=20",
+    "digest": "032936112010e4d3",
+    "output": "return worklet('(() => {\\n    const a = pat[0];\\n    return a\\n})()', m('x y', 20));",
+    "miniLocations": [
+     [
+      21,
+      22
+     ],
+     [
+      23,
+      24
+     ]
+    ],
+    "literals": [
+     [
+      20,
+      "\"x y\"",
+      [
+       [
+        21,
+        22
+       ],
+       [
+        23,
+        24
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    const a = pat[0];\\n    return a\\n})()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x y\"\n        Literal value=20",
+    "digest": "032936112010e4d3",
+    "output": "return worklet('(() => {\\n    const a = pat[0];\\n    return a\\n})()', m('x y', 20));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.function-block",
+  "code": "K(function () { return \"x\" })",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"function () {\\n    return pat[0]\\n}()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x\"\n        Literal value=23",
+    "digest": "ac7aa2c35305d58c",
+    "output": "return worklet('function () {\\n    return pat[0]\\n}()', m('x', 23));",
+    "miniLocations": [
+     [
+      24,
+      25
+     ]
+    ],
+    "literals": [
+     [
+      23,
+      "\"x\"",
+      [
+       [
+        24,
+        25
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"function () {\\n    return pat[0]\\n}()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x\"\n        Literal value=23",
+    "digest": "bde8007f94a28ac7",
+    "output": "worklet('function () {\\n    return pat[0]\\n}()', m('x', 23));",
+    "miniLocations": [
+     [
+      24,
+      25
+     ]
+    ],
+    "literals": [
+     [
+      23,
+      "\"x\"",
+      [
+       [
+        24,
+        25
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"function () {\\n    return pat[0]\\n}()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x\"\n        Literal value=23",
+    "digest": "ac7aa2c35305d58c",
+    "output": "return worklet('function () {\\n    return pat[0]\\n}()', m('x', 23));",
+    "miniLocations": [
+     [
+      24,
+      25
+     ]
+    ],
+    "literals": [
+     [
+      23,
+      "\"x\"",
+      [
+       [
+        24,
+        25
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"function () {\\n    return pat[0]\\n}()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x\"\n        Literal value=23",
+    "digest": "ac7aa2c35305d58c",
+    "output": "return worklet('function () {\\n    return pat[0]\\n}()', m('x', 23));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.arrow-expression-body-is-not-called",
+  "code": "K(() => \"x y\")",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"() => pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x y\"\n        Literal value=8",
+    "digest": "f0177fb881604961",
+    "output": "return worklet('() => pat[0]', m('x y', 8));",
+    "miniLocations": [
+     [
+      9,
+      10
+     ],
+     [
+      11,
+      12
+     ]
+    ],
+    "literals": [
+     [
+      8,
+      "\"x y\"",
+      [
+       [
+        9,
+        10
+       ],
+       [
+        11,
+        12
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"() => pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x y\"\n        Literal value=8",
+    "digest": "90764b9abc44f074",
+    "output": "worklet('() => pat[0]', m('x y', 8));",
+    "miniLocations": [
+     [
+      9,
+      10
+     ],
+     [
+      11,
+      12
+     ]
+    ],
+    "literals": [
+     [
+      8,
+      "\"x y\"",
+      [
+       [
+        9,
+        10
+       ],
+       [
+        11,
+        12
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"() => pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x y\"\n        Literal value=8",
+    "digest": "f0177fb881604961",
+    "output": "return worklet('() => pat[0]', m('x y', 8));",
+    "miniLocations": [
+     [
+      9,
+      10
+     ],
+     [
+      11,
+      12
+     ]
+    ],
+    "literals": [
+     [
+      8,
+      "\"x y\"",
+      [
+       [
+        9,
+        10
+       ],
+       [
+        11,
+        12
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"() => pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x y\"\n        Literal value=8",
+    "digest": "f0177fb881604961",
+    "output": "return worklet('() => pat[0]', m('x y', 8));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.arrow-with-params-is-not-called",
+  "code": "K((a) => { return a })",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"a => {\\n    return a\\n}\"",
+    "digest": "9ed5e5d19f65dcf3",
+    "output": "return worklet('a => {\\n    return a\\n}');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"a => {\\n    return a\\n}\"",
+    "digest": "a6be2d4c154834f1",
+    "output": "worklet('a => {\\n    return a\\n}');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"a => {\\n    return a\\n}\"",
+    "digest": "9ed5e5d19f65dcf3",
+    "output": "return worklet('a => {\\n    return a\\n}');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"a => {\\n    return a\\n}\"",
+    "digest": "9ed5e5d19f65dcf3",
+    "output": "return worklet('a => {\\n    return a\\n}');"
+   }
+  ]
+ },
+ {
+  "name": "kabel.s-call",
+  "code": "K(S(\"a\".fast(4)))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a\"\n            Literal value=4\n          Identifier name=fast\n        Literal value=4",
+    "digest": "ef2bb897212b9d09",
+    "output": "return worklet('pat[0]', m('a', 4).fast(4));",
+    "miniLocations": [
+     [
+      5,
+      6
+     ]
+    ],
+    "literals": [
+     [
+      4,
+      "\"a\"",
+      [
+       [
+        5,
+        6
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a\"\n            Literal value=4\n          Identifier name=fast\n        Literal value=4",
+    "digest": "c51409fce04a12c6",
+    "output": "worklet('pat[0]', m('a', 4).fast(4));",
+    "miniLocations": [
+     [
+      5,
+      6
+     ]
+    ],
+    "literals": [
+     [
+      4,
+      "\"a\"",
+      [
+       [
+        5,
+        6
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a\"\n            Literal value=4\n          Identifier name=fast\n        Literal value=4",
+    "digest": "ef2bb897212b9d09",
+    "output": "return worklet('pat[0]', m('a', 4).fast(4));",
+    "miniLocations": [
+     [
+      5,
+      6
+     ]
+    ],
+    "literals": [
+     [
+      4,
+      "\"a\"",
+      [
+       [
+        5,
+        6
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a\"\n            Literal value=4\n          Identifier name=fast\n        Literal value=4",
+    "digest": "ef2bb897212b9d09",
+    "output": "return worklet('pat[0]', m('a', 4).fast(4));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.s-member-form",
+  "code": "K(a.S(\"x\"))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x\"\n        Literal value=6",
+    "digest": "8f447097d3392d5e",
+    "output": "return worklet('pat[0]', m('x', 6));",
+    "miniLocations": [
+     [
+      7,
+      8
+     ]
+    ],
+    "literals": [
+     [
+      6,
+      "\"x\"",
+      [
+       [
+        7,
+        8
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x\"\n        Literal value=6",
+    "digest": "ccdfce81a0114bdb",
+    "output": "worklet('pat[0]', m('x', 6));",
+    "miniLocations": [
+     [
+      7,
+      8
+     ]
+    ],
+    "literals": [
+     [
+      6,
+      "\"x\"",
+      [
+       [
+        7,
+        8
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x\"\n        Literal value=6",
+    "digest": "8f447097d3392d5e",
+    "output": "return worklet('pat[0]', m('x', 6));",
+    "miniLocations": [
+     [
+      7,
+      8
+     ]
+    ],
+    "literals": [
+     [
+      6,
+      "\"x\"",
+      [
+       [
+        7,
+        8
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"pat[0]\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"x\"\n        Literal value=6",
+    "digest": "8f447097d3392d5e",
+    "output": "return worklet('pat[0]', m('x', 6));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.member",
+  "code": "s(\"a b\").K(sine(\"1 2\"))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=s\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a b\"\n            Literal value=2\n        Identifier name=worklet\n      Literal value=\"sine(pat[0])\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"1 2\"\n        Literal value=16",
+    "digest": "a57e846e2e7ddab8",
+    "output": "return s(m('a b', 2)).worklet('sine(pat[0])', m('1 2', 16));",
+    "miniLocations": [
+     [
+      3,
+      4
+     ],
+     [
+      5,
+      6
+     ],
+     [
+      17,
+      18
+     ],
+     [
+      19,
+      20
+     ]
+    ],
+    "literals": [
+     [
+      2,
+      "\"a b\"",
+      [
+       [
+        3,
+        4
+       ],
+       [
+        5,
+        6
+       ]
+      ]
+     ],
+     [
+      16,
+      "\"1 2\"",
+      [
+       [
+        17,
+        18
+       ],
+       [
+        19,
+        20
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=s\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a b\"\n            Literal value=2\n        Identifier name=worklet\n      Literal value=\"sine(pat[0])\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"1 2\"\n        Literal value=16",
+    "digest": "4e7d3016730fd556",
+    "output": "s(m('a b', 2)).worklet('sine(pat[0])', m('1 2', 16));",
+    "miniLocations": [
+     [
+      3,
+      4
+     ],
+     [
+      5,
+      6
+     ],
+     [
+      17,
+      18
+     ],
+     [
+      19,
+      20
+     ]
+    ],
+    "literals": [
+     [
+      2,
+      "\"a b\"",
+      [
+       [
+        3,
+        4
+       ],
+       [
+        5,
+        6
+       ]
+      ]
+     ],
+     [
+      16,
+      "\"1 2\"",
+      [
+       [
+        17,
+        18
+       ],
+       [
+        19,
+        20
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=s\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a b\"\n            Literal value=2\n        Identifier name=worklet\n      Literal value=\"sine(pat[0])\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"1 2\"\n        Literal value=16",
+    "digest": "a57e846e2e7ddab8",
+    "output": "return s(m('a b', 2)).worklet('sine(pat[0])', m('1 2', 16));",
+    "miniLocations": [
+     [
+      3,
+      4
+     ],
+     [
+      5,
+      6
+     ],
+     [
+      17,
+      18
+     ],
+     [
+      19,
+      20
+     ]
+    ],
+    "literals": [
+     [
+      2,
+      "\"a b\"",
+      [
+       [
+        3,
+        4
+       ],
+       [
+        5,
+        6
+       ]
+      ]
+     ],
+     [
+      16,
+      "\"1 2\"",
+      [
+       [
+        17,
+        18
+       ],
+       [
+        19,
+        20
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=s\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a b\"\n            Literal value=2\n        Identifier name=worklet\n      Literal value=\"sine(pat[0])\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"1 2\"\n        Literal value=16",
+    "digest": "a57e846e2e7ddab8",
+    "output": "return s(m('a b', 2)).worklet('sine(pat[0])', m('1 2', 16));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.member-chain",
+  "code": "s(\"a\").K(sine(\"1\")).fast(2)",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          MemberExpression computed=false optional=false\n            CallExpression optional=false\n              Identifier name=s\n              CallExpression optional=false\n                Identifier name=m\n                Literal value=\"a\"\n                Literal value=2\n            Identifier name=worklet\n          Literal value=\"sine(pat[0])\"\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"1\"\n            Literal value=14\n        Identifier name=fast\n      Literal value=2",
+    "digest": "2dff73387fe361e0",
+    "output": "return s(m('a', 2)).worklet('sine(pat[0])', m('1', 14)).fast(2);",
+    "miniLocations": [
+     [
+      3,
+      4
+     ],
+     [
+      15,
+      16
+     ]
+    ],
+    "literals": [
+     [
+      2,
+      "\"a\"",
+      [
+       [
+        3,
+        4
+       ]
+      ]
+     ],
+     [
+      14,
+      "\"1\"",
+      [
+       [
+        15,
+        16
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          MemberExpression computed=false optional=false\n            CallExpression optional=false\n              Identifier name=s\n              CallExpression optional=false\n                Identifier name=m\n                Literal value=\"a\"\n                Literal value=2\n            Identifier name=worklet\n          Literal value=\"sine(pat[0])\"\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"1\"\n            Literal value=14\n        Identifier name=fast\n      Literal value=2",
+    "digest": "4e552c8af00df80f",
+    "output": "s(m('a', 2)).worklet('sine(pat[0])', m('1', 14)).fast(2);",
+    "miniLocations": [
+     [
+      3,
+      4
+     ],
+     [
+      15,
+      16
+     ]
+    ],
+    "literals": [
+     [
+      2,
+      "\"a\"",
+      [
+       [
+        3,
+        4
+       ]
+      ]
+     ],
+     [
+      14,
+      "\"1\"",
+      [
+       [
+        15,
+        16
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          MemberExpression computed=false optional=false\n            CallExpression optional=false\n              Identifier name=s\n              CallExpression optional=false\n                Identifier name=m\n                Literal value=\"a\"\n                Literal value=2\n            Identifier name=worklet\n          Literal value=\"sine(pat[0])\"\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"1\"\n            Literal value=14\n        Identifier name=fast\n      Literal value=2",
+    "digest": "2dff73387fe361e0",
+    "output": "return s(m('a', 2)).worklet('sine(pat[0])', m('1', 14)).fast(2);",
+    "miniLocations": [
+     [
+      3,
+      4
+     ],
+     [
+      15,
+      16
+     ]
+    ],
+    "literals": [
+     [
+      2,
+      "\"a\"",
+      [
+       [
+        3,
+        4
+       ]
+      ]
+     ],
+     [
+      14,
+      "\"1\"",
+      [
+       [
+        15,
+        16
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          MemberExpression computed=false optional=false\n            CallExpression optional=false\n              Identifier name=s\n              CallExpression optional=false\n                Identifier name=m\n                Literal value=\"a\"\n                Literal value=2\n            Identifier name=worklet\n          Literal value=\"sine(pat[0])\"\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"1\"\n            Literal value=14\n        Identifier name=fast\n      Literal value=2",
+    "digest": "2dff73387fe361e0",
+    "output": "return s(m('a', 2)).worklet('sine(pat[0])', m('1', 14)).fast(2);"
+   }
+  ]
+ },
+ {
+  "name": "kabel.rest-arguments",
+  "code": "K(f(\"a\"), 3, \"b c\")",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0])\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a\"\n        Literal value=4\n      Literal value=3\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"b c\"\n        Literal value=13",
+    "digest": "12ad2bb12c2d29b2",
+    "output": "return worklet('f(pat[0])', m('a', 4), 3, m('b c', 13));",
+    "miniLocations": [
+     [
+      5,
+      6
+     ],
+     [
+      14,
+      15
+     ],
+     [
+      16,
+      17
+     ]
+    ],
+    "literals": [
+     [
+      4,
+      "\"a\"",
+      [
+       [
+        5,
+        6
+       ]
+      ]
+     ],
+     [
+      13,
+      "\"b c\"",
+      [
+       [
+        14,
+        15
+       ],
+       [
+        16,
+        17
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0])\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a\"\n        Literal value=4\n      Literal value=3\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"b c\"\n        Literal value=13",
+    "digest": "51a2f56e7d671c36",
+    "output": "worklet('f(pat[0])', m('a', 4), 3, m('b c', 13));",
+    "miniLocations": [
+     [
+      5,
+      6
+     ],
+     [
+      14,
+      15
+     ],
+     [
+      16,
+      17
+     ]
+    ],
+    "literals": [
+     [
+      4,
+      "\"a\"",
+      [
+       [
+        5,
+        6
+       ]
+      ]
+     ],
+     [
+      13,
+      "\"b c\"",
+      [
+       [
+        14,
+        15
+       ],
+       [
+        16,
+        17
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0])\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a\"\n        Literal value=4\n      Literal value=3\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"b c\"\n        Literal value=13",
+    "digest": "12ad2bb12c2d29b2",
+    "output": "return worklet('f(pat[0])', m('a', 4), 3, m('b c', 13));",
+    "miniLocations": [
+     [
+      5,
+      6
+     ],
+     [
+      14,
+      15
+     ],
+     [
+      16,
+      17
+     ]
+    ],
+    "literals": [
+     [
+      4,
+      "\"a\"",
+      [
+       [
+        5,
+        6
+       ]
+      ]
+     ],
+     [
+      13,
+      "\"b c\"",
+      [
+       [
+        14,
+        15
+       ],
+       [
+        16,
+        17
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0])\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a\"\n        Literal value=4\n      Literal value=3\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"b c\"\n        Literal value=13",
+    "digest": "12ad2bb12c2d29b2",
+    "output": "return worklet('f(pat[0])', m('a', 4), 3, m('b c', 13));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.order-follows-the-source",
+  "code": "K(f(S(g(\"c\")), \"a\", `b`, 'q'))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0], pat[1], pat[2], 'q')\"\n      CallExpression optional=false\n        Identifier name=g\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"c\"\n          Literal value=8\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a\"\n        Literal value=15\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"b\"\n        Literal value=20",
+    "digest": "df6ab1b4b05fa230",
+    "output": "return worklet('f(pat[0], pat[1], pat[2], \\'q\\')', g(m('c', 8)), m('a', 15), m('b', 20));",
+    "miniLocations": [
+     [
+      9,
+      10
+     ],
+     [
+      16,
+      17
+     ],
+     [
+      21,
+      22
+     ]
+    ],
+    "literals": [
+     [
+      8,
+      "\"c\"",
+      [
+       [
+        9,
+        10
+       ]
+      ]
+     ],
+     [
+      15,
+      "\"a\"",
+      [
+       [
+        16,
+        17
+       ]
+      ]
+     ],
+     [
+      20,
+      "\"b\"",
+      [
+       [
+        21,
+        22
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0], pat[1], pat[2], 'q')\"\n      CallExpression optional=false\n        Identifier name=g\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"c\"\n          Literal value=8\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a\"\n        Literal value=15\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"b\"\n        Literal value=20",
+    "digest": "7eac4e48ed7db49c",
+    "output": "worklet('f(pat[0], pat[1], pat[2], \\'q\\')', g(m('c', 8)), m('a', 15), m('b', 20));",
+    "miniLocations": [
+     [
+      9,
+      10
+     ],
+     [
+      16,
+      17
+     ],
+     [
+      21,
+      22
+     ]
+    ],
+    "literals": [
+     [
+      8,
+      "\"c\"",
+      [
+       [
+        9,
+        10
+       ]
+      ]
+     ],
+     [
+      15,
+      "\"a\"",
+      [
+       [
+        16,
+        17
+       ]
+      ]
+     ],
+     [
+      20,
+      "\"b\"",
+      [
+       [
+        21,
+        22
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0], pat[1], pat[2], 'q')\"\n      CallExpression optional=false\n        Identifier name=g\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"c\"\n          Literal value=8\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a\"\n        Literal value=15\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"b\"\n        Literal value=20",
+    "digest": "df6ab1b4b05fa230",
+    "output": "return worklet('f(pat[0], pat[1], pat[2], \\'q\\')', g(m('c', 8)), m('a', 15), m('b', 20));",
+    "miniLocations": [
+     [
+      9,
+      10
+     ],
+     [
+      16,
+      17
+     ],
+     [
+      21,
+      22
+     ]
+    ],
+    "literals": [
+     [
+      8,
+      "\"c\"",
+      [
+       [
+        9,
+        10
+       ]
+      ]
+     ],
+     [
+      15,
+      "\"a\"",
+      [
+       [
+        16,
+        17
+       ]
+      ]
+     ],
+     [
+      20,
+      "\"b\"",
+      [
+       [
+        21,
+        22
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0], pat[1], pat[2], 'q')\"\n      CallExpression optional=false\n        Identifier name=g\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"c\"\n          Literal value=8\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a\"\n        Literal value=15\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"b\"\n        Literal value=20",
+    "digest": "df6ab1b4b05fa230",
+    "output": "return worklet('f(pat[0], pat[1], pat[2], \\'q\\')', g(m('c', 8)), m('a', 15), m('b', 20));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.s-is-not-entered",
+  "code": "K(f(S(\"a\".add(S(\"b\"))), \"c\"))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0], pat[1])\"\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a\"\n            Literal value=6\n          Identifier name=add\n        CallExpression optional=false\n          Identifier name=S\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"b\"\n            Literal value=16\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"c\"\n        Literal value=24",
+    "digest": "d92f86fbe1d5140a",
+    "output": "return worklet('f(pat[0], pat[1])', m('a', 6).add(S(m('b', 16))), m('c', 24));",
+    "miniLocations": [
+     [
+      7,
+      8
+     ],
+     [
+      17,
+      18
+     ],
+     [
+      25,
+      26
+     ]
+    ],
+    "literals": [
+     [
+      6,
+      "\"a\"",
+      [
+       [
+        7,
+        8
+       ]
+      ]
+     ],
+     [
+      16,
+      "\"b\"",
+      [
+       [
+        17,
+        18
+       ]
+      ]
+     ],
+     [
+      24,
+      "\"c\"",
+      [
+       [
+        25,
+        26
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0], pat[1])\"\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a\"\n            Literal value=6\n          Identifier name=add\n        CallExpression optional=false\n          Identifier name=S\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"b\"\n            Literal value=16\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"c\"\n        Literal value=24",
+    "digest": "eb74ea8a9f6e8a24",
+    "output": "worklet('f(pat[0], pat[1])', m('a', 6).add(S(m('b', 16))), m('c', 24));",
+    "miniLocations": [
+     [
+      7,
+      8
+     ],
+     [
+      17,
+      18
+     ],
+     [
+      25,
+      26
+     ]
+    ],
+    "literals": [
+     [
+      6,
+      "\"a\"",
+      [
+       [
+        7,
+        8
+       ]
+      ]
+     ],
+     [
+      16,
+      "\"b\"",
+      [
+       [
+        17,
+        18
+       ]
+      ]
+     ],
+     [
+      24,
+      "\"c\"",
+      [
+       [
+        25,
+        26
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0], pat[1])\"\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a\"\n            Literal value=6\n          Identifier name=add\n        CallExpression optional=false\n          Identifier name=S\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"b\"\n            Literal value=16\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"c\"\n        Literal value=24",
+    "digest": "d92f86fbe1d5140a",
+    "output": "return worklet('f(pat[0], pat[1])', m('a', 6).add(S(m('b', 16))), m('c', 24));",
+    "miniLocations": [
+     [
+      7,
+      8
+     ],
+     [
+      17,
+      18
+     ],
+     [
+      25,
+      26
+     ]
+    ],
+    "literals": [
+     [
+      6,
+      "\"a\"",
+      [
+       [
+        7,
+        8
+       ]
+      ]
+     ],
+     [
+      16,
+      "\"b\"",
+      [
+       [
+        17,
+        18
+       ]
+      ]
+     ],
+     [
+      24,
+      "\"c\"",
+      [
+       [
+        25,
+        26
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(pat[0], pat[1])\"\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a\"\n            Literal value=6\n          Identifier name=add\n        CallExpression optional=false\n          Identifier name=S\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"b\"\n            Literal value=16\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"c\"\n        Literal value=24",
+    "digest": "d92f86fbe1d5140a",
+    "output": "return worklet('f(pat[0], pat[1])', m('a', 6).add(S(m('b', 16))), m('c', 24));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.mini-in-nested-arrow",
+  "code": "K(saw(f).add(x => x.delay(\"0.1 0.2\").mul(S(rand))).out())",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"saw(f).add(x => x.delay(pat[0]).mul(pat[1])).out()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"0.1 0.2\"\n        Literal value=26\n      Identifier name=rand",
+    "digest": "62495d22aa8535e8",
+    "output": "return worklet('saw(f).add(x => x.delay(pat[0]).mul(pat[1])).out()', m('0.1 0.2', 26), rand);",
+    "miniLocations": [
+     [
+      27,
+      30
+     ],
+     [
+      31,
+      34
+     ]
+    ],
+    "literals": [
+     [
+      26,
+      "\"0.1 0.2\"",
+      [
+       [
+        27,
+        30
+       ],
+       [
+        31,
+        34
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"saw(f).add(x => x.delay(pat[0]).mul(pat[1])).out()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"0.1 0.2\"\n        Literal value=26\n      Identifier name=rand",
+    "digest": "c876f46068446cc3",
+    "output": "worklet('saw(f).add(x => x.delay(pat[0]).mul(pat[1])).out()', m('0.1 0.2', 26), rand);",
+    "miniLocations": [
+     [
+      27,
+      30
+     ],
+     [
+      31,
+      34
+     ]
+    ],
+    "literals": [
+     [
+      26,
+      "\"0.1 0.2\"",
+      [
+       [
+        27,
+        30
+       ],
+       [
+        31,
+        34
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"saw(f).add(x => x.delay(pat[0]).mul(pat[1])).out()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"0.1 0.2\"\n        Literal value=26\n      Identifier name=rand",
+    "digest": "62495d22aa8535e8",
+    "output": "return worklet('saw(f).add(x => x.delay(pat[0]).mul(pat[1])).out()', m('0.1 0.2', 26), rand);",
+    "miniLocations": [
+     [
+      27,
+      30
+     ],
+     [
+      31,
+      34
+     ]
+    ],
+    "literals": [
+     [
+      26,
+      "\"0.1 0.2\"",
+      [
+       [
+        27,
+        30
+       ],
+       [
+        31,
+        34
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"saw(f).add(x => x.delay(pat[0]).mul(pat[1])).out()\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"0.1 0.2\"\n        Literal value=26\n      Identifier name=rand",
+    "digest": "62495d22aa8535e8",
+    "output": "return worklet('saw(f).add(x => x.delay(pat[0]).mul(pat[1])).out()', m('0.1 0.2', 26), rand);"
+   }
+  ]
+ },
+ {
+  "name": "kabel.error-empty",
+  "code": "K()",
+  "variants": [
+   {
+    "options": {},
+    "error": "K(...) requires an expression"
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "error": "K(...) requires an expression"
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "error": "K(...) requires an expression"
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "error": "K(...) requires an expression"
+   }
+  ]
+ },
+ {
+  "name": "kabel.error-empty-s",
+  "code": "K(S())",
+  "variants": [
+   {
+    "options": {},
+    "error": "S(...) requires an argument"
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "error": "S(...) requires an argument"
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "error": "S(...) requires an argument"
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "error": "S(...) requires an argument"
+   }
+  ]
+ },
+ {
+  "name": "kabel.optional-chain-receiver",
+  "code": "a?.b.K(sine(\"1\"))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    ChainExpression\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          MemberExpression computed=false optional=true\n            Identifier name=a\n            Identifier name=b\n          Identifier name=worklet\n        Literal value=\"sine(pat[0])\"\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"1\"\n          Literal value=12",
+    "digest": "81edb296ce096e23",
+    "output": "return a?.b.worklet('sine(pat[0])', m('1', 12));",
+    "miniLocations": [
+     [
+      13,
+      14
+     ]
+    ],
+    "literals": [
+     [
+      12,
+      "\"1\"",
+      [
+       [
+        13,
+        14
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    ChainExpression\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          MemberExpression computed=false optional=true\n            Identifier name=a\n            Identifier name=b\n          Identifier name=worklet\n        Literal value=\"sine(pat[0])\"\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"1\"\n          Literal value=12",
+    "digest": "a55a151942c9a672",
+    "output": "a?.b.worklet('sine(pat[0])', m('1', 12));",
+    "miniLocations": [
+     [
+      13,
+      14
+     ]
+    ],
+    "literals": [
+     [
+      12,
+      "\"1\"",
+      [
+       [
+        13,
+        14
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    ChainExpression\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          MemberExpression computed=false optional=true\n            Identifier name=a\n            Identifier name=b\n          Identifier name=worklet\n        Literal value=\"sine(pat[0])\"\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"1\"\n          Literal value=12",
+    "digest": "81edb296ce096e23",
+    "output": "return a?.b.worklet('sine(pat[0])', m('1', 12));",
+    "miniLocations": [
+     [
+      13,
+      14
+     ]
+    ],
+    "literals": [
+     [
+      12,
+      "\"1\"",
+      [
+       [
+        13,
+        14
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    ChainExpression\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          MemberExpression computed=false optional=true\n            Identifier name=a\n            Identifier name=b\n          Identifier name=worklet\n        Literal value=\"sine(pat[0])\"\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"1\"\n          Literal value=12",
+    "digest": "81edb296ce096e23",
+    "output": "return a?.b.worklet('sine(pat[0])', m('1', 12));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.statements",
+  "code": "K(() => { for (let i = 0; i < 3; i++) { f(i) } if (a) b(); else if (c) d(); else { e() } return [1, 2]; })",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    for (let i = 0; i < 3; i++) {\\n        f(i)\\n    }\\n    if (a)\\n        b();\\n    else if (c)\\n        d();\\n    else {\\n        e()\\n    }\\n    return [\\n        1,\\n        2\\n    ]\\n})()\"",
+    "digest": "cda3fb733ec46d1c",
+    "output": "return worklet('(() => {\\n    for (let i = 0; i < 3; i++) {\\n        f(i)\\n    }\\n    if (a)\\n        b();\\n    else if (c)\\n        d();\\n    else {\\n        e()\\n    }\\n    return [\\n        1,\\n        2\\n    ]\\n})()');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    for (let i = 0; i < 3; i++) {\\n        f(i)\\n    }\\n    if (a)\\n        b();\\n    else if (c)\\n        d();\\n    else {\\n        e()\\n    }\\n    return [\\n        1,\\n        2\\n    ]\\n})()\"",
+    "digest": "e613bd89bbe20763",
+    "output": "worklet('(() => {\\n    for (let i = 0; i < 3; i++) {\\n        f(i)\\n    }\\n    if (a)\\n        b();\\n    else if (c)\\n        d();\\n    else {\\n        e()\\n    }\\n    return [\\n        1,\\n        2\\n    ]\\n})()');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    for (let i = 0; i < 3; i++) {\\n        f(i)\\n    }\\n    if (a)\\n        b();\\n    else if (c)\\n        d();\\n    else {\\n        e()\\n    }\\n    return [\\n        1,\\n        2\\n    ]\\n})()\"",
+    "digest": "cda3fb733ec46d1c",
+    "output": "return worklet('(() => {\\n    for (let i = 0; i < 3; i++) {\\n        f(i)\\n    }\\n    if (a)\\n        b();\\n    else if (c)\\n        d();\\n    else {\\n        e()\\n    }\\n    return [\\n        1,\\n        2\\n    ]\\n})()');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    for (let i = 0; i < 3; i++) {\\n        f(i)\\n    }\\n    if (a)\\n        b();\\n    else if (c)\\n        d();\\n    else {\\n        e()\\n    }\\n    return [\\n        1,\\n        2\\n    ]\\n})()\"",
+    "digest": "cda3fb733ec46d1c",
+    "output": "return worklet('(() => {\\n    for (let i = 0; i < 3; i++) {\\n        f(i)\\n    }\\n    if (a)\\n        b();\\n    else if (c)\\n        d();\\n    else {\\n        e()\\n    }\\n    return [\\n        1,\\n        2\\n    ]\\n})()');"
+   }
+  ]
+ },
+ {
+  "name": "kabel.strings",
+  "code": "K(f('it\\'s', 'a\\nb', 'é', '\\u2028', 'tab\\t'))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f('it\\\\'s', 'a\\\\nb', 'é', '\\\\u2028', 'tab\\\\t')\"",
+    "digest": "c62a9c5190e99367",
+    "output": "return worklet('f(\\'it\\\\\\'s\\', \\'a\\\\nb\\', \\'é\\', \\'\\\\u2028\\', \\'tab\\\\t\\')');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f('it\\\\'s', 'a\\\\nb', 'é', '\\\\u2028', 'tab\\\\t')\"",
+    "digest": "1209c9ca383f7dc8",
+    "output": "worklet('f(\\'it\\\\\\'s\\', \\'a\\\\nb\\', \\'é\\', \\'\\\\u2028\\', \\'tab\\\\t\\')');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f('it\\\\'s', 'a\\\\nb', 'é', '\\\\u2028', 'tab\\\\t')\"",
+    "digest": "c62a9c5190e99367",
+    "output": "return worklet('f(\\'it\\\\\\'s\\', \\'a\\\\nb\\', \\'é\\', \\'\\\\u2028\\', \\'tab\\\\t\\')');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f('it\\\\'s', 'a\\\\nb', 'é', '\\\\u2028', 'tab\\\\t')\"",
+    "digest": "c62a9c5190e99367",
+    "output": "return worklet('f(\\'it\\\\\\'s\\', \\'a\\\\nb\\', \\'é\\', \\'\\\\u2028\\', \\'tab\\\\t\\')');"
+   }
+  ]
+ },
+ {
+  "name": "kabel.numbers",
+  "code": "K(f(.5, 1e3, 0x10, 1_0, 1e21, 5e-7))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(0.5, 1000, 16, 10, 1e+21, 5e-7)\"",
+    "digest": "102392d36e188dad",
+    "output": "return worklet('f(0.5, 1000, 16, 10, 1e+21, 5e-7)');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(0.5, 1000, 16, 10, 1e+21, 5e-7)\"",
+    "digest": "4e2b5799ddd8a035",
+    "output": "worklet('f(0.5, 1000, 16, 10, 1e+21, 5e-7)');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(0.5, 1000, 16, 10, 1e+21, 5e-7)\"",
+    "digest": "102392d36e188dad",
+    "output": "return worklet('f(0.5, 1000, 16, 10, 1e+21, 5e-7)');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(0.5, 1000, 16, 10, 1e+21, 5e-7)\"",
+    "digest": "102392d36e188dad",
+    "output": "return worklet('f(0.5, 1000, 16, 10, 1e+21, 5e-7)');"
+   }
+  ]
+ },
+ {
+  "name": "kabel.operators",
+  "code": "K(a ** b ** c + (d - e) * -f / g % h ?? (i, j))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"a ** b ** c + (d - e) * -f / g % h ?? (i, j)\"",
+    "digest": "d5fc0f5ca63f09c3",
+    "output": "return worklet('a ** b ** c + (d - e) * -f / g % h ?? (i, j)');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"a ** b ** c + (d - e) * -f / g % h ?? (i, j)\"",
+    "digest": "ad7a45d697fe3884",
+    "output": "worklet('a ** b ** c + (d - e) * -f / g % h ?? (i, j)');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"a ** b ** c + (d - e) * -f / g % h ?? (i, j)\"",
+    "digest": "d5fc0f5ca63f09c3",
+    "output": "return worklet('a ** b ** c + (d - e) * -f / g % h ?? (i, j)');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"a ** b ** c + (d - e) * -f / g % h ?? (i, j)\"",
+    "digest": "d5fc0f5ca63f09c3",
+    "output": "return worklet('a ** b ** c + (d - e) * -f / g % h ?? (i, j)');"
+   }
+  ]
+ },
+ {
+  "name": "kabel.objects-and-arrays",
+  "code": "K(f({ a: 1, b }, {}, [1, , 2], [], x => ({ y: x }), [[1], [2, 3]]))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f({\\n    a: 1,\\n    b\\n}, {}, [\\n    1,\\n    ,\\n    2\\n], [], x => ({ y: x }), [\\n    [1],\\n    [\\n        2,\\n        3\\n    ]\\n])\"",
+    "digest": "c1d0affaa2265493",
+    "output": "return worklet('f({\\n    a: 1,\\n    b\\n}, {}, [\\n    1,\\n    ,\\n    2\\n], [], x => ({ y: x }), [\\n    [1],\\n    [\\n        2,\\n        3\\n    ]\\n])');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f({\\n    a: 1,\\n    b\\n}, {}, [\\n    1,\\n    ,\\n    2\\n], [], x => ({ y: x }), [\\n    [1],\\n    [\\n        2,\\n        3\\n    ]\\n])\"",
+    "digest": "a8728fbb35ce1479",
+    "output": "worklet('f({\\n    a: 1,\\n    b\\n}, {}, [\\n    1,\\n    ,\\n    2\\n], [], x => ({ y: x }), [\\n    [1],\\n    [\\n        2,\\n        3\\n    ]\\n])');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f({\\n    a: 1,\\n    b\\n}, {}, [\\n    1,\\n    ,\\n    2\\n], [], x => ({ y: x }), [\\n    [1],\\n    [\\n        2,\\n        3\\n    ]\\n])\"",
+    "digest": "c1d0affaa2265493",
+    "output": "return worklet('f({\\n    a: 1,\\n    b\\n}, {}, [\\n    1,\\n    ,\\n    2\\n], [], x => ({ y: x }), [\\n    [1],\\n    [\\n        2,\\n        3\\n    ]\\n])');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f({\\n    a: 1,\\n    b\\n}, {}, [\\n    1,\\n    ,\\n    2\\n], [], x => ({ y: x }), [\\n    [1],\\n    [\\n        2,\\n        3\\n    ]\\n])\"",
+    "digest": "c1d0affaa2265493",
+    "output": "return worklet('f({\\n    a: 1,\\n    b\\n}, {}, [\\n    1,\\n    ,\\n    2\\n], [], x => ({ y: x }), [\\n    [1],\\n    [\\n        2,\\n        3\\n    ]\\n])');"
+   }
+  ]
+ },
+ {
+  "name": "kabel.loops-and-declarations",
+  "code": "K(() => { let a = 1, b; var c = a in d ? 1 : 2; for (const x of xs) { f(x) } for (const k in o) g(k); while (a) { a-- } do { f() } while (b); return a })",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    let a = 1, b;\\n    var c = a in d ? 1 : 2;\\n    for (const x of xs) {\\n        f(x)\\n    }\\n    for (const k in o)\\n        g(k);\\n    while (a) {\\n        a--\\n    }\\n    do {\\n        f()\\n    } while (b);\\n    return a\\n})()\"",
+    "digest": "2cdca5d976dab2a1",
+    "output": "return worklet('(() => {\\n    let a = 1, b;\\n    var c = a in d ? 1 : 2;\\n    for (const x of xs) {\\n        f(x)\\n    }\\n    for (const k in o)\\n        g(k);\\n    while (a) {\\n        a--\\n    }\\n    do {\\n        f()\\n    } while (b);\\n    return a\\n})()');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    let a = 1, b;\\n    var c = a in d ? 1 : 2;\\n    for (const x of xs) {\\n        f(x)\\n    }\\n    for (const k in o)\\n        g(k);\\n    while (a) {\\n        a--\\n    }\\n    do {\\n        f()\\n    } while (b);\\n    return a\\n})()\"",
+    "digest": "b4ca216aeb6134f3",
+    "output": "worklet('(() => {\\n    let a = 1, b;\\n    var c = a in d ? 1 : 2;\\n    for (const x of xs) {\\n        f(x)\\n    }\\n    for (const k in o)\\n        g(k);\\n    while (a) {\\n        a--\\n    }\\n    do {\\n        f()\\n    } while (b);\\n    return a\\n})()');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    let a = 1, b;\\n    var c = a in d ? 1 : 2;\\n    for (const x of xs) {\\n        f(x)\\n    }\\n    for (const k in o)\\n        g(k);\\n    while (a) {\\n        a--\\n    }\\n    do {\\n        f()\\n    } while (b);\\n    return a\\n})()\"",
+    "digest": "2cdca5d976dab2a1",
+    "output": "return worklet('(() => {\\n    let a = 1, b;\\n    var c = a in d ? 1 : 2;\\n    for (const x of xs) {\\n        f(x)\\n    }\\n    for (const k in o)\\n        g(k);\\n    while (a) {\\n        a--\\n    }\\n    do {\\n        f()\\n    } while (b);\\n    return a\\n})()');",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"(() => {\\n    let a = 1, b;\\n    var c = a in d ? 1 : 2;\\n    for (const x of xs) {\\n        f(x)\\n    }\\n    for (const k in o)\\n        g(k);\\n    while (a) {\\n        a--\\n    }\\n    do {\\n        f()\\n    } while (b);\\n    return a\\n})()\"",
+    "digest": "2cdca5d976dab2a1",
+    "output": "return worklet('(() => {\\n    let a = 1, b;\\n    var c = a in d ? 1 : 2;\\n    for (const x of xs) {\\n        f(x)\\n    }\\n    for (const k in o)\\n        g(k);\\n    while (a) {\\n        a--\\n    }\\n    do {\\n        f()\\n    } while (b);\\n    return a\\n})()');"
+   }
+  ]
+ },
+ {
+  "name": "kabel.nested-k",
+  "code": "K(f(K(\"a b\")))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(worklet('pat[0]', pat[0]))\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=6",
+    "digest": "e9cf6e1ba5caebc0",
+    "output": "return worklet('f(worklet(\\'pat[0]\\', pat[0]))', m('a b', 6));",
+    "miniLocations": [
+     [
+      7,
+      8
+     ],
+     [
+      9,
+      10
+     ]
+    ],
+    "literals": [
+     [
+      6,
+      "\"a b\"",
+      [
+       [
+        7,
+        8
+       ],
+       [
+        9,
+        10
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(worklet('pat[0]', pat[0]))\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=6",
+    "digest": "d147a51d191df052",
+    "output": "worklet('f(worklet(\\'pat[0]\\', pat[0]))', m('a b', 6));",
+    "miniLocations": [
+     [
+      7,
+      8
+     ],
+     [
+      9,
+      10
+     ]
+    ],
+    "literals": [
+     [
+      6,
+      "\"a b\"",
+      [
+       [
+        7,
+        8
+       ],
+       [
+        9,
+        10
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(worklet('pat[0]', pat[0]))\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=6",
+    "digest": "e9cf6e1ba5caebc0",
+    "output": "return worklet('f(worklet(\\'pat[0]\\', pat[0]))', m('a b', 6));",
+    "miniLocations": [
+     [
+      7,
+      8
+     ],
+     [
+      9,
+      10
+     ]
+    ],
+    "literals": [
+     [
+      6,
+      "\"a b\"",
+      [
+       [
+        7,
+        8
+       ],
+       [
+        9,
+        10
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=worklet\n      Literal value=\"f(worklet('pat[0]', pat[0]))\"\n      CallExpression optional=false\n        Identifier name=m\n        Literal value=\"a b\"\n        Literal value=6",
+    "digest": "e9cf6e1ba5caebc0",
+    "output": "return worklet('f(worklet(\\'pat[0]\\', pat[0]))', m('a b', 6));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.k-in-pattern-chain",
+  "code": "note(\"c e\").add(K(\"1 2\").mul(2))",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=note\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"c e\"\n            Literal value=5\n        Identifier name=add\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=worklet\n            Literal value=\"pat[0]\"\n            CallExpression optional=false\n              Identifier name=m\n              Literal value=\"1 2\"\n              Literal value=18\n          Identifier name=mul\n        Literal value=2",
+    "digest": "2641a225c67f4a80",
+    "output": "return note(m('c e', 5)).add(worklet('pat[0]', m('1 2', 18)).mul(2));",
+    "miniLocations": [
+     [
+      6,
+      7
+     ],
+     [
+      8,
+      9
+     ],
+     [
+      19,
+      20
+     ],
+     [
+      21,
+      22
+     ]
+    ],
+    "literals": [
+     [
+      5,
+      "\"c e\"",
+      [
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        9
+       ]
+      ]
+     ],
+     [
+      18,
+      "\"1 2\"",
+      [
+       [
+        19,
+        20
+       ],
+       [
+        21,
+        22
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=note\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"c e\"\n            Literal value=5\n        Identifier name=add\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=worklet\n            Literal value=\"pat[0]\"\n            CallExpression optional=false\n              Identifier name=m\n              Literal value=\"1 2\"\n              Literal value=18\n          Identifier name=mul\n        Literal value=2",
+    "digest": "0a979bc2e0535a5a",
+    "output": "note(m('c e', 5)).add(worklet('pat[0]', m('1 2', 18)).mul(2));",
+    "miniLocations": [
+     [
+      6,
+      7
+     ],
+     [
+      8,
+      9
+     ],
+     [
+      19,
+      20
+     ],
+     [
+      21,
+      22
+     ]
+    ],
+    "literals": [
+     [
+      5,
+      "\"c e\"",
+      [
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        9
+       ]
+      ]
+     ],
+     [
+      18,
+      "\"1 2\"",
+      [
+       [
+        19,
+        20
+       ],
+       [
+        21,
+        22
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=note\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"c e\"\n            Literal value=5\n        Identifier name=add\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=worklet\n            Literal value=\"pat[0]\"\n            CallExpression optional=false\n              Identifier name=m\n              Literal value=\"1 2\"\n              Literal value=18\n          Identifier name=mul\n        Literal value=2",
+    "digest": "2641a225c67f4a80",
+    "output": "return note(m('c e', 5)).add(worklet('pat[0]', m('1 2', 18)).mul(2));",
+    "miniLocations": [
+     [
+      6,
+      7
+     ],
+     [
+      8,
+      9
+     ],
+     [
+      19,
+      20
+     ],
+     [
+      21,
+      22
+     ]
+    ],
+    "literals": [
+     [
+      5,
+      "\"c e\"",
+      [
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        9
+       ]
+      ]
+     ],
+     [
+      18,
+      "\"1 2\"",
+      [
+       [
+        19,
+        20
+       ],
+       [
+        21,
+        22
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=note\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"c e\"\n            Literal value=5\n        Identifier name=add\n      CallExpression optional=false\n        MemberExpression computed=false optional=false\n          CallExpression optional=false\n            Identifier name=worklet\n            Literal value=\"pat[0]\"\n            CallExpression optional=false\n              Identifier name=m\n              Literal value=\"1 2\"\n              Literal value=18\n          Identifier name=mul\n        Literal value=2",
+    "digest": "2641a225c67f4a80",
+    "output": "return note(m('c e', 5)).add(worklet('pat[0]', m('1 2', 18)).mul(2));"
+   }
+  ]
+ },
+ {
+  "name": "kabel.kabel-labels",
+  "code": "$: K(\"a b\")",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=worklet\n          Literal value=\"pat[0]\"\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a b\"\n            Literal value=5\n        Identifier name=p\n      Literal value=\"$\"",
+    "digest": "cfb85208fd160574",
+    "output": "return worklet('pat[0]', m('a b', 5)).p('$');",
+    "miniLocations": [
+     [
+      6,
+      7
+     ],
+     [
+      8,
+      9
+     ]
+    ],
+    "literals": [
+     [
+      5,
+      "\"a b\"",
+      [
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        9
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=worklet\n          Literal value=\"pat[0]\"\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a b\"\n            Literal value=5\n        Identifier name=p\n      Literal value=\"$\"",
+    "digest": "2f1c7c5a7cade25e",
+    "output": "worklet('pat[0]', m('a b', 5)).p('$');",
+    "miniLocations": [
+     [
+      6,
+      7
+     ],
+     [
+      8,
+      9
+     ]
+    ],
+    "literals": [
+     [
+      5,
+      "\"a b\"",
+      [
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        9
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=worklet\n          Literal value=\"pat[0]\"\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a b\"\n            Literal value=5\n        Identifier name=p\n      Literal value=\"$\"",
+    "digest": "cfb85208fd160574",
+    "output": "return worklet('pat[0]', m('a b', 5)).p('$');",
+    "miniLocations": [
+     [
+      6,
+      7
+     ],
+     [
+      8,
+      9
+     ]
+    ],
+    "literals": [
+     [
+      5,
+      "\"a b\"",
+      [
+       [
+        6,
+        7
+       ],
+       [
+        8,
+        9
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": []
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      MemberExpression computed=false optional=false\n        CallExpression optional=false\n          Identifier name=worklet\n          Literal value=\"pat[0]\"\n          CallExpression optional=false\n            Identifier name=m\n            Literal value=\"a b\"\n            Literal value=5\n        Identifier name=p\n      Literal value=\"$\"",
+    "digest": "cfb85208fd160574",
+    "output": "return worklet('pat[0]', m('a b', 5)).p('$');"
    }
   ]
  },

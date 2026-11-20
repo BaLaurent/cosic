@@ -5,6 +5,7 @@ import cosic.SourceRange
 import cosic.WidgetConfig
 import cosic.parity.ParityData
 import cosic.pattern.CosicError
+import cosic.script.kabel.Kabelsalat
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -27,7 +28,7 @@ import kotlin.test.fail
 
 /**
  * Compares the transpiler with Strudel's. `tools/strudel-ref/transpile-oracle.mjs` runs programs through the transpiler
- * of the pinned commit (with the mini-notation, bare-samples and widget plugins, the ones the website REPL loads) and
+ * of the pinned commit (with the mini-notation, bare-samples, widget and kabelsalat plugins, the ones the website REPL loads) and
  * stores what came out: the tree of the output with positions and the `raw` of literals taken away, the mini locations,
  * the widgets and the sliders, or the error. The programs are the whole parity corpus and the hand-written snippets of
  * `script/transpile/cases.txt`, the latter with four sets of options.
@@ -56,6 +57,7 @@ class TranspileOracleTest {
     @BeforeTest
     fun registerLanguages() {
         for (tag in listOf("mondo", "mondolang")) EmbeddedLanguages.register(tag, WholeCodeLanguage)
+        Kabelsalat.install()
     }
 
     private val handWritten: List<Run> by lazy {

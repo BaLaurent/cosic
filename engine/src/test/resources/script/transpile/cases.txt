@@ -421,8 +421,58 @@ s("a").fast(0.5).slow(1e3)
 // one
 /* two */ s("a") // three
 /* four */
-### misc.kabel-call-untouched
+### misc.kabel-call
 K("a b")
+### kabel.number-expression
+K(1 + 2)
+### kabel.arrow-block
+K(() => { const a = "x y"; return a })
+### kabel.function-block
+K(function () { return "x" })
+### kabel.arrow-expression-body-is-not-called
+K(() => "x y")
+### kabel.arrow-with-params-is-not-called
+K((a) => { return a })
+### kabel.s-call
+K(S("a".fast(4)))
+### kabel.s-member-form
+K(a.S("x"))
+### kabel.member
+s("a b").K(sine("1 2"))
+### kabel.member-chain
+s("a").K(sine("1")).fast(2)
+### kabel.rest-arguments
+K(f("a"), 3, "b c")
+### kabel.order-follows-the-source
+K(f(S(g("c")), "a", `b`, 'q'))
+### kabel.s-is-not-entered
+K(f(S("a".add(S("b"))), "c"))
+### kabel.mini-in-nested-arrow
+K(saw(f).add(x => x.delay("0.1 0.2").mul(S(rand))).out())
+### kabel.error-empty
+K()
+### kabel.error-empty-s
+K(S())
+### kabel.optional-chain-receiver
+a?.b.K(sine("1"))
+### kabel.statements
+K(() => { for (let i = 0; i < 3; i++) { f(i) } if (a) b(); else if (c) d(); else { e() } return [1, 2]; })
+### kabel.strings
+K(f('it\'s', 'a\nb', 'é', '\u2028', 'tab\t'))
+### kabel.numbers
+K(f(.5, 1e3, 0x10, 1_0, 1e21, 5e-7))
+### kabel.operators
+K(a ** b ** c + (d - e) * -f / g % h ?? (i, j))
+### kabel.objects-and-arrays
+K(f({ a: 1, b }, {}, [1, , 2], [], x => ({ y: x }), [[1], [2, 3]]))
+### kabel.loops-and-declarations
+K(() => { let a = 1, b; var c = a in d ? 1 : 2; for (const x of xs) { f(x) } for (const k in o) g(k); while (a) { a-- } do { f() } while (b); return a })
+### kabel.nested-k
+K(f(K("a b")))
+### kabel.k-in-pattern-chain
+note("c e").add(K("1 2").mul(2))
+### kabel.kabel-labels
+$: K("a b")
 ### misc.optional-chaining
 a?.b("x y")?.c
 ### misc.update-and-assign

@@ -1,0 +1,1162 @@
+[
+ {
+  "code": ".13",
+  "expected": "0.13"
+ },
+ {
+  "code": "0.13",
+  "expected": "0.13"
+ },
+ {
+  "code": "1.50",
+  "expected": "1.5"
+ },
+ {
+  "code": "1e3",
+  "expected": "1000"
+ },
+ {
+  "code": "1e21",
+  "expected": "1e+21"
+ },
+ {
+  "code": "1e-7",
+  "expected": "1e-7"
+ },
+ {
+  "code": "0x10",
+  "expected": "16"
+ },
+ {
+  "code": "1_000",
+  "expected": "1000"
+ },
+ {
+  "code": "123456789012345680000",
+  "expected": "123456789012345680000"
+ },
+ {
+  "code": "5e-324",
+  "expected": "5e-324"
+ },
+ {
+  "code": "0",
+  "expected": "0"
+ },
+ {
+  "code": "1.",
+  "expected": "1"
+ },
+ {
+  "code": "1..toFixed(2)",
+  "expected": "1 .toFixed(2)"
+ },
+ {
+  "code": "(1).toFixed(2)",
+  "expected": "1 .toFixed(2)"
+ },
+ {
+  "code": "1.5.toFixed(2)",
+  "expected": "1.5.toFixed(2)"
+ },
+ {
+  "code": "0x10.toString()",
+  "expected": "16 .toString()"
+ },
+ {
+  "code": "(0).x",
+  "expected": "0 .x"
+ },
+ {
+  "code": "10 .x",
+  "expected": "10 .x"
+ },
+ {
+  "code": "'a'",
+  "expected": "'a'"
+ },
+ {
+  "code": "\"a\"",
+  "expected": "'a'"
+ },
+ {
+  "code": "'it\\'s'",
+  "expected": "'it\\'s'"
+ },
+ {
+  "code": "\"a\\\"b\"",
+  "expected": "'a\"b'"
+ },
+ {
+  "code": "'a\\nb'",
+  "expected": "'a\\nb'"
+ },
+ {
+  "code": "'tab\\t'",
+  "expected": "'tab\\t'"
+ },
+ {
+  "code": "'\\u2028'",
+  "expected": "'\\u2028'"
+ },
+ {
+  "code": "'\\0'",
+  "expected": "'\\0'"
+ },
+ {
+  "code": "'\\x01'",
+  "expected": "'\\x01'"
+ },
+ {
+  "code": "'\\x7f'",
+  "expected": "'\\x7F'"
+ },
+ {
+  "code": "'\\x1b[0m'",
+  "expected": "'\\x1B[0m'"
+ },
+ {
+  "code": "'é'",
+  "expected": "'é'"
+ },
+ {
+  "code": "'日本'",
+  "expected": "'日本'"
+ },
+ {
+  "code": "'\\u{1F600}'",
+  "expected": "'\\uD83D\\uDE00'"
+ },
+ {
+  "code": "'back\\\\slash'",
+  "expected": "'back\\\\slash'"
+ },
+ {
+  "code": "'\\b\\f\\v'",
+  "expected": "'\\b\\f\\x0B'"
+ },
+ {
+  "code": "'\\u00e9'",
+  "expected": "'é'"
+ },
+ {
+  "code": "\"'\"",
+  "expected": "'\\''"
+ },
+ {
+  "code": "`plain`",
+  "expected": "`plain`"
+ },
+ {
+  "code": "x",
+  "expected": "x"
+ },
+ {
+  "code": "true",
+  "expected": "true"
+ },
+ {
+  "code": "false",
+  "expected": "false"
+ },
+ {
+  "code": "null",
+  "expected": "null"
+ },
+ {
+  "code": "this",
+  "expected": "this"
+ },
+ {
+  "code": "sFreq",
+  "expected": "sFreq"
+ },
+ {
+  "code": "a + b * c",
+  "expected": "a + b * c"
+ },
+ {
+  "code": "(a + b) * c",
+  "expected": "(a + b) * c"
+ },
+ {
+  "code": "a - (b - c)",
+  "expected": "a - (b - c)"
+ },
+ {
+  "code": "a - b - c",
+  "expected": "a - b - c"
+ },
+ {
+  "code": "a / (b / c)",
+  "expected": "a / (b / c)"
+ },
+ {
+  "code": "a ** b ** c",
+  "expected": "a ** b ** c"
+ },
+ {
+  "code": "(a ** b) ** c",
+  "expected": "(a ** b) ** c"
+ },
+ {
+  "code": "(-a) ** 2",
+  "expected": "(-a) ** 2"
+ },
+ {
+  "code": "a % b * c",
+  "expected": "a % b * c"
+ },
+ {
+  "code": "a % (b * c)",
+  "expected": "a % (b * c)"
+ },
+ {
+  "code": "a + b + c",
+  "expected": "a + b + c"
+ },
+ {
+  "code": "a + (b + c)",
+  "expected": "a + (b + c)"
+ },
+ {
+  "code": "a << b + c",
+  "expected": "a << b + c"
+ },
+ {
+  "code": "(a << b) + c",
+  "expected": "(a << b) + c"
+ },
+ {
+  "code": "a < b == c > d",
+  "expected": "a < b == c > d"
+ },
+ {
+  "code": "a & b | c ^ d",
+  "expected": "a & b | c ^ d"
+ },
+ {
+  "code": "a | b & c",
+  "expected": "a | b & c"
+ },
+ {
+  "code": "a in b",
+  "expected": "a in b"
+ },
+ {
+  "code": "a instanceof B",
+  "expected": "a instanceof B"
+ },
+ {
+  "code": "!(a in b)",
+  "expected": "!(a in b)"
+ },
+ {
+  "code": "a+ +b",
+  "expected": "a + +b"
+ },
+ {
+  "code": "a - -b",
+  "expected": "a - -b"
+ },
+ {
+  "code": "a + -b",
+  "expected": "a + -b"
+ },
+ {
+  "code": "a- --b",
+  "expected": "a - --b"
+ },
+ {
+  "code": "a+ ++b",
+  "expected": "a + ++b"
+ },
+ {
+  "code": "x / y / z",
+  "expected": "x / y / z"
+ },
+ {
+  "code": "sFreq / 2",
+  "expected": "sFreq / 2"
+ },
+ {
+  "code": "1 / 3",
+  "expected": "1 / 3"
+ },
+ {
+  "code": "a && b || c",
+  "expected": "a && b || c"
+ },
+ {
+  "code": "a && (b || c)",
+  "expected": "a && (b || c)"
+ },
+ {
+  "code": "a || b && c",
+  "expected": "a || b && c"
+ },
+ {
+  "code": "(a ?? b) || c",
+  "expected": "(a ?? b) || c"
+ },
+ {
+  "code": "a ?? (b || c)",
+  "expected": "a ?? (b || c)"
+ },
+ {
+  "code": "a ?? b ?? c",
+  "expected": "a ?? b ?? c"
+ },
+ {
+  "code": "(a && b) ?? c",
+  "expected": "(a && b) ?? c"
+ },
+ {
+  "code": "a || (b ?? c)",
+  "expected": "a || (b ?? c)"
+ },
+ {
+  "code": "-x",
+  "expected": "-x"
+ },
+ {
+  "code": "- -x",
+  "expected": "- -x"
+ },
+ {
+  "code": "-(-x)",
+  "expected": "- -x"
+ },
+ {
+  "code": "+(+x)",
+  "expected": "+ +x"
+ },
+ {
+  "code": "!x",
+  "expected": "!x"
+ },
+ {
+  "code": "!!x",
+  "expected": "!!x"
+ },
+ {
+  "code": "~x",
+  "expected": "~x"
+ },
+ {
+  "code": "typeof x",
+  "expected": "typeof x"
+ },
+ {
+  "code": "typeof (x + 1)",
+  "expected": "typeof (x + 1)"
+ },
+ {
+  "code": "void 0",
+  "expected": "void 0"
+ },
+ {
+  "code": "-(a + b)",
+  "expected": "-(a + b)"
+ },
+ {
+  "code": "-a.b",
+  "expected": "-a.b"
+ },
+ {
+  "code": "(-a).b",
+  "expected": "(-a).b"
+ },
+ {
+  "code": "x++",
+  "expected": "x++"
+ },
+ {
+  "code": "--x",
+  "expected": "--x"
+ },
+ {
+  "code": "-x++",
+  "expected": "-x++"
+ },
+ {
+  "code": "- --x",
+  "expected": "- --x"
+ },
+ {
+  "code": "+ +x",
+  "expected": "+ +x"
+ },
+ {
+  "code": "a ? b : c",
+  "expected": "a ? b : c"
+ },
+ {
+  "code": "a ? b : c ? d : e",
+  "expected": "a ? b : c ? d : e"
+ },
+ {
+  "code": "(a ? b : c) ? d : e",
+  "expected": "(a ? b : c) ? d : e"
+ },
+ {
+  "code": "a ? (b, c) : d",
+  "expected": "a ? (b, c) : d"
+ },
+ {
+  "code": "a = b",
+  "expected": "a = b"
+ },
+ {
+  "code": "a = b = c",
+  "expected": "a = b = c"
+ },
+ {
+  "code": "a += 1",
+  "expected": "a += 1"
+ },
+ {
+  "code": "a ??= b",
+  "expected": "a ??= b"
+ },
+ {
+  "code": "a ||= b",
+  "expected": "a ||= b"
+ },
+ {
+  "code": "a.b = c",
+  "expected": "a.b = c"
+ },
+ {
+  "code": "(a = b) + c",
+  "expected": "(a = b) + c"
+ },
+ {
+  "code": "a ? b = 1 : c = 2",
+  "expected": "a ? b = 1 : c = 2"
+ },
+ {
+  "code": "(a, b)",
+  "expected": "a, b"
+ },
+ {
+  "code": "f((a, b))",
+  "expected": "f((a, b))"
+ },
+ {
+  "code": "(a, b) + c",
+  "expected": "(a, b) + c"
+ },
+ {
+  "code": "f()",
+  "expected": "f()"
+ },
+ {
+  "code": "f(a)",
+  "expected": "f(a)"
+ },
+ {
+  "code": "f(a, b, c)",
+  "expected": "f(a, b, c)"
+ },
+ {
+  "code": "f(a)(b)",
+  "expected": "f(a)(b)"
+ },
+ {
+  "code": "a.b.c",
+  "expected": "a.b.c"
+ },
+ {
+  "code": "a[0]",
+  "expected": "a[0]"
+ },
+ {
+  "code": "a[b + 1]",
+  "expected": "a[b + 1]"
+ },
+ {
+  "code": "a[\"b\"]",
+  "expected": "a['b']"
+ },
+ {
+  "code": "a[0][1]",
+  "expected": "a[0][1]"
+ },
+ {
+  "code": "f(a).b(c).d",
+  "expected": "f(a).b(c).d"
+ },
+ {
+  "code": "new F",
+  "expected": "new F()"
+ },
+ {
+  "code": "new F()",
+  "expected": "new F()"
+ },
+ {
+  "code": "new F(a, b)",
+  "expected": "new F(a, b)"
+ },
+ {
+  "code": "new (f())()",
+  "expected": "new (f())()"
+ },
+ {
+  "code": "new (a.b())",
+  "expected": "new (a.b())()"
+ },
+ {
+  "code": "new a.b()",
+  "expected": "new a.b()"
+ },
+ {
+  "code": "(new F).x",
+  "expected": "new F().x"
+ },
+ {
+  "code": "new F().x",
+  "expected": "new F().x"
+ },
+ {
+  "code": "a?.b",
+  "expected": "a?.b"
+ },
+ {
+  "code": "a?.[0]",
+  "expected": "a?.[0]"
+ },
+ {
+  "code": "a?.()",
+  "expected": "a?.()"
+ },
+ {
+  "code": "a?.b.c(d)",
+  "expected": "a?.b.c(d)"
+ },
+ {
+  "code": "(a?.b).c",
+  "expected": "(a?.b).c"
+ },
+ {
+  "code": "a?.b?.()",
+  "expected": "a?.b?.()"
+ },
+ {
+  "code": "f(...a)",
+  "expected": "f(...a)"
+ },
+ {
+  "code": "f(a, ...b)",
+  "expected": "f(a, ...b)"
+ },
+ {
+  "code": "[...a, b]",
+  "expected": "[\n    ...a,\n    b\n]"
+ },
+ {
+  "code": "(function () {})()",
+  "expected": "function () {\n}()"
+ },
+ {
+  "code": "(() => 1)()",
+  "expected": "(() => 1)()"
+ },
+ {
+  "code": "f(function () { return 1 })",
+  "expected": "f(function () {\n    return 1\n})"
+ },
+ {
+  "code": "saw(saw(sFreq / pat[0]).mul(8).add(sFreq).lag(pat[1])).mul(0.3).mul(sGate.adsr(0, 0.15, 0.5, pat[2])).lpf(sGate.adsr(0, 0.2, 0.3, 0.2).mul(1).add(0)).add(x => x.delay(pat[3]).mul(0.7)).add(x => x.delay(pat[4]).mul(0.77)).mul(0.7).add(x => x.delay(.13).mul(0.7)).out()",
+  "expected": "saw(saw(sFreq / pat[0]).mul(8).add(sFreq).lag(pat[1])).mul(0.3).mul(sGate.adsr(0, 0.15, 0.5, pat[2])).lpf(sGate.adsr(0, 0.2, 0.3, 0.2).mul(1).add(0)).add(x => x.delay(pat[3]).mul(0.7)).add(x => x.delay(pat[4]).mul(0.77)).mul(0.7).add(x => x.delay(0.13).mul(0.7)).out()"
+ },
+ {
+  "code": "sine(440).out()",
+  "expected": "sine(440).out()"
+ },
+ {
+  "code": "audioin().mul(sGate.adsr(0.001, 0.3, 0, 0.2))",
+  "expected": "audioin().mul(sGate.adsr(0.001, 0.3, 0, 0.2))"
+ },
+ {
+  "code": "sine(f).mul(pat[2]).add(pat[3])",
+  "expected": "sine(f).mul(pat[2]).add(pat[3])"
+ },
+ {
+  "code": "x => x",
+  "expected": "x => x"
+ },
+ {
+  "code": "x => x + 1",
+  "expected": "x => x + 1"
+ },
+ {
+  "code": "(x) => x",
+  "expected": "x => x"
+ },
+ {
+  "code": "(x, y) => x + y",
+  "expected": "(x, y) => x + y"
+ },
+ {
+  "code": "() => 1",
+  "expected": "() => 1"
+ },
+ {
+  "code": "() => ({})",
+  "expected": "() => ({})"
+ },
+ {
+  "code": "() => ({ a: 1 })",
+  "expected": "() => ({ a: 1 })"
+ },
+ {
+  "code": "x => ({ ...x })",
+  "expected": "x => ({ ...x })"
+ },
+ {
+  "code": "x => y => x + y",
+  "expected": "x => y => x + y"
+ },
+ {
+  "code": "(x = 1) => x",
+  "expected": "(x = 1) => x"
+ },
+ {
+  "code": "(...xs) => xs",
+  "expected": "(...xs) => xs"
+ },
+ {
+  "code": "({ a, b }) => a + b",
+  "expected": "({a, b}) => a + b"
+ },
+ {
+  "code": "([a, b]) => a + b",
+  "expected": "([a, b]) => a + b"
+ },
+ {
+  "code": "async x => x",
+  "expected": "async x => x"
+ },
+ {
+  "code": "async (x, y) => x",
+  "expected": "async (x, y) => x"
+ },
+ {
+  "code": "x => { return x }",
+  "expected": "x => {\n    return x\n}"
+ },
+ {
+  "code": "() => {}",
+  "expected": "() => {\n}"
+ },
+ {
+  "code": "() => { }",
+  "expected": "() => {\n}"
+ },
+ {
+  "code": "() => { return }",
+  "expected": "() => {\n    return\n}"
+ },
+ {
+  "code": "() => { return 1 + 2 }",
+  "expected": "() => {\n    return 1 + 2\n}"
+ },
+ {
+  "code": "x => (x, 1)",
+  "expected": "x => (x, 1)"
+ },
+ {
+  "code": "x => a ? b : c",
+  "expected": "x => a ? b : c"
+ },
+ {
+  "code": "(x => x) || y",
+  "expected": "(x => x) || y"
+ },
+ {
+  "code": "f(x => x, y => y)",
+  "expected": "f(x => x, y => y)"
+ },
+ {
+  "code": "(function f() {})",
+  "expected": "function f() {\n}"
+ },
+ {
+  "code": "a = function () {}",
+  "expected": "a = function () {\n}"
+ },
+ {
+  "code": "async () => await x",
+  "expected": "async () => await x"
+ },
+ {
+  "code": "x => await_(x)",
+  "expected": "x => await_(x)"
+ },
+ {
+  "code": "() => { const a = 1; let b = 2; var c = 3; return a + b + c }",
+  "expected": "() => {\n    const a = 1;\n    let b = 2;\n    var c = 3;\n    return a + b + c\n}"
+ },
+ {
+  "code": "() => { const a = pat[0]; const b = pat[1]; let f = n(sFreq); saw(f.mul(a)).out() }",
+  "expected": "() => {\n    const a = pat[0];\n    const b = pat[1];\n    let f = n(sFreq);\n    saw(f.mul(a)).out()\n}"
+ },
+ {
+  "code": "() => { const a = 1, b = 2; return a }",
+  "expected": "() => {\n    const a = 1, b = 2;\n    return a\n}"
+ },
+ {
+  "code": "() => { let a; return a }",
+  "expected": "() => {\n    let a;\n    return a\n}"
+ },
+ {
+  "code": "() => { let [a, b] = c; return a }",
+  "expected": "() => {\n    let [a, b] = c;\n    return a\n}"
+ },
+ {
+  "code": "() => { const { a, b } = c; return a }",
+  "expected": "() => {\n    const {a, b} = c;\n    return a\n}"
+ },
+ {
+  "code": "() => { const { a: b } = c; return b }",
+  "expected": "() => {\n    const {a: b} = c;\n    return b\n}"
+ },
+ {
+  "code": "() => { const { a = 1 } = c; return a }",
+  "expected": "() => {\n    const {\n        a = 1\n    } = c;\n    return a\n}"
+ },
+ {
+  "code": "() => { const { ...r } = c; return r }",
+  "expected": "() => {\n    const {...r} = c;\n    return r\n}"
+ },
+ {
+  "code": "() => { const [a, , b] = c; return a }",
+  "expected": "() => {\n    const [a, , b] = c;\n    return a\n}"
+ },
+ {
+  "code": "() => { const [a, ...r] = c; return r }",
+  "expected": "() => {\n    const [a, ...r] = c;\n    return r\n}"
+ },
+ {
+  "code": "() => { let x = (1, 2); return x }",
+  "expected": "() => {\n    let x = (1, 2);\n    return x\n}"
+ },
+ {
+  "code": "() => { let x = a in b; return x }",
+  "expected": "() => {\n    let x = a in b;\n    return x\n}"
+ },
+ {
+  "code": "() => { if (a) b(); }",
+  "expected": "() => {\n    if (a)\n        b()\n}"
+ },
+ {
+  "code": "() => { if (a) { b() } }",
+  "expected": "() => {\n    if (a) {\n        b()\n    }\n}"
+ },
+ {
+  "code": "() => { if (a) b(); else c(); }",
+  "expected": "() => {\n    if (a)\n        b();\n    else\n        c()\n}"
+ },
+ {
+  "code": "() => { if (a) { b() } else { c() } }",
+  "expected": "() => {\n    if (a) {\n        b()\n    } else {\n        c()\n    }\n}"
+ },
+ {
+  "code": "() => { if (a) { b() } else if (c) { d() } else { e() } }",
+  "expected": "() => {\n    if (a) {\n        b()\n    } else if (c) {\n        d()\n    } else {\n        e()\n    }\n}"
+ },
+ {
+  "code": "() => { if (a) return 1; else return 2 }",
+  "expected": "() => {\n    if (a)\n        return 1;\n    else\n        return 2\n}"
+ },
+ {
+  "code": "() => { if (a) { if (b) c(); } else d() }",
+  "expected": "() => {\n    if (a) {\n        if (b)\n            c()\n    } else\n        d()\n}"
+ },
+ {
+  "code": "() => { for (let i = 0; i < 3; i++) { f(i) } }",
+  "expected": "() => {\n    for (let i = 0; i < 3; i++) {\n        f(i)\n    }\n}"
+ },
+ {
+  "code": "() => { for (;;) { break } }",
+  "expected": "() => {\n    for (;;) {\n        break\n    }\n}"
+ },
+ {
+  "code": "() => { for (let i = 0, j = 1; i < j; i++) f(i) }",
+  "expected": "() => {\n    for (let i = 0, j = 1; i < j; i++)\n        f(i)\n}"
+ },
+ {
+  "code": "() => { for (i = 0; i < 3; i++) f(i) }",
+  "expected": "() => {\n    for (i = 0; i < 3; i++)\n        f(i)\n}"
+ },
+ {
+  "code": "() => { for (const x of xs) f(x) }",
+  "expected": "() => {\n    for (const x of xs)\n        f(x)\n}"
+ },
+ {
+  "code": "() => { for (const x of xs) { f(x) } }",
+  "expected": "() => {\n    for (const x of xs) {\n        f(x)\n    }\n}"
+ },
+ {
+  "code": "() => { for (const k in o) f(k) }",
+  "expected": "() => {\n    for (const k in o)\n        f(k)\n}"
+ },
+ {
+  "code": "() => { for (x of xs) f(x) }",
+  "expected": "() => {\n    for (x of xs)\n        f(x)\n}"
+ },
+ {
+  "code": "() => { for (const [a, b] of xs) f(a) }",
+  "expected": "() => {\n    for (const [a, b] of xs)\n        f(a)\n}"
+ },
+ {
+  "code": "() => { for (var i = (a in b); i; ) f() }",
+  "expected": "() => {\n    for (var i = (a in b); i;)\n        f()\n}"
+ },
+ {
+  "code": "() => { while (a) { f() } }",
+  "expected": "() => {\n    while (a) {\n        f()\n    }\n}"
+ },
+ {
+  "code": "() => { while (a) f() }",
+  "expected": "() => {\n    while (a)\n        f()\n}"
+ },
+ {
+  "code": "() => { do { f() } while (a) }",
+  "expected": "() => {\n    do {\n        f()\n    } while (a)\n}"
+ },
+ {
+  "code": "() => { do f(); while (a) }",
+  "expected": "() => {\n    do\n        f();\n    while (a)\n}"
+ },
+ {
+  "code": "() => { while (a) { if (b) continue; break } }",
+  "expected": "() => {\n    while (a) {\n        if (b)\n            continue;\n        break\n    }\n}"
+ },
+ {
+  "code": "() => { ; }",
+  "expected": "() => {\n    ;\n}"
+ },
+ {
+  "code": "() => { throw new Error(\"x\") }",
+  "expected": "() => {\n    throw new Error('x')\n}"
+ },
+ {
+  "code": "() => { throw x }",
+  "expected": "() => {\n    throw x\n}"
+ },
+ {
+  "code": "() => { function g(a) { return a } return g(1) }",
+  "expected": "() => {\n    function g(a) {\n        return a\n    }\n    return g(1)\n}"
+ },
+ {
+  "code": "() => { const f = () => { const g = () => { return 1 }; return g() }; return f() }",
+  "expected": "() => {\n    const f = () => {\n        const g = () => {\n            return 1\n        };\n        return g()\n    };\n    return f()\n}"
+ },
+ {
+  "code": "() => { f(() => { return 1 }) }",
+  "expected": "() => {\n    f(() => {\n        return 1\n    })\n}"
+ },
+ {
+  "code": "() => { return () => { return 1 } }",
+  "expected": "() => {\n    return () => {\n        return 1\n    }\n}"
+ },
+ {
+  "code": "() => { ({}).x; }",
+  "expected": "() => {\n    ({}.x)\n}"
+ },
+ {
+  "code": "() => { (function () {})(); }",
+  "expected": "() => {\n    (function () {\n    }())\n}"
+ },
+ {
+  "code": "() => { (async function () {})(); }",
+  "expected": "() => {\n    (async function () {\n    }())\n}"
+ },
+ {
+  "code": "() => { ({ a: 1 }).a; }",
+  "expected": "() => {\n    ({ a: 1 }.a)\n}"
+ },
+ {
+  "code": "() => { x = { a: 1 }; }",
+  "expected": "() => {\n    x = { a: 1 }\n}"
+ },
+ {
+  "code": "() => { a; b; c }",
+  "expected": "() => {\n    a;\n    b;\n    c\n}"
+ },
+ {
+  "code": "() => { a; b; c; }",
+  "expected": "() => {\n    a;\n    b;\n    c\n}"
+ },
+ {
+  "code": "() => { lbl: for (;;) { break lbl } }",
+  "expected": "() => {\n    lbl:\n        for (;;) {\n            break lbl\n        }\n}"
+ },
+ {
+  "code": "[]",
+  "expected": "[]"
+ },
+ {
+  "code": "[1]",
+  "expected": "[1]"
+ },
+ {
+  "code": "[1, 2]",
+  "expected": "[\n    1,\n    2\n]"
+ },
+ {
+  "code": "[1, 2, 3]",
+  "expected": "[\n    1,\n    2,\n    3\n]"
+ },
+ {
+  "code": "[[1, 2], [3]]",
+  "expected": "[\n    [\n        1,\n        2\n    ],\n    [3]\n]"
+ },
+ {
+  "code": "[, 1]",
+  "expected": "[\n    ,\n    1\n]"
+ },
+ {
+  "code": "[1, , 2]",
+  "expected": "[\n    1,\n    ,\n    2\n]"
+ },
+ {
+  "code": "[1, ,]",
+  "expected": "[\n    1,\n    ,\n]"
+ },
+ {
+  "code": "[a => a, b => b]",
+  "expected": "[\n    a => a,\n    b => b\n]"
+ },
+ {
+  "code": "[[]]",
+  "expected": "[[]]"
+ },
+ {
+  "code": "[{}]",
+  "expected": "[{}]"
+ },
+ {
+  "code": "({})",
+  "expected": "{}"
+ },
+ {
+  "code": "({ a: 1 })",
+  "expected": "{ a: 1 }"
+ },
+ {
+  "code": "({ a: 1, b: 2 })",
+  "expected": "{\n    a: 1,\n    b: 2\n}"
+ },
+ {
+  "code": "({ a })",
+  "expected": "{ a }"
+ },
+ {
+  "code": "({ a, b })",
+  "expected": "{\n    a,\n    b\n}"
+ },
+ {
+  "code": "({ \"a b\": 1 })",
+  "expected": "{ 'a b': 1 }"
+ },
+ {
+  "code": "({ 1: 2 })",
+  "expected": "{ 1: 2 }"
+ },
+ {
+  "code": "({ [a]: 1 })",
+  "expected": "{ [a]: 1 }"
+ },
+ {
+  "code": "({ a() {} })",
+  "expected": "{\n    a() {\n    }\n}"
+ },
+ {
+  "code": "({ get a() { return 1 } })",
+  "expected": "{\n    get a() {\n        return 1\n    }\n}"
+ },
+ {
+  "code": "({ set a(v) {} })",
+  "expected": "{\n    set a(v) {\n    }\n}"
+ },
+ {
+  "code": "({ async a() {} })",
+  "expected": "{\n    async a() {\n    }\n}"
+ },
+ {
+  "code": "({ ...a })",
+  "expected": "{ ...a }"
+ },
+ {
+  "code": "({ a: 1, ...b })",
+  "expected": "{\n    a: 1,\n    ...b\n}"
+ },
+ {
+  "code": "({ a: { b: 1 } })",
+  "expected": "{ a: { b: 1 } }"
+ },
+ {
+  "code": "({ a: { b: 1, c: 2 } })",
+  "expected": "{\n    a: {\n        b: 1,\n        c: 2\n    }\n}"
+ },
+ {
+  "code": "({ a: [1, 2] })",
+  "expected": "{\n    a: [\n        1,\n        2\n    ]\n}"
+ },
+ {
+  "code": "({ a: function () { return 1 } })",
+  "expected": "{\n    a: function () {\n        return 1\n    }\n}"
+ },
+ {
+  "code": "({ a: () => 1 })",
+  "expected": "{ a: () => 1 }"
+ },
+ {
+  "code": "({ a: x => { return x } })",
+  "expected": "{\n    a: x => {\n        return x\n    }\n}"
+ },
+ {
+  "code": "f({ a: 1 })",
+  "expected": "f({ a: 1 })"
+ },
+ {
+  "code": "f([1, 2])",
+  "expected": "f([\n    1,\n    2\n])"
+ },
+ {
+  "code": "f({ a: 1 }, [2, 3])",
+  "expected": "f({ a: 1 }, [\n    2,\n    3\n])"
+ },
+ {
+  "code": "x = [1, 2]",
+  "expected": "x = [\n    1,\n    2\n]"
+ },
+ {
+  "code": "[1, 2].map(x => x * 2)",
+  "expected": "[\n    1,\n    2\n].map(x => x * 2)"
+ },
+ {
+  "code": "[1, 2][0]",
+  "expected": "[\n    1,\n    2\n][0]"
+ },
+ {
+  "code": "`a`",
+  "expected": "`a`"
+ },
+ {
+  "code": "`a${b}c`",
+  "expected": "`a${ b }c`"
+ },
+ {
+  "code": "`${a}`",
+  "expected": "`${ a }`"
+ },
+ {
+  "code": "tag`a`",
+  "expected": "tag`a`"
+ },
+ {
+  "code": "tag`a${b}`",
+  "expected": "tag`a${ b }`"
+ },
+ {
+  "code": "a.tag`x`",
+  "expected": "a.tag`x`"
+ },
+ {
+  "code": "f(a)`x`",
+  "expected": "f(a)`x`"
+ },
+ {
+  "code": "async () => { await f(x); return await g(y) }",
+  "expected": "async () => {\n    await f(x);\n    return await g(y)\n}"
+ },
+ {
+  "code": "new F(...a)",
+  "expected": "new F(...a)"
+ },
+ {
+  "code": "(async () => 1)()",
+  "expected": "(async () => 1)()"
+ },
+ {
+  "code": "\"a\".length",
+  "expected": "'a'.length"
+ },
+ {
+  "code": "'a'.length",
+  "expected": "'a'.length"
+ },
+ {
+  "code": "[1, 2].length",
+  "expected": "[\n    1,\n    2\n].length"
+ },
+ {
+  "code": "({}).a",
+  "expected": "{}.a"
+ },
+ {
+  "code": "(a || b).c",
+  "expected": "(a || b).c"
+ },
+ {
+  "code": "(a, b).c",
+  "expected": "(a, b).c"
+ },
+ {
+  "code": "(a + b).c",
+  "expected": "(a + b).c"
+ },
+ {
+  "code": "(-a).c",
+  "expected": "(-a).c"
+ },
+ {
+  "code": "(a ? b : c).d",
+  "expected": "(a ? b : c).d"
+ },
+ {
+  "code": "(x => x).name",
+  "expected": "(x => x).name"
+ },
+ {
+  "code": "(function () {}).name",
+  "expected": "function () {\n}.name"
+ },
+ {
+  "code": "(a = b).c",
+  "expected": "(a = b).c"
+ },
+ {
+  "code": "(await_).c",
+  "expected": "await_.c"
+ },
+ {
+  "code": "(new F).c",
+  "expected": "new F().c"
+ },
+ {
+  "code": "(a.b)()",
+  "expected": "a.b()"
+ },
+ {
+  "code": "(a || b)()",
+  "expected": "(a || b)()"
+ },
+ {
+  "code": "(a ? b : c)()",
+  "expected": "(a ? b : c)()"
+ },
+ {
+  "code": "(() => 1)().x",
+  "expected": "(() => 1)().x"
+ },
+ {
+  "code": "(a, b)()",
+  "expected": "(a, b)()"
+ }
+]
