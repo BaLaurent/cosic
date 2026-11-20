@@ -1,6 +1,5 @@
 package cosic.pattern
 
-import cosic.pattern.legacy.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -174,7 +173,7 @@ class JoinsTest {
 
     @Test
     fun squeezeJoinDropsContinuousOuterHaps() {
-        assertEquals(emptyList(), signal { fastcat(pure("x"), pure("y")) }.squeezeJoin().query(cycleSpan(0)))
+        assertEquals(emptyList(), signal { _, _ -> fastcat(pure("x"), pure("y")) }.squeezeJoin().query(cycleSpan(0)))
     }
 
     // ---- resetJoin and restartJoin -----------------------------------------------------

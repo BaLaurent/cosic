@@ -43,8 +43,10 @@ private val CALLBACK_LIMITS = Limits(steps = 1_000_000L, millis = 100L, maxDepth
  * statement. A program that throws leaves the caller with the pattern it had.
  *
  * Calls into the session are serialised by [host]'s lock; the patterns it makes call back into the program from any thread.
+ * A session routes the kernel's log messages to its [host] when it is made and before every evaluation, unless [routeLogs] is false:
+ * the reference makes one to read the names of the world and must not take the logs away from the session that plays.
  */
-internal class ReplSession(val host: SessionHost = SessionHost(), val realm: Realm = Realm(host)) {
+internal class ReplSession(val host: SessionHost = SessionHost(), val realm: Realm = Realm(host), routeLogs: Boolean = true) {
     val bridge: Bridge = Catalogue.install(realm)
 
     private val pPatterns = LinkedHashMap<String, Pattern>()
@@ -62,7 +64,7 @@ internal class ReplSession(val host: SessionHost = SessionHost(), val realm: Rea
     init {
         realm.callbackLimits = CALLBACK_LIMITS
         realm.std.loop.executionLock = host.lock
-        routeKernelLogsTo(host)
+        if (routeLogs) routeKernelLogsTo(host)
     }
 
     /**
@@ -134,7 +136,7 @@ internal class ReplSession(val host: SessionHost = SessionHost(), val realm: Rea
      * `setcps` and `setcpm` (also spelt `setCps` and `setCpm`), `cpm`, and the methods `p`, `q` and `d1` to `d9`, `p1` to
      * `p9`, `q1` to `q9` of patterns (repl.mjs:184-232).
      */
-    private fun installReplFunctions() {
+    internal fun installReplFunctions() {
         realm.defineGlobalFunction("all", 1) { _, a -> allTransforms.add(a.getOrElse(0) { Undefined }); silenceValue }
         realm.defineGlobalFunction("each", 1) { _, a -> eachTransform = a.getOrElse(0) { Undefined }; silenceValue }
         realm.defineGlobalFunction("hush", 0) { _, _ -> hush(); silenceValue }

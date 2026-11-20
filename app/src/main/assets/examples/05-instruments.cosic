@@ -3,11 +3,11 @@ setcpm(24)
 
 $: note("<c3 g3 a3 f3>").s("piano").gain(0.9)
 
+// C4 starts the scale an octave higher than C
 $: n("0 [2 4] 7 4")
-  .scale("C:major")
-  .add(12)
+  .scale("C4:major")
   .s("vibraphone")
   .gain(0.6)
 
-$: s("kick:2 ~ snare:1 ~").gain(0.8)
-$: s("shaker*8").gain(0.4)
+$: s("bd:2 ~ sd:1 ~").gain(0.8)
+$: s("hh*8").gain(0.4)

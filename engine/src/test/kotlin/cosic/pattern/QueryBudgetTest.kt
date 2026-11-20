@@ -1,6 +1,5 @@
 package cosic.pattern
 
-import cosic.pattern.legacy.*
 import kotlin.concurrent.thread
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -58,8 +57,8 @@ class QueryBudgetTest {
     fun splittingEventsIsChargedBeforeTheyAreBuilt() {
         val chunk = span(r(0), r(1, 16))
         // 625 events, each split into another 10 000 pieces
-        tooDense { withQueryBudget { pure("a").ply(10_000).ply(10_000).query(chunk) } }
-        assertEquals(625 * 10, withQueryBudget { pure("a").ply(10_000).ply(10).query(chunk) }.size)
+        tooDense { withQueryBudget { pure("a")._ply(10_000.0)._ply(10_000.0).query(chunk) } }
+        assertEquals(625 * 10, withQueryBudget { pure("a")._ply(10_000.0)._ply(10.0).query(chunk) }.size)
     }
 
     @Test

@@ -1,6 +1,5 @@
 package cosic.pattern
 
-import cosic.pattern.legacy.*
 import cosic.SourceRange
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -224,13 +223,13 @@ class PatternCoreTest {
     @Test
     fun slowcatCanBeEmptyAndGoIntoNegativeTime() {
         assertEquals(emptyList(), slowcat(emptyList()).shownCycle())
-        val p = fastcat("a", "b", "c").late(r(1000000))
+        val p = fastcat("a", "b", "c")._late(r(1000000))
         assertEquals(fastcat("a", "b", "c").shownCycle(), p.shownCycle())
     }
 
     @Test
     fun slowcatPrimeQueriesWithTheUnshiftedTime() {
-        val p = slowcatPrime(listOf(fastcat(0.0, 1.0, 2.0, 3.0).slow(r(2)), fastcat(4.0, 5.0, 6.0, 7.0).slow(r(2)))).fast(r(4))
+        val p = slowcatPrime(listOf(fastcat(0.0, 1.0, 2.0, 3.0)._slow(r(2)), fastcat(4.0, 5.0, 6.0, 7.0)._slow(r(2))))._fast(r(4))
         assertEquals(listOf(0.0, 1.0, 6.0, 7.0, 0.0, 1.0, 6.0, 7.0), p.cycleValues())
         assertEquals(emptyList(), slowcatPrime(emptyList()).shownCycle())
     }

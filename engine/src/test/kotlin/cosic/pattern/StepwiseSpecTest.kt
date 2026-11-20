@@ -3,7 +3,6 @@ package cosic.pattern
 import cosic.parity.ParityWorld
 import cosic.parity.evaluateForQuery
 import cosic.script.catalogue.Catalogue
-import cosic.script.catalogue.registerStepwise
 import org.junit.Assume.assumeTrue
 import org.junit.BeforeClass
 import kotlin.test.Test
@@ -27,12 +26,11 @@ import kotlin.test.assertTrue
  */
 class StepwiseSpecTest {
     companion object {
-        /** The whole catalogue, and this category again: `LegacyRegistrationTest` leaves the legacy `arrange` behind in the registry. */
+        /** The whole catalogue, with the functions of the stepwise category. */
         @BeforeClass
         @JvmStatic
         fun register() {
             Catalogue.installAll()
-            registerStepwise()
         }
     }
 

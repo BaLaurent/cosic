@@ -33,4 +33,6 @@ tasks.test {
     // `-Dcosic.parity.only=<regex>` runs only the cases whose id matches (and ignores known-gaps.txt: every mismatch fails).
     System.getProperty("cosic.parity.only")?.let { systemProperty("cosic.parity.only", it) }
     maxHeapSize = "2g"
+    // BundledExamplesTest reads the examples of the app from disk, so Gradle must rerun the tests when they change.
+    inputs.dir("../app/src/main/assets/examples")
 }

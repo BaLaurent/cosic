@@ -1,0 +1,62 @@
+# Functions the engine implements whose first example does not run in it, so the reference does not list them. EngineTest runs every
+# example of this list on the engine and fails when one plays, so whoever lands what an example needs sees which lines to delete here;
+# then run
+#   node tools/reference/build-reference.mjs
+# One per line: <name>  # reason
+#
+# Strudel's own REPL refuses these examples too: they play plain values, not controls ("expected hap.value to be an object")
+pure          # the example plays plain values
+slowcat       # the example plays plain values
+withValue     # the example plays plain values
+#
+# What a later task of the parity plan makes real: samples(...) is a stand-in that refuses (Task 3.16: samples, soundAlias, aliasBank, piano)
+irbegin       # the example loads its impulse response with samples()
+irspeed       # the example loads its impulse response with samples()
+samples       # samples() is a stand-in that refuses until Task 3.16
+scrub         # the example loads its sample with samples()
+slice         # the example loads its samples with samples()
+splice        # the example loads its samples with samples()
+getDuration   # the example fetches a sample map from the network (the tests run offline)
+# the visuals of Task 4.2 (._scope())
+byteBeatStartTime  # the example ends in ._scope()
+fm            # the example ends in ._scope()
+fmattack      # the example ends in ._scope()
+fmdecay       # the example ends in ._scope()
+fmenv         # the example ends in ._scope()
+fmh           # the example ends in ._scope()
+fmsustain     # the example ends in ._scope()
+loopBegin     # the example ends in ._scope()
+loopEnd       # the example ends in ._scope()
+vib           # the example ends in ._scope()
+vibmod        # the example ends in ._scope()
+# MIDI output of Task 4.5 (.midi())
+midibend      # the example ends in .midi()
+midichan      # the example ends in .midi()
+midicmd       # the example ends in .midi()
+midiport      # the example ends in .midi()
+miditouch     # the example ends in .midi()
+nrpnn         # the example ends in .midi()
+nrpv          # the example ends in .midi()
+progNum       # the example ends in .midi()
+sysex         # the example ends in .midi()
+sysexdata     # the example ends in .midi()
+sysexid       # the example ends in .midi()
+# OSC output of Task 4.6 (.osc())
+accelerate    # the example ends in .osc()
+amp           # the example ends in .osc()
+dry           # the example ends in .osc()
+fadeTime      # the example ends in .osc()
+freq          # the example ends in .osc()
+leslie        # the example ends in .osc()
+lock          # the example ends in .osc()
+lrate         # the example ends in .osc()
+lsize         # the example ends in .osc()
+oschost       # the example ends in .osc()
+oscport       # the example ends in .osc()
+panspan       # the example ends in .osc()
+pansplay      # the example ends in .osc()
+squiz         # the example ends in .osc()
+unit          # the example ends in .osc()
+# the keyboard of Task 4.7 (the engine has no key state to read yet)
+keyDown       # the example reads the keyboard state
+whenKey       # the example reads the keyboard state

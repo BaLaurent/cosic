@@ -4,7 +4,9 @@ setcpm(30)
 let riff = note("c3 e3 g3 c4").s("triangle").release(0.15)
 
 $: riff.every(4, x => x.rev())
-$: riff.off(0.125, x => x.add(7)).gain(0.4)
+
+// note(7) is added to the notes: the delayed copy sounds a fifth higher
+$: riff.off(0.125, x => x.add(note(7))).gain(0.4)
 
 $: arrange([2, s("bd*4")], [2, s("bd*4, hh*8")])
 $: s("~ cp").jux(rev).gain(0.6)

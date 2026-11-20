@@ -6,7 +6,6 @@ import cosic.pattern.Pattern
 import cosic.pattern.Registry
 import cosic.pattern.Undefined
 import cosic.script.catalogue.registerKernel
-import cosic.script.catalogue.registerLegacy
 import cosic.script.Bridge
 import cosic.script.Node
 import cosic.script.Realm
@@ -23,31 +22,17 @@ import cosic.script.js.PropFlags
  * defined with a [CatalogueBuilder] in the category's `register` function:
  *
  *     internal fun registerMidi() = catalogue("Midi") {
- *         function(listOf("midin"), 1, Doc(...)) { ctx -> ... }
+ *         function(listOf("midin"), 1) { ctx -> ... }
  *     }
  *
  * [Catalogue.installAll] runs the category functions once, in the fixed order of K4, and [Catalogue.install] gives a realm
  * its globals. A later definition of a name replaces an earlier one, as `register` does in Strudel. Within a realm the order
  * is: fallbacks, then the entries of the `Registry`, then the definitions of the builders (a builder's definition replaces
  * a `Registry` entry of the same name).
+ *
+ * What the reference of the app says about a function is not defined here: it is Strudel's own JSDoc text, see
+ * [cosic.script.reference].
  */
-
-/**
- * The documentation of a function, for the reference of the app. [signature] reads as it is called (`.fast(number)`),
- * [example] is a one-line program that runs on its own. [snippet] is the text the reference inserts into a program: null
- * for [example] with a `$: ` label in front, which a program needs for an expression to play once any label is used.
- */
-internal class Doc(
-    val signature: String,
-    val text: String,
-    val example: String,
-    val listed: Boolean = true,
-    val category: String,
-    val snippet: String? = null,
-)
-
-/** The documentation of the function called [names] (the first is its name, the others aliases). */
-internal class DocEntry(val names: List<String>, val doc: Doc)
 
 /**
  * One call of a function defined with a [CatalogueBuilder]: [self] is `this` (the pattern for a method), [args] the
@@ -90,22 +75,15 @@ internal class ValueDefinition(val name: String, val value: (Bridge) -> Any?) : 
 /** Collects the definitions of one category; see the description of the file. */
 internal class CatalogueBuilder(val category: String) {
     internal val definitions = ArrayList<Definition>()
-    internal val documents = ArrayList<DocEntry>()
-
-    private fun document(names: List<String>, doc: Doc?) {
-        if (doc != null) documents.add(DocEntry(names, doc))
-    }
 
     /** A global value, made for each realm by [value]. */
-    fun global(name: String, doc: Doc? = null, value: (Bridge) -> Any?) {
+    fun global(name: String, value: (Bridge) -> Any?) {
         definitions.add(ValueDefinition(name, value))
-        document(listOf(name), doc)
     }
 
     /** A global function; [impl] returns a value of the kernel or of the program, which the bridge converts. */
-    fun function(names: List<String>, length: Int, doc: Doc? = null, impl: (CallContext) -> Any?) {
+    fun function(names: List<String>, length: Int, impl: (CallContext) -> Any?) {
         definitions.add(FunctionDefinition(names, length, false, impl))
-        document(names, doc)
     }
 
     /** A global function that is only there until a later category defines the name, the stand-in of a function a later task makes real. */
@@ -114,13 +92,12 @@ internal class CatalogueBuilder(val category: String) {
     }
 
     /** A method of `Pattern.prototype` that is not a registered function. */
-    fun method(names: List<String>, length: Int, doc: Doc? = null, impl: (CallContext) -> Any?) {
+    fun method(names: List<String>, length: Int, impl: (CallContext) -> Any?) {
         definitions.add(MethodDefinition(names, length, impl))
-        document(names, doc)
     }
 
     /** A continuous pattern as a global value, `sine`. */
-    fun signal(name: String, pattern: Pattern, doc: Doc? = null) = global(name, doc) { it.wrap(pattern) }
+    fun signal(name: String, pattern: Pattern) = global(name) { it.wrap(pattern) }
 }
 
 /** Defines the functions of the category [category] with [block], which is a function of its [CatalogueBuilder]. */
@@ -130,19 +107,10 @@ internal object Catalogue {
     private val lock = Any()
     private var installed = false
     private val definitions = ArrayList<Definition>()
-    private val docs = LinkedHashMap<String, DocEntry>()
 
     internal fun define(category: String, block: CatalogueBuilder.() -> Unit) {
         val builder = CatalogueBuilder(category).apply(block)
-        synchronized(lock) {
-            definitions.addAll(builder.definitions)
-            for (entry in builder.documents) docs[entry.names[0]] = entry
-        }
-    }
-
-    /** Records the documentation of a registered function (the entries of the `Registry` carry none). */
-    internal fun document(names: List<String>, doc: Doc) {
-        synchronized(lock) { docs[names[0]] = DocEntry(names, doc) }
+        synchronized(lock) { definitions.addAll(builder.definitions) }
     }
 
     /**
@@ -154,8 +122,6 @@ internal object Catalogue {
             if (installed) return
             installed = true
             registerFallbacks()
-            registerLegacy()
-            registerLegacyDocs()
             registerKernel()
             registerControls()
             registerTime()
@@ -176,12 +142,6 @@ internal object Catalogue {
             registerKabelsalat() // before Language, after everything it could depend on: `K` is a transpiler hook and `worklet` needs only the kernel
             registerLanguage()
         }
-    }
-
-    /** Every documented function, in the order the categories defined them. */
-    fun docEntries(): List<DocEntry> {
-        installAll()
-        return synchronized(lock) { docs.values.toList() }
     }
 
     /**

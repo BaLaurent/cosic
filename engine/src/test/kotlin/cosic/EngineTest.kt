@@ -6,6 +6,8 @@ import cosic.audio.constantSample
 import cosic.audio.estimateFrequency
 import cosic.audio.peak
 import cosic.audio.rms
+import cosic.script.World
+import cosic.script.documented
 import cosic.script.reference
 import java.lang.management.ManagementFactory
 import java.util.concurrent.atomic.AtomicReference
@@ -180,12 +182,6 @@ class EngineTest {
         engine.play()
         engine.renderFrames(CYCLE)
         assertEquals(listOf("sound cosic808_xx not found! Is it loaded?"), engine.snapshot.warnings)
-    }
-
-    @Test
-    fun theBankReferenceExamplePlaysABuiltInDrumMachine() {
-        val example = reference().first { it.name == "bank" }.example
-        assertOk(emptyList(), engineOf().evaluate(example))
     }
 
     @Test
@@ -543,13 +539,36 @@ class EngineTest {
 
     @Test
     fun everyReferenceExampleIsAcceptedByTheEngineAndPlaysWithoutARuntimeError() {
+        val failures = ArrayList<String>()
         for (entry in reference()) {
             val engine = engineOf()
             val ok = engine.evaluate(entry.example)
-            assertIs<EvalReport.Ok>(ok, "${entry.name}: ${entry.example} -> $ok")
+            if (ok !is EvalReport.Ok) {
+                failures.add("${entry.name}: $ok -- ${entry.example}")
+                continue
+            }
             engine.play()
             engine.renderFrames((4 / ok.cps * SR).toInt())
-            assertNull(engine.snapshot.runtimeError, "${entry.name}: ${entry.example}")
+            engine.snapshot.runtimeError?.let { failures.add("${entry.name}: $it -- ${entry.example}") }
         }
+        assertEquals(emptyList(), failures)
+    }
+
+    @Test
+    fun theFunctionsTheReferenceLeavesOutStillCannotPlayTheirExample() {
+        val world = World.read()
+        val stale = ArrayList<String>()
+        for (d in documented.filter { it.excluded != null }) {
+            assertTrue(world.defines(d.name), "'${d.name}' is left out (${d.excluded}) but the engine does not have it: nothing to exclude")
+            val engine = engineOf()
+            val ok = engine.evaluate(d.example)
+            val plays = ok is EvalReport.Ok && run {
+                engine.play()
+                engine.renderFrames((4 / ok.cps * SR).toInt())
+                engine.snapshot.runtimeError == null
+            }
+            if (plays) stale.add(d.name)
+        }
+        assertEquals(emptyList(), stale, "these examples play now: delete them from tools/reference/exclusions.txt and run node tools/reference/build-reference.mjs")
     }
 }
