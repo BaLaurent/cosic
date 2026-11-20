@@ -48,3 +48,11 @@ class ReferenceSnippetTest {
         assertTrue("bd" in sounds, "the inserted euclid pattern is silent: $sounds")
     }
 }
+
+class ScaleModesTest {
+    @Test
+    fun everyListedModeIsAScaleTheLanguageAccepts() {
+        assertTrue(scaleModes().containsAll(listOf("major", "minor", "dorian", "blues", "chromatic")))
+        for (mode in scaleModes()) evaluateProgram("\$: n(\"0 1\").scale(\"C:$mode\")").pattern.query(cycleSpan(0))
+    }
+}

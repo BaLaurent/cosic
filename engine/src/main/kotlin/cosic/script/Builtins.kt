@@ -5,6 +5,7 @@ import cosic.pattern.CosicError
 import cosic.pattern.MAX_COUNT
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
+import cosic.pattern.SCALE_MODES
 import cosic.pattern.innerJoin
 import kotlin.math.roundToInt
 
@@ -155,6 +156,9 @@ public data class ReferenceEntry(
 public fun reference(): List<ReferenceEntry> = Builtins.all.filter { it.listed }.map {
     ReferenceEntry(it.name, it.aliases, it.category, signature(it), it.doc, it.example, snippet(it))
 }
+
+/** The modes a scale name can use after its root note, as in `C:minor`. */
+public fun scaleModes(): List<String> = SCALE_MODES
 
 private fun snippet(builtin: Builtin): String {
     val alreadyLabelled = tokenize(builtin.example).any { it.kind == TokenKind.LABEL }

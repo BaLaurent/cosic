@@ -21,17 +21,20 @@ fun TextFieldValue.withSymbol(symbol: String): TextFieldValue {
 }
 
 /**
- * This value after a reference example [snippet] was inserted at the cursor, replacing the selection.
- * Code is line based, so the snippet gets a line of its own: a line break is added before it when
- * the cursor follows code on its line, and after it when code follows the cursor.
+ * This value after a reference example [snippet] was inserted, as a line of its own. A selection is
+ * replaced by it. Otherwise it takes the cursor's line when that line is blank, and goes on a new
+ * line right after it when the line holds code, so the code being edited is never split.
  */
 fun TextFieldValue.withSnippet(snippet: String): TextFieldValue {
-    val start = selection.min
-    val end = selection.max
-    val lineStart = text.lastIndexOf('\n', start - 1) + 1
-    val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it }
-    val before = if (text.substring(lineStart, start).isBlank()) "" else "\n"
-    val after = if (text.substring(end, lineEnd).isBlank()) "" else "\n"
-    val cursor = start + before.length + snippet.length
-    return TextFieldValue(text.replaceRange(start, end, before + snippet + after), TextRange(cursor))
+    if (!selection.collapsed) {
+        val cursor = selection.min + snippet.length
+        return TextFieldValue(text.replaceRange(selection.min, selection.max, snippet), TextRange(cursor))
+    }
+    val lineStart = text.lastIndexOf('\n', selection.start - 1) + 1
+    val lineEnd = text.indexOf('\n', selection.start).let { if (it < 0) text.length else it }
+    if (text.substring(lineStart, lineEnd).isBlank()) {
+        return TextFieldValue(text.replaceRange(lineStart, lineEnd, snippet), TextRange(lineStart + snippet.length))
+    }
+    val inserted = "\n" + snippet
+    return TextFieldValue(text.replaceRange(lineEnd, lineEnd, inserted), TextRange(lineEnd + inserted.length))
 }

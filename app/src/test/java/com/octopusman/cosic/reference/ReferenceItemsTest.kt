@@ -11,43 +11,77 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ReferenceItemsTest {
-    private val texts = SoundTexts(
-        synth = SoundText("Synths", "synth doc"),
-        drum = SoundText("Drum kit", "drum doc"),
-        instrument = SoundText("Instruments", "instrument doc"),
-        percussion = SoundText("Percussion", "percussion doc"),
-        imported = SoundText("Imported", "imported doc"),
+    private val texts = ReferenceTexts(
+        synth = GroupText("Synths", "synth doc"),
+        drum = GroupText("Drum kit", "drum doc"),
+        instrument = GroupText("Instruments", "instrument doc"),
+        percussion = GroupText("Percussion", "percussion doc"),
+        imported = GroupText("Imported", "imported doc"),
+        scale = GroupText("Scales", "scale doc"),
+        showSounds = "Show sounds",
+        showScales = "Show scales",
     )
-    private val fast = ReferenceEntry("fast", listOf("density"), "Time", ".fast(number)", "Speeds up.", "s(\"bd\").fast(2)", "\$: s(\"bd\").fast(2)")
+    private fun function(name: String, category: String = "Time", aliases: List<String> = emptyList()) =
+        ReferenceEntry(name, aliases, category, ".$name()", "doc", "x", "\$: x")
+
+    private val functions = listOf(
+        function("fast", aliases = listOf("density")),
+        function("s", "Sound", listOf("sound")),
+        function("bank", "Sound"),
+        function("scale", "Values"),
+    )
     private val banks = listOf(
         BankSummary("piano", 26, pitched = true, origin = BankOrigin.BUNDLED, treeUri = null),
         BankSummary("kick", 8, pitched = false, origin = BankOrigin.BUNDLED, treeUri = null),
         BankSummary("mine", 3, pitched = false, origin = BankOrigin.IMPORTED, treeUri = null),
     )
-    private val items = referenceItems(listOf(fast), banks, texts)
+    private val scales = listOf("major", "minor", "blues")
+    private val items = referenceItems(functions, banks, scales, texts)
 
     private fun item(name: String) = items.first { it.name == name }
 
     @Test
-    fun functionsComeFirstThenEverySoundGroup() {
+    fun functionsComeFirstThenEverySoundGroupThenTheScales() {
         val categories = items.map { it.category }.distinct()
 
-        assertEquals(listOf("Time", "Synths", "Drum kit", "Instruments", "Percussion", "Imported"), categories)
+        assertEquals(listOf("Time", "Sound", "Values", "Synths", "Drum kit", "Instruments", "Percussion", "Imported", "Scales"), categories)
     }
 
     @Test
     fun aFunctionKeepsItsEntryAndHasNoSoundToPreview() {
-        val function = item("fast")
+        val fast = item("fast")
 
-        assertEquals(listOf("density"), function.aliases)
-        assertEquals("\$: s(\"bd\").fast(2)", function.snippet)
-        assertNull(function.sound)
+        assertEquals(listOf("density"), fast.aliases)
+        assertEquals("\$: x", fast.snippet)
+        assertNull(fast.sound)
+        assertNull(fast.values)
+    }
+
+    @Test
+    fun theFunctionsThatTakeASoundLeadToTheSounds() {
+        assertEquals(ValuesLink("Synths", "Show sounds"), item("s").values)
+        assertEquals(ValuesLink("Synths", "Show sounds"), item("bank").values)
+    }
+
+    @Test
+    fun scaleLeadsToTheScales() {
+        assertEquals(ValuesLink("Scales", "Show scales"), item("scale").values)
+    }
+
+    @Test
+    fun everyScaleIsListedWithAnExampleThatPlaysIt() {
+        val minor = item("minor")
+
+        assertEquals("Scales", minor.category)
+        assertEquals("scale(\"C:minor\")", minor.signature)
+        assertEquals("\$: n(\"0 2 4 6\").scale(\"C:minor\").s(\"triangle\")", minor.snippet)
+        assertEquals(scales, items.filter { it.category == "Scales" }.map { it.name })
     }
 
     @Test
     fun everySynthAndDrumOfTheEngineIsListed() {
-        for (name in CosicEngine.SYNTHS) assertEquals("Synths", item(name).category, name)
-        for (name in CosicEngine.DRUMS) assertEquals("Drum kit", items.first { it.name == name && it.category == "Drum kit" }.category, name)
+        for (name in CosicEngine.SYNTHS) assertTrue(items.any { it.name == name && it.category == "Synths" }, name)
+        for (name in CosicEngine.DRUMS) assertTrue(items.any { it.name == name && it.category == "Drum kit" }, name)
     }
 
     @Test
@@ -92,7 +126,7 @@ class ReferenceItemsTest {
 
     @Test
     fun noImportedBanksMeansNoImportedGroup() {
-        val withoutImports = referenceItems(listOf(fast), banks.filter { it.origin == BankOrigin.BUNDLED }, texts)
+        val withoutImports = referenceItems(functions, banks.filter { it.origin == BankOrigin.BUNDLED }, scales, texts)
 
         assertFalse("Imported" in withoutImports.map { it.category })
     }
@@ -103,7 +137,28 @@ class ReferenceItemsTest {
         assertTrue(item("fast").matches(" density "))
         assertTrue(item("fast").matches("time"))
         assertTrue(item("piano").matches("instr"))
+        assertTrue(item("minor").matches("scale"))
         assertTrue(item("fast").matches(""))
         assertFalse(item("fast").matches("piano"))
+    }
+
+    @Test
+    fun aWordInsideACallThatTakesValuesOpensOnThoseValues() {
+        assertEquals(OpenOn.Group("Synths"), items.openOn(CursorHit("bank", insideCall = true)))
+        assertEquals(OpenOn.Group("Scales"), items.openOn(CursorHit("scale", insideCall = true)))
+    }
+
+    @Test
+    fun theFunctionNameItselfOrAnyOtherCallOpensOnTheFunction() {
+        assertEquals(OpenOn.Item(item("bank")), items.openOn(CursorHit("bank", insideCall = false)))
+        assertEquals(OpenOn.Item(item("fast")), items.openOn(CursorHit("fast", insideCall = true)))
+        assertEquals(OpenOn.Item(item("s")), items.openOn(CursorHit("sound", insideCall = false)))
+        assertEquals(OpenOn.Item(item("bd")), items.openOn(CursorHit("bd", insideCall = false)))
+    }
+
+    @Test
+    fun anUnknownNameOpensNowhere() {
+        assertNull(items.openOn(CursorHit("nope", insideCall = false)))
+        assertNull(items.openOn(null))
     }
 }

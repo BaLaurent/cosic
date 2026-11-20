@@ -25,6 +25,9 @@ private val SCALES: Map<String, IntArray> = mapOf(
     "wholetone" to intArrayOf(0, 2, 4, 6, 8, 10),
 )
 
+/** The mode names [scaleNote] accepts after the root, in a fixed order. */
+internal val SCALE_MODES: List<String> = SCALES.keys.toList()
+
 /**
  * The MIDI number of a note name such as `c4`, `eb3` or `F#2`, or null when [name] is not one.
  * `c4` is 60; a missing octave means octave 3, so `c` is 48.

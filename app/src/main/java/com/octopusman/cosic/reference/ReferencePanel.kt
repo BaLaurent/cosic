@@ -6,11 +6,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,11 +21,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,6 +51,7 @@ import com.octopusman.cosic.R
 import com.octopusman.cosic.audio.BankSummary
 import com.octopusman.cosic.ui.tagged
 import cosic.script.reference
+import cosic.script.scaleModes
 
 /** A line of the list: a category heading, or an item under it. */
 private sealed interface Row {
@@ -55,10 +61,10 @@ private sealed interface Row {
 }
 
 /**
- * The language reference as a panel that lives inside the editor, next to the code: every function
- * and every sound, searchable. Insert adds an example at the cursor, the arrow on a sound plays it.
- * It opens on the function or sound at the cursor of [codeAtOpen], if there is one. The music keeps
- * playing while it is open.
+ * The language reference as a panel that lives inside the editor, next to the code: every function,
+ * every sound and every scale, searchable, with a row of groups to jump to. Insert adds an example at
+ * the cursor, the arrow on a sound plays it. It opens on what the cursor of [codeAtOpen] is on; inside
+ * `s(…)`, `bank(…)` or `scale(…)` that is the list of sounds or scales. The music keeps playing.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -70,17 +76,21 @@ fun ReferencePanel(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val texts = SoundTexts(
-        synth = SoundText(stringResource(R.string.sounds_synths), stringResource(R.string.reference_doc_synth)),
-        drum = SoundText(stringResource(R.string.sounds_drums), stringResource(R.string.reference_doc_drum)),
-        instrument = SoundText(stringResource(R.string.sounds_instruments), stringResource(R.string.reference_doc_instrument)),
-        percussion = SoundText(stringResource(R.string.sounds_percussion), stringResource(R.string.reference_doc_percussion)),
-        imported = SoundText(stringResource(R.string.sounds_imported), stringResource(R.string.reference_doc_imported)),
+    val texts = ReferenceTexts(
+        synth = GroupText(stringResource(R.string.sounds_synths), stringResource(R.string.reference_doc_synth)),
+        drum = GroupText(stringResource(R.string.sounds_drums), stringResource(R.string.reference_doc_drum)),
+        instrument = GroupText(stringResource(R.string.sounds_instruments), stringResource(R.string.reference_doc_instrument)),
+        percussion = GroupText(stringResource(R.string.sounds_percussion), stringResource(R.string.reference_doc_percussion)),
+        imported = GroupText(stringResource(R.string.sounds_imported), stringResource(R.string.reference_doc_imported)),
+        scale = GroupText(stringResource(R.string.reference_scales), stringResource(R.string.reference_doc_scale)),
+        showSounds = stringResource(R.string.reference_show_sounds),
+        showScales = stringResource(R.string.reference_show_scales),
     )
-    val items = remember(banks) { referenceItems(reference(), banks, texts) }
-    val selected = remember(items) {
-        functionAtCursor(codeAtOpen.text, codeAtOpen.selection.start) { items.named(it) != null }?.let(items::named)
+    val items = remember(banks) { referenceItems(reference(), banks, scaleModes(), texts) }
+    val openOn = remember(items) {
+        items.openOn(functionAtCursor(codeAtOpen.text, codeAtOpen.selection.start) { items.named(it) != null })
     }
+    val selected = (openOn as? OpenOn.Item)?.item
 
     var query by rememberSaveable { mutableStateOf("") }
     val rows = remember(items, query) {
@@ -88,18 +98,33 @@ fun ReferencePanel(
             listOf<Row>(Row.Heading(category)) + group.map { Row.Entry(it) }
         }
     }
+    val headings = remember(rows) { rows.filterIsInstance<Row.Heading>().map { it.category } }
 
-    // Opens on the item at the cursor, with room above it for the heading that sticks to the top.
     val listState = rememberLazyListState()
+    // An item is shown with room above it for the heading that sticks to the top.
     val headingRoom = with(LocalDensity.current) { 36.dp.roundToPx() }
-    LaunchedEffect(Unit) {
-        val index = rows.indexOfFirst { it is Row.Entry && it.item == selected }
-        if (index >= 0) listState.scrollToItem(index, -headingRoom)
+    // Where the list should scroll to next: first what the cursor was on, then the groups picked.
+    var target by remember { mutableStateOf(openOn) }
+    fun showGroup(category: String) {
+        // A group hidden by the search is still reachable: the search is cleared first.
+        if (Row.Heading(category) !in rows) query = ""
+        target = OpenOn.Group(category)
+    }
+    LaunchedEffect(target, rows) {
+        val index = when (val goal = target) {
+            is OpenOn.Item -> rows.indexOf(Row.Entry(goal.item))
+            is OpenOn.Group -> rows.indexOf(Row.Heading(goal.category))
+            null -> return@LaunchedEffect
+        }
+        if (index < 0) return@LaunchedEffect
+        listState.scrollToItem(index, if (target is OpenOn.Item) -headingRoom else 0)
+        target = null
     }
 
     Surface(modifier, color = MaterialTheme.colorScheme.surface) {
         Column(Modifier.fillMaxSize()) {
             SearchBar(query, onQueryChange = { query = it }, onClose = onClose)
+            GroupChips(headings, onPick = ::showGroup)
             if (rows.isEmpty()) {
                 Text(
                     text = stringResource(R.string.reference_empty),
@@ -113,12 +138,29 @@ fun ReferencePanel(
                         when (row) {
                             is Row.Heading -> stickyHeader(key = "heading-${row.category}") { Heading(row.category) }
                             is Row.Entry -> item(key = "${row.item.category}/${row.item.name}") {
-                                EntryCard(row.item, isSelected = row.item == selected, onInsert, onPreview)
+                                EntryCard(row.item, isSelected = row.item == selected, onInsert, onPreview, onShowValues = ::showGroup)
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+/** One chip per group of the list; a tap scrolls to that group. */
+@Composable
+private fun GroupChips(categories: List<String>, onPick: (String) -> Unit) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(categories, key = { it }) { category ->
+            AssistChip(
+                onClick = { onPick(category) },
+                label = { Text(category) },
+                modifier = Modifier.tagged("group_$category", category),
+            )
         }
     }
 }
@@ -167,6 +209,7 @@ private fun EntryCard(
     isSelected: Boolean,
     onInsert: (String) -> Unit,
     onPreview: (name: String, pitched: Boolean) -> Unit,
+    onShowValues: (category: String) -> Unit,
 ) {
     val insertLabel = stringResource(R.string.reference_insert_example)
     Card(
@@ -215,6 +258,12 @@ private fun EntryCard(
                     .clickable(onClickLabel = insertLabel) { onInsert(item.snippet) }
                     .padding(8.dp),
             )
+            item.values?.let { link ->
+                OutlinedButton(
+                    onClick = { onShowValues(link.category) },
+                    modifier = Modifier.padding(end = 8.dp).tagged("show_values_${item.name}", link.label),
+                ) { Text(link.label) }
+            }
         }
     }
 }

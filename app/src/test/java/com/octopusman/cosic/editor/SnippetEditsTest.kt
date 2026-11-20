@@ -24,13 +24,14 @@ class SnippetEditsTest {
     }
 
     @Test
-    fun snippetBeforeCodeIsFollowedByANewLine() {
-        assertEquals(at("s(\"bd\")\nsetcpm(30)", 7), at("setcpm(30)", 0).withSnippet("s(\"bd\")"))
+    fun aLineWithCodeIsNeverSplitTheSnippetGoesOnTheNextLine() {
+        assertEquals(at("setcpm(30)\ns(\"bd\")", 18), at("setcpm(30)", 0).withSnippet("s(\"bd\")"))
+        assertEquals(at("\$: note(\"c3 e3\")\nx", 18), at("\$: note(\"c3 e3\")", 11).withSnippet("x"))
     }
 
     @Test
-    fun snippetInTheMiddleOfALineGetsALineOfItsOwn() {
-        assertEquals(at("a\nx\nb", 3), at("ab", 1).withSnippet("x"))
+    fun theLinesAfterTheCursorLineStayAfterTheSnippet() {
+        assertEquals(at("ab\nx\ncd", 4), at("ab\ncd", 1).withSnippet("x"))
     }
 
     @Test

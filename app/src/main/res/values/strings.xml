@@ -69,7 +69,7 @@
 
     <!-- Reference -->
     <string name="reference_close">Close reference</string>
-    <string name="reference_search">Search functions and sounds</string>
+    <string name="reference_search">Search</string>
     <string name="reference_clear_search">Clear search</string>
     <string name="reference_aliases">Also: %1$s</string>
     <string name="reference_insert_example">Insert</string>
@@ -79,7 +79,11 @@
     <string name="reference_doc_instrument">A sampled instrument. Play it with note(); each note uses the nearest recorded one.</string>
     <string name="reference_doc_percussion">A set of recorded percussion hits. Pick one with a number, as in kick:3.</string>
     <string name="reference_doc_imported">A sound from a folder you imported. Pick a sample with a number, as in mine:1.</string>
-    <string name="reference_empty">No matching functions or sounds</string>
+    <string name="reference_scales">Scales</string>
+    <string name="reference_doc_scale">A scale for scale(): put a root note before it, as in C:minor or eb2:dorian.</string>
+    <string name="reference_show_sounds">Show sounds</string>
+    <string name="reference_show_scales">Show scales</string>
+    <string name="reference_empty">No matching functions, sounds or scales</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

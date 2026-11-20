@@ -464,7 +464,7 @@ internal fun controlBuiltins(): List<Builtin> = buildList {
         "note(\"c3 eb3 g3\").s(\"sawtooth\")", ANY,
     ) { mapOf("note" to noteNumber(it)) }
     control(
-        "bank", SOUND, "Looks sounds up in a named bank: kick with the bank my plays the sound called my_kick.",
+        "bank", SOUND, "Prefixes sound names, for sound sets named like my_kick: kick with bank my plays my_kick. The bundled sounds are chosen with s() alone.",
         "s(\"kick snare\").bank(\"my\")", STR,
     ) { mapOf("bank" to text(it)) }
     numericControl(
