@@ -120,5 +120,14 @@
   {"name":"seqPLoop.3","code":"seqPLoop([0, 3, s(\"bd(3,8)\")], [1, 2, s(\"cp*2\")], [2, 5, s(\"hh*4\")])","cycles":10},
   {"name":"stepalt.4","code":"s(stepalt([\"bd hh\", \"sd\"], [\"cp\", \"rim\", \"mt\"]))","cycles":2},
   {"name":"take.6","code":"note(\"c e g b\").take(\"<1 2 3>\").s(\"piano\")","cycles":3},
-  {"name":"replicate.4","code":"note(\"<c e> g\").replicate(2).s(\"piano\").pace(4)","cycles":4}
+  {"name":"replicate.4","code":"note(\"<c e> g\").replicate(2).s(\"piano\").pace(4)","cycles":4},
+  {"name":"expand.1","code":"s(\"bd hh\").expand(2).pace(4)","cycles":1},
+  {"name":"expand.2","code":"s(\"bd hh sd\").expand(\"<2 3>\").pace(6)","cycles":2},
+  {"name":"expand.3","code":"stepcat(s(\"bd hh\").expand(3), s(\"sd cp\")).pace(5)","cycles":1},
+  {"name":"extend.1","code":"s(\"bd hh\").extend(2).pace(4)","cycles":1},
+  {"name":"extend.2","code":"stepcat(s(\"bd hh\").extend(\"<2 1>\"), s(\"sd\")).pace(4)","cycles":2},
+  {"name":"extend.3","code":"s(\"<bd hh> sd\").extend(2).pace(4)","cycles":4},
+  {"name":"stepcat.3","code":"stepcat([2, s(\"bd\")], s(\"hh sd\"))","cycles":1},
+  {"name":"stepcat.4","code":"stepcat(s(\"bd hh\").extend(2), [1, s(\"cp\")])","cycles":1},
+  {"name":"stepcat.5","code":"stepcat(s(\"bd hh\"), s(\"sd\").slow(2), s(\"cp*3\"))","cycles":2}
 ]
