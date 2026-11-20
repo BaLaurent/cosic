@@ -67,11 +67,21 @@ class InputState {
 
     private val motion = AtomicLongArray(MotionChannel.entries.size)
 
+    private val motionReported = java.util.concurrent.atomic.AtomicInteger(0)
+
     fun motion(c: MotionChannel): Double = java.lang.Double.longBitsToDouble(motion.get(c.ordinal))
 
     fun setMotion(c: MotionChannel, v: Double) {
         motion.set(c.ordinal, java.lang.Double.doubleToRawLongBits(v))
+        val bit = 1 shl c.ordinal
+        if (motionReported.get() and bit == 0) motionReported.updateAndGet { it or bit }
     }
+
+    /**
+     * Whether a sensor has reported [c] yet. The motion signals read 0 until it has (Strudel keeps 0 until the first event, and the
+     * normalised value of a reading of 0 is not 0: `accX` of no movement is 0.5).
+     */
+    fun hasMotion(c: MotionChannel): Boolean = motionReported.get() and (1 shl c.ordinal) != 0
 
     val sliders = SliderBank()
 

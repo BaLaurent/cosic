@@ -41,6 +41,3 @@ progNum       # the example ends in .midi()
 sysex         # the example ends in .midi()
 sysexdata     # the example ends in .midi()
 sysexid       # the example ends in .midi()
-# the keyboard of Task 4.7 (the engine has no key state to read yet)
-keyDown       # the example reads the keyboard state
-whenKey       # the example reads the keyboard state

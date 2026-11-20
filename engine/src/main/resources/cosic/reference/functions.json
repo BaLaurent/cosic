@@ -3992,8 +3992,7 @@
   "params": null,
   "doc": "returns true when a key or array of keys is held Key name reference.",
   "example": "keyDown(\"Control:j\").pick([s(\"bd(5,8)\"), s(\"cp(3,8)\")])",
-  "snippet": "keyDown(\"Control:j\").pick([s(\"bd(5,8)\"), s(\"cp(3,8)\")])",
-  "excluded": "the example reads the keyboard state"
+  "snippet": "keyDown(\"Control:j\").pick([s(\"bd(5,8)\"), s(\"cp(3,8)\")])"
  },
  {
   "name": "midi",
@@ -4172,8 +4171,7 @@
   "params": null,
   "doc": "Do something on a keypress, or array of keypresses Key name reference.",
   "example": "s(\"bd(5,8)\").whenKey(\"Control:j\", x => x.segment(16).color(\"red\")).whenKey(\"Control:i\", x => x.fast(2).color(\"blue\"))",
-  "snippet": "s(\"bd(5,8)\").whenKey(\"Control:j\", x => x.segment(16).color(\"red\")).whenKey(\"Control:i\", x => x.fast(2).color(\"blue\"))",
-  "excluded": "the example reads the keyboard state"
+  "snippet": "s(\"bd(5,8)\").whenKey(\"Control:j\", x => x.segment(16).color(\"red\")).whenKey(\"Control:i\", x => x.fast(2).color(\"blue\"))"
  },
  {
   "name": "dry",

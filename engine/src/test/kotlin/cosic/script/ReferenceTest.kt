@@ -1,8 +1,11 @@
 package cosic.script
 
+import cosic.io.InputState
 import cosic.pattern.CosicError
 import cosic.pattern.Rational
 import cosic.pattern.logger
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,6 +17,15 @@ import kotlin.test.assertTrue
  * and the examples and snippets it offers must work as programs.
  */
 class ReferenceTest {
+    // the examples of `keyDown` and `whenKey` read the keyboard, which the app provides: here an empty one
+    private val inputs = InputState()
+
+    @BeforeTest
+    fun aKeyboardIsThere() = inputs.bindToSignals()
+
+    @AfterTest
+    fun noKeyboardAgain() = inputs.unbindFromSignals()
+
     private fun entry(name: String) = reference().first { it.name == name }
 
     @Test

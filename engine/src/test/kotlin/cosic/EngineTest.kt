@@ -542,14 +542,20 @@ class EngineTest {
         val failures = ArrayList<String>()
         for (entry in reference()) {
             val engine = engineOf()
-            val ok = engine.evaluate(entry.example)
-            if (ok !is EvalReport.Ok) {
-                failures.add("${entry.name}: $ok -- ${entry.example}")
-                continue
+            // `keyDown` and `whenKey` read the keyboard, which the app binds to its engine
+            engine.inputs.bindToSignals()
+            try {
+                val ok = engine.evaluate(entry.example)
+                if (ok !is EvalReport.Ok) {
+                    failures.add("${entry.name}: $ok -- ${entry.example}")
+                    continue
+                }
+                engine.play()
+                engine.renderFrames((4 / ok.cps * SR).toInt())
+                engine.snapshot.runtimeError?.let { failures.add("${entry.name}: $it -- ${entry.example}") }
+            } finally {
+                engine.inputs.unbindFromSignals()
             }
-            engine.play()
-            engine.renderFrames((4 / ok.cps * SR).toInt())
-            engine.snapshot.runtimeError?.let { failures.add("${entry.name}: $it -- ${entry.example}") }
         }
         assertEquals(emptyList(), failures)
     }
