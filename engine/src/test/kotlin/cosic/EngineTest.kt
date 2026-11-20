@@ -401,7 +401,7 @@ class EngineTest {
         engine.renderFrames(CYCLE) // let the kick end
         engine.preview("kit", 0)
         val out = engine.renderFrames(1200)
-        assertEquals(0.4 * 0.7071, peak(out, 480 * 2).toDouble(), 0.01, "a constant 0.5 sample, centred, times 0.8")
+        assertEquals(0.4, peak(out, 480 * 2).toDouble(), 0.01, "a constant 0.5 sample, times the gain of 0.8, on both channels")
     }
 
     @Test

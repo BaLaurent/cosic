@@ -1,62 +1,155 @@
 package cosic.player
 
-import cosic.audio.VoiceParams
+import cosic.audio.MAX_FX
+import cosic.audio.ModKind
+import cosic.audio.Param
 import cosic.audio.VoiceSource
 import cosic.audio.Waveform
-import cosic.pattern.ControlMap
+import cosic.pattern.CosicError
+import cosic.pattern.Rational
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
+/** How the controls of a hap become the parameters of a voice, and how long the hap lasts. */
 class SoundEventTest {
-    private val source = VoiceSource.Synth(Waveform.SQUARE)
+    private val source = VoiceSource.Synth(Waveform.SINE)
+
+    private fun params(vararg controls: Pair<String, Any?>) = voiceParams(mapOf(*controls), source, 1.5, 0.5, 2.0)
 
     @Test
-    fun everyControlLandsInTheVoiceParameterOfTheSameName() {
-        val controls: ControlMap = mapOf(
-            "note" to 1.0, "gain" to 2.0, "velocity" to 3.0, "postgain" to 4.0, "pan" to 5.0, "speed" to 6.0,
-            "begin" to 7.0, "end" to 8.0, "cut" to 9.0, "clip" to 10.0, "attack" to 11.0, "decay" to 12.0,
-            "sustain" to 13.0, "release" to 14.0, "cutoff" to 15.0, "resonance" to 16.0, "hcutoff" to 17.0, "hresonance" to 18.0,
-            "bandf" to 19.0, "bandq" to 20.0, "shape" to 21.0, "crush" to 22.0, "coarse" to 23.0, "delay" to 24.0,
-            "delaytime" to 25.0, "delayfeedback" to 26.0, "room" to 27.0, "roomsize" to 28.0,
+    fun numbersLandInTheParamOfTheirCanonicalName() {
+        val p = params(
+            "gain" to 0.5, "cutoff" to 800.0, "resonance" to 3.0, "hcutoff" to 100.0, "bandf" to 1000.0, "roomsize" to 4.0, "postgain" to 2.0,
+            "release" to 0.3, "speed" to -1.0,
         )
-        val expected = VoiceParams(
-            source, 0.75,
-            note = 1.0, gain = 2.0, velocity = 3.0, postgain = 4.0, pan = 5.0, speed = 6.0, begin = 7.0, end = 8.0,
-            cut = 9.0, clip = 10.0, attack = 11.0, decay = 12.0, sustain = 13.0, release = 14.0, lpf = 15.0, lpq = 16.0,
-            hpf = 17.0, hpq = 18.0, bpf = 19.0, bpq = 20.0, shape = 21.0, crush = 22.0, coarse = 23.0, delay = 24.0,
-            delaytime = 25.0, delayfeedback = 26.0, room = 27.0, size = 28.0,
+        assertSame(source, p.source)
+        assertEquals(1.5, p.durationSec)
+        assertEquals(0.5, p.cps)
+        assertEquals(2.0, p.cycle)
+        val main = p.main
+        assertEquals(0.5, main[Param.gain])
+        assertEquals(800.0, main[Param.cutoff])
+        assertEquals(3.0, main[Param.resonance])
+        assertEquals(100.0, main[Param.hcutoff])
+        assertEquals(1000.0, main[Param.bandf])
+        assertEquals(4.0, main[Param.roomsize])
+        assertEquals(2.0, main[Param.postgain])
+        assertEquals(0.3, main[Param.release])
+        assertEquals(-1.0, main[Param.speed])
+        assertTrue(main[Param.velocity].isNaN(), "controls that were not set stay NaN, so the voice applies its defaults")
+        assertTrue(p.fx.isEmpty() && p.mods.isEmpty())
+    }
+
+    @Test
+    fun sourceChoosersAndUnknownKeysAreNotParameters() {
+        // `room("0.9:1")` makes `{room: 0.9, size: 1}`; superdough never reads `size`, nor `s`, `n` or `bank` as parameters
+        val main = params("s" to "bd", "n" to 3.0, "bank" to "RolandTR909", "room" to 0.9, "size" to 1.0, "unheard" to 5.0).main
+        assertEquals(0.9, main[Param.room])
+        assertTrue(Param.entries.filter { it != Param.room }.all { main[it].isNaN() })
+    }
+
+    @Test
+    fun aNoteNameBecomesItsMidiNumberAndABadNameIsAnError() {
+        assertEquals(48.0, params("note" to "c").main[Param.note])
+        assertEquals(63.0, params("note" to "eb4").main[Param.note])
+        assertEquals(60.0, params("note" to 60.0).main[Param.note])
+        assertEquals("not a note: \"foo\"", assertFailsWith<CosicError> { params("note" to "foo") }.message)
+    }
+
+    @Test
+    fun aGainThatIsNoNumberCountsAsOne() {
+        assertEquals(1.0, params("gain" to Double.NaN).main[Param.gain])
+        assertEquals(1.0, params("gain" to "loud").main[Param.gain])
+        assertEquals(0.25, params("gain" to "0.25").main[Param.gain], "a string that reads as a number is that number")
+        assertTrue(params().main[Param.gain].isNaN(), "an absent gain stays unset: the default is 0.8")
+    }
+
+    @Test
+    fun booleansAndNumericStringsAreReadAsNumbers() {
+        val main = params("loop" to true, "clip" to false, "coarse" to "4", "crush" to "many").main
+        assertEquals(1.0, main[Param.loop])
+        assertEquals(0.0, main[Param.clip])
+        assertEquals(4.0, main[Param.coarse])
+        assertTrue(main[Param.crush].isNaN())
+    }
+
+    @Test
+    fun textControlsAndListControls() {
+        val main = params(
+            "vowel" to "a", "ir" to "ir1", "ftype" to "ladder", "lpshape" to "sine", "channels" to listOf(2.0, 3.0), "duckorbit" to 2.0,
+            "duckattack" to listOf(0.1, 0.4),
+        ).main
+        assertEquals("a", main.str("vowel"))
+        assertEquals("ir1", main.str("ir"))
+        assertEquals("ladder", main.str("ftype"))
+        assertEquals("sine", main.str("lpshape"))
+        assertContentEquals(doubleArrayOf(2.0, 3.0), main.list("channels"))
+        assertContentEquals(doubleArrayOf(2.0), main.list("duckorbit"), "a number is a list of one")
+        assertEquals(2.0, main[Param.duckorbit])
+        assertContentEquals(doubleArrayOf(0.1, 0.4), main.list("duckattack"))
+        assertNull(main.list("duckonset"))
+        // a number where text is allowed stays a number
+        assertEquals(2.0, params("ftype" to 2.0).main[Param.ftype])
+    }
+
+    @Test
+    fun fxElementsAndModulatorsAreSplitOutPerEffectChain() {
+        val lfo = mapOf(
+            "__ids" to linkedSetOf<Any?>(0.0),
+            "0" to mapOf("control" to "cutoff", "rate" to 4.0, "shape" to "sine", "sync" to 2.0),
         )
-        assertEquals(expected, voiceParams(controls, source, 0.75))
+        val env = mapOf("__ids" to linkedSetOf<Any?>("a"), "a" to mapOf("control" to "gain", "subControl" to "postgain", "attack" to 0.5, "fxi" to 1.0))
+        val p = params(
+            "s" to "saw", "cutoff" to 500.0, "lfo" to lfo,
+            "FX" to listOf(mapOf("room" to 0.5), mapOf("hcutoff" to 300.0, "env" to env)),
+        )
+        assertEquals(2, p.fx.size)
+        assertEquals(0.5, p.fx[0][Param.room])
+        assertEquals(300.0, p.fx[1][Param.hcutoff])
+        assertTrue(p.fx[0][Param.cutoff].isNaN(), "each element has its own controls")
+        assertEquals(500.0, p.main[Param.cutoff])
+
+        assertEquals(2, p.mods.size)
+        val inFx = p.mods[0]
+        assertEquals(ModKind.ENV, inFx.kind)
+        assertEquals("a", inFx.id)
+        assertEquals("1", inFx.fxi, "fxi from the options wins over the chain the modulator was declared in")
+        assertEquals("gain", inFx.control)
+        assertEquals("postgain", inFx.subControl)
+        assertEquals(mapOf("attack" to 0.5), inFx.numbers)
+        val inMain = p.mods[1]
+        assertEquals(ModKind.LFO, inMain.kind)
+        assertEquals("0", inMain.id)
+        assertEquals("main", inMain.fxi)
+        assertEquals("cutoff", inMain.control)
+        assertNull(inMain.subControl)
+        assertEquals(mapOf("rate" to 4.0, "sync" to 2.0), inMain.numbers)
+        assertEquals(mapOf("shape" to "sine"), inMain.strings)
     }
 
     @Test
-    fun controlsThatWereNotSetStayNullSoTheVoiceAppliesItsOwnDefaults() {
-        assertEquals(VoiceParams(source, 1.5), voiceParams(emptyMap(), source, 1.5))
+    fun effectChainsBeyondTheLimitAreDropped() {
+        val elements = List(MAX_FX + 3) { mapOf("room" to it.toDouble()) }
+        val p = params("FX" to elements)
+        assertEquals(MAX_FX, p.fx.size)
+        assertEquals((MAX_FX - 1).toDouble(), p.fx.last()[Param.room])
     }
 
-    @Test
-    fun theControlsThatChooseTheSoundAreNotVoiceParameters() {
-        val controls: ControlMap = mapOf("s" to "bd", "n" to 3.0, "bank" to "my")
-        assertEquals(VoiceParams(source, 1.0), voiceParams(controls, source, 1.0))
-    }
+    // ------------------------------------------------------------------ duration
 
     @Test
-    fun aValueThatIsNotANumberCountsAsNotSetInsteadOfCrashingTheAudioThread() {
-        val controls: ControlMap = mapOf("gain" to "loud", "cutoff" to true)
-        assertEquals(VoiceParams(source, 1.0), voiceParams(controls, source, 1.0))
-    }
-
-    @Test
-    fun theKeysOfCosicBeforeStrudelAreNotRead() {
-        val controls: ControlMap = mapOf("lpf" to 500.0, "hpf" to 100.0, "lpq" to 3.0, "size" to 0.5)
-        assertEquals(VoiceParams(source, 1.0), voiceParams(controls, source, 1.0))
-    }
-
-    @Test
-    fun aNoteNameIsConvertedToItsMidiNumberAtVoiceTime() {
-        assertEquals(48.0, voiceParams(mapOf("note" to "c"), source, 1.0).note)
-        assertEquals(63.0, voiceParams(mapOf("note" to "eb4"), source, 1.0).note)
-        assertEquals(60.0, voiceParams(mapOf("note" to 60.0), source, 1.0).note)
-        assertEquals("not a note: \"foo\"", kotlin.test.assertFailsWith<cosic.pattern.CosicError> { voiceParams(mapOf("note" to "foo"), source, 1.0) }.message)
+    fun aHapLastsItsWholeUnlessDurationOrClipSayOtherwise() {
+        val cycle = Rational(1)
+        assertEquals(2.0, hapSeconds(emptyMap(), cycle, 0.5))
+        assertEquals(1.0, hapSeconds(mapOf("clip" to 0.5), cycle, 0.5), "whole = 1 cycle at cps 0.5, clip 0.5")
+        assertEquals(1.0, hapSeconds(mapOf("duration" to 0.25, "clip" to 2.0), cycle, 0.5), "duration (in cycles) replaces the whole, then clip multiplies")
+        assertEquals(0.5, hapSeconds(mapOf("duration" to 0.25), cycle, 0.5))
+        assertEquals(2.0, hapSeconds(mapOf("clip" to "long"), cycle, 0.5), "a clip that is no number does nothing")
+        assertEquals(0.125, hapSeconds(emptyMap(), Rational(1, 4), 2.0))
     }
 }

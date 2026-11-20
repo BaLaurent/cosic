@@ -13,6 +13,7 @@ import cosic.player.SoundLookup
 import cosic.player.SoundResolver
 import cosic.player.dryRun
 import cosic.player.errorMessage
+import cosic.player.voiceParams
 import cosic.script.DEFAULT_CPS
 import cosic.script.ReplSession
 import cosic.script.SessionHost
@@ -190,7 +191,7 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
         when (val lookup = sounds.resolve(preview.sound, preview.index.toDouble(), preview.note)) {
             is SoundLookup.Ready -> {
                 waitingPreview = null
-                start(VoiceParams(lookup.source, PREVIEW_SECONDS, note = preview.note))
+                start(voiceParams(preview.note?.let { mapOf("note" to it) } ?: emptyMap(), lookup.source, PREVIEW_SECONDS, scheduler.cps, 0.0))
             }
             SoundLookup.Loading -> if (renderedFrames >= previewGivesUpAt) waitingPreview = null
             is SoundLookup.Unknown -> waitingPreview = null

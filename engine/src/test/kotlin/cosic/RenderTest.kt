@@ -24,8 +24,11 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Where hits begin in a mono signal: windows of [window] frames in which a sample-to-sample step first exceeds [threshold]. */
-private fun hitStarts(x: FloatArray, threshold: Float = 0.02f, window: Int = 48): List<Int> {
+/**
+ * Where hits begin in a mono signal: windows of [window] frames in which a sample-to-sample step first exceeds [threshold]. A centred voice
+ * is 0.8 now (no panner, no master gain), where it was 0.57; the threshold is scaled with it.
+ */
+private fun hitStarts(x: FloatArray, threshold: Float = 0.03f, window: Int = 48): List<Int> {
     val starts = ArrayList<Int>()
     var wasAbove = false
     var from = 0
@@ -83,7 +86,7 @@ class RenderTest {
     fun theGivenLibraryProvidesTheBanks() {
         val library = libraryWithBank("kit", listOf(constantSample(0.5, 0.5f)))
         val out = OfflineRenderer.render("""s("kit")""", 1.0, library = library)
-        assertEquals(0.4 * 0.7071, peak(out, 2400 * 2 + 480 * 2).toDouble(), 0.01, "a constant 0.5 sample, centred, times 0.8")
+        assertEquals(0.4, peak(out, 2400 * 2 + 480 * 2).toDouble(), 0.01, "a constant 0.5 sample, times the gain of 0.8, on both channels")
     }
 
     @Test

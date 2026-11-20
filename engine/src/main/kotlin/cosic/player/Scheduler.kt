@@ -68,6 +68,17 @@ private fun controlsOf(hap: Hap): ControlMap {
 }
 
 /**
+ * `Hap.duration / cps` (hap.mjs:36-47): the length of the hap's whole in cycles, replaced by the `duration` control when that is a number
+ * (in cycles, whatever its documentation says), times the `clip` control when that is a number. This is what `superdough()` is given as
+ * `hapDuration`, `clip` included, so the voice does not apply `clip` again.
+ */
+internal fun hapSeconds(controls: ControlMap, whole: Rational, cps: Double): Double {
+    var cycles = (controls["duration"] as? Double) ?: whole.toDouble()
+    (controls["clip"] as? Double)?.let { cycles *= it }
+    return cycles / cps
+}
+
+/**
  * Looks ahead the way the [Scheduler] will, over two cycles from [fromCycle], without making a sound. Returns the
  * warnings playing those cycles would raise (unknown sounds, a pattern too dense), and throws a
  * [cosic.pattern.CosicError] or other exception for whatever would fail, so a program that would fail is rejected when
@@ -193,8 +204,8 @@ internal class Scheduler(private val sampleRate: Int, private val sounds: SoundR
                 is SoundLookup.Ready -> {
                     val whole = checkNotNull(hap.whole)
                     val start = anchor.frameAt(whole.begin)
-                    val seconds = (whole.end - whole.begin).toDouble() / anchor.cps
-                    events.add(SoundEvent(start, voiceParams(controls, lookup.source, seconds)))
+                    val seconds = hapSeconds(controls, whole.end - whole.begin, anchor.cps)
+                    events.add(SoundEvent(start, voiceParams(controls, lookup.source, seconds, anchor.cps, whole.begin.toDouble())))
                     if (hap.context.locations.isNotEmpty()) marks.add(HighlightEvent(start, anchor.frameAt(whole.end), hap.context.locations))
                 }
                 is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))

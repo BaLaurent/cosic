@@ -1,0 +1,88 @@
+// Runs the lfo-processor and envelope-processor worklets of the pinned superdough (packages/superdough/worklets.mjs) in Node, with the
+// audio-worklet globals mocked, and writes the samples at chosen frames as a Kotlin file of test vectors:
+//
+//   node tools/strudel-ref/worklet-oracle.mjs > engine/src/test/kotlin/cosic/audio/WorkletOracleVectors.kt
+//
+// STRUDEL_DIR (default tools/strudel-ref/strudel next to this file) is the checkout made by fetch.sh. Used by LfoTest and ModEnvelopeTest.
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const root = process.env.STRUDEL_DIR ?? path.join(here, 'strudel');
+const lines = fs.readFileSync(path.join(root, 'packages/superdough/worklets.mjs'), 'utf8').split('\n');
+const slice = (a, b) => lines.slice(a - 1, b).join('\n');
+
+const SR = 48000;
+globalThis.sampleRate = SR;
+globalThis.currentTime = 0;
+globalThis.AudioWorkletProcessor = class {};
+const registry = {};
+globalThis.registerProcessor = (n, c) => {
+  registry[n] = c;
+};
+const helpers = `
+const PI = Math.PI; const TWO_PI = 2 * PI; const INVSR = 1 / sampleRate;
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+const pv = (arr, n) => arr[n] ?? arr[0];
+const ffloor = (x) => x | 0;
+const ffrac = (x) => x - ffloor(x);
+`;
+const find = (pred) => lines.findIndex(pred);
+const lfoStart = find((l) => l.startsWith('function polyBlep'));
+const lfoEnd = find((l) => l.includes("registerProcessor('lfo-processor'"));
+const envStart = find((l) => l.startsWith('class EnvelopeProcessor'));
+const envEnd = find((l) => l.includes("registerProcessor('envelope-processor'"));
+(0, eval)(helpers + slice(lfoStart + 1, lfoEnd + 1) + '\n' + slice(envStart + 1, envEnd + 1));
+
+/** Runs [name] for [quanta] render quanta with constant [params] and returns the output as one Float32Array. */
+function run(name, params, quanta) {
+  const processor = new registry[name]();
+  const out = new Float32Array(quanta * 128);
+  const asParams = Object.fromEntries(Object.entries(params).map(([k, v]) => [k, [v]]));
+  for (let q = 0; q < quanta; q++) {
+    globalThis.currentTime = (q * 128) / SR;
+    const block = new Float32Array(128);
+    const alive = processor.process([], [[block]], asParams);
+    out.set(block, q * 128);
+    if (alive === false) break;
+  }
+  return out;
+}
+
+const cases = [
+  ['lfoTri', 'lfo-processor', { begin: 0, end: 10, time: 0, depth: 1, dcoffset: -0.5, frequency: 1, skew: 0.5, phaseoffset: 0, curve: 1, shape: 0, min: -0.5, max: 0.5 }, 400,
+    [0, 127, 128, 129, 255, 256, 12000, 12032, 24000, 24064, 36000]],
+  ['lfoSineGated', 'lfo-processor', { begin: 0.003, end: 0.02, time: 0.003, depth: 0.5, dcoffset: 0, frequency: 3.7, skew: 0.3, phaseoffset: 0.2, curve: 1.5, shape: 1, min: -1, max: 1 }, 10,
+    [0, 255, 256, 257, 300, 511, 512, 767, 768, 895, 896, 900, 1023, 1024, 1100, 1279]],
+  ['lfoSquare', 'lfo-processor', { begin: 0, end: 10, time: 0, depth: 1, dcoffset: 0, frequency: 100, skew: 0.3, phaseoffset: 0, curve: 1, shape: 4, min: 0, max: 1 }, 8,
+    [127, 128, 200, 300, 399, 400, 500, 650, 1000]],
+  ['lfoRamp', 'lfo-processor', { begin: 0, end: 10, time: 0, depth: 1, dcoffset: 0, frequency: 100, skew: 0.5, phaseoffset: 0, curve: 1, shape: 2, min: 0, max: 1 }, 8,
+    [128, 129, 300, 500, 608, 609, 1000]],
+  ['lfoSaw', 'lfo-processor', { begin: 0, end: 10, time: 0, depth: 1, dcoffset: 0, frequency: 100, skew: 0.5, phaseoffset: 0, curve: 1, shape: 3, min: 0, max: 1 }, 8,
+    [128, 129, 300, 500, 609, 1000]],
+  // A triangle with skew 1 divides by zero when the phase reaches exactly 1.0 (a 375 Hz LFO does at 48 kHz): the worklet outputs NaN there.
+  ['lfoTriSkew1', 'lfo-processor', { begin: 0, end: 10, time: 0, depth: 1, dcoffset: 0, frequency: 375, skew: 1, phaseoffset: 0, curve: 1.5, shape: 0, min: 0, max: 1 }, 6,
+    [128, 129, 200, 255, 256, 257, 300, 383]],
+  ['envDefault', 'envelope-processor', { begin: 0.0003, end: 1.0, attack: 0.005, decay: 0.14, sustain: 0, release: 0.1, attackCurve: 0, decayCurve: 0, releaseCurve: 0, depth: 1, min: -1e9, max: 1e9, retrigger: 1 }, 420,
+    [0, 127, 128, 129, 255, 256, 257, 383, 384, 511, 512, 4864, 6911, 6912, 6913, 20000, 47999]],
+  ['envCurved', 'envelope-processor', { begin: 0.5, end: 0.8, attack: 0.1, decay: 0.05, sustain: 0.4, release: 0.2, attackCurve: 0.5, decayCurve: -0.5, releaseCurve: 1, depth: 1, min: -1e9, max: 1e9, retrigger: 1 }, 400,
+    [23999, 24000, 24064, 24128, 24192, 25000, 26000, 28000, 28800, 29000, 29184, 29440, 30000, 32000, 36000, 38399, 38400]],
+  ['envScaled', 'envelope-processor', { begin: 0.01, end: 0.3, attack: 0.02, decay: 0.03, sustain: 0.5, release: 0.1, attackCurve: 0, decayCurve: 0, releaseCurve: 0, depth: 3, min: 0, max: 2, retrigger: 1 }, 120,
+    [479, 480, 600, 1000, 1500, 2000, 8000, 14000, 14336, 14400, 15000]],
+];
+
+console.log('package cosic.audio');
+console.log('');
+console.log('// Generated by tools/strudel-ref/worklet-oracle.mjs from the lfo-processor and envelope-processor of the pinned superdough. Do not edit.');
+console.log('internal object WorkletOracleVectors {');
+console.log('    /** The worklet parameters and the frames of the quanta each case was run for. */');
+for (const [name, processor, params, quanta, frames] of cases) {
+  const out = run(processor, params, quanta);
+  console.log('');
+  console.log(`    /** ${processor} ${JSON.stringify(params)} for ${quanta} quanta: (frame, value). */`);
+  console.log(`    val ${name}: List<Pair<Int, Float>> = listOf(`);
+  for (const f of frames) console.log(`        ${f} to ${Number.isNaN(out[f]) ? 'Float.NaN' : `${out[f]}f`},`);
+  console.log('    )');
+}
+console.log('}');
