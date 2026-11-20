@@ -30,6 +30,26 @@ internal fun evaluateProgram(code: String): ProgramResult = reportingExhaustion 
     Evaluator().run(parseProgram(code))
 }
 
+/**
+ * Evaluates [code] the way `queryCode` in Strudel's test/runtime.mjs does, for the parity harness: the value of the
+ * last statement is the result, as a raw pattern (no conversion to control maps). In that runtime labels are plain
+ * expressions (`p` is mocked to the identity), `setcps` and `setcpm` return their argument, and the visual and output
+ * methods it mocks (`osc`, `pianoroll`, `midi`, ...) return the pattern they are called on. A declaration as the last
+ * statement gives silence, like the `silence` the transpiler appends there.
+ */
+internal fun evaluateForQuery(code: String): Pattern<Any> = reportingExhaustion {
+    Evaluator(queryMode = true).runForQuery(parseProgram(code))
+}
+
+/** The methods test/runtime.mjs mocks as `function () { return this }`. */
+private val IDENTITY_METHODS = setOf(
+    "osc", "csound", "tone", "webdirt", "pianoroll", "speak", "wave", "filter", "adsr", "webaudio", "soundfont", "tune",
+    "midi", "_scope", "_spiral", "_pitchwheel", "_pianoroll", "_spectrum", "_print", "markcss", "p", "dough",
+)
+
+/** The globals test/runtime.mjs mocks as `(x) => x`. */
+private val IDENTITY_FUNCTIONS = setOf("setcps", "setcpm")
+
 private class Scope(private val parent: Scope?) {
     private val values = HashMap<String, Value>()
 
@@ -70,7 +90,7 @@ internal fun arithmetic(op: ArithOp, left: Value, right: Value): Pattern<Any> {
     }
 }
 
-private class Evaluator {
+private class Evaluator(private val queryMode: Boolean = false) {
     private val session = Session()
     private val globals = Scope(null)
 
@@ -98,6 +118,22 @@ private class Evaluator {
             else -> last ?: silence
         }
         return ProgramResult(program.fmap { asControlMap(it) }, session.cps)
+    }
+
+    /** The value of the last statement as a pattern, or silence when there is none; see [evaluateForQuery]. */
+    fun runForQuery(statements: List<Stmt>): Pattern<Any> {
+        var last: Value? = null
+        for (statement in statements) {
+            last = when (statement) {
+                is Stmt.Let -> {
+                    globals[statement.name] = eval(statement.value, globals)
+                    null
+                }
+                is Stmt.Labeled -> eval(statement.value, globals)
+                is Stmt.Evaluate -> eval(statement.expr, globals)
+            }
+        }
+        return toPattern(last ?: return silence)
     }
 
     private fun patternOf(expr: Expr): Pattern<Any> = try {
@@ -166,6 +202,9 @@ private class Evaluator {
         if (callee is Expr.Ident) {
             val local = scope[callee.name]
             if (local == null) {
+                if (queryMode && callee.name in IDENTITY_FUNCTIONS) {
+                    return expr.args.map { eval(it, scope) }.firstOrNull() ?: Value.None
+                }
                 val builtin = Builtins.lookup(callee.name) ?: throw CosicError("Unknown function '${callee.name}'", expr.range)
                 return callBuiltin(builtin, callee.name, expr.args.map { eval(it, scope) }, expr.range)
             }
@@ -181,6 +220,10 @@ private class Evaluator {
 
     private fun methodCall(expr: Expr.MethodCall, scope: Scope): Value {
         val receiver = eval(expr.receiver, scope)
+        if (queryMode && expr.name in IDENTITY_METHODS) {
+            expr.args.forEach { eval(it, scope) }
+            return receiver
+        }
         val builtin = Builtins.lookup(expr.name) ?: throw CosicError("Unknown function '${expr.name}'", expr.range)
         if (builtin.kind != BuiltinKind.METHOD && builtin.kind != BuiltinKind.CONTROL) {
             throw CosicError("'${expr.name}' can't be used as a method", expr.range)

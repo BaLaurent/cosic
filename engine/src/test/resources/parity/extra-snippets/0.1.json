@@ -1,0 +1,9 @@
+[
+  {"name": "harness.plain", "code": "s(\"bd hh\").fast(2)", "cycles": 2},
+  {"name": "harness.rounding", "code": "s(\"bd\").gain(0.1 + 0.2)", "cycles": 1},
+  {"name": "harness.error", "code": "s(\"bd\").notAFunction()", "cycles": 1},
+  {"name": "harness.mondo", "code": "mondo`s bd hh`", "cycles": 2, "modules": ["@strudel/mondo"]},
+  {"name": "harness.replLabels", "mode": "repl", "codes": ["$: s(\"bd\")\n$: s(\"hh*2\")"], "cycles": 1},
+  {"name": "harness.replTempo", "mode": "repl", "codes": ["setcps(1)", "$: s(\"bd\")"], "cycles": 1},
+  {"name": "harness.replErrorKeepsTempo", "mode": "repl", "codes": ["$: s(\"bd\")", "setcps(2)\nfoo"], "cycles": 1}
+]

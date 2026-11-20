@@ -23,4 +23,12 @@ kotlin {
 
 dependencies {
     testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.kotlinx.serialization.json)
+}
+
+tasks.test {
+    // `./gradlew :engine:test -Dcosic.parity.writeGaps=true` sets the property on the Gradle JVM; the tests run in a fork.
+    systemProperty("cosic.parity.writeGaps", System.getProperty("cosic.parity.writeGaps") ?: "false")
+    System.getProperty("cosic.parity.dir")?.let { systemProperty("cosic.parity.dir", it) }
+    maxHeapSize = "2g"
 }

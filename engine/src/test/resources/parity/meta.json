@@ -1,0 +1,23 @@
+{
+  "strudelCommit": "84ef32eec8074f90c6690ab8d6a6c204f508b182",
+  "node": "v22.23.5",
+  "counts": {
+    "docs": 572,
+    "examples": 547,
+    "examplesWithSnapshot": 528,
+    "examplesSkippedByStrudel": 19,
+    "examplesWithoutSnapshot": 0,
+    "tunes": 31,
+    "tunesWithSnapshot": 31,
+    "extraFiles": 1,
+    "extraCases": 7,
+    "globals": 1069,
+    "methods": 1242,
+    "controls": 474
+  },
+  "sha256": {
+    "docExamples": "66f033751b7bbd64e81bca87879b7612444b0a2150fb0857fe08ef333f1416c8",
+    "examplesSnapshot": "9fd605cae7e2812fd1382da084658ca98565a7004aa124907af0771cb1f5f4de",
+    "tunesSnapshot": "5893600956c87fada83ea0b6d1e4b569ad2e61133816bf760f7b7368f030bd17"
+  }
+}

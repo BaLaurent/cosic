@@ -1,0 +1,9 @@
+[
+{"name":"harness.plain","code":"s(\"bd hh\").fast(2)","cycles":2,"haps":["[ 0/1 → 1/4 | s:bd ]","[ 1/4 → 1/2 | s:hh ]","[ 1/2 → 3/4 | s:bd ]","[ 3/4 → 1/1 | s:hh ]","[ 1/1 → 5/4 | s:bd ]","[ 5/4 → 3/2 | s:hh ]","[ 3/2 → 7/4 | s:bd ]","[ 7/4 → 2/1 | s:hh ]"]},
+{"name":"harness.rounding","code":"s(\"bd\").gain(0.1 + 0.2)","cycles":1,"haps":["[ 0/1 → 1/1 | s:bd gain:0.3 ]"]},
+{"name":"harness.error","code":"s(\"bd\").notAFunction()","cycles":1,"haps":[],"error":"s(...).notAFunction is not a function"},
+{"name":"harness.mondo","code":"mondo`s bd hh`","cycles":2,"modules":["@strudel/mondo"],"haps":["[ 0/1 → 1/1 | value:hh s:bd ]","[ 1/1 → 2/1 | value:hh s:bd ]"]},
+{"name":"harness.replLabels","mode":"repl","codes":["$: s(\"bd\")\n$: s(\"hh*2\")"],"cycles":1,"haps":["[ 0/1 → 1/2 | s:hh ]","[ 0/1 → 1/1 | s:bd ]","[ 1/2 → 1/1 | s:hh ]"],"cps":0.5,"miniLocations":[[6,8],[17,19],[20,21]],"error":null},
+{"name":"harness.replTempo","mode":"repl","codes":["setcps(1)","$: s(\"bd\")"],"cycles":1,"haps":["[ 0/1 → 1/1 | s:bd ]"],"cps":1,"miniLocations":[[6,8]],"error":null},
+{"name":"harness.replErrorKeepsTempo","mode":"repl","codes":["$: s(\"bd\")","setcps(2)\nfoo"],"cycles":1,"haps":["[ 0/1 → 1/1 | s:bd ]"],"cps":2,"miniLocations":[[6,8]],"error":"foo is not defined"}
+]
