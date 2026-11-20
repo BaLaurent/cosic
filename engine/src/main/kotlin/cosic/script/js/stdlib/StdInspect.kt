@@ -1,4 +1,4 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.JsFn
 import cosic.pattern.jsParseInt
@@ -6,19 +6,19 @@ import cosic.pattern.Undefined
 import cosic.pattern.jsMathRound
 import cosic.pattern.jsNumberToString
 import cosic.pattern.jsToString
-import cosic.script.next.JsClosure
-import cosic.script.next.Realm
-import cosic.script.next.js.AccessorProp
-import cosic.script.next.js.JsArray
-import cosic.script.next.js.JsFunction
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.PropFlags
-import cosic.script.next.js.arrayIndexOf
-import cosic.script.next.js.isNullish
-import cosic.script.next.js.toStr
+import cosic.script.JsClosure
+import cosic.script.Realm
+import cosic.script.js.AccessorProp
+import cosic.script.js.JsArray
+import cosic.script.js.JsFunction
+import cosic.script.js.JsObject
+import cosic.script.js.PropFlags
+import cosic.script.js.arrayIndexOf
+import cosic.script.js.isNullish
+import cosic.script.js.toStr
 import java.util.IdentityHashMap
 import kotlin.math.floor
-import cosic.script.next.js.toNumber
+import cosic.script.js.toNumber
 import kotlin.math.max
 import kotlin.math.sqrt
 
@@ -112,7 +112,7 @@ internal class Inspector(private val realm: Realm, private val depth: Int? = 2) 
 
     // ---- objects ----------------------------------------------------------------------------------------------------
 
-    private enum class Kind { OBJECT, ARRAY, SET, MAP, PROMISE }
+    private enum class Kind { OBJECT, ARRAY, SET, MAP, PROMISE, TABLE_ITERATOR }
 
     private fun formatRaw(value: JsObject, recurseTimesIn: Int): String {
         var recurseTimes = recurseTimesIn
@@ -146,6 +146,11 @@ internal class Inspector(private val realm: Realm, private val depth: Int? = 2) 
                 if (value.table.size == 0 && keys.isEmpty()) return "$prefix{}"
                 braces = arrayOf("$prefix{", "}")
                 kind = Kind.MAP
+            }
+            value is JsIterator && value.table != null -> {
+                val owner = if (value.className.startsWith("Map")) "Map" else "Set"
+                braces = arrayOf("[$owner ${if (value.entries) "Entries" else "Iterator"}] {", "}")
+                kind = Kind.TABLE_ITERATOR
             }
             constructor == "Object" && value !is JsFunction && value !is JsBox && value.className != "Error" -> {
                 if (tag != "") braces = arrayOf("${prefixOf(constructor, tag, "Object")}{", "}")
@@ -192,6 +197,7 @@ internal class Inspector(private val realm: Realm, private val depth: Int? = 2) 
                 Kind.SET -> formatSet(value as JsSetObject, recurseTimes)
                 Kind.MAP -> formatMap(value as JsMapObject, recurseTimes)
                 Kind.PROMISE -> formatPromise(value as JsPromise, recurseTimes)
+                Kind.TABLE_ITERATOR -> formatIteratorRest(value as JsIterator, recurseTimes)
                 Kind.OBJECT -> ArrayList()
             }
             for (key in keys) output.add(formatProperty(value, recurseTimes, key, extrasType))
@@ -233,6 +239,14 @@ internal class Inspector(private val realm: Realm, private val depth: Int? = 2) 
             val e = it.next() as OrderedTable.Entry
             output.add("${formatValue(e.key, recurseTimes)} => ${formatValue(e.value, recurseTimes)}")
         }
+        indentationLvl -= 2
+        return output
+    }
+
+    private fun formatIteratorRest(iterator: JsIterator, recurseTimes: Int): MutableList<String> {
+        val output = ArrayList<String>()
+        indentationLvl += 2
+        for (v in iterator.table!!.remaining()) output.add(formatValue(v, recurseTimes))
         indentationLvl -= 2
         return output
     }
@@ -589,7 +603,7 @@ private fun Realm.hasBuiltInToString(value: JsObject): Boolean {
 
 private fun Realm.jsonForLog(value: Any?): String = try {
     stringifyJson(this, value, Undefined, Undefined) as? String ?: "undefined"
-} catch (e: cosic.script.next.js.JsThrow) {
+} catch (e: cosic.script.js.JsThrow) {
     val m = (e.value as? JsObject)?.get("message")
     if (m is String && m.startsWith("Converting circular structure to JSON")) "[Circular]" else throw e
 }

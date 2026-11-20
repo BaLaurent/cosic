@@ -11,9 +11,11 @@
 // Output  engine/src/test/resources/script/stdlib/oracle.json   { name: result text }
 //
 // Beside the helpers of the prelude (isArray, keys, hasOwn) a snippet may call `logs()`: the lines `console.*` wrote since
-// the last call, as an array of strings (Node's own Console formats them: util.format and util.inspect). Local time
-// depends on the machine, so a snippet only uses UTC methods, `Date.UTC` and ISO strings.
+// the last call, as an array of strings (Node's own Console formats them: util.format and util.inspect). The time zone is
+// Europe/Paris, in Node here and in the Kotlin test (StdlibOracleTest sets it), so local-time methods are testable.
 import fs from 'node:fs';
+
+process.env.TZ = 'Europe/Paris';
 import path from 'node:path';
 import vm from 'node:vm';
 import { Console } from 'node:console';

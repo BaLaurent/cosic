@@ -1,17 +1,18 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.JsFn
 import cosic.pattern.Undefined
 import cosic.pattern.jsNumberToString
-import cosic.script.next.Realm
-import cosic.script.next.js.AccessorProp
-import cosic.script.next.js.JsArray
-import cosic.script.next.js.JsFunction
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.JsThrow
-import cosic.script.next.js.PropFlags
-import cosic.script.next.js.isNullish
-import cosic.script.next.js.toNumber
+import cosic.script.Realm
+import cosic.script.js.AccessorProp
+import cosic.script.js.JsArray
+import cosic.script.js.JsFunction
+import cosic.script.js.JsObject
+import cosic.script.js.JsThrow
+import cosic.script.js.PropFlags
+import cosic.script.js.isNullish
+import cosic.script.js.toNumber
+import cosic.script.js.describe
 import java.util.WeakHashMap
 import kotlin.math.truncate
 
@@ -41,6 +42,9 @@ internal class StdRealm(val realm: Realm) {
 
     /** Per-realm state of `console`: the group indentation and the counters. */
     val console = ConsoleState()
+
+    /** The objects `join` is in the middle of on this thread, so that an array that contains itself does not recurse forever. */
+    val joining: ThreadLocal<java.util.IdentityHashMap<JsObject, Boolean>> = ThreadLocal.withInitial { java.util.IdentityHashMap() }
 }
 
 private val registry = WeakHashMap<Realm, StdRealm>()
@@ -150,4 +154,26 @@ internal fun Realm.arrayLikeItems(value: Any?): List<Any?> = when (value) {
         List(count) { value.get(it.toString()) }
     }
     else -> emptyList()
+}
+
+/** How V8 prints a value in the messages that show it raw: strings as they are, objects as `#<Object>` or `[object Array]`, the rest as `String(value)`. */
+internal fun describePlain(realm: Realm, v: Any?): String = if (v is String) v else realm.describe(v)
+
+/** The name of the constructor of [o] as V8 reports it (`#<Map>`): the first function named by a `constructor` property on the prototype chain, else `Object`. */
+internal fun constructorNameOf(o: JsObject): String {
+    var p: JsObject? = o
+    while (p != null) {
+        val c = p.getOwnProp("constructor")?.value
+        if (c is JsFunction && c.name.isNotEmpty()) return c.name
+        p = p.prototype
+    }
+    return "Object"
+}
+
+/** A receiver of the wrong kind in a message (`... called on incompatible receiver #<Object>`): objects by their constructor, the rest raw. */
+internal fun describeReceiver(realm: Realm, v: Any?): String = when {
+    v is JsArray -> "[object Array]"
+    v is JsFunction -> realm.describe(v)
+    v is JsObject -> "#<${constructorNameOf(v)}>"
+    else -> describePlain(realm, v)
 }

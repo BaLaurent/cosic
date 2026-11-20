@@ -1,12 +1,12 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.Undefined
 import cosic.pattern.jsToFixed
 import cosic.pattern.jsTruthy
-import cosic.script.next.LogLevel
-import cosic.script.next.Realm
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.toStr
+import cosic.script.LogLevel
+import cosic.script.Realm
+import cosic.script.js.JsObject
+import cosic.script.js.toStr
 
 /*
  * `console`. Every method writes through `ScriptHost.log`, formatted like Node's: `console.log('%s is %d', 'x', 5)`,

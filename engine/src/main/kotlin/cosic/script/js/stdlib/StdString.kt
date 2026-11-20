@@ -1,16 +1,17 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.JsFn
 import cosic.pattern.Undefined
-import cosic.script.next.Realm
-import cosic.script.next.js.JsArray
-import cosic.script.next.js.JsFunction
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.MAX_STRING_LENGTH
-import cosic.script.next.js.toInt32
-import cosic.script.next.js.toNumber
-import cosic.script.next.js.toStr
-import cosic.script.next.js.toUint32
+import cosic.pattern.jsNumberToString
+import cosic.script.Realm
+import cosic.script.js.JsArray
+import cosic.script.js.JsFunction
+import cosic.script.js.JsObject
+import cosic.script.js.MAX_STRING_LENGTH
+import cosic.script.js.toInt32
+import cosic.script.js.toNumber
+import cosic.script.js.toStr
+import cosic.script.js.toUint32
 import java.text.Collator
 import java.text.Normalizer
 import java.util.Locale
@@ -49,7 +50,7 @@ internal fun installString(realm: Realm, std: StdRealm) {
         val sb = StringBuilder(args.size)
         for (a in args) {
             val n = realm.toNumber(a)
-            if (n != Math.floor(n) || n < 0 || n > 0x10FFFF || n.isNaN()) throw realm.rangeError("Invalid code point ${realm.toStr(a)}")
+            if (n != Math.floor(n) || n < 0 || n > 0x10FFFF || n.isNaN()) throw realm.rangeError("Invalid code point ${jsNumberToString(n)}")
             sb.appendCodePoint(n.toInt())
         }
         sb.toString()
@@ -216,12 +217,12 @@ private fun installTransforming(realm: Realm, proto: JsObject) {
     realm.defineMethod(proto, "toLocaleUpperCase", 0) { self, _ -> realm.thisString(self, "toLocaleUpperCase").uppercase(Locale.ROOT) }
     realm.defineMethod(proto, "toLocaleLowerCase", 0) { self, _ -> realm.thisString(self, "toLocaleLowerCase").lowercase(Locale.ROOT) }
     realm.defineMethod(proto, "trim", 0) { self, _ -> trimJs(realm.thisString(self, "trim"), start = true, end = true) }
-    realm.defineMethod(proto, "trimStart", 0) { self, _ -> trimJs(realm.thisString(self, "trimStart"), start = true, end = false) }
-    realm.defineMethod(proto, "trimEnd", 0) { self, _ -> trimJs(realm.thisString(self, "trimEnd"), start = false, end = true) }
+    realm.defineMethod(proto, "trimStart", 0) { self, _ -> trimJs(realm.thisString(self, "trimLeft"), start = true, end = false) }
+    realm.defineMethod(proto, "trimEnd", 0) { self, _ -> trimJs(realm.thisString(self, "trimRight"), start = false, end = true) }
     realm.alias(proto, "trimLeft", "trimStart")
     realm.alias(proto, "trimRight", "trimEnd")
-    realm.defineMethod(proto, "padStart", 2) { self, args -> pad(realm, realm.thisString(self, "padStart"), args, atStart = true) }
-    realm.defineMethod(proto, "padEnd", 2) { self, args -> pad(realm, realm.thisString(self, "padEnd"), args, atStart = false) }
+    realm.defineMethod(proto, "padStart", 1) { self, args -> pad(realm, realm.thisString(self, "padStart"), args, atStart = true) }
+    realm.defineMethod(proto, "padEnd", 1) { self, args -> pad(realm, realm.thisString(self, "padEnd"), args, atStart = false) }
     realm.defineMethod(proto, "repeat", 1) { self, args ->
         val s = realm.thisString(self, "repeat")
         val n = realm.toIntegerOrInfinity(args.arg(0))

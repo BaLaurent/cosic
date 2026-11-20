@@ -1,14 +1,14 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.Undefined
-import cosic.script.next.Realm
-import cosic.script.next.js.JsArray
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.PropFlags
-import cosic.script.next.js.describe
-import cosic.script.next.js.isNullish
-import cosic.script.next.js.iteratorOf
-import cosic.script.next.js.toStr
+import cosic.script.Realm
+import cosic.script.js.JsArray
+import cosic.script.js.JsObject
+import cosic.script.js.PropFlags
+import cosic.script.js.describe
+import cosic.script.js.isNullish
+import cosic.script.js.iteratorOf
+import cosic.script.js.toStr
 
 /*
  * `Map` and `Set`: keys are compared like `SameValueZero` (`NaN` is a key, `0` and `-0` are one), iteration is in insertion
@@ -73,28 +73,41 @@ internal class OrderedTable {
         index.clear()
     }
 
+    fun iterator(select: (Entry) -> Any?): TableIterator = TableIterator(select)
+
     /** An iterator over the live table; [select] says what each entry yields. */
-    fun iterator(select: (Entry) -> Any?): Iterator<Any?> = object : Iterator<Any?> {
+    inner class TableIterator(private val select: (Entry) -> Any?) : Iterator<Any?> {
         private var last: Entry = head
         private var ready: Entry? = null
 
-        private fun advance(): Entry? {
-            if (!last.deleted) return last.next
+        private fun after(from: Entry): Entry? {
+            if (!from.deleted) return from.next
             var e = head.next
-            while (e != null && e.seq <= last.seq) e = e.next
+            while (e != null && e.seq <= from.seq) e = e.next
             return e
         }
 
         override fun hasNext(): Boolean {
-            if (ready == null) ready = advance()
+            if (ready == null) ready = after(last)
             return ready != null
         }
 
         override fun next(): Any? {
-            val e = ready ?: advance() ?: throw NoSuchElementException()
+            val e = ready ?: after(last) ?: throw NoSuchElementException()
             ready = null
             last = e
             return select(e)
+        }
+
+        /** What the iterator has left to yield, without moving it. */
+        fun remaining(): List<Any?> {
+            val out = ArrayList<Any?>()
+            var e = ready ?: after(last)
+            while (e != null) {
+                out.add(select(e))
+                e = after(e)
+            }
+            return out
         }
     }
 }
@@ -156,7 +169,7 @@ private fun installMap(realm: Realm, std: StdRealm) {
     }
 
     fun thisMap(self: Any?, method: String): JsMapObject =
-        self as? JsMapObject ?: throw realm.typeError("Method Map.prototype.$method called on incompatible receiver ${realm.describe(self)}")
+        self as? JsMapObject ?: throw realm.typeError("Method ${if (method == "size") "get " else ""}Map.prototype.$method called on incompatible receiver ${describeReceiver(realm, self)}")
 
     realm.defineMethod(proto, "get", 1) { self, args ->
         val e = thisMap(self, "get").table.find(args.arg(0))
@@ -185,7 +198,7 @@ private fun installMap(realm: Realm, std: StdRealm) {
     realm.defineMethod(proto, "keys", 0) { self, _ -> JsIterator(std.iteratorPrototype, "Map Iterator", thisMap(self, "keys").table.iterator { e -> e.key }) }
     realm.defineMethod(proto, "values", 0) { self, _ -> JsIterator(std.iteratorPrototype, "Map Iterator", thisMap(self, "values").table.iterator { e -> e.value }) }
     realm.defineMethod(proto, "entries", 0) { self, _ ->
-        JsIterator(std.iteratorPrototype, "Map Iterator", thisMap(self, "entries").table.iterator { e -> JsArray(realm, arrayListOf(e.key, e.value)) })
+        JsIterator(std.iteratorPrototype, "Map Iterator", thisMap(self, "entries").table.iterator { e -> JsArray(realm, arrayListOf(e.key, e.value)) }, entries = true)
     }
     proto.defineAccessor("size", { self -> thisMap(self, "size").table.size.toDouble() }, null, PropFlags.CONFIGURABLE)
 }
@@ -206,7 +219,7 @@ private fun installSet(realm: Realm, std: StdRealm) {
     realm.defineGlobal("Set", ctor)
 
     fun thisSet(self: Any?, method: String): JsSetObject =
-        self as? JsSetObject ?: throw realm.typeError("Method Set.prototype.$method called on incompatible receiver ${realm.describe(self)}")
+        self as? JsSetObject ?: throw realm.typeError("Method ${if (method == "size") "get " else ""}Set.prototype.$method called on incompatible receiver ${describeReceiver(realm, self)}")
 
     realm.defineMethod(proto, "add", 1) { self, args ->
         thisSet(self, "add").table.put(args.arg(0), null)
@@ -231,7 +244,7 @@ private fun installSet(realm: Realm, std: StdRealm) {
     realm.defineMethod(proto, "values", 0) { self, _ -> JsIterator(std.iteratorPrototype, "Set Iterator", thisSet(self, "values").table.iterator { e -> e.key }) }
     realm.alias(proto, "keys", "values")
     realm.defineMethod(proto, "entries", 0) { self, _ ->
-        JsIterator(std.iteratorPrototype, "Set Iterator", thisSet(self, "entries").table.iterator { e -> JsArray(realm, arrayListOf(e.key, e.key)) })
+        JsIterator(std.iteratorPrototype, "Set Iterator", thisSet(self, "entries").table.iterator { e -> JsArray(realm, arrayListOf(e.key, e.key)) }, entries = true)
     }
     proto.defineAccessor("size", { self -> thisSet(self, "size").table.size.toDouble() }, null, PropFlags.CONFIGURABLE)
 }

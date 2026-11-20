@@ -1,15 +1,15 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.JsFn
 import cosic.pattern.Undefined
 import cosic.pattern.jsonStringify
-import cosic.script.next.Realm
-import cosic.script.next.js.JsArray
-import cosic.script.next.js.JsFunction
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.PropFlags
-import cosic.script.next.js.toNumber
-import cosic.script.next.js.toStr
+import cosic.script.Realm
+import cosic.script.js.JsArray
+import cosic.script.js.JsFunction
+import cosic.script.js.JsObject
+import cosic.script.js.PropFlags
+import cosic.script.js.toNumber
+import cosic.script.js.toStr
 
 /*
  * `JSON.parse` and `JSON.stringify`. Primitives are written by the kernel's `jsonStringify` (the one place that knows how
@@ -66,7 +66,7 @@ private class JsonParser(val realm: Realm, val text: String) {
 
     /** The error V8 reports at [pos]: [message] names what was expected, or null for the generic words about the token there. */
     private fun fail(message: String?): Nothing {
-        if (message != null) throw realm.syntaxError("$message in JSON at ${location()}")
+        if (message != null) throw realm.syntaxError("$message${if (message.endsWith("after JSON")) "" else " in JSON"} at ${location()}")
         throw realm.syntaxError(unexpectedTokenMessage())
     }
 
@@ -196,6 +196,7 @@ private class JsonParser(val realm: Realm, val text: String) {
                 sb.append(text, chunk, pos)
                 pos++
                 val e = cur()
+                if (e == -1) fail(null)
                 when (e) {
                     '"'.code, '\\'.code, '/'.code -> sb.append(e.toChar())
                     'b'.code -> sb.append('\b')

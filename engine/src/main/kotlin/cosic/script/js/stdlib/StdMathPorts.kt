@@ -1,4 +1,4 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import kotlin.math.abs
 import kotlin.math.sqrt

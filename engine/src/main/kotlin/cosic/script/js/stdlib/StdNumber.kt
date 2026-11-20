@@ -1,15 +1,15 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.Undefined
 import cosic.pattern.jsNumberToString
 import cosic.pattern.jsParseInt
 import cosic.pattern.jsToFixed
-import cosic.script.next.Realm
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.PropFlags
-import cosic.script.next.js.toInt32
-import cosic.script.next.js.toNumber
-import cosic.script.next.js.toStr
+import cosic.script.Realm
+import cosic.script.js.JsObject
+import cosic.script.js.PropFlags
+import cosic.script.js.toInt32
+import cosic.script.js.toNumber
+import cosic.script.js.toStr
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode

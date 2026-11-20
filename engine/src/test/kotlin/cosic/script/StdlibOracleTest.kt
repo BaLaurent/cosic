@@ -1,9 +1,12 @@
-package cosic.script.next
+package cosic.script
 
 import cosic.pattern.CosicError
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.util.TimeZone
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -16,6 +19,20 @@ import kotlin.test.fail
  * [differences] lists the snippets whose answer deliberately differs from V8's, with Cosic's answer and the reason.
  */
 class StdlibOracleTest {
+    private var savedZone: TimeZone? = null
+
+    /** The oracle ran with TZ=Europe/Paris, so the local time methods agree only in that zone. */
+    @BeforeTest
+    fun useTheOraclesTimeZone() {
+        savedZone = TimeZone.getDefault()
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Paris"))
+    }
+
+    @AfterTest
+    fun restoreTheTimeZone() {
+        savedZone?.let { TimeZone.setDefault(it) }
+    }
+
     private class Case(val name: String, val code: String)
 
     private fun resource(name: String): String =
@@ -78,19 +95,33 @@ class StdlibOracleTest {
     fun theCasesAreAllInTheOracle() {
         val missing = cases.filter { it.name !in oracle }.map { it.name }
         assertTrue(missing.isEmpty(), "run node tools/strudel-ref/stdlib-oracle.mjs: no oracle result for $missing")
-        assertTrue(cases.size > 30, "only ${cases.size} cases")
+        assertTrue(cases.size > 150, "only ${cases.size} cases")
+    }
+
+    /** `...before[expected | actual]after` around the first character where the two texts differ. */
+    private fun firstDifference(expected: String, actual: String): String {
+        var i = 0
+        while (i < expected.length && i < actual.length && expected[i] == actual[i]) i++
+        val from = maxOf(0, i - 60)
+        fun excerpt(s: String) = s.substring(minOf(i, s.length), minOf(s.length, i + 80)).replace("\n", "\\n")
+        return "at $i: ...${expected.substring(from, i).replace("\n", "\\n")}[expected: ${excerpt(expected)} | actual: ${excerpt(actual)}]"
     }
 
     @Test
     fun theLibraryAnswersLikeV8() {
         val failures = ArrayList<String>()
+        val dump = StringBuilder()
         for (c in cases) {
             val expected = differences[c.name] ?: oracle[c.name] ?: continue
             val actual = run(c)
             if (actual != expected) {
-                failures.add("${c.name}\n    expected: ${expected.take(600)}\n    actual:   ${actual.take(600)}\n    code:     ${c.code.take(300).replace("\n", "\n              ")}")
+                failures.add("${c.name}\n    ${firstDifference(expected, actual)}")
+                dump.append("### ${c.name}\nexpected: $expected\nactual:   $actual\ncode:\n${c.code}\n\n")
             }
         }
-        if (failures.isNotEmpty()) fail("${failures.size} of ${cases.size} snippets differ from V8:\n" + failures.take(40).joinToString("\n"))
+        if (failures.isNotEmpty()) {
+            java.io.File("build/stdlib-oracle-failures.txt").also { it.parentFile?.mkdirs() }.writeText(dump.toString())
+            fail("${failures.size} of ${cases.size} snippets differ from V8 (all in build/stdlib-oracle-failures.txt):\n" + failures.joinToString("\n"))
+        }
     }
 }

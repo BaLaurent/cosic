@@ -1,4 +1,4 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.JsFn
 import cosic.pattern.Undefined
@@ -6,17 +6,18 @@ import cosic.pattern.jsNumberToString
 import cosic.pattern.jsSliceIndex
 import cosic.pattern.jsStrictEq
 import cosic.pattern.jsTruthy
-import cosic.script.next.Realm
-import cosic.script.next.js.JsArray
-import cosic.script.next.js.JsFunction
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.MAX_ARRAY_LENGTH
-import cosic.script.next.js.PropFlags
-import cosic.script.next.js.describe
-import cosic.script.next.js.isNullish
-import cosic.script.next.js.iteratorOf
-import cosic.script.next.js.toNumber
-import cosic.script.next.js.toStr
+import cosic.script.Realm
+import cosic.script.js.JsArray
+import cosic.script.js.JsFunction
+import cosic.script.js.JsObject
+import cosic.script.js.MAX_ARRAY_LENGTH
+import cosic.script.js.PropFlags
+import cosic.script.js.describe
+import cosic.script.js.MAX_STRING_LENGTH
+import cosic.script.js.isNullish
+import cosic.script.js.iteratorOf
+import cosic.script.js.toNumber
+import cosic.script.js.toStr
 
 /*
  * `Array` and the iterator objects (`array.keys()`, `map.entries()`...). The methods are generic over anything with a
@@ -25,8 +26,17 @@ import cosic.script.next.js.toStr
  */
 
 /** What `keys()`, `values()` and `entries()` return: an object with `next()` that `for of` and spread read directly. */
-internal class JsIterator(prototype: JsObject, private val tag: String, private val source: Iterator<Any?>) : JsObject(prototype) {
+internal class JsIterator(
+    prototype: JsObject,
+    private val tag: String,
+    private val source: Iterator<Any?>,
+    /** Whether it yields `[key, value]` entries (`map.entries()`), which `console.log` writes as `[Map Entries]`. */
+    val entries: Boolean = false,
+) : JsObject(prototype) {
     override val className: String get() = tag
+
+    /** The iterator of a `Map` or `Set` this wraps, which can say what it has left; null for the others. */
+    val table: OrderedTable.TableIterator? get() = source as? OrderedTable.TableIterator
 
     override fun jsIterator(): Iterator<Any?> = source
 }
@@ -42,6 +52,7 @@ internal fun installArray(realm: Realm, std: StdRealm) {
     realm.defineMethod(ctor, "of", 0) { _, args -> realm.newArray(args) }
     realm.defineMethod(ctor, "from", 1) { _, args -> arrayFrom(realm, args) }
 
+    proto.defineOwn("length", 0.0, PropFlags.WRITABLE)
     installReading(realm, std, proto)
     installIteration(realm, proto)
     installMutation(realm, std, proto)
@@ -111,17 +122,49 @@ private fun liveIterator(array: JsArray, entry: (Int, Any?) -> Any?): Iterator<A
 
 // ---- receivers --------------------------------------------------------------------------------------------------------
 
+/** The methods whose message for a `null` or `undefined` receiver is `Array.prototype.X called on null or undefined` in V8; the others say `Cannot convert undefined or null to object`. */
+private val CALLED_ON_NULL = setOf("concat", "find", "findIndex", "findLast", "findLastIndex", "indexOf", "forEach", "filter", "map", "every", "some", "reduce", "reduceRight")
+
+private fun Realm.rejectNullish(self: Any?, method: String) {
+    if (!isNullish(self)) return
+    throw typeError(if (method in CALLED_ON_NULL) "Array.prototype.$method called on null or undefined" else "Cannot convert undefined or null to object")
+}
+
 /** What a read-only method works on: the live list of an array, a snapshot of any other object that has a length. */
 private fun Realm.elements(self: Any?, method: String): List<Any?> {
     if (self is JsArray) return self.items
-    requireCoercible(self, "Array.prototype.$method")
+    rejectNullish(self, method)
     return arrayLikeItems(self)
 }
 
 private fun Realm.arrayReceiver(self: Any?, method: String): JsArray {
     if (self is JsArray) return self
-    requireCoercible(self, "Array.prototype.$method")
+    rejectNullish(self, method)
     throw typeError("Array.prototype.$method called on a non-array")
+}
+
+/** `array.join(separator)` for an array, an array-like or a string; an array that contains itself leaves its inner occurrence empty. */
+private fun joinArray(realm: Realm, std: StdRealm, self: Any?, separator: Any?): String {
+    val items = realm.elements(self, "join")
+    val sep = if (separator === Undefined) "," else realm.toStr(separator)
+    val joining = std.joining.get()
+    val key = self as? JsObject
+    if (key != null) {
+        if (joining.containsKey(key)) return ""
+        joining[key] = true
+    }
+    try {
+        val sb = StringBuilder()
+        for (i in items.indices) {
+            if (i > 0) sb.append(sep)
+            val item = items[i]
+            if (!isNullish(item)) sb.append(realm.toStr(item))
+            if (sb.length > MAX_STRING_LENGTH) throw realm.rangeError("Invalid string length")
+        }
+        return sb.toString()
+    } finally {
+        if (key != null) joining.remove(key)
+    }
 }
 
 private fun Realm.checkGrowable(array: JsArray, std: StdRealm, adding: Int) {
@@ -153,11 +196,17 @@ private fun installReading(realm: Realm, std: StdRealm, proto: JsObject) {
     realm.defineMethod(proto, "concat", 1) { self, args ->
         realm.requireCoercible(self, "Array.prototype.concat")
         val out = ArrayList<Any?>()
-        for (part in listOf(self) + args) {
+        for (part in listOf(realm.toObject(self)) + args) {
             if (part is JsArray) out.addAll(part.items) else out.add(part)
             if (out.size > MAX_ARRAY_LENGTH) throw realm.rangeError("Invalid array length")
         }
         JsArray(realm, out)
+    }
+    realm.defineMethod(proto, "join", 1) { self, args -> joinArray(realm, std, self, args.arg(0)) }
+    realm.defineMethod(proto, "toString", 0) { self, _ ->
+        val obj = realm.toObject(self)
+        val join = obj.get("join")
+        if (join is JsFunction || join is JsFn) realm.callFunction(join, obj, emptyList()) else "[object ${obj.className}]"
     }
     realm.defineMethod(proto, "slice", 2) { self, args ->
         val items = realm.elements(self, "slice")
@@ -503,15 +552,15 @@ private fun splice(realm: Realm, list: MutableList<Any?>, args: List<Any?>): Arr
 /** The argument of `sort`: a function, or `undefined` for the default order; anything else is the `TypeError` V8 throws. */
 private fun validatedComparator(realm: Realm, compare: Any?): Any? {
     if (compare === Undefined || compare is JsFunction || compare is JsFn) return compare
-    throw realm.typeError("The comparison function must be either a function or undefined: ${realm.describe(compare)}")
+    throw realm.typeError("The comparison function must be either a function or undefined: ${describePlain(realm, compare)}")
 }
 
 private class Keyed(val key: String, val value: Any?)
 
 /**
- * Sorts [list] in place, stably. `undefined` goes last without being compared; [compare] is the function of the program
- * (already validated), or `undefined` for the default order, which compares the elements as strings by UTF-16 code units.
- * A merge sort, so a comparison that contradicts itself (`() => Math.random() - 0.5`) gives some order instead of an error.
+ * Sorts [list] in place the way V8 does (see [TimSort]). `undefined` goes last without being compared; [compare] is the
+ * function of the program (already validated), or `undefined` for the default order, which compares the elements as strings
+ * by UTF-16 code units.
  */
 internal fun sortValues(realm: Realm, list: MutableList<Any?>, compare: Any?) {
     val defined = ArrayList<Any?>(list.size)
@@ -520,48 +569,16 @@ internal fun sortValues(realm: Realm, list: MutableList<Any?>, compare: Any?) {
     val sorted: Array<Any?>
     if (compare === Undefined) {
         val keyed = Array<Any?>(defined.size) { Keyed(realm.toStr(defined[it]), defined[it]) }
-        mergeSort(keyed) { a, b -> (a as Keyed).key.compareTo((b as Keyed).key) }
+        TimSort(keyed) { x, y -> (x as Keyed).key.compareTo((y as Keyed).key) }.sort()
         sorted = Array(keyed.size) { (keyed[it] as Keyed).value }
     } else {
         sorted = defined.toTypedArray()
-        mergeSort(sorted) { a, b ->
-            val v = realm.toNumber(realm.callFunction(compare, Undefined, listOf(a, b)))
+        TimSort(sorted) { x, y ->
+            val v = realm.toNumber(realm.callFunction(compare, Undefined, listOf(x, y)))
             if (v < 0) -1 else if (v > 0) 1 else 0
-        }
+        }.sort()
     }
     list.clear()
     list.addAll(sorted)
     repeat(undefinedCount) { list.add(Undefined) }
-}
-
-private fun mergeSort(a: Array<Any?>, cmp: (Any?, Any?) -> Int) {
-    if (a.size < 2) return
-    sortRange(a, arrayOfNulls(a.size), 0, a.size, cmp)
-}
-
-private fun sortRange(a: Array<Any?>, tmp: Array<Any?>, from: Int, to: Int, cmp: (Any?, Any?) -> Int) {
-    if (to - from < 2) return
-    if (to - from <= 8) {
-        for (i in from + 1 until to) {
-            val x = a[i]
-            var j = i - 1
-            while (j >= from && cmp(a[j], x) > 0) {
-                a[j + 1] = a[j]
-                j--
-            }
-            a[j + 1] = x
-        }
-        return
-    }
-    val mid = (from + to) ushr 1
-    sortRange(a, tmp, from, mid, cmp)
-    sortRange(a, tmp, mid, to, cmp)
-    if (cmp(a[mid - 1], a[mid]) <= 0) return
-    System.arraycopy(a, from, tmp, from, to - from)
-    var i = from
-    var j = mid
-    var k = from
-    while (i < mid && j < to) a[k++] = if (cmp(tmp[j], tmp[i]) < 0) tmp[j++] else tmp[i++]
-    while (i < mid) a[k++] = tmp[i++]
-    while (j < to) a[k++] = tmp[j++]
 }

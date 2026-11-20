@@ -1,11 +1,11 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.jsMathRound
-import cosic.script.next.Realm
-import cosic.script.next.js.jsPow
-import cosic.script.next.js.toInt32
-import cosic.script.next.js.toNumber
-import cosic.script.next.js.toUint32
+import cosic.script.Realm
+import cosic.script.js.jsPow
+import cosic.script.js.toInt32
+import cosic.script.js.toNumber
+import cosic.script.js.toUint32
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor

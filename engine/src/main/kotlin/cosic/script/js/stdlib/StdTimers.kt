@@ -1,11 +1,11 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.JsFn
 import cosic.pattern.Undefined
-import cosic.script.next.Realm
-import cosic.script.next.js.JsFunction
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.toNumber
+import cosic.script.Realm
+import cosic.script.js.JsFunction
+import cosic.script.js.JsObject
+import cosic.script.js.toNumber
 
 /*
  * `setTimeout`, `setInterval`, `clearTimeout`, `clearInterval`, `queueMicrotask`. The timers live in the realm's event loop

@@ -1,21 +1,21 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
 import cosic.pattern.JsFn
 import cosic.pattern.Undefined
 import cosic.pattern.jsTruthy
-import cosic.script.next.Realm
-import cosic.script.next.js.AccessorProp
-import cosic.script.next.js.ErrorKind
-import cosic.script.next.js.JsArray
-import cosic.script.next.js.JsFunction
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.Prop
-import cosic.script.next.js.PropFlags
-import cosic.script.next.js.arrayIndexOf
-import cosic.script.next.js.isNullish
-import cosic.script.next.js.iteratorOf
-import cosic.script.next.js.toPropertyKey
-import cosic.script.next.js.toStr
+import cosic.script.Realm
+import cosic.script.js.AccessorProp
+import cosic.script.js.ErrorKind
+import cosic.script.js.JsArray
+import cosic.script.js.JsFunction
+import cosic.script.js.JsObject
+import cosic.script.js.Prop
+import cosic.script.js.PropFlags
+import cosic.script.js.arrayIndexOf
+import cosic.script.js.isNullish
+import cosic.script.js.iteratorOf
+import cosic.script.js.toPropertyKey
+import cosic.script.js.toStr
 
 /*
  * `Object`, `Function` and `Boolean`, and the boxes (`new Number(1)`, `new String("a")`, `new Boolean(true)`).
@@ -77,7 +77,7 @@ private fun installObjectConstructor(realm: Realm, std: StdRealm) {
     }
     realm.defineMethod(ctor, "fromEntries", 1) { _, args ->
         val iterable = args.arg(0)
-        val it = iteratorOf(iterable) ?: throw realm.notIterable(iterable)
+        val it = iteratorOf(iterable) ?: throw if (isNullish(iterable)) realm.typeError("undefined is not iterable") else realm.notIterable(iterable)
         val result = realm.newObject()
         while (it.hasNext()) {
             val entry = it.next()
@@ -264,7 +264,7 @@ private fun toDescriptor(realm: Realm, v: Any?): Descriptor {
     if (hasSet && setter !== Undefined && setter !is JsFunction && setter !is JsFn) throw realm.typeError("Setter must be a function: ${realm.toStr(setter)}")
     val d = Descriptor(v.get("value"), v.has("value"), flag("writable"), getter, hasGet, setter, hasSet, flag("enumerable"), flag("configurable"))
     if (d.isAccessor && d.isData) {
-        throw realm.typeError("Invalid property descriptor. Cannot both specify accessors and a value or writable attribute")
+        throw realm.typeError("Invalid property descriptor. Cannot both specify accessors and a value or writable attribute, #<${constructorNameOf(v)}>")
     }
     return d
 }
@@ -344,6 +344,7 @@ private fun fromProp(realm: Realm, p: Prop?): Any? {
 
 private fun installObjectPrototypeExtras(realm: Realm) {
     val proto = realm.objectPrototype
+    realm.defineMethod(proto, "valueOf", 0) { self, _ -> realm.toObject(self) }
     realm.defineMethod(proto, "toLocaleString", 0) { self, _ ->
         if (isNullish(self)) throw realm.typeError("Object.prototype.toLocaleString called on null or undefined")
         realm.callFunction(realm.toObject(self).get("toString"), self, emptyList())

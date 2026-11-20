@@ -1,11 +1,13 @@
-package cosic.script.next.js.stdlib
+package cosic.script.js.stdlib
 
-import cosic.script.next.Realm
-import cosic.script.next.js.Hint
-import cosic.script.next.js.JsObject
-import cosic.script.next.js.toNumber
-import cosic.script.next.js.toPrimitive
-import cosic.script.next.js.toStr
+import cosic.script.Realm
+import cosic.pattern.JsFn
+import cosic.script.js.JsFunction
+import cosic.script.js.Hint
+import cosic.script.js.JsObject
+import cosic.script.js.toNumber
+import cosic.script.js.toPrimitive
+import cosic.script.js.toStr
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -180,15 +182,14 @@ private fun localeTime(t: Double): String {
 
 private val ISO_DATE = Regex(
     "^([+-]\\d{6}|\\d{4})(?:-(\\d{2})(?:-(\\d{2}))?)?" +
-        "(?:[T ](\\d{2}):(\\d{2})(?::(\\d{2})(?:[.,](\\d+))?)?)?" +
-        "(Z|z|[+-]\\d{2}(?::?\\d{2})?)?$",
+        "(?:[T ](\\d{2}):(\\d{2})(?::(\\d{2})(?:\\.(\\d+))?)?)?" +
+        "(Z|z|[+-]\\d{2}:?\\d{2})?$",
 )
 
 /** `Date.parse`: ISO 8601 forms, and the forms `toString`, `toUTCString` and everyday writing give (`Jan 5, 2020 10:00`, `1/2/2020`). */
 internal fun parseDate(input: String): Double {
-    val text = input.trim()
-    ISO_DATE.matchEntire(text)?.let { return parseIso(it) }
-    return parseLegacy(text)
+    ISO_DATE.matchEntire(input)?.let { return parseIso(it) }
+    return parseLegacy(input.trim())
 }
 
 private fun parseIso(m: MatchResult): Double {
@@ -215,7 +216,7 @@ private fun parseIso(m: MatchResult): Double {
     )
 }
 
-/** `+01:00`, `+0100` or `+01` as milliseconds east of UTC. */
+/** `+01:00` or `+0100` as milliseconds east of UTC. */
 private fun zoneOffsetMillis(zone: String): Double {
     val sign = if (zone[0] == '-') -1 else 1
     val digits = zone.substring(1).replace(":", "")
@@ -224,18 +225,29 @@ private fun zoneOffsetMillis(zone: String): Double {
     return sign * (hours * 3_600_000.0 + minutes * 60_000.0)
 }
 
-private val LEGACY_TOKEN = Regex("\\d{1,2}:\\d{2}(?::\\d{2}(?:\\.\\d+)?)?|[+-]\\d{2}:?\\d{2}|\\d+|[A-Za-z]+|[/-]")
+private val LEGACY_TOKEN = Regex("\\d{1,2}:\\d{2}(?::\\d{2}(?:\\.\\d+)?)?|\\d+|[A-Za-z]+|[/+-]")
+
+/** The time zone offset a legacy date gives after `GMT` or a time: `+2`, `+02`, `+0200`, `+02:00`; null when [t] is not one. */
+private fun legacyOffset(sign: Char, t: String): Double? {
+    val minutesOfDay = when {
+        t.contains(':') -> t.split(':').let { it[0].toInt() * 60 + it[1].toInt() }
+        t.length <= 2 -> t.toInt() * 60
+        t.length <= 4 -> t.toInt().let { (it / 100) * 60 + it % 100 }
+        else -> return null
+    }
+    return (if (sign == '-') -1 else 1) * minutesOfDay * 60_000.0
+}
 
 private fun parseLegacy(text: String): Double {
     val clean = text.replace(Regex("\\([^)]*\\)"), " ")
     var month = -1
     val numbers = ArrayList<Int>()
-    var separator: Char? = null
     var hour = 0.0
     var minute = 0.0
     var second = 0.0
     var ms = 0.0
     var hasTime = false
+    var sawZone = false
     var zoneOffset: Double? = null
     var pm: Boolean? = null
     val tokens = LEGACY_TOKEN.findAll(clean).map { it.value }.toList()
@@ -244,7 +256,12 @@ private fun parseLegacy(text: String): Double {
     while (i < tokens.size) {
         val t = tokens[i]
         when {
-            t == "/" || t == "-" -> if (numbers.isNotEmpty() && separator == null) separator = t[0]
+            t == "/" -> Unit
+            (t == "+" || t == "-") && (hasTime || sawZone) && i + 1 < tokens.size && tokens[i + 1][0].isDigit() -> {
+                zoneOffset = legacyOffset(t[0], tokens[i + 1]) ?: return Double.NaN
+                i++
+            }
+            t == "+" || t == "-" -> Unit
             t.contains(':') -> {
                 val parts = t.split(':')
                 hasTime = true
@@ -256,15 +273,17 @@ private fun parseLegacy(text: String): Double {
                     if (s.size > 1) ms = (s[1] + "00").substring(0, 3).toDouble()
                 }
             }
-            (t[0] == '+' || t[0] == '-') && t.length >= 5 && hasTime -> zoneOffset = zoneOffsetMillis(t)
             t[0].isDigit() -> numbers.add(t.toInt())
             t[0].isLetter() -> {
                 val w = t.lowercase()
                 when {
                     w == "am" -> pm = false
                     w == "pm" -> pm = true
-                    w == "gmt" || w == "utc" || w == "ut" || w == "z" -> if (zoneOffset == null) zoneOffset = 0.0
-                    w.length >= 3 && MONTH_FULL.indexOfFirst { it.startsWith(w) } >= 0 && MONTH_FULL.any { it.startsWith(w) } -> month = MONTH_FULL.indexOfFirst { it.startsWith(w) }
+                    w == "gmt" || w == "utc" || w == "ut" || w == "z" -> {
+                        sawZone = true
+                        if (zoneOffset == null) zoneOffset = 0.0
+                    }
+                    w.length >= 3 && MONTH_FULL.any { it.startsWith(w) } -> month = MONTH_FULL.indexOfFirst { it.startsWith(w) }
                     w.length >= 3 && DAY_NAMES.any { it.lowercase() == w.take(3) } -> Unit
                     else -> return Double.NaN
                 }
@@ -334,7 +353,10 @@ internal fun installDate(realm: Realm, std: StdRealm) {
     realm.defineMethod(ctor, "parse", 1) { _, args -> parseDate(realm.toStr(args.arg(0))) }
     realm.defineMethod(ctor, "UTC", 7) { _, args -> timeClip(fieldsToTime(realm, args)) }
 
-    fun thisTime(self: Any?): Double = (self as? JsDate)?.time ?: throw realm.typeError("this is not a Date object.")
+    /** The time value of the receiver; a getter says `this is not a Date object.`, the other methods name themselves (V8's two wordings). */
+    fun thisTime(self: Any?, method: String? = null): Double = (self as? JsDate)?.time ?: throw realm.typeError(
+        if (method == null) "this is not a Date object." else "Method Date.prototype.$method called on incompatible receiver ${describeReceiver(realm, self)}",
+    )
 
     realm.defineMethod(proto, "getTime", 0) { self, _ -> thisTime(self) }
     realm.defineMethod(proto, "valueOf", 0) { self, _ -> thisTime(self) }
@@ -367,7 +389,7 @@ internal fun installDate(realm: Realm, std: StdRealm) {
     getter("getYear", true) { it.year - 1900 }
 
     realm.defineMethod(proto, "setTime", 1) { self, args ->
-        thisTime(self)
+        thisTime(self, "setTime")
         val t = timeClip(realm.toNumber(args.arg(0)))
         (self as JsDate).time = t
         t
@@ -375,7 +397,7 @@ internal fun installDate(realm: Realm, std: StdRealm) {
     // setMilliseconds(ms) .. setFullYear(y, m, d): [first] is the field the first argument replaces, [count] how many it may give.
     fun setter(name: String, local: Boolean, first: Int, count: Int) {
         realm.defineMethod(proto, name, count) { self, args ->
-            val date = self as? JsDate ?: throw realm.typeError("this is not a Date object.")
+            val date = self as? JsDate ?: throw realm.typeError("Method Date.prototype.$name called on incompatible receiver ${describeReceiver(realm, self)}")
             val given = DoubleArray(minOf(count, maxOf(args.size, 1))) { realm.toNumber(args.arg(it)) }
             var t = date.time
             if (t.isNaN()) {
@@ -406,7 +428,7 @@ internal fun installDate(realm: Realm, std: StdRealm) {
 
     fun formatter(name: String, format: (Double) -> String) {
         realm.defineMethod(proto, name, 0) { self, _ ->
-            val t = thisTime(self)
+            val t = thisTime(self, name)
             if (t.isNaN()) "Invalid Date" else format(t)
         }
     }
@@ -419,13 +441,17 @@ internal fun installDate(realm: Realm, std: StdRealm) {
     formatter("toLocaleTimeString") { localeTime(it) }
     formatter("toLocaleString") { "${localeDate(it)}, ${localeTime(it)}" }
     realm.defineMethod(proto, "toISOString", 0) { self, _ ->
-        val t = thisTime(self)
+        val t = thisTime(self, "toISOString")
         if (t.isNaN()) throw realm.rangeError("Invalid time value")
         isoString(t)
     }
     realm.defineMethod(proto, "toJSON", 1) { self, _ ->
-        val t = (self as? JsDate)?.time
-        if (t == null || t.isNaN()) null else isoString(t)
+        val o = realm.toObject(self)
+        val tv = realm.toPrimitive(o, Hint.NUMBER)
+        if (tv is Double && !tv.isFinite()) return@defineMethod null
+        val iso = o.get("toISOString")
+        if (iso !is JsFunction && iso !is JsFn) throw realm.typeError("toISOString is not a function")
+        realm.callFunction(iso, o, emptyList())
     }
 }
 
