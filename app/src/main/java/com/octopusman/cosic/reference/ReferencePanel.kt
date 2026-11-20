@@ -98,7 +98,8 @@ fun ReferencePanel(
             listOf<Row>(Row.Heading(category)) + group.map { Row.Entry(it) }
         }
     }
-    val headings = remember(rows) { rows.filterIsInstance<Row.Heading>().map { it.category } }
+    val functionGroups = remember { reference().map { it.category }.toSet() }
+    val headings = remember(rows) { chipOrder(rows.filterIsInstance<Row.Heading>().map { it.category }, functionGroups) }
 
     val listState = rememberLazyListState()
     // An item is shown with room above it for the heading that sticks to the top.

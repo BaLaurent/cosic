@@ -122,3 +122,10 @@ internal fun List<ReferenceItem>.openOn(hit: CursorHit?): OpenOn? {
     val values = item.values
     return if (hit.insideCall && values != null) OpenOn.Group(values.category) else OpenOn.Item(item)
 }
+
+/**
+ * The [categories] in the order of the jump chips: the sounds and scales first, since they are what is
+ * looked up most while writing and come last in the list, then the [functionGroups].
+ */
+internal fun chipOrder(categories: List<String>, functionGroups: Set<String>): List<String> =
+    categories.filter { it !in functionGroups } + categories.filter { it in functionGroups }

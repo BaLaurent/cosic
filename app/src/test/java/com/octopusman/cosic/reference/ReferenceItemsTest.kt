@@ -161,4 +161,14 @@ class ReferenceItemsTest {
         assertNull(items.openOn(CursorHit("nope", insideCall = false)))
         assertNull(items.openOn(null))
     }
+
+    @Test
+    fun theChipsListTheSoundsAndScalesBeforeTheFunctions() {
+        val categories = items.map { it.category }.distinct()
+
+        assertEquals(
+            listOf("Synths", "Drum kit", "Instruments", "Percussion", "Imported", "Scales", "Time", "Sound", "Values"),
+            chipOrder(categories, functions.map { it.category }.toSet()),
+        )
+    }
 }
