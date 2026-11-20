@@ -1,0 +1,820 @@
+{
+ "commit": "84ef32eec8074f90c6690ab8d6a6c204f508b182",
+ "osc": "2.4.5",
+ "cases": [
+  {
+   "name": "doc vector",
+   "value": {
+    "s": "bd"
+   },
+   "cps": 0.5,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000500,
+   "args": "[\"cps\",0.5,\"cycle\",0,\"delta\",2,\"s\",\"bd\"]",
+   "bytes": "2362756e646c6500e8fe6f8080000000000000402f646972742f706c617900002c7366736673667373000000637073003f0000006379636c650000000000000064656c7461000000400000007300000062640000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "key order",
+   "value": {
+    "note": "c3",
+    "n": "2",
+    "roomsize": 0.5,
+    "unit": "c",
+    "speed": 1,
+    "channels": [
+     1,
+     2
+    ]
+   },
+   "cps": 0.5,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000500,
+   "args": "[\"cps\",0.5,\"cycle\",0,\"delta\",2,\"note\",\"c3\",\"n\",2,\"roomsize\",0.5,\"unit\",\"c\",\"speed\",2,\"channels\",\"[1,2]\",\"midinote\",48,\"size\",0.5]",
+   "bytes": "2362756e646c6500e8fe6f8080000000000000b02f646972742f706c617900002c7366736673667373736673667373736673737366736600637073003f0000006379636c650000000000000064656c7461000000400000006e6f746500000000633300006e00000040000000726f6f6d73697a65000000003f000000756e697400000000630000007370656564000000400000006368616e6e656c73000000005b312c325d0000006d6964696e6f7465000000004240000073697a65000000003f000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "cps and fractions",
+   "value": {
+    "s": "hh",
+    "gain": 0.8
+   },
+   "cps": 0.6,
+   "whole": [
+    "1/3",
+    "2/3"
+   ],
+   "part": null,
+   "unixMs": 1700000001234.5679,
+   "args": "[\"cps\",0.6,\"cycle\",0.3333333333333333,\"delta\",0.5555555555555556,\"s\",\"hh\",\"gain\",0.8]",
+   "bytes": "2362756e646c6500e8fe6f813c0ca4000000004c2f646972742f706c617900002c7366736673667373736600637073003f19999a6379636c650000003eaaaaab64656c74610000003f0e38e473000000686800006761696e000000003f4ccccd",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "second cycle",
+   "value": {
+    "s": "sd",
+    "n": 3
+   },
+   "cps": 1,
+   "whole": [
+    "5/2",
+    "3"
+   ],
+   "part": null,
+   "unixMs": 1700000002000,
+   "args": "[\"cps\",1,\"cycle\",2.5,\"delta\",0.5,\"s\",\"sd\",\"n\",3]",
+   "bytes": "2362756e646c6500e8fe6f8200000000000000482f646972742f706c617900002c7366736673667373736600637073003f8000006379636c650000004020000064656c74610000003f00000073000000736400006e00000040400000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "fragment",
+   "value": {
+    "s": "bd"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": [
+    "1/2",
+    "1"
+   ],
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\"]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000402f646972742f706c617900002c7366736673667373000000637073003f8000006379636c650000000000000064656c74610000003f8000007300000062640000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "continuous hap",
+   "value": {
+    "s": "bd"
+   },
+   "cps": 1,
+   "whole": null,
+   "part": [
+    "1/4",
+    "3/4"
+   ],
+   "unixMs": 1700000000000,
+   "controlsError": "Cannot read properties of undefined (reading 'end')"
+  },
+  {
+   "name": "clip",
+   "value": {
+    "s": "bd",
+    "clip": 0.5
+   },
+   "cps": 2,
+   "whole": [
+    "0",
+    "1/2"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",2,\"cycle\",0,\"delta\",0.125,\"s\",\"bd\",\"clip\",0.5]",
+   "bytes": "2362756e646c6500e8fe6f80000000000000004c2f646972742f706c617900002c736673667366737373660063707300400000006379636c650000000000000064656c74610000003e0000007300000062640000636c6970000000003f000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "n string",
+   "value": {
+    "s": "bd",
+    "n": "3"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"n\",3]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000482f646972742f706c617900002c7366736673667373736600637073003f8000006379636c650000000000000064656c74610000003f80000073000000626400006e00000040400000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "n zero stays",
+   "value": {
+    "s": "bd",
+    "n": 0
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"n\",0]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000482f646972742f706c617900002c7366736673667373736600637073003f8000006379636c650000000000000064656c74610000003f80000073000000626400006e00000000000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "n note name",
+   "value": {
+    "s": "bd",
+    "n": "e3"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"n\",52]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000482f646972742f706c617900002c7366736673667373736600637073003f8000006379636c650000000000000064656c74610000003f80000073000000626400006e00000042500000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "n not a numeral",
+   "value": {
+    "s": "bd",
+    "n": "x"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "controlsError": "cannot parse as numeral: \"x\""
+  },
+  {
+   "name": "note number",
+   "value": {
+    "note": 60
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"note\",60,\"midinote\",60]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000542f646972742f706c617900002c7366736673667366736600637073003f8000006379636c650000000000000064656c74610000003f8000006e6f746500000000427000006d6964696e6f74650000000042700000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "note name with octave",
+   "value": {
+    "note": "c#4"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"note\",\"c#4\",\"midinote\",61]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000542f646972742f706c617900002c7366736673667373736600637073003f8000006379636c650000000000000064656c74610000003f8000006e6f746500000000632334006d6964696e6f74650000000042740000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "note name octave key",
+   "value": {
+    "note": "e",
+    "octave": 5
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"note\",\"e\",\"octave\",5,\"midinote\",76]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000642f646972742f706c617900002c736673667366737373667366000000637073003f8000006379636c650000000000000064656c74610000003f8000006e6f746500000000650000006f6374617665000040a000006d6964696e6f74650000000042980000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "note name octave fraction",
+   "value": {
+    "note": "e",
+    "octave": 2.5
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"note\",\"e\",\"octave\",2.5,\"midinote\",46]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000642f646972742f706c617900002c736673667366737373667366000000637073003f8000006379636c650000000000000064656c74610000003f8000006e6f746500000000650000006f63746176650000402000006d6964696e6f74650000000042380000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "note numeric string",
+   "value": {
+    "note": "48"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"note\",\"48\",\"midinote\",48]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000542f646972742f706c617900002c7366736673667373736600637073003f8000006379636c650000000000000064656c74610000003f8000006e6f746500000000343800006d6964696e6f74650000000042400000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "note not a note",
+   "value": {
+    "note": "zz"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "controlsError": "cannot parse as numeral: \"zz\""
+  },
+  {
+   "name": "existing midinote stays in place",
+   "value": {
+    "midinote": 1,
+    "note": "c3",
+    "s": "x"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"midinote\",48,\"note\",\"c3\",\"s\",\"x\"]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000602f646972742f706c617900002c736673667366736673737373000000637073003f8000006379636c650000000000000064656c74610000003f8000006d6964696e6f746500000000424000006e6f746500000000633300007300000078000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "roomsize zero",
+   "value": {
+    "roomsize": 0
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"roomsize\",0]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000482f646972742f706c617900002c7366736673667366000000637073003f8000006379636c650000000000000064656c74610000003f800000726f6f6d73697a650000000000000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "roomsize string",
+   "value": {
+    "roomsize": "2"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"roomsize\",\"2\",\"size\",2]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000542f646972742f706c617900002c7366736673667373736600637073003f8000006379636c650000000000000064656c74610000003f800000726f6f6d73697a65000000003200000073697a650000000040000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "unit c without speed",
+   "value": {
+    "unit": "c"
+   },
+   "cps": 0.5,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",0.5,\"cycle\",0,\"delta\",2,\"unit\",\"c\"]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000442f646972742f706c617900002c7366736673667373000000637073003f0000006379636c650000000000000064656c746100000040000000756e69740000000063000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "unit c speed",
+   "value": {
+    "unit": "c",
+    "speed": 1.5
+   },
+   "cps": 0.75,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",0.75,\"cycle\",0,\"delta\",1.3333333333333333,\"unit\",\"c\",\"speed\",2]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000502f646972742f706c617900002c7366736673667373736600637073003f4000006379636c650000000000000064656c74610000003faaaaab756e69740000000063000000737065656400000040000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "unit r speed",
+   "value": {
+    "unit": "r",
+    "speed": 1.5
+   },
+   "cps": 0.75,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",0.75,\"cycle\",0,\"delta\",1.3333333333333333,\"unit\",\"r\",\"speed\",1.5]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000502f646972742f706c617900002c7366736673667373736600637073003f4000006379636c650000000000000064656c74610000003faaaaab756e6974000000007200000073706565640000003fc00000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "channels number",
+   "value": {
+    "channels": 2
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"channels\",\"2\"]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000482f646972742f706c617900002c7366736673667373000000637073003f8000006379636c650000000000000064656c74610000003f8000006368616e6e656c730000000032000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "channels null",
+   "value": {
+    "channels": null
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"channels\",null]",
+   "sendError": "Cannot read properties of null (reading 'type')"
+  },
+  {
+   "name": "host and port",
+   "value": {
+    "s": "bd",
+    "oschost": "192.168.1.5",
+    "oscport": 9000
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"oschost\",\"192.168.1.5\",\"oscport\",9000]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000642f646972742f706c617900002c736673667366737373737366000000637073003f8000006379636c650000000000000064656c74610000003f80000073000000626400006f7363686f7374003139322e3136382e312e35006f7363706f727400460ca000",
+   "host": "192.168.1.5",
+   "port": 9000
+  },
+  {
+   "name": "port only",
+   "value": {
+    "s": "bd",
+    "oscport": 57121
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"oscport\",57121]",
+   "bytes": "2362756e646c6500e8fe6f80000000000000004c2f646972742f706c617900002c7366736673667373736600637073003f8000006379636c650000000000000064656c74610000003f80000073000000626400006f7363706f727400475f2100",
+   "host": null,
+   "port": 57121
+  },
+  {
+   "name": "host undefined",
+   "value": {
+    "s": "bd",
+    "oschost": {
+     "$undefined": 1
+    }
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"oschost\",null]",
+   "sendError": "Cannot read properties of null (reading 'type')"
+  },
+  {
+   "name": "undefined value drops the message",
+   "value": {
+    "s": "bd",
+    "gain": {
+     "$undefined": 1
+    }
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"gain\",null]",
+   "sendError": "Cannot read properties of null (reading 'type')"
+  },
+  {
+   "name": "nan value drops the message",
+   "value": {
+    "s": "bd",
+    "gain": {
+     "$nan": 1
+    }
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"gain\",null]",
+   "sendError": "Cannot read properties of null (reading 'type')"
+  },
+  {
+   "name": "infinity value drops the message",
+   "value": {
+    "s": "bd",
+    "gain": {
+     "$inf": 1
+    }
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"gain\",null]",
+   "sendError": "Cannot read properties of null (reading 'type')"
+  },
+  {
+   "name": "null value drops the message",
+   "value": {
+    "s": "bd",
+    "gain": null
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"gain\",null]",
+   "sendError": "Cannot read properties of null (reading 'type')"
+  },
+  {
+   "name": "boolean values",
+   "value": {
+    "s": "bd",
+    "flag": true,
+    "other": false
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"flag\",true,\"other\",false]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000542f646972742f706c617900002c736673667366737373547346000000637073003f8000006379636c650000000000000064656c74610000003f8000007300000062640000666c6167000000006f74686572000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "array value",
+   "value": {
+    "s": "bd",
+    "list": [
+     1,
+     "a",
+     [
+      true,
+      2
+     ]
+    ]
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"list\",[1,\"a\",[true,2]]]",
+   "bytes": "2362756e646c6500e8fe6f80000000000000005c2f646972742f706c617900002c7366736673667373735b66735b54665d5d0000637073003f8000006379636c650000000000000064656c74610000003f80000073000000626400006c697374000000003f8000006100000040000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "empty array value",
+   "value": {
+    "list": []
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"list\",[]]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000402f646972742f706c617900002c736673667366735b5d0000637073003f8000006379636c650000000000000064656c74610000003f8000006c69737400000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "object value drops the message",
+   "value": {
+    "s": "bd",
+    "nested": {
+     "a": 1
+    }
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\",\"nested\",{\"a\":1}]",
+   "sendError": "Can't infer OSC argument type for value: {"
+  },
+  {
+   "name": "unicode and padding",
+   "value": {
+    "s": "héllo😀",
+    "vowel": "abc",
+    "x": "abcd",
+    "empty": ""
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"héllo😀\",\"vowel\",\"abc\",\"x\",\"abcd\",\"empty\",\"\"]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000702f646972742f706c617900002c736673667366737373737373737300637073003f8000006379636c650000000000000064656c74610000003f8000007300000068c3a96c6c6ff09f98800000766f77656c00000061626300780000006162636400000000656d70747900000000000000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "integer like keys come first",
+   "value": {
+    "1": "a",
+    "3": "c",
+    "s": "bd"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"1\",\"a\",\"3\",\"c\",\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\"]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000542f646972742f706c617900002c73737373736673667366737300000031000000610000003300000063000000637073003f8000006379636c650000000000000064656c74610000003f8000007300000062640000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "hap keys override cps",
+   "value": {
+    "cps": 9,
+    "s": "bd"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",9,\"cycle\",0,\"delta\",1,\"s\",\"bd\"]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000402f646972742f706c617900002c736673667366737300000063707300411000006379636c650000000000000064656c74610000003f8000007300000062640000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "not an object",
+   "value": "bd",
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "controlsError": "expected hap.value to be an object, but got \"bd\". Hint: append .note() or .s() to the end"
+  },
+  {
+   "name": "big and tiny numbers",
+   "value": {
+    "a": 1e+300,
+    "b": 0,
+    "c": 0.1,
+    "d": 16777217,
+    "e": 1e-50,
+    "f": -3.5
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"a\",1e+300,\"b\",0,\"c\",0.1,\"d\",16777217,\"e\",1e-50,\"f\",-3.5]",
+   "bytes": "2362756e646c6500e8fe6f8000000000000000702f646972742f706c617900002c73667366736673667366736673667366736600637073003f8000006379636c650000000000000064656c74610000003f800000610000007f8000006200000000000000630000003dcccccd640000004b800000650000000000000066000000c0600000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "timetag fraction rounds up to a whole second",
+   "value": {
+    "s": "bd"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000001000,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\"]",
+   "bytes": "2362756e646c6500e8fe6f8100000000000000402f646972742f706c617900002c7366736673667373000000637073003f8000006379636c650000000000000064656c74610000003f8000007300000062640000",
+   "host": null,
+   "port": null
+  },
+  {
+   "name": "timetag small fraction",
+   "value": {
+    "s": "bd"
+   },
+   "cps": 1,
+   "whole": [
+    "0",
+    "1"
+   ],
+   "part": null,
+   "unixMs": 1700000000000.4,
+   "args": "[\"cps\",1,\"cycle\",0,\"delta\",1,\"s\",\"bd\"]",
+   "bytes": "2362756e646c6500e8fe6f80001a3400000000402f646972742f706c617900002c7366736673667373000000637073003f8000006379636c650000000000000064656c74610000003f8000007300000062640000",
+   "host": null,
+   "port": null
+  }
+ ],
+ "codec": [
+  {
+   "name": "no arguments",
+   "args": "[]",
+   "message": "2f646972742f706c617900002c000000"
+  },
+  {
+   "name": "strings",
+   "args": "[\"a\",\"ab\",\"abc\",\"abcd\",\"\"]",
+   "message": "2f646972742f706c617900002c73737373730000610000006162000061626300616263640000000000000000"
+  },
+  {
+   "name": "numbers",
+   "args": "[0,1,-1,0.5,0.1,1e+300,-1e+300,16777217,1e-50,123456789.123]",
+   "message": "2f646972742f706c617900002c6666666666666666666600000000003f800000bf8000003f0000003dcccccd7f800000ff8000004b800000000000004ceb79a3"
+  },
+  {
+   "name": "booleans",
+   "args": "[true,false]",
+   "message": "2f646972742f706c617900002c544600"
+  },
+  {
+   "name": "nested",
+   "args": "[[1,\"a\",[true]],[],\"x\"]",
+   "message": "2f646972742f706c617900002c5b66735b545d5d5b5d73003f8000006100000078000000"
+  },
+  {
+   "name": "lone surrogate",
+   "args": "[\"a\\ud800b\"]",
+   "message": "2f646972742f706c617900002c73000061efbfbd62000000"
+  },
+  {
+   "name": "astral",
+   "args": "[\"😀\"]",
+   "message": "2f646972742f706c617900002c730000f09f988000000000"
+  },
+  {
+   "name": "null",
+   "args": "[null]",
+   "error": "Cannot read properties of null (reading 'type')"
+  },
+  {
+   "name": "object",
+   "args": "[{\"a\":1}]",
+   "error": "Can't infer OSC argument type for value: {"
+  }
+ ]
+}

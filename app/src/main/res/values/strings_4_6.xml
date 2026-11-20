@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="osc_title">OSC output</string>
+    <string name="osc_summary">Where .osc() sends notes: a SuperDirt or any OSC receiver, over UDP.</string>
+    <string name="osc_host">Host</string>
+    <string name="osc_port">Port</string>
+    <string name="osc_port_invalid">A port is a number from 1 to 65535</string>
+    <string name="osc_route_all">Send all sound to OSC</string>
+    <string name="osc_route_all_summary">Every event goes to OSC and nothing plays on this device.</string>
+    <string name="osc_route_all_warning">All events are routed to OSC, audio is silenced!</string>
+</resources>

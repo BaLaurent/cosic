@@ -40,7 +40,6 @@ _rescale  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, 
 _retime  # internal helper of pattern.mjs, not meant to be called by programs
 _scope  # Task 4.2: visuals (inline widget method)
 _slices  # internal helper of pattern.mjs, not meant to be called by programs
-_speak  # Task 4.6: speech (`.speak()`)
 _spectrum  # Task 4.2: visuals (inline widget method)
 _spiral  # Task 4.2: visuals (inline widget method)
 _strudelLoaded  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
@@ -160,7 +159,6 @@ onTriggerSample  # sound registry API of superdough (AudioBuffer, Web Audio call
 onTriggerSynth  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
 onTriggerTime  # Task 4.1: scheduling hooks (`onTriggerTime`, example onTriggerTime#0)
 onceEnded  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-osc  # Task 4.6: OSC to SuperDirt
 packageName  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
 piano  # Task 3.16: library functions (`.piano()`, the prebake variant)
 pianoroll  # Task 4.2: visuals
@@ -215,7 +213,6 @@ showFirstCycle  # internal helper of pattern.mjs, not meant to be called by prog
 soundAlias  # Task 3.16: library functions (`soundAlias`)
 soundMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
 soundfont  # Task 3.15: soundfonts (`.soundfont(sf, n)`; SAMPLES R12 says it needs an explicit decision, it is not in the user's out-of-scope list)
-speak  # Task 4.6: speech (`.speak()`)
 spectrum  # Task 4.2: visuals
 spiral  # Task 4.2: visuals
 superdough  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio

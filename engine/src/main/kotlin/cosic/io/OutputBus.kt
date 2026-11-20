@@ -5,6 +5,7 @@ import cosic.MidiSink
 import cosic.OscSink
 import cosic.SpeechSink
 import cosic.io.serial.SerialSink
+import cosic.io.osc.OscHook
 import cosic.pattern.ScheduleHook
 import cosic.pattern.ScheduledHap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -69,9 +70,9 @@ class OutputBus(
     @Volatile
     var oscTarget: Boolean = false
 
-    /** What the default output becomes while [oscTarget] is on (`superdirtOutput`); the OSC feature installs it. */
+    /** What the default output becomes while [oscTarget] is on (`superdirtOutput`): what `.osc()` does, to the same device. */
     @Volatile
-    internal var oscOutput: ScheduleHook? = null
+    internal var oscOutput: ScheduleHook? = OscHook(this)
 
     private class Post(val hooks: List<ScheduleHook>, val hap: ScheduledHap)
 

@@ -1993,8 +1993,7 @@
   "params": "amount",
   "doc": "A pattern of numbers that speed up (or slow down) samples while they play.",
   "example": "s(\"sax\").accelerate(\"<0 1 2 4 8 16>\").slow(2).osc()",
-  "snippet": "$: s(\"sax\").accelerate(\"<0 1 2 4 8 16>\").slow(2).osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: s(\"sax\").accelerate(\"<0 1 2 4 8 16>\").slow(2).osc()"
  },
  {
   "name": "bank",
@@ -2476,8 +2475,7 @@
   "params": "amount",
   "doc": "Like gain, but linear.",
   "example": "s(\"bd*8\").amp(\".1*2 .5 .1*2 .5 .1 .5\").osc()",
-  "snippet": "$: s(\"bd*8\").amp(\".1*2 .5 .1*2 .5 .1 .5\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: s(\"bd*8\").amp(\".1*2 .5 .1*2 .5 .1 .5\").osc()"
  },
  {
   "name": "gain",
@@ -3116,8 +3114,7 @@
   "params": "frequency",
   "doc": "Set frequency of sound.",
   "example": "freq(\"220 110 440 110\").s(\"superzow\").osc()",
-  "snippet": "$: freq(\"220 110 440 110\").s(\"superzow\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: freq(\"220 110 440 110\").s(\"superzow\").osc()"
  },
  {
   "name": "getFrequency",
@@ -4102,8 +4099,7 @@
   "params": "oschost",
   "doc": "The host to send open sound control messages to.",
   "example": "note(\"c4\").oschost('127.0.0.1').oscport(57120).osc();",
-  "snippet": "$: note(\"c4\").oschost('127.0.0.1').oscport(57120).osc();",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: note(\"c4\").oschost('127.0.0.1').oscport(57120).osc();"
  },
  {
   "name": "oscport",
@@ -4113,8 +4109,7 @@
   "params": "oscport",
   "doc": "The port to send open sound control messages to.",
   "example": "note(\"c4\").oschost('127.0.0.1').oscport(57120).osc();",
-  "snippet": "$: note(\"c4\").oschost('127.0.0.1').oscport(57120).osc();",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: note(\"c4\").oschost('127.0.0.1').oscport(57120).osc();"
  },
  {
   "name": "progNum",
@@ -4188,8 +4183,7 @@
   "params": "dry",
   "doc": "Set dryness of reverb.",
   "example": "n(\"[0,3,7](3,8)\").s(\"superpiano\").room(.7).dry(\"<0 .5 .75 1>\").osc()",
-  "snippet": "$: n(\"[0,3,7](3,8)\").s(\"superpiano\").room(.7).dry(\"<0 .5 .75 1>\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: n(\"[0,3,7](3,8)\").s(\"superpiano\").room(.7).dry(\"<0 .5 .75 1>\").osc()"
  },
  {
   "name": "fadeTime",
@@ -4201,8 +4195,7 @@
   "params": "time",
   "doc": "Used when using begin/end or chop/striate and friends, to change the fade out time of the 'grain' envelope.",
   "example": "s(\"oh*4\").end(.1).fadeTime(\"<0 .2 .4 .8>\").osc()",
-  "snippet": "$: s(\"oh*4\").end(.1).fadeTime(\"<0 .2 .4 .8>\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: s(\"oh*4\").end(.1).fadeTime(\"<0 .2 .4 .8>\").osc()"
  },
  {
   "name": "leslie",
@@ -4212,8 +4205,7 @@
   "params": "wet",
   "doc": "Emulation of a Leslie speaker: speakers rotating in a wooden amplified cabinet.",
   "example": "n(\"0,4,7\").s(\"supersquare\").leslie(\"<0 .4 .6 1>\").osc()",
-  "snippet": "$: n(\"0,4,7\").s(\"supersquare\").leslie(\"<0 .4 .6 1>\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: n(\"0,4,7\").s(\"supersquare\").leslie(\"<0 .4 .6 1>\").osc()"
  },
  {
   "name": "lock",
@@ -4223,8 +4215,7 @@
   "params": "enable",
   "doc": "Specifies whether delaytime is calculated relative to cps.",
   "example": "s(\"sd\").delay().lock(1).osc()",
-  "snippet": "$: s(\"sd\").delay().lock(1).osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: s(\"sd\").delay().lock(1).osc()"
  },
  {
   "name": "lrate",
@@ -4234,8 +4225,7 @@
   "params": "rate",
   "doc": "Rate of modulation / rotation for leslie effect.",
   "example": "n(\"0,4,7\").s(\"supersquare\").leslie(1).lrate(\"<1 2 4 8>\").osc()",
-  "snippet": "$: n(\"0,4,7\").s(\"supersquare\").leslie(1).lrate(\"<1 2 4 8>\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: n(\"0,4,7\").s(\"supersquare\").leslie(1).lrate(\"<1 2 4 8>\").osc()"
  },
  {
   "name": "lsize",
@@ -4245,8 +4235,7 @@
   "params": "meters",
   "doc": "Physical size of the cabinet in meters.",
   "example": "n(\"0,4,7\").s(\"supersquare\").leslie(1).lrate(2).lsize(\"<.1 .5 1>\").osc()",
-  "snippet": "$: n(\"0,4,7\").s(\"supersquare\").leslie(1).lrate(2).lsize(\"<.1 .5 1>\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: n(\"0,4,7\").s(\"supersquare\").leslie(1).lrate(2).lsize(\"<.1 .5 1>\").osc()"
  },
  {
   "name": "octave",
@@ -4268,8 +4257,7 @@
   "params": "span",
   "doc": "Controls how much multichannel output is fanned out.",
   "example": "s(\"[bd hh]*2\").pan(\"<.5 1 .5 0>\").panspan(\"<0 .5 1>\").osc()",
-  "snippet": "$: s(\"[bd hh]*2\").pan(\"<.5 1 .5 0>\").panspan(\"<0 .5 1>\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: s(\"[bd hh]*2\").pan(\"<.5 1 .5 0>\").panspan(\"<0 .5 1>\").osc()"
  },
  {
   "name": "pansplay",
@@ -4279,8 +4267,7 @@
   "params": "spread",
   "doc": "Controls how much multichannel output is spread.",
   "example": "s(\"[bd hh]*2\").pan(\"<.5 1 .5 0>\").pansplay(\"<0 .5 1>\").osc()",
-  "snippet": "$: s(\"[bd hh]*2\").pan(\"<.5 1 .5 0>\").pansplay(\"<0 .5 1>\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: s(\"[bd hh]*2\").pan(\"<.5 1 .5 0>\").pansplay(\"<0 .5 1>\").osc()"
  },
  {
   "name": "phaserdepth",
@@ -4303,8 +4290,7 @@
   "params": "squiz",
   "doc": "Made by Calum Gunn.",
   "example": "squiz(\"2 4/2 6 [8 16]\").s(\"bd\").osc()",
-  "snippet": "$: squiz(\"2 4/2 6 [8 16]\").s(\"bd\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: squiz(\"2 4/2 6 [8 16]\").s(\"bd\").osc()"
  },
  {
   "name": "unit",
@@ -4314,8 +4300,7 @@
   "params": "unit",
   "doc": "Used in conjunction with speed, accepts values of \"r\" (rate, default behavior), \"c\" (cycles), or \"s\" (seconds).",
   "example": "speed(\"1 2 .5 3\").s(\"bd\").unit(\"c\").osc()",
-  "snippet": "$: speed(\"1 2 .5 3\").s(\"bd\").unit(\"c\").osc()",
-  "excluded": "the example ends in .osc()"
+  "snippet": "$: speed(\"1 2 .5 3\").s(\"bd\").unit(\"c\").osc()"
  },
  {
   "name": "filterHaps",
