@@ -162,6 +162,7 @@ internal object Catalogue {
             registerStepwise()
             registerTonal()
             registerXen()
+            registerTidal()
             registerKabelsalat() // before Language, after everything it could depend on: `K` is a transpiler hook and `worklet` needs only the kernel
             registerLanguage()
         }
