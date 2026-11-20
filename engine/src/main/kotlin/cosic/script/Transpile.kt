@@ -255,6 +255,10 @@ private class TranspilePass(
     /**
      * `slider(value, min, max, step)` becomes `sliderWithID('slider_<offset of value>', value, min, max, step)` and
      * is recorded (plugin-widgets.mjs:36-58,72-84). The bounds are the number literals among the arguments.
+     *
+     * Deliberate difference (ENV D-5, INLINE 3.11): a number literal with a sign (`-0.5`, which is a unary expression, not a literal)
+     * counts as a literal too, as the first argument (its [SliderConfig.value] is the signed text and its range includes the sign, so
+     * the editor can rewrite it) and as `min`, `max` and `step`. Strudel gives such a slider no value and the default bounds.
      */
     private fun sliderWithId(call: CallExpression, callee: Identifier): CallExpression {
         val args = call.arguments
@@ -263,7 +267,7 @@ private class TranspilePass(
         val config = SliderConfig(
             from = first.start,
             to = first.end,
-            value = (first as? Literal)?.raw,
+            value = literalText(first),
             min = literalNumber(args.getOrNull(1)) ?: 0.0,
             max = literalNumber(args.getOrNull(2)) ?: 1.0,
             step = literalNumber(args.getOrNull(3)),
@@ -286,12 +290,30 @@ private class TranspilePass(
 
     /** The value of a number literal, or of a string literal that reads as a number; null for anything else. */
     private fun literalNumber(node: Node?): Double? {
+        if (node is UnaryExpression) return signedNumber(node)
         val literal = node as? Literal ?: return null
         return when (val value = literal.value) {
             is Double -> value
             is String -> jsStringToNumber(value).takeIf { !it.isNaN() }
             else -> null
         }
+    }
+
+    /** The source text of a literal, with the sign of a signed number literal; null for anything else. */
+    private fun literalText(node: Node): String? = when (node) {
+        is Literal -> node.raw
+        is UnaryExpression -> signedNumber(node)?.let { node.operator.symbol + (node.argument as Literal).raw }
+        else -> null
+    }
+
+    /** `-1` and `+1`: a sign in front of a number literal. A sign in front of anything else is no literal. */
+    private fun signedNumber(node: UnaryExpression): Double? {
+        if (node.operator != UnaryOp.MINUS && node.operator != UnaryOp.PLUS) return null
+        val literal = node.argument as? Literal ?: return null
+        val number = literal.value as? Double ?: return null
+        // the parentheses of `-(1)` are not in the tree
+        if (source.substring(node.start + 1, literal.start).isNotBlank()) return null
+        return if (node.operator == UnaryOp.MINUS) -number else number
     }
 
     // ---- labels --------------------------------------------------------------------------------------------------

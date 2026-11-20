@@ -1,8 +1,10 @@
 package cosic
 
+import cosic.audio.BackgroundIrExecutor
 import cosic.audio.DRUM_NAMES
 import cosic.audio.ChainDemand
 import cosic.audio.DrumKit
+import cosic.audio.IrExecutor
 import cosic.audio.Mixer
 import cosic.audio.SYNTH_NAMES
 import cosic.audio.VoiceParams
@@ -78,10 +80,13 @@ private sealed interface Command {
  * Events with no sound name (`note("c e g")` on its own) play a triangle. An event whose sound is unknown, or
  * whose sample is not decoded yet, is skipped; an unknown name is also reported as a warning.
  */
-class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
+class CosicEngine internal constructor(val sampleRate: Int, private val library: SoundLibrary, irExecutor: IrExecutor) {
+    /** An engine that builds the impulse responses of its reverbs on a background thread (offline rendering builds them on the spot instead). */
+    constructor(sampleRate: Int, library: SoundLibrary) : this(sampleRate, library, BackgroundIrExecutor.shared)
+
     internal val drums = DrumKit(sampleRate)
     private val sounds = SoundResolver(sampleRate, library, drums)
-    private val mixer = Mixer(sampleRate)
+    private val mixer = Mixer(sampleRate, irExecutor)
 
     /** What the program, the engine and the patterns being played write to the console: the last 40 lines. */
     val console = ConsoleLog()
@@ -227,6 +232,18 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
         sounds.resolve(sound, index.toDouble(), note) // loads or renders the sound here, off the audio thread
         commands.add(Command.Preview(sound, index, note))
     }
+
+    /**
+     * Any thread. Copies what analyser [id] (the `id` of `.scope()` and the like, the `analyze` control) has heard into [out], the oldest [out]`.size` (at most `2^(fft + 5)`) frames of the
+     * latest `2^(fft + 5)` mono frames, oldest first, as `AnalyserNode.getFloatTimeDomainData` does. Returns the number of frames copied: 0 before any voice has fed the analyser.
+     */
+    fun copyScope(id: Int, out: FloatArray): Int = mixer.analyser(id)?.timeDomain(out) ?: 0
+
+    /**
+     * Any thread. `AnalyserNode.getFloatFrequencyData` of analyser [id] into [out]: decibels of the first [out]`.size` (at most `2^(fft + 4)`) bins, smoothed over the calls
+     * (0.5 per call that finds new audio). Returns the number of bins written: 0 before any voice has fed the analyser.
+     */
+    fun copySpectrum(id: Int, out: FloatArray): Int = mixer.analyser(id)?.frequencyDb(out) ?: 0
 
     /** Audio thread only. Renders [frames] frames of interleaved stereo into [out], which must hold `frames * 2` samples. */
     fun render(out: FloatArray, frames: Int) {

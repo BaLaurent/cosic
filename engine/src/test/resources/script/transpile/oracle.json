@@ -11174,6 +11174,495 @@
   ]
  },
  {
+  "name": "slider.signed-all",
+  "code": "slider(-0.5, -1, 1, -0.1)",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=0.5\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=1\n      UnaryExpression operator=\"-\"\n        Literal value=0.1",
+    "digest": "d3f7875116eb8803",
+    "output": "return sliderWithID('slider_7', -0.5, -1, 1, -0.1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 11,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=0.5\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=1\n      UnaryExpression operator=\"-\"\n        Literal value=0.1",
+    "digest": "74de47a707b50972",
+    "output": "sliderWithID('slider_7', -0.5, -1, 1, -0.1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 11,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=0.5\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=1\n      UnaryExpression operator=\"-\"\n        Literal value=0.1",
+    "digest": "d3f7875116eb8803",
+    "output": "return sliderWithID('slider_7', -0.5, -1, 1, -0.1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 11,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=0.5\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=1\n      UnaryExpression operator=\"-\"\n        Literal value=0.1",
+    "digest": "d3f7875116eb8803",
+    "output": "return sliderWithID('slider_7', -0.5, -1, 1, -0.1);"
+   }
+  ]
+ },
+ {
+  "name": "slider.signed-bounds",
+  "code": "slider(0, -1, 1)",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      Literal value=0\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=1",
+    "digest": "9900ec1c84df6402",
+    "output": "return sliderWithID('slider_7', 0, -1, 1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 8,
+      "value": "0",
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      Literal value=0\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=1",
+    "digest": "c5ec899fadfb7eaf",
+    "output": "sliderWithID('slider_7', 0, -1, 1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 8,
+      "value": "0",
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      Literal value=0\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=1",
+    "digest": "9900ec1c84df6402",
+    "output": "return sliderWithID('slider_7', 0, -1, 1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 8,
+      "value": "0",
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      Literal value=0\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=1",
+    "digest": "9900ec1c84df6402",
+    "output": "return sliderWithID('slider_7', 0, -1, 1);"
+   }
+  ]
+ },
+ {
+  "name": "slider.plus-first",
+  "code": "slider(+1)",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"+\"\n        Literal value=1",
+    "digest": "7c567485b95dbd84",
+    "output": "return sliderWithID('slider_7', +1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 9,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"+\"\n        Literal value=1",
+    "digest": "e606287f746b7250",
+    "output": "sliderWithID('slider_7', +1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 9,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"+\"\n        Literal value=1",
+    "digest": "7c567485b95dbd84",
+    "output": "return sliderWithID('slider_7', +1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 9,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"+\"\n        Literal value=1",
+    "digest": "7c567485b95dbd84",
+    "output": "return sliderWithID('slider_7', +1);"
+   }
+  ]
+ },
+ {
+  "name": "slider.negative-hex-first",
+  "code": "slider(-0x10)",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=16",
+    "digest": "4e9f399c84ae5247",
+    "output": "return sliderWithID('slider_7', -16);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 12,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=16",
+    "digest": "2927500ccf264b16",
+    "output": "sliderWithID('slider_7', -16);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 12,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=16",
+    "digest": "4e9f399c84ae5247",
+    "output": "return sliderWithID('slider_7', -16);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 12,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=16",
+    "digest": "4e9f399c84ae5247",
+    "output": "return sliderWithID('slider_7', -16);"
+   }
+  ]
+ },
+ {
+  "name": "slider.negative-parenthesised",
+  "code": "slider(-(1), 0, 1)",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=0\n      Literal value=1",
+    "digest": "7538b3f43c7b9494",
+    "output": "return sliderWithID('slider_7', -1, 0, 1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 11,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=0\n      Literal value=1",
+    "digest": "d8a6ea525f9c40b4",
+    "output": "sliderWithID('slider_7', -1, 0, 1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 11,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=0\n      Literal value=1",
+    "digest": "7538b3f43c7b9494",
+    "output": "return sliderWithID('slider_7', -1, 0, 1);",
+    "miniLocations": [],
+    "literals": [],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 11,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        Literal value=1\n      Literal value=0\n      Literal value=1",
+    "digest": "7538b3f43c7b9494",
+    "output": "return sliderWithID('slider_7', -1, 0, 1);"
+   }
+  ]
+ },
+ {
+  "name": "slider.negative-string",
+  "code": "slider(-\"1\", 0, 1)",
+  "variants": [
+   {
+    "options": {},
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"1\"\n          Literal value=8\n      Literal value=0\n      Literal value=1",
+    "digest": "20b672659566fed3",
+    "output": "return sliderWithID('slider_7', -m('1', 8), 0, 1);",
+    "miniLocations": [
+     [
+      9,
+      10
+     ]
+    ],
+    "literals": [
+     [
+      8,
+      "\"1\"",
+      [
+       [
+        9,
+        10
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 11,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "addReturn": false
+    },
+    "tree": "Program\n  ExpressionStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"1\"\n          Literal value=8\n      Literal value=0\n      Literal value=1",
+    "digest": "e8ff843dfef30a68",
+    "output": "sliderWithID('slider_7', -m('1', 8), 0, 1);",
+    "miniLocations": [
+     [
+      9,
+      10
+     ]
+    ],
+    "literals": [
+     [
+      8,
+      "\"1\"",
+      [
+       [
+        9,
+        10
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 11,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "id": "ed",
+     "emitWidgets": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"1\"\n          Literal value=8\n      Literal value=0\n      Literal value=1",
+    "digest": "20b672659566fed3",
+    "output": "return sliderWithID('slider_7', -m('1', 8), 0, 1);",
+    "miniLocations": [
+     [
+      9,
+      10
+     ]
+    ],
+    "literals": [
+     [
+      8,
+      "\"1\"",
+      [
+       [
+        9,
+        10
+       ]
+      ]
+     ]
+    ],
+    "widgets": [],
+    "sliders": [
+     {
+      "from": 7,
+      "to": 11,
+      "min": 0,
+      "max": 1,
+      "type": "slider"
+     }
+    ]
+   },
+   {
+    "options": {
+     "emitMiniLocations": false
+    },
+    "tree": "Program\n  ReturnStatement\n    CallExpression optional=false\n      Identifier name=sliderWithID\n      Literal value=\"slider_7\"\n      UnaryExpression operator=\"-\"\n        CallExpression optional=false\n          Identifier name=m\n          Literal value=\"1\"\n          Literal value=8\n      Literal value=0\n      Literal value=1",
+    "digest": "20b672659566fed3",
+    "output": "return sliderWithID('slider_7', -m('1', 8), 0, 1);"
+   }
+  ]
+ },
+ {
   "name": "slider.template-first",
   "code": "slider(`1`)",
   "variants": [

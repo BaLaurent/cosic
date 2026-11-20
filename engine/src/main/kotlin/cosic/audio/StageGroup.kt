@@ -143,11 +143,21 @@ internal class StageGroup(
  * taken by the stage that needs one. Both pools grow ahead of demand (see [GrowablePool] and [prepare]), so a voice gets all the chains and effects
  * its pattern asks for.
  */
-internal class FxGroupPool(sampleRate: Int, initial: Int = FX_GROUP_POOL, limit: Int = FX_GROUP_LIMIT) {
+internal class FxGroupPool(
+    sampleRate: Int,
+    initial: Int = FX_GROUP_POOL,
+    limit: Int = FX_GROUP_LIMIT,
+    space: InChainSpace = InChainSpace(sampleRate, IrExecutor.INLINE),
+) {
     /** The phase vocoders that the `stretch` stages of all chains share. */
     val vocoders = GrowablePool<PhaseVocoder>(VOCODER_LIMIT, 0) { PhaseVocoder() }
 
-    private val groups = GrowablePool<StageGroup>(limit, initial) { StageGroup(sampleRate, vocoders) }
+    private val groups = GrowablePool<StageGroup>(limit, initial) {
+        StageGroup(sampleRate, vocoders).also {
+            it.delay.attach(space)
+            it.reverb.attach(space)
+        }
+    }
 
     /** The chains that exist, free or not. */
     val capacity: Int get() = groups.capacity

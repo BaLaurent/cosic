@@ -514,12 +514,38 @@ class TranspileTest {
 
     @Test
     fun aSliderTakesItsBoundsFromNumberLiteralsOnly() {
-        // `-2` is a unary expression, not a number literal; a literal that is not a number counts as absent
-        assertEquals(SliderConfig(7, 9, null, 0.0, 2.0, 0.5, "slider_7"), transpiled("slider(-1, -2, 2, 0.5)").sliders.single())
+        // a literal that is not a number counts as absent
         assertEquals(SliderConfig(7, 8, "1", 0.0, 1.0, null, "slider_7"), transpiled("slider(1, a, b)").sliders.single())
         assertEquals(SliderConfig(7, 8, "1", 0.0, 1.0, null, "slider_7"), transpiled("slider(1, null, null)").sliders.single())
+        assertEquals(SliderConfig(7, 8, "1", 0.0, 1.0, null, "slider_7"), transpiled("slider(1, -a, -b)").sliders.single())
+        assertEquals(SliderConfig(7, 8, "1", 0.0, 1.0, null, "slider_7"), transpiled("slider(1, -\"2\", !1)").sliders.single())
         assertEquals(SliderConfig(7, 11, "0x10", 0.0, 255.0, null, "slider_7"), transpiled("slider(0x10, 0, 0xff)").sliders.single())
         assertEquals(SliderConfig(7, 10, "1e3", 0.0, 10000.0, null, "slider_7"), transpiled("slider(1e3, 0, 1e4)").sliders.single())
+    }
+
+    /** Deliberate difference from Strudel (ENV D-5, INLINE 3.11): a signed number literal is a literal. */
+    @Test
+    fun aSignedNumberLiteralIsALiteralToASlider() {
+        // the first argument: its range and its text include the sign
+        assertEquals(SliderConfig(7, 9, "-1", -2.0, 2.0, 0.5, "slider_7"), transpiled("slider(-1, -2, 2, 0.5)").sliders.single())
+        assertEquals(SliderConfig(7, 11, "-0.5", -1.0, 1.0, null, "slider_7"), transpiled("slider(-0.5, -1, 1)").sliders.single())
+        assertEquals(SliderConfig(7, 9, "+1", 0.0, 1.0, null, "slider_7"), transpiled("slider(+1)").sliders.single())
+        assertEquals(SliderConfig(7, 12, "-0x10", 0.0, 1.0, null, "slider_7"), transpiled("slider(-0x10)").sliders.single())
+        // the bounds and the step
+        assertEquals(SliderConfig(7, 8, "1", 1.0, -3.0, null, "slider_7"), transpiled("slider(1, 1, -3)").sliders.single())
+        assertEquals(SliderConfig(7, 8, "1", -1.0, 1.0, -0.5, "slider_7"), transpiled("slider(1, -1, 1, -0.5)").sliders.single())
+        assertEquals(SliderConfig(7, 8, "1", 0.0, 1.0, 0.25, "slider_7"), transpiled("slider(1, 0, 1, +0.25)").sliders.single())
+        // the call is unchanged by it
+        assertEquals("sliderWithID('slider_7', -0.5, -1, 1);", text("slider(-0.5, -1, 1)"))
+    }
+
+    @Test
+    fun aSignInFrontOfAnythingButANumberLiteralIsNoLiteral() {
+        assertNull(transpiled("slider(-x, 0, 1)").sliders.single().value)
+        assertNull(transpiled("slider(-(1), 0, 1)").sliders.single().value)
+        assertNull(transpiled("slider(- -1, 0, 1)").sliders.single().value)
+        assertNull(transpiled("slider(-\"1\", 0, 1)").sliders.single().value)
+        assertNull(transpiled("slider(!1, 0, 1)").sliders.single().value)
     }
 
     @Test

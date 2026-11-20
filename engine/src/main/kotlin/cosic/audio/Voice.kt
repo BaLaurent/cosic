@@ -34,6 +34,8 @@ private fun valueOr(v: Double, default: Double): Double = if (v.isNaN()) default
  * that cannot sound from disturbing the voices that do.
  */
 internal fun VoiceParams.canSound(): Boolean {
+    // `reverbGen` of a room of no length makes `createBuffer` throw, and the event with it (a room taken from a sample has no such limit)
+    if (main.or(Param.room, 0.0) > 0.0 && main[Param.roomsize] <= 0.0 && main.str("ir") == null) return false
     val sample = source as? VoiceSource.Sample ?: return true
     return Sampler.canSound(sample.params, main)
 }
@@ -120,6 +122,13 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         private set
 
     var hasCut = false
+        private set
+
+    /**
+     * True when the voice reads a bus (a `bmod` modulator), so the mixer renders it after the voices that send to buses: what it reads is then complete
+     * for the block ([AudioBuses.tap]).
+     */
+    var isBusReader = false
         private set
 
     /**
@@ -212,6 +221,10 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         hasCut = !main[Param.cut].isNaN()
         cutGroup = if (hasCut) main[Param.cut] else 0.0
         cutTime = t + valueOr(main[Param.nudge], 0.0).coerceIn(0.0, MAX_NUDGE)
+        var reader = false
+        val mods = params.mods
+        for (i in 0 until mods.size) if (mods[i].kind == ModKind.BMOD) reader = true
+        isBusReader = reader
         this.order = order
         isActive = true
         return activeUntil
@@ -298,7 +311,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
             r.irSample = params.irSample
             r.irspeed = main[Param.irspeed]
             r.irbegin = main[Param.irbegin]
-            orbit.configureReverb(r, t)
+            reverbUsed = orbit.configureReverb(r, t)
         }
 
         busIndex = if (main.has(Param.bus)) main[Param.bus].toInt() else -1

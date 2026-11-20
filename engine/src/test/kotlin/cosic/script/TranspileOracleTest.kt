@@ -99,13 +99,42 @@ class TranspileOracleTest {
         "label.error-if" to "Labeled statements must label an expression",
     )
 
+    /**
+     * Sliders Cosic records differently (ENV D-5, INLINE 3.11): a number literal with a sign counts as a literal, as the first
+     * argument and as `min`, `max` and `step`; Strudel takes a unary expression for no literal and falls back to the defaults.
+     * Everything else about these programs, the tree included, is compared as usual; the sliders are what is listed here, and
+     * what Strudel recorded is checked against [strudelSliders] so that the list cannot outlive the difference.
+     */
+    private val signedSliders: Map<String, List<SliderConfig>> = mapOf(
+        "slider.negative-first" to listOf(SliderConfig(7, 9, "-1", -2.0, 2.0, 0.5, "slider_7")),
+        "slider.negative-second" to listOf(SliderConfig(7, 8, "5", 1.0, -3.0, null, "slider_7")),
+        "slider.signed-all" to listOf(SliderConfig(7, 11, "-0.5", -1.0, 1.0, -0.1, "slider_7")),
+        "slider.signed-bounds" to listOf(SliderConfig(7, 8, "0", -1.0, 1.0, null, "slider_7")),
+        "slider.plus-first" to listOf(SliderConfig(7, 9, "+1", 0.0, 1.0, null, "slider_7")),
+        "slider.negative-hex-first" to listOf(SliderConfig(7, 12, "-0x10", 0.0, 1.0, null, "slider_7")),
+    )
+
+    /** What Strudel's transpiler records for the programs of [signedSliders]: the signs are lost. */
+    private val strudelSliders: Map<String, List<SliderConfig>> = mapOf(
+        "slider.negative-first" to listOf(SliderConfig(7, 9, null, 0.0, 2.0, 0.5, "slider_7")),
+        "slider.negative-second" to listOf(SliderConfig(7, 8, "5", 1.0, 1.0, null, "slider_7")),
+        "slider.signed-all" to listOf(SliderConfig(7, 11, null, 0.0, 1.0, null, "slider_7")),
+        "slider.signed-bounds" to listOf(SliderConfig(7, 8, "0", 0.0, 1.0, null, "slider_7")),
+        "slider.plus-first" to listOf(SliderConfig(7, 9, null, 0.0, 1.0, null, "slider_7")),
+        "slider.negative-hex-first" to listOf(SliderConfig(7, 12, null, 0.0, 1.0, null, "slider_7")),
+    )
+
     @Test
     fun everyHandWrittenSnippetIsTranspiledLikeStrudel() {
         val failures = ArrayList<String>()
         var compared = 0
         for (run in handWritten) {
             val difference = differences.containsKey(run.name)
-            val problem = if (difference) deliberateDifference(run, differences.getValue(run.name)) else compare(run, withTree = true)
+            val problem = when {
+                difference -> deliberateDifference(run, differences.getValue(run.name))
+                signedSliders.containsKey(run.name) -> signedSliderDifference(run)
+                else -> compare(run, withTree = true)
+            }
             if (problem != null) failures.add(problem) else if (!difference && !skipped(run)) compared++
         }
         if (failures.isNotEmpty()) fail("${failures.size} of ${handWritten.size} runs differ from Strudel's transpiler:\n\n" + failures.take(40).joinToString("\n\n"))
@@ -115,6 +144,20 @@ class TranspileOracleTest {
     @Test
     fun theDeliberateDifferencesAreAllRealSnippets() {
         assertEquals(emptySet(), differences.keys - handWritten.map { it.name }.toSet())
+        assertEquals(emptySet(), signedSliders.keys - handWritten.map { it.name }.toSet())
+        assertEquals(signedSliders.keys, strudelSliders.keys)
+    }
+
+    /** The program is transpiled like Strudel's in every respect but the sliders, which are those of [signedSliders]. */
+    private fun signedSliderDifference(run: Run): String? {
+        val header = "${run.label}: ${show(run.code)}"
+        val recorded = run.options.emitMiniLocations
+        val strudel = if (recorded) strudelSliders.getValue(run.name) else emptyList()
+        if (run.expected.sliders != strudel) return "$header\n  Strudel's sliders were supposed to be $strudel, they are ${run.expected.sliders}"
+        compare(run, withTree = true, withSliders = false)?.let { return it }
+        val expected = if (recorded) signedSliders.getValue(run.name) else emptyList()
+        val actual = transpile(run.code, run.options, DEFAULT_WIDGET_TYPES, Replay(run.expected.literals)).sliders
+        return if (actual == expected) null else "$header\n  sliders differ\n  expected: $expected\n  Cosic:    $actual"
     }
 
     private fun deliberateDifference(run: Run, message: String?): String? {
@@ -163,7 +206,7 @@ class TranspileOracleTest {
     /** Strudel's transpiler fails on a mini-notation it cannot parse; the mini package is not the subject here. */
     private fun skipped(run: Run): Boolean = run.expected.error?.startsWith("[mini] parse error") == true
 
-    private fun compare(run: Run, withTree: Boolean): String? {
+    private fun compare(run: Run, withTree: Boolean, withSliders: Boolean = true): String? {
         if (skipped(run)) return null
         val header = "${run.label}: ${show(run.code)}"
         val expected = run.expected
@@ -194,7 +237,7 @@ class TranspileOracleTest {
             return "$header\n  mini locations differ\n  Strudel: ${expected.miniLocations}\n  Cosic:   ${result.miniLocations}"
         }
         if (result.widgets != expected.widgets) return "$header\n  widgets differ\n  Strudel: ${expected.widgets}\n  Cosic:   ${result.widgets}"
-        if (result.sliders != expected.sliders) return "$header\n  sliders differ\n  Strudel: ${expected.sliders}\n  Cosic:   ${result.sliders}"
+        if (withSliders && result.sliders != expected.sliders) return "$header\n  sliders differ\n  Strudel: ${expected.sliders}\n  Cosic:   ${result.sliders}"
         return null
     }
 

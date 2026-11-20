@@ -6,6 +6,7 @@ import cosic.NoSampleStore
 import cosic.PLAY_START_DELAY_SECONDS
 import cosic.SoundLibrary
 import cosic.sound.RegistryLibrary
+import cosic.audio.IrExecutor
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -28,7 +29,7 @@ object OfflineRenderer {
      */
     fun render(code: String, cycles: Double, sampleRate: Int = 48000, library: SoundLibrary = emptyLibrary()): FloatArray {
         require(cycles > 0.0 && cycles.isFinite()) { "cycles must be a positive number" }
-        val engine = CosicEngine(sampleRate, library)
+        val engine = CosicEngine(sampleRate, library, IrExecutor.INLINE)
         val cps = when (val report = engine.evaluate(code)) {
             is EvalReport.Ok -> report.cps
             is EvalReport.Failed -> throw IllegalStateException(report.message)

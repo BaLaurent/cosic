@@ -17,7 +17,7 @@ import kotlin.math.min
 internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.INLINE) {
     private val orbits = OrbitSet(sampleRate, irExecutor)
     private val buses = AudioBuses(sampleRate)
-    internal val fxPool = FxGroupPool(sampleRate)
+    internal val fxPool = FxGroupPool(sampleRate, FX_GROUP_POOL, FX_GROUP_LIMIT, InChainSpace(sampleRate, irExecutor))
     private val voices = Array(VOICE_SLOTS) { Voice(sampleRate, orbits, buses, fxPool) }
     private val ledger = PolyphonyLedger(VOICE_SLOTS)
     private val block = AudioBlock(BLOCK_FRAMES)
@@ -127,6 +127,12 @@ internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.IN
     }
 
     /**
+     * The analyser that voices with `analyze: id` feed (`getAnalyserById`), or null before the first one. Any thread: this is how the scope and spectrum visuals
+     * read what the engine plays.
+     */
+    fun analyser(id: Int): AnalyserTap? = buses.analyser(id)
+
+    /**
      * Renders [frames] frames of interleaved stereo into `out[frameOffset * 2 until (frameOffset + frames) * 2]`,
      * overwriting it (silence is written as zeros). Output is always within `[-1, 1]`.
      */
@@ -138,7 +144,11 @@ internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.IN
             ctx.startFrame = frame
             ctx.n = n
             orbits.beginBlock(n)
-            for (voice in voices) if (voice.isActive) voice.render(ctx, block)
+            buses.beginBlock()
+            for (voice in voices) if (voice.isActive && !voice.isBusReader) voice.render(ctx, block)
+            buses.beginReaders()
+            for (voice in voices) if (voice.isActive && voice.isBusReader) voice.render(ctx, block)
+            buses.endBlock(n)
 
             if (stopFramesLeft > 0) {
                 val step = 1f / stopFrames // the gain falls to 0 over the frames left
