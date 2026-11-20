@@ -2,6 +2,8 @@ package cosic.player
 
 import cosic.HighlightEvent
 import cosic.io.OutputBus
+import cosic.audio.ChainDemand
+import cosic.audio.stretchLeadFrames
 import cosic.pattern.ControlMap
 import cosic.pattern.CosicError
 import cosic.pattern.Hap
@@ -201,6 +203,14 @@ internal class Scheduler(
     /** The start frame of the earliest queued event, or [Long.MAX_VALUE] when there is none. */
     val nextEventFrame: Long get() = if (pending.isEmpty()) Long.MAX_VALUE else pending.first().startFrame
 
+    /**
+     * Adds what the queued events will take from the mixer's shared pools (the chains of `FX(...)` elements, the phase vocoders of `stretch`) to [demand],
+     * so that the mixer can make them before the events start instead of on the audio thread.
+     */
+    fun addQueuedDemand(demand: ChainDemand) {
+        for (event in pending) demand.add(event.voice)
+    }
+
     /** Removes and returns the earliest queued event if it starts at or before [frame]. */
     fun takeDue(frame: Long): SoundEvent? {
         val next = pending.firstOrNull() ?: return null
@@ -310,7 +320,7 @@ internal class Scheduler(
             route(hap, events, marks, anchor.cps, tempoMayChange = true) { cycle -> anchor.frameAt(cycle) }
         }
         events.sortBy { it.startFrame }
-        pending.addAll(events)
+        for (event in events) insert(event)
         for (mark in marks) highlights.add(mark)
     }
 
@@ -367,7 +377,8 @@ internal class Scheduler(
         when (val lookup = sounds.resolve(controls)) {
             is SoundLookup.Ready -> {
                 val cycle = checkNotNull(hap.whole).begin.toDouble()
-                events.add(SoundEvent(start, voiceParams(controls, lookup.source, hapSeconds(controls, wholeLength, tempo), tempo, cycle)))
+                // an event with `stretch` starts early by the vocoder's latency (superdough.mjs:468-473); its highlight stays where it is heard
+                events.add(SoundEvent(start - stretchLeadFrames(controls), voiceParams(controls, lookup.source, hapSeconds(controls, wholeLength, tempo), tempo, cycle)))
             }
             is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))
             SoundLookup.Loading, SoundLookup.Silent -> Unit
@@ -394,4 +405,11 @@ internal class Scheduler(
 
     /** The `markcss` control, which replaces the style of the mark when it is not empty (`hap.value?.markcss || default`). */
     private fun markcssOf(value: Map<*, *>?): String? = (value?.get("markcss") as? String)?.takeIf { it.isNotEmpty() }
+
+    /** Queues [event] in order of start frame: an event of a later chunk can start before the end of an earlier one (a voice with `stretch` starts early). */
+    private fun insert(event: SoundEvent) {
+        var i = pending.size
+        while (i > 0 && pending[i - 1].startFrame > event.startFrame) i--
+        pending.add(i, event)
+    }
 }

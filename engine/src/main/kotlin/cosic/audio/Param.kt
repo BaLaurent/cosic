@@ -222,4 +222,10 @@ internal class ModSpec(
     val subControl: String?,
     val numbers: Map<String, Double>,
     val strings: Map<String, String>,
-)
+) {
+    /**
+     * What [control] and [subControl] modulate, looked up when the event is built (on the scheduler's side, so that connecting the modulator in the
+     * audio thread has nothing left to compute); null for a control that cannot be modulated.
+     */
+    val target: ControlTarget? = ControlTargets.lookup(control, subControl)
+}

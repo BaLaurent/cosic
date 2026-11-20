@@ -18,7 +18,7 @@ private const val MAX_PARAM = 3.4e38
 
 /** `_warp(phase, curvature, strength = 8)`: bends the straight line; positive curvature is snappier, negative calmer. */
 private fun warp(phase: Double, curvature: Double): Double {
-    if (phase == 0.0 || phase == 1.0) return phase
+    if (phase == 0.0 || phase == 1.0 || curvature == 0.0) return phase // pow(phase, 1.0) is phase itself
     return if (curvature > 0.0) 1.0 - Math.pow(1.0 - phase, 1.0 + 8.0 * curvature) else Math.pow(phase, 1.0 - 8.0 * curvature)
 }
 

@@ -17,7 +17,7 @@ import kotlin.math.min
 internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.INLINE) {
     private val orbits = OrbitSet(sampleRate, irExecutor)
     private val buses = AudioBuses(sampleRate)
-    private val fxPool = FxGroupPool(sampleRate)
+    internal val fxPool = FxGroupPool(sampleRate)
     private val voices = Array(VOICE_SLOTS) { Voice(sampleRate, orbits, buses, fxPool) }
     private val ledger = PolyphonyLedger(VOICE_SLOTS)
     private val block = AudioBlock(BLOCK_FRAMES)
@@ -112,6 +112,13 @@ internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.IN
         stopFrames = frames
         stopFramesLeft = frames
     }
+
+    /**
+     * Makes the shared pools (the effect chains of `FX(...)` elements, the phase vocoders of `stretch`) big enough for [demand], the voices that are queued
+     * to start, on top of the ones sounding now. The scheduler calls it as it queues events, from whatever thread it runs on, so that the audio
+     * thread finds what its voices need in the pools instead of making it; a voice started without it still gets everything it asks for.
+     */
+    fun prepare(demand: ChainDemand) = fxPool.prepare(demand)
 
     /** Empties the orbits' tails and the buses; call when going idle so old tails cannot return. */
     fun clearBuses() {

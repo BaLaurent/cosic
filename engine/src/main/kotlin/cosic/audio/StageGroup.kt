@@ -1,5 +1,7 @@
 package cosic.audio
 
+import cosic.audio.dsp.PhaseVocoder
+
 /**
  * Where in time one voice is, as stages need it: the onset [t], the end of the gate [end] (`t + durationSec`) and the end of the
  * release [endWithRelease] (`end + max(release, FXrelease)`), all absolute seconds, plus the tempo and the cycle position of the hap.
@@ -56,6 +58,12 @@ internal interface ChainStage {
      * `gain.gain`: see `CONTROL_TARGETS`). Called after [configure] and only when the voice has modulators.
      */
     fun registerParams(reg: NodeRegistry) {}
+
+    /**
+     * The voice has ended, or is about to start again: gives back whatever the stage took from a shared pool at [configure]. Called once per
+     * voice end (and harmlessly more often), never while the stage is processing.
+     */
+    fun release() {}
 }
 
 /**
@@ -64,8 +72,11 @@ internal interface ChainStage {
  * phaser, and, for `FX` elements only, delay and reverb. A stage that is not triggered by the controls leaves the chain.
  * (Kabelsalat's generic processor goes first once it exists.)
  */
-internal class StageGroup(sampleRate: Int) {
-    val stretch = StretchStage(sampleRate)
+internal class StageGroup(
+    sampleRate: Int,
+    vocoders: GrowablePool<PhaseVocoder> = GrowablePool(VOCODER_LIMIT, 0) { PhaseVocoder() },
+) {
+    val stretch = StretchStage(sampleRate, vocoders)
     val transient = TransientStage(sampleRate)
     val gain = GainStage(sampleRate)
     val lowpass = FilterStage(sampleRate, BiquadType.LOWPASS, FilterKeys.LOWPASS)
@@ -90,7 +101,7 @@ internal class StageGroup(sampleRate: Int) {
     private val active = BooleanArray(stages.size)
 
     /** The modulatable parameters of this chain by Web Audio name; filled by [registerParams] when the voice has modulators. */
-    val registry = NodeRegistry()
+    val registry = NodeRegistry(sampleRate = sampleRate)
 
     /** Resets every stage and configures it from [p]. */
     fun configure(p: ParamSet, timing: VoiceTiming, isMain: Boolean) {
@@ -115,29 +126,50 @@ internal class StageGroup(sampleRate: Int) {
     fun clear() {
         active.fill(false)
     }
+
+    /**
+     * The voice has ended or restarts: the stages give back what they took from shared pools and the modulators connected to the
+     * parameters of this chain are disconnected (those of a voice's own parameters would not outlive it, but a parameter of the orbit does).
+     */
+    fun release() {
+        for (i in stages.indices) stages[i].release()
+        registry.release()
+    }
 }
 
 /**
- * The chains of `FX(...)` elements, shared by all voices: only some patterns use them and a chain is large, so a voice takes the groups it needs
- * for as long as it lasts ([Voice] gives them back when it ends). When the pool is empty a voice gets fewer chains than it has elements.
+ * The shared pools of effect-chain resources of one [Mixer]. The chains of `FX(...)` elements are large and only some patterns use them, so a voice
+ * takes the groups it needs for as long as it lasts and [Voice] gives them back when it ends; the phase vocoders of `stretch` (about 150 KB each) are
+ * taken by the stage that needs one. Both pools grow ahead of demand (see [GrowablePool] and [prepare]), so a voice gets all the chains and effects
+ * its pattern asks for.
  */
-internal class FxGroupPool(sampleRate: Int, capacity: Int = FX_GROUP_POOL) {
-    private val free = arrayOfNulls<StageGroup>(capacity)
-    private var count = capacity
+internal class FxGroupPool(sampleRate: Int, initial: Int = FX_GROUP_POOL, limit: Int = FX_GROUP_LIMIT) {
+    /** The phase vocoders that the `stretch` stages of all chains share. */
+    val vocoders = GrowablePool<PhaseVocoder>(VOCODER_LIMIT, 0) { PhaseVocoder() }
 
-    init {
-        for (i in 0 until capacity) free[i] = StageGroup(sampleRate)
-    }
+    private val groups = GrowablePool<StageGroup>(limit, initial) { StageGroup(sampleRate, vocoders) }
 
-    /** A group, or null when all are taken. */
-    fun take(): StageGroup? {
-        if (count == 0) return null
-        val group = free[--count]
-        free[count] = null
-        return group
-    }
+    /** The chains that exist, free or not. */
+    val capacity: Int get() = groups.capacity
 
+    /** The chains voices hold now. */
+    val inUse: Int get() = groups.inUse
+
+    /** How many chains the audio thread had to make itself because the pool was not prepared for them. */
+    val madeOnTheSpot: Int get() = groups.madeOnTheSpot
+
+    /** A chain, or null in the impossible case that all [FX_GROUP_LIMIT] are in use. Audio thread only. */
+    fun take(): StageGroup? = groups.take()
+
+    /** Takes a chain back, after it has given back what it holds. Audio thread only. */
     fun give(group: StageGroup) {
-        free[count++] = group
+        group.release()
+        groups.give(group)
+    }
+
+    /** Makes both pools big enough for [demand] on top of what voices hold now. Any thread. */
+    fun prepare(demand: ChainDemand) {
+        groups.ensureFree(demand.fxChains)
+        vocoders.ensureFree(demand.vocoders)
     }
 }

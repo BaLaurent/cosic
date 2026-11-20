@@ -397,13 +397,14 @@ class MixerTest {
     }
 
     @Test
-    fun aVoiceThatFindsThePoolEmptyGetsFewerChainsAndOthersAreNotAffected() {
+    fun aVoiceThatFindsThePoolEmptyStillGetsAllItsChains() {
         val mixer = Mixer(SR)
-        // 8 voices with 4 elements take all 32 chains; the 9th voice gets none
+        // 8 voices with 4 elements take the 32 chains the pool starts with; the 9th voice gets its four as well (made on the spot: nobody prepared the pool)
         repeat(8) { mixer.startVoice(vp(dcSource(), 5.0, "gain" to 0.01, "FX" to List(4) { mapOf("gain" to 1.0) }, "pan" to 1.0)) }
-        mixer.startVoice(vp(dcSource(), 5.0, "gain" to 0.5, "FX" to List(4) { mapOf("gain" to 0.1) }, "pan" to 0.0))
+        mixer.startVoice(vp(dcSource(), 5.0, "gain" to 0.5, "FX" to List(4) { mapOf("gain" to 0.5) }, "pan" to 0.0))
         val left = channel(mixer.renderFrames(SR / 10), 0)
-        assertEquals(0.5, at(left, 0.05).toDouble(), 1e-3, "no chain left for the 9th voice: only its main gain applies")
+        assertEquals(0.5 * 0.5 * 0.5 * 0.5 * 0.5, at(left, 0.05).toDouble(), 1e-4, "all four chains of the 9th voice are there")
+        assertEquals(36, mixer.fxPool.inUse)
     }
 
     @Test

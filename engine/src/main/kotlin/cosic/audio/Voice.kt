@@ -77,7 +77,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
      * The main effect chain, the voice's own. The chains of its `FX(...)` elements come from the shared [fxPool] for as long as the voice
      * lasts: few patterns use them, and a chain is large.
      */
-    private val mainGroup = StageGroup(sampleRate)
+    private val mainGroup = StageGroup(sampleRate, fxPool.vocoders)
     private val fxGroups = arrayOfNulls<StageGroup>(MAX_FX)
 
     /** What [connectModulators] gets: the [fxGroups] in use followed by the main one, one array per number of `FX` elements. */
@@ -357,8 +357,12 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         stopLeft = stopFrames
     }
 
-    /** Gives the pooled chains of the `FX(...)` elements back: the voice has ended, or is about to start again. */
+    /**
+     * Gives back what the voice's chains hold: the pooled chains of the `FX(...)` elements, and what the stages of the main chain took from shared
+     * pools. The voice has ended, or is about to start again.
+     */
     private fun releaseFxGroups() {
+        mainGroup.release()
         for (i in 0 until fxCount) {
             fxPool.give(fxGroups[i]!!)
             fxGroups[i] = null

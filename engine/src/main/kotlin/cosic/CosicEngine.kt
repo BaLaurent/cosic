@@ -1,6 +1,7 @@
 package cosic
 
 import cosic.audio.DRUM_NAMES
+import cosic.audio.ChainDemand
 import cosic.audio.DrumKit
 import cosic.audio.Mixer
 import cosic.audio.SYNTH_NAMES
@@ -112,6 +113,8 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
 
     private val effects = EngineEffects(inputs, console, outputs) { remote }
     private val scheduler = Scheduler(sampleRate, sounds, outputs)
+    private val chainDemand = ChainDemand()
+
     private val idleTracker = IdleTracker(sampleRate)
     private val commands = ConcurrentLinkedQueue<Command>()
     private val startDelayFrames = Math.round(PLAY_START_DELAY_SECONDS * sampleRate)
@@ -232,6 +235,10 @@ class CosicEngine(val sampleRate: Int, private val library: SoundLibrary) {
         var changed = drainCommands()
         startWaitingPreview()
         scheduler.schedule(renderedFrames + frames)
+        // the chains and vocoders the queued events will need are made now, not by the audio thread when they start
+        chainDemand.clear()
+        scheduler.addQueuedDemand(chainDemand)
+        mixer.prepare(chainDemand)
         renderSegments(out, frames)
         scopes.endBlock(frames)
         renderedFrames += frames

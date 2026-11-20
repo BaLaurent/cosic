@@ -14,7 +14,10 @@ internal const val BLOCK_FRAMES = 256
 /** Effect chains (`FX(...)` elements) a voice has besides the main one; further elements are dropped. */
 internal const val MAX_FX = 4
 
-/** Effect chains of `FX(...)` elements that can be in use by all voices together; see [FxGroupPool]. */
+/**
+ * Effect chains of `FX(...)` elements the shared pool holds when a [Mixer] is made. Most programs use none; the pool grows ahead of the events
+ * that need more (see [GrowablePool]), up to [FX_GROUP_LIMIT].
+ */
 internal const val FX_GROUP_POOL = 32
 
 /** Modulators (`.lfo`, `.env`, `.bmod`) a voice can connect; further ones are ignored. */
@@ -25,6 +28,15 @@ internal const val DEFAULT_MAX_POLYPHONY = 128
 
 /** Voice slots in the pool. Stolen and cut voices keep their slot until they are done, so there are more slots than [DEFAULT_MAX_POLYPHONY]. */
 internal const val VOICE_SLOTS = 256
+
+/** The most chains of `FX(...)` elements that can be in use at once: every voice slot with all [MAX_FX] of them. */
+internal const val FX_GROUP_LIMIT = VOICE_SLOTS * MAX_FX
+
+/**
+ * Phase vocoders (`stretch`, about 150 KB each) the shared pool can hold. Each costs about 5 % of a core when running (110-140 us per stereo render
+ * quantum), so a phone cannot run more than a few dozen anyway; the limit keeps the memory of a runaway pattern finite.
+ */
+internal const val VOCODER_LIMIT = 64
 
 /** Orbits (effect buses) that can exist at the same time. */
 internal const val MAX_ORBITS = 64

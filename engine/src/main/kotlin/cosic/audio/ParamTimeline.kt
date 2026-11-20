@@ -257,6 +257,18 @@ internal class AParam(var base: Double, val min: Double, val max: Double, capaci
         inputCount = 0
     }
 
+    /**
+     * Disconnects [m]; the inputs after it move up. Nothing happens when it is not connected. For parameters that outlive a voice (the
+     * ones of an orbit), which must not keep the modulators of voices that are over.
+     */
+    fun removeInput(m: Modulator) {
+        var i = 0
+        while (i < inputCount && inputs[i] !== m) i++
+        if (i == inputCount) return
+        System.arraycopy(inputs, i + 1, inputs, i, inputCount - i - 1)
+        inputs[--inputCount] = null
+    }
+
     /** The automation at time [t], without the inputs, clamped to the range. */
     fun valueAt(t: Double): Double = clampToRange(timeline.valueAt(t, base))
 
