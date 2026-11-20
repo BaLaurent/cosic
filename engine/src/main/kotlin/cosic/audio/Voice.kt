@@ -87,8 +87,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
 
     /** What [connectModulators] gets: the [fxGroups] in use followed by the main one, one array per number of `FX` elements. */
     private val groupViews = Array(MAX_FX + 1) { count -> Array(count + 1) { mainGroup } }
-    private val registries = Array(MAX_FX + 1) { NodeRegistry() }
-    private val registryLookup: (String) -> NodeRegistry = { key -> registries[registryIndex(key)] }
+    private val registryLookup: (String) -> NodeRegistry = { key -> registryOf(key) }
     private val reverbParams = ReverbParams()
     private val timing = VoiceTiming()
     private var fxCount = 0
@@ -296,10 +295,14 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     }
 
     private fun connectMods(params: VoiceParams, main: ParamSet, orbit: Orbit, t: Double, endWithRelease: Double) {
-        for (r in registries) r.clear()
-        for (i in 0 until fxCount) fxGroups[i]!!.registerParams(registries[i])
-        mainGroup.registerParams(registries[MAX_FX])
-        val m = registries[MAX_FX]
+        for (i in 0 until fxCount) {
+            val group = fxGroups[i]!!
+            group.registry.clear()
+            group.registerParams(group.registry)
+        }
+        val m = mainGroup.registry
+        m.clear()
+        mainGroup.registerParams(m)
         m.register("post", "gain", post.post)
         m.register("dry", "gain", post.dry)
         if (delayUsed) m.register("delay_mix", "gain", delaySend)
@@ -309,9 +312,10 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         connectModulators(params.mods, groupViews[fxCount], registryLookup, t, endWithRelease, params.cps, params.cycle, buses)
     }
 
-    private fun registryIndex(key: String): Int {
-        val index = key.toIntOrNull() ?: return MAX_FX
-        return if (index in 0 until fxCount) index else MAX_FX
+    /** The registry of the chain `fxi` names: `main`, or the index of an `FX` element (an index that is not in use means the main chain). */
+    private fun registryOf(key: String): NodeRegistry {
+        val index = key.toIntOrNull() ?: return mainGroup.registry
+        return if (index in 0 until fxCount) fxGroups[index]!!.registry else mainGroup.registry
     }
 
     /** Ramps the voice out because of a cut group: its out gain goes to 0 over 10 ms from [t]. */

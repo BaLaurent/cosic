@@ -7,10 +7,10 @@ package cosic.audio
  *
  * Task 3.10 (modulators) owns this file and adds the lookup it needs.
  */
-internal class NodeRegistry {
-    private val nodes = arrayOfNulls<String>(CAPACITY)
-    private val params = arrayOfNulls<String>(CAPACITY)
-    private val targets = arrayOfNulls<AParam>(CAPACITY)
+internal class NodeRegistry(capacity: Int = 64) {
+    private val nodes = arrayOfNulls<String>(capacity)
+    private val params = arrayOfNulls<String>(capacity)
+    private val targets = arrayOfNulls<AParam>(capacity)
     private var count = 0
 
     /** The number of registered parameters. */
@@ -23,7 +23,7 @@ internal class NodeRegistry {
 
     /** Registers [p] as parameter [param] of node [node]; several parameters may share a name (one per filter in series). */
     fun register(node: String, param: String, p: AParam) {
-        if (count >= CAPACITY) return
+        if (count >= targets.size) return
         nodes[count] = node
         params[count] = param
         targets[count] = p
@@ -42,9 +42,6 @@ internal class NodeRegistry {
         return null
     }
 
-    private companion object {
-        const val CAPACITY = 128
-    }
 }
 
 /**

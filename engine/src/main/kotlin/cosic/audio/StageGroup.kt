@@ -82,6 +82,9 @@ internal class StageGroup(sampleRate: Int) {
     )
     private val active = BooleanArray(stages.size)
 
+    /** The modulatable parameters of this chain by Web Audio name; filled by [registerParams] when the voice has modulators. */
+    val registry = NodeRegistry()
+
     /** Resets every stage and configures it from [p]. */
     fun configure(p: ParamSet, timing: VoiceTiming, isMain: Boolean) {
         for (i in stages.indices) {
