@@ -23,8 +23,8 @@ class EuclidTest {
     private fun rhythm(spec: String): String = spec.split(" ").joinToString("") { if (it == "x") "1" else "0" }
 
     /** The wholes of the haps of the first cycle in steps of 1/[steps], as `begin-end`: `3-8` is a hit from the fourth step on that lasts five steps. */
-    private fun Pattern.wholes(steps: Long): List<String> = firstCycle().sortedBy { it.whole!!.begin }.map {
-        "${(it.whole!!.begin * Rational(steps)).compact()}-${(it.whole!!.end * Rational(steps)).compact()}"
+    private fun Pattern.wholes(steps: Long): List<String> = firstCycle().map { it.whole!! }.sortedBy { it.begin }.map { whole ->
+        "${(whole.begin * Rational(steps)).compact()}-${(whole.end * Rational(steps)).compact()}"
     }
 
     private val x = pure("x")

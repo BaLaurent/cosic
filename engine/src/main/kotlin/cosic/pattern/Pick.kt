@@ -9,48 +9,60 @@ package cosic.pattern
  * script/catalogue/Pick.kt.
  */
 
-/**
- * What `lookup[key]` looks at: a list is a list, an object is its entries by name, a string its characters by index.
- * Anything else has no entries (`Object.keys(5)` is empty); `null` and `undefined` are a `TypeError`.
- */
-private fun lookupEntries(lookup: Any?): Pair<List<Any?>?, Map<String, Any?>?> = when (lookup) {
-    is List<*> -> lookup to null
-    is Map<*, *> -> {
-        val named = LinkedHashMap<String, Any?>(lookup.size * 2)
-        for ((key, value) in lookup) named[key.toString()] = value
-        null to named
-    }
-    is String -> null to lookup.indices.associate { it.toString() to lookup[it].toString() }
-    null, Undefined -> throw CosicError("Cannot convert undefined or null to object")
-    else -> null to emptyMap()
-}
-
 /** The index [key] stands for in a list of [length] entries, null when `lookup[key]` is `undefined` (NaN, a fraction, out of range). */
 private fun indexOf(key: Double, length: Int): Int? =
     if (key >= 0.0 && key < length && key == Math.floor(key)) key.toInt() else null
 
+/** What `lookup[key]` looks at: the entries of a list (by index) or of an object (by name), each one a pattern. */
+private sealed interface Lookup {
+    val size: Int
+
+    /** `lookup[key]` for the value [key] of the picking pattern, null when that is `undefined`. */
+    fun patternFor(key: Any?, modulo: Boolean): Pattern?
+}
+
+private class ListLookup(private val patterns: List<Pattern>) : Lookup {
+    override val size: Int get() = patterns.size
+
+    override fun patternFor(key: Any?, modulo: Boolean): Pattern? {
+        val rounded = jsMathRound(jsToNumber(key))
+        // `Math.round(key) % len`, or the rounded index kept between the first and the last entry
+        val index = if (modulo) rounded % size else minOf(maxOf(rounded, 0.0), (size - 1).toDouble())
+        return indexOf(index, size)?.let { patterns[it] }
+    }
+}
+
+private class NamedLookup(private val patterns: Map<String, Pattern>) : Lookup {
+    override val size: Int get() = patterns.size
+
+    override fun patternFor(key: Any?, modulo: Boolean): Pattern? = patterns[jsToString(key)]
+}
+
+/**
+ * `objectMap(lookup, reify)`: an entry that is not a pattern becomes one that repeats it. A list is a list, an object its
+ * entries by name, a string its characters by index; anything else has no entries (`Object.keys(5)` is empty), and `null`
+ * and `undefined` are a `TypeError`.
+ */
+private fun lookupOf(lookup: Any?): Lookup = when (lookup) {
+    is List<*> -> ListLookup(lookup.map { reify(it) })
+    is Map<*, *> -> NamedLookup(lookup.entries.associate { (key, value) -> key.toString() to reify(value) })
+    is String -> NamedLookup(lookup.indices.associate { it.toString() to reify(lookup[it].toString()) })
+    null, Undefined -> throw CosicError("Cannot convert undefined or null to object")
+    else -> NamedLookup(emptyMap())
+}
+
 /**
  * `_pick(lookup, pat, modulo)`: the pattern of patterns that [pat] chooses from [lookup], a list (indexed by the rounded
  * value, which sticks to the first and last entry unless [modulo]) or an object (indexed by the value itself, as the
- * name of an entry). An entry that is not a pattern is turned into one that repeats it. An empty lookup is silence.
- * A value with no entry in the lookup has no pattern to play: that is an error when the event is reached, where Strudel
- * has `undefined` fail the join and logs it.
+ * name of an entry). An empty lookup is silence. A value with no entry in the lookup has no pattern to play: that is an
+ * error when the event is reached, where Strudel has `undefined` fail the join and logs it.
  */
 internal fun pickPatterns(lookup: Any?, pat: Pattern, modulo: Boolean): Pattern {
-    val (list, named) = lookupEntries(lookup)
-    val patterns: List<Pattern>? = list?.map { reify(it) }
-    val patternsByName: Map<String, Pattern>? = named?.mapValues { reify(it.value) }
-    val size = patterns?.size ?: patternsByName!!.size
-    if (size == 0) return silence
-    return pat.fmap { i ->
-        val picked: Pattern? = if (patterns != null) {
-            val rounded = jsMathRound(jsToNumber(i))
-            val key = if (modulo) rounded % size else minOf(maxOf(rounded, 0.0), (size - 1).toDouble())
-            indexOf(key, size)?.let { patterns[it] }
-        } else {
-            patternsByName!![jsToString(i)]
-        }
-        picked ?: throw CosicError("Cannot pick ${stringifyValues(i, true)}: there is no pattern for it in the lookup")
+    val entries = lookupOf(lookup)
+    if (entries.size == 0) return silence
+    return pat.fmap { key ->
+        entries.patternFor(key, modulo)
+            ?: throw CosicError("Cannot pick ${stringifyValues(key, true)}: there is no pattern for it in the lookup")
     }
 }
 
