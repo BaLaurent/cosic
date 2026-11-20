@@ -271,6 +271,7 @@ private class MiniParser(private val src: String, private val base: Int) {
         val value = text.toDouble()
         if (!isCount(value)) fail("number out of range", start, text.length)
         pos += text.length
+        leaves.add(intArrayOf(base + start, base + pos))
         return Arg.Constant(value)
     }
 

@@ -1,11 +1,6 @@
 package cosic.parity
 
 import cosic.pattern.CosicError
-import cosic.pattern.Rational
-import cosic.pattern.TOO_DEEP
-import cosic.pattern.TOO_DENSE
-import cosic.pattern.reportingExhaustion
-import cosic.script.evaluateForQuery
 import org.junit.AfterClass
 import org.junit.Assert.fail
 import org.junit.Assume.assumeFalse
@@ -111,7 +106,7 @@ private val workers = Executors.newCachedThreadPool { runnable ->
 private fun failed(message: String?) = ActualOutcome(emptyList(), message ?: "evaluation failed", null, null)
 
 internal fun runCase(case: ParityCase): ActualOutcome {
-    val future = workers.submit(Callable { if (case.repl) evaluateRepl(case) else evaluateOnce(case) })
+    val future = workers.submit(Callable { if (case.repl) runReplCase(case) else evaluateOnce(case) })
     return try {
         future.get(CASE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
     } catch (e: TimeoutException) {
@@ -131,27 +126,12 @@ private fun evaluateOnce(case: ParityCase): ActualOutcome {
         return failed(e.message)
     }
     val haps = try {
-        reportingExhaustion {
-            pattern.sortHapsByPart().queryArc(Rational.ZERO, Rational(case.cycles.toLong()))
-        }
+        queriedHaps(pattern, case)
     } catch (e: CosicError) {
-        // Pattern.queryArc catches whatever the query throws, the failing sort of haps without a whole included, and
-        // answers []. Running out of stack or memory is no Strudel behaviour, so that stays a failure.
-        if (e.message == TOO_DEEP || e.message == TOO_DENSE) return failed(e.message)
-        emptyList()
+        return failed(e.message) // only running out of stack or memory gets here: a failing query answers nothing
     }
-    val shown = haps.map { it.show(true) }
-    return ActualOutcome(if (case.roundFloats) shown.map { roundFloatStrings(it) } else shown, null, null, null)
+    return ActualOutcome(haps, null, null, null)
 }
-
-/**
- * A REPL-mode extra snippet: the programs of [ParityCase.codes] are evaluated one after the other in one REPL session
- * (`ReplSession.evaluate(code, shouldHush = true)`, which keeps the previous pattern when an evaluation fails and keeps
- * the tempo `setcps` set), then the pattern is queried and the tempo and mini-notation locations are read.
- * The session is Task 1.2 of the parity plan; until it exists these cases fail and are listed in known-gaps.txt.
- */
-private fun evaluateRepl(case: ParityCase): ActualOutcome =
-    failed("REPL-mode snippets need ReplSession, which Task 1.2 of the parity plan adds (${case.codes.size} programs)")
 
 // ---- comparing ---------------------------------------------------------------------------------------------------
 

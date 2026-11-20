@@ -48,7 +48,6 @@ examples:attack#0  # not implemented yet
 examples:base#0  # not implemented yet
 examples:beat#0  # not implemented yet
 examples:beat#1  # not implemented yet
-examples:begin#0  # not implemented yet
 examples:berlin#0  # not implemented yet
 examples:binary#0  # not implemented yet
 examples:binaryN#0  # not implemented yet
@@ -87,7 +86,6 @@ examples:chunkBackInto#0  # not implemented yet
 examples:chunkInto#0  # not implemented yet
 examples:clip#0  # not implemented yet
 examples:close#0  # not implemented yet
-examples:compress#0  # not implemented yet
 examples:compressor#0  # not implemented yet
 examples:contract#0  # not implemented yet
 examples:cosine#0  # not implemented yet
@@ -156,8 +154,6 @@ examples:extend#0  # not implemented yet
 examples:fadeTime#0  # not implemented yet
 examples:fanchor#0  # not implemented yet
 examples:fastChunk#0  # not implemented yet
-examples:fastGap#0  # not implemented yet
-examples:filter#0  # not implemented yet
 examples:filterHaps#0  # not implemented yet
 examples:filterValues#0  # not implemented yet
 examples:filterWhen#0  # not implemented yet
@@ -173,7 +169,6 @@ examples:fmh#0  # not implemented yet
 examples:fmsustain#0  # not implemented yet
 examples:fmwave#0  # not implemented yet
 examples:fmwave#1  # not implemented yet
-examples:focus#0  # not implemented yet
 examples:freq#0  # not implemented yet
 examples:freq#1  # not implemented yet
 examples:fscope#0  # not implemented yet
@@ -183,7 +178,6 @@ examples:ftranspose#2  # not implemented yet
 examples:ftranspose#3  # not implemented yet
 examples:ftype#0  # not implemented yet
 examples:ftype#1  # not implemented yet
-examples:gap#0  # not implemented yet
 examples:getDuration#0  # not implemented yet
 examples:getFrequency#0  # not implemented yet
 examples:grow#0  # not implemented yet
@@ -238,8 +232,6 @@ examples:lfo#3  # not implemented yet
 examples:lfo#4  # not implemented yet
 examples:linger#0  # not implemented yet
 examples:lock#0  # not implemented yet
-examples:log#0  # not implemented yet
-examples:logValues#0  # not implemented yet
 examples:loop#0  # not implemented yet
 examples:loopAt#0  # not implemented yet
 examples:loopAtCps#0  # not implemented yet
@@ -267,7 +259,6 @@ examples:midichan#0  # not implemented yet
 examples:midicmd#0  # not implemented yet
 examples:midikeys#0  # not implemented yet
 examples:midikeys#1  # not implemented yet
-examples:midikeys#2  # not implemented yet
 examples:midin#0  # not implemented yet
 examples:midin#1  # not implemented yet
 examples:midiport#0  # not implemented yet
@@ -289,7 +280,6 @@ examples:octaves#0  # not implemented yet
 examples:off#0  # not implemented yet
 examples:offset#0  # not implemented yet
 examples:often#0  # not implemented yet
-examples:onSchedule#0  # not implemented yet
 examples:onTriggerTime#0  # not implemented yet
 examples:open#0  # not implemented yet
 examples:orbit#0  # not implemented yet
@@ -334,9 +324,7 @@ examples:prelease#0  # not implemented yet
 examples:press#0  # not implemented yet
 examples:pressBy#0  # not implemented yet
 examples:print#0  # not implemented yet
-examples:print#1  # not implemented yet
 examples:progNum#0  # not implemented yet
-examples:pure#0  # not implemented yet
 examples:pw#0  # not implemented yet
 examples:pw#1  # not implemented yet
 examples:pwrate#0  # not implemented yet
@@ -373,8 +361,6 @@ examples:rootNotes#0  # not implemented yet
 examples:round#0  # not implemented yet
 examples:run#0  # not implemented yet
 examples:s#1  # not implemented yet
-examples:samples#0  # not implemented yet
-examples:samples#1  # not implemented yet
 examples:saw#0  # not implemented yet
 examples:saw#1  # not implemented yet
 examples:scale#0  # not implemented yet
@@ -488,7 +474,6 @@ examples:withBase#0  # not implemented yet
 examples:withBase#1  # not implemented yet
 examples:withHap#0  # not implemented yet
 examples:withHaps#0  # not implemented yet
-examples:withValue#0  # not implemented yet
 examples:wt#0  # not implemented yet
 examples:wtphaserand#0  # not implemented yet
 examples:xen#0  # not implemented yet
@@ -531,6 +516,3 @@ tunes:waa2  # not implemented yet
 tunes:wavyKalimba  # not implemented yet
 tunes:zeldasRescue  # not implemented yet
 extra:harness.mondo  # not implemented yet
-extra:harness.replLabels  # not implemented yet
-extra:harness.replTempo  # not implemented yet
-extra:harness.replErrorKeepsTempo  # not implemented yet

@@ -1,6 +1,8 @@
 package cosic.script.next
 
+import cosic.SliderConfig
 import cosic.SourceRange
+import cosic.WidgetConfig
 import cosic.pattern.CosicError
 import kotlin.test.BeforeTest
 import kotlin.test.Test

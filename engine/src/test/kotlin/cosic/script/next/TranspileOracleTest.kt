@@ -1,6 +1,8 @@
 package cosic.script.next
 
+import cosic.SliderConfig
 import cosic.SourceRange
+import cosic.WidgetConfig
 import cosic.parity.ParityData
 import cosic.pattern.CosicError
 import kotlinx.serialization.json.Json

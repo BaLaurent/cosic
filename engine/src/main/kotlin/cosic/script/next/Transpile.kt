@@ -1,6 +1,8 @@
 package cosic.script.next
 
+import cosic.SliderConfig
 import cosic.SourceRange
+import cosic.WidgetConfig
 import cosic.pattern.CosicError
 import cosic.pattern.jsStringToNumber
 import java.util.concurrent.ConcurrentHashMap
@@ -37,38 +39,6 @@ internal data class TranspileOptions(
     val emitWidgets: Boolean = true,
     /** Prefix of the widget ids, for several editors on one page. */
     val id: String? = null,
-)
-
-/** A call of a widget method (`pat._scope()`): where it is and which widget it makes. */
-public data class WidgetConfig(
-    /** The method name, for example `_pianoroll`. */
-    val type: String,
-    /** The range of the whole call. */
-    val from: Int,
-    val to: Int,
-    /** How many widgets of the same [type] were recorded before this one; the walk meets the outermost call of a chain first. */
-    val index: Int,
-    /** The `id` option the program was transpiled with. */
-    val id: String?,
-) {
-    /** The id the call receives as its first argument: `<id>_widget_<type>_<index>` (plugin-widgets.mjs:86-93). */
-    val widgetId: String get() = "${id ?: ""}_widget_${type}_$index"
-}
-
-/** A `slider(value, min, max, step)` call. */
-public data class SliderConfig(
-    /** The range of the first argument, the one the UI rewrites when the slider moves. */
-    val from: Int,
-    val to: Int,
-    /** The source text of the first argument when it is a literal, else null. */
-    val value: String?,
-    /** `min` and `max` are the second and third argument when they are number literals, else 0 and 1. */
-    val min: Double,
-    val max: Double,
-    /** The fourth argument when it is a number literal. */
-    val step: Double?,
-    /** `slider_<from>`: the first argument of the `sliderWithID` call the transpiler makes. */
-    val id: String,
 )
 
 internal class TranspileResult(

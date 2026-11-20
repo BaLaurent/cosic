@@ -1,6 +1,8 @@
 package cosic.parity
 
-import cosic.script.Builtins
+import cosic.script.next.Realm
+import cosic.script.next.SessionHost
+import cosic.script.next.catalogue.Catalogue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -56,8 +58,17 @@ class CoverageTest {
     private fun preview(names: Collection<String>, limit: Int = 60): String =
         names.take(limit).joinToString(" ") + if (names.size > limit) " ... and ${names.size - limit} more" else ""
 
-    /** Whether a program can use [name] in Cosic today. Tasks that replace the builtin registry change this one line. */
-    private fun isImplemented(name: String): Boolean = Builtins.lookup(name) != null
+    /**
+     * Whether a program can use [name] today: the catalogue gives a global or a method of `Pattern.prototype` of that
+     * name. (A realm of its own, without the oracle's mocks, which would make names such as `filter` look implemented.)
+     */
+    private fun isImplemented(name: String): Boolean = name in implemented
+
+    private val implemented: Set<String> by lazy {
+        val realm = Realm(SessionHost())
+        Catalogue.install(realm)
+        (realm.global.ownKeys() + realm.patternPrototype.ownKeys()).toSet()
+    }
 
     private fun strudelNames(): Set<String> {
         val json = Json.parseToJsonElement(ParityData.namesFile.readText()).jsonObject

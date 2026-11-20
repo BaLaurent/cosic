@@ -9,7 +9,7 @@ class MiniApiTest {
     @Test
     fun leafLocationsAreShiftedByTheStartOfTheQuotedString() {
         val leaves = getLeafLocations("\"bd sd*2\"", 10).map { it.toList() }
-        assertEquals(listOf(listOf(11, 13), listOf(14, 16)), leaves)
+        assertEquals(listOf(listOf(11, 13), listOf(14, 16), listOf(17, 18)), leaves)
     }
 
     @Test
