@@ -2,383 +2,633 @@ package cosic.mini
 
 import cosic.SourceRange
 import cosic.pattern.CosicError
-import cosic.pattern.MAX_COUNT
-import cosic.pattern.NUMBER_TEXT
-import cosic.pattern.Pattern
-import cosic.pattern.Rational
-import cosic.pattern.legacy.degradeBy
-import cosic.pattern.legacy.euclid
-import cosic.pattern.legacy.euclidRot
-import cosic.pattern.legacy.fast
-import cosic.pattern.fastcat
-import cosic.pattern.pure
-import cosic.pattern.legacy.randomChoice
-import cosic.pattern.silence
-import cosic.pattern.legacy.slow
-import cosic.pattern.slowcat
-import cosic.pattern.legacy.legacyStack
-import cosic.pattern.legacy.timecat
-import kotlin.math.roundToInt
+import cosic.pattern.TOO_DEEP
+
+/*
+ * The mini-notation parser. It is Strudel's grammar (packages/mini/krill.pegjs) read the way Peggy 4.2, the generator of
+ * Strudel's parser (packages/mini/krill-parser.js), reads it, rule by rule: ordered choice, greedy repetition that does
+ * not backtrack into the loop, a rule that fails puts the position back, and the actions of a rule run as soon as the
+ * rule has matched. That last point is what numbers the random streams of `?` and `|` (see [KrillParser.seed]): an
+ * action that ran for a rule that a later rule threw away still counted.
+ *
+ * Errors read like Peggy's: `Expected "(", "*", or whitespace but "x" found.`, listing what could have been read at the
+ * furthest position that was tried. A named rule (`ws`, `number`, `step_char`) reports its name, not what it is made of.
+ */
+
+/** The longest nesting of brackets, groups and operator arguments the parser follows before it gives up. */
+private const val MAX_DEPTH = 200
+
+private fun literal(text: String) = "\"" + literalEscape(text) + "\""
+
+private val E_NUMBER = "number"
+private val E_WHITESPACE = "whitespace"
+private val E_STEP_CHAR = "a letter, a number, \"-\", \"#\", \".\", \"^\", \"_\""
+private val E_END = "end of input"
+private val E_DOT = literal(".")
+private val E_MINUS = literal("-")
+private val E_PLUS_MINUS = "[+\\-]"
+private val E_ZERO = literal("0")
+private val E_ONE_NINE = "[1-9]"
+private val E_DIGIT = "[0-9]"
+private val E_E = "[eE]"
+private val E_COMMA = literal(",")
+private val E_PIPE = literal("|")
+private val E_QUOTE = "[\"']"
+private val E_LBRACKET = literal("[")
+private val E_RBRACKET = literal("]")
+private val E_LBRACE = literal("{")
+private val E_RBRACE = literal("}")
+private val E_PERCENT = literal("%")
+private val E_LT = literal("<")
+private val E_GT = literal(">")
+private val E_WEIGHT = "[@_]"
+private val E_BANG = literal("!")
+private val E_LPAREN = literal("(")
+private val E_RPAREN = literal(")")
+private val E_SLASH = literal("/")
+private val E_STAR = literal("*")
+private val E_QUESTION = literal("?")
+private val E_COLON = literal(":")
+private val E_RANGE = literal("..")
+private val E_CARET = literal("^")
+private val E_CAT = literal("cat")
+private val E_COMMENT = literal("//")
+private val E_NOT_NEWLINE = "[^\\n]"
+
+/** What a `slice_op` read; it becomes an [Op] of its element when the element is complete (the `slice_with_ops` action). */
+private sealed class Pending {
+    class Weight(val amount: Double?) : Pending()
+    class Replicate(val amount: Double?) : Pending()
+    class Bjorklund(val pulse: ElementNode, val step: ElementNode, val rotation: ElementNode?) : Pending()
+    class Stretch(val fast: Boolean, val amount: MiniNode) : Pending()
+    class Degrade(val amount: Double?) : Pending()
+    class Tail(val element: MiniNode) : Pending()
+    class Range(val element: MiniNode) : Pending()
+}
+
+/** What `stack_tail`, `choose_tail` and `dot_tail` give: the sequences after the first one, and how they are put together. */
+private class Tail(val alignment: Alignment, val list: List<PatternNode>, val seed: Int?)
+
+/** A failed parse: the message, and the position of the furthest failure in the quoted code. */
+internal class MiniSyntaxError(message: String, val position: Int) : Exception(message, null, false, false)
+
+internal class KrillParser(private val input: String) {
+    private var pos = 0
+    private var maxFailPos = 0
+    private val maxFailExpected = ArrayList<String>()
+    private var silentFails = 0
+    private var depth = 0
+
+    /** The number of the next random stream: `?` and `|` draw on `rand.early(0.0003 * seed)`. It starts at 0 for each parse. */
+    private var seed = 0
+
+    // ---- the entry ------------------------------------------------------------------------------------------------
+
+    /**
+     * `krill.parse(input)` for an input that is a quoted notation: what `statement` makes of it. A statement is
+     * `mini_definition / command`; the other forms start with a word that the quote at the start of the input cannot be,
+     * so they fail at position 0 and, since the furthest failure is what is reported, are not tried here.
+     */
+    fun parse(): PatternNode {
+        // mini_or_group = cat / mini: `cat` fails on its first literal
+        fail(E_CAT)
+        val result = mini()
+        if (result != null) {
+            ws()
+            while (comment()) {
+                // a comment after the notation is part of the input, and ignored
+            }
+            if (pos == input.length) return result
+            fail(E_END)
+        }
+        throw MiniSyntaxError(message(), maxFailPos)
+    }
+
+    private fun message(): String {
+        val found = if (maxFailPos < input.length) input[maxFailPos] else null
+        val descriptions = maxFailExpected.sorted().distinct()
+        val expected = when (descriptions.size) {
+            1 -> descriptions[0]
+            2 -> descriptions[0] + " or " + descriptions[1]
+            else -> descriptions.dropLast(1).joinToString(", ") + ", or " + descriptions.last()
+        }
+        return "Expected $expected but ${if (found == null) "end of input" else "\"" + literalEscape(found.toString()) + "\""} found."
+    }
+
+    // ---- reporting failures -----------------------------------------------------------------------------------------
+
+    /** `peg$fail`: remembers that [description] was expected at the current position, if that is the furthest one so far. */
+    private fun fail(description: String) {
+        if (pos < maxFailPos) return
+        if (pos > maxFailPos) {
+            maxFailPos = pos
+            maxFailExpected.clear()
+        }
+        maxFailExpected.add(description)
+    }
+
+    private fun literal(text: String, description: String): Boolean {
+        if (input.startsWith(text, pos)) {
+            pos += text.length
+            return true
+        }
+        if (silentFails == 0) fail(description)
+        return false
+    }
+
+    private inline fun charClass(description: String, test: (Char) -> Boolean): Boolean {
+        if (pos < input.length && test(input[pos])) {
+            pos++
+            return true
+        }
+        if (silentFails == 0) fail(description)
+        return false
+    }
+
+    // ---- numbers ----------------------------------------------------------------------------------------------------
+
+    /** `number`: `-? int frac? exp?`, read by `parseFloat`; null for no number. */
+    private fun number(): Double? {
+        silentFails++
+        val start = pos
+        var result: Double? = null
+        literal("-", E_MINUS)
+        if (int()) {
+            frac()
+            exp()
+            result = input.substring(start, pos).toDouble()
+        } else {
+            pos = start
+        }
+        silentFails--
+        if (result == null && silentFails == 0) fail(E_NUMBER)
+        return result
+    }
+
+    private fun digit(): Boolean = charClass(E_DIGIT) { it in '0'..'9' }
+
+    private fun int(): Boolean {
+        if (literal("0", E_ZERO)) return true
+        if (charClass(E_ONE_NINE) { it in '1'..'9' }) {
+            while (digit()) {
+                // digits
+            }
+            return true
+        }
+        return false
+    }
+
+    private fun frac(): Boolean {
+        val start = pos
+        if (literal(".", E_DOT) && digit()) {
+            while (digit()) {
+                // digits
+            }
+            return true
+        }
+        pos = start
+        return false
+    }
+
+    private fun exp(): Boolean {
+        val start = pos
+        if (charClass(E_E) { it == 'e' || it == 'E' }) {
+            charClass(E_PLUS_MINUS) { it == '+' || it == '-' }
+            if (digit()) {
+                while (digit()) {
+                    // digits
+                }
+                return true
+            }
+        }
+        pos = start
+        return false
+    }
+
+    // ---- delimiters -------------------------------------------------------------------------------------------------
+
+    /** `ws`: it cannot fail, but a named rule reports its name wherever it stops. */
+    private fun ws() {
+        silentFails++
+        while (pos < input.length && isWhitespace(input[pos])) pos++
+        silentFails--
+        if (silentFails == 0) fail(E_WHITESPACE)
+    }
+
+    private fun isWhitespace(c: Char): Boolean = c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\u00A0'
+
+    /** `ws "x" ws` for the delimiter [text]. */
+    private fun delimiter(text: String, description: String): Boolean {
+        val start = pos
+        ws()
+        if (literal(text, description)) {
+            ws()
+            return true
+        }
+        pos = start
+        return false
+    }
+
+    private fun comma() = delimiter(",", E_COMMA)
+
+    private fun pipe() = delimiter("|", E_PIPE)
+
+    private fun dot() = delimiter(".", E_DOT)
+
+    private fun quote(): Boolean = charClass(E_QUOTE) { it == '"' || it == '\'' }
+
+    private fun comment(): Boolean {
+        val start = pos
+        if (!literal("//", E_COMMENT)) {
+            pos = start
+            return false
+        }
+        while (charClass(E_NOT_NEWLINE) { it != '\n' }) {
+            // the rest of the line
+        }
+        return true
+    }
+
+    // ---- steps and slices -------------------------------------------------------------------------------------------
+
+    /** `step_char`: a letter, a digit, or one of `~ - # . ^ _`. A named rule: the character class inside it is silent. */
+    private fun stepChar(): Char? {
+        silentFails++
+        val c = if (pos < input.length && MiniLetters.isStepChar(input[pos])) input[pos++] else null
+        silentFails--
+        if (c == null && silentFails == 0) fail(E_STEP_CHAR)
+        return c
+    }
+
+    /** `step`: the characters of one atom, with the whitespace around them. A lone `.` or `_` is not an atom. */
+    private fun step(): AtomNode? {
+        val start = pos
+        ws()
+        val chars = StringBuilder()
+        var c = stepChar()
+        if (c == null) {
+            pos = start
+            return null
+        }
+        while (c != null) {
+            chars.append(c)
+            c = stepChar()
+        }
+        ws()
+        val text = chars.toString()
+        if (text == "." || text == "_") {
+            pos = start
+            return null
+        }
+        return AtomNode(text, start, pos)
+    }
+
+    private fun subCycle(): MiniNode? {
+        val start = pos
+        ws()
+        if (!literal("[", E_LBRACKET)) {
+            pos = start
+            return null
+        }
+        ws()
+        val inner = stackOrChoose()
+        if (inner == null) {
+            pos = start
+            return null
+        }
+        ws()
+        if (!literal("]", E_RBRACKET)) {
+            pos = start
+            return null
+        }
+        ws()
+        return inner
+    }
+
+    private fun polymeter(): MiniNode? {
+        val start = pos
+        ws()
+        if (!literal("{", E_LBRACE)) {
+            pos = start
+            return null
+        }
+        ws()
+        val inner = polymeterStack()
+        if (inner == null) {
+            pos = start
+            return null
+        }
+        ws()
+        if (!literal("}", E_RBRACE)) {
+            pos = start
+            return null
+        }
+        val stepsPerCycle = polymeterSteps()
+        ws()
+        inner.stepsPerCycle = stepsPerCycle
+        return inner
+    }
+
+    private fun polymeterSteps(): MiniNode? {
+        val start = pos
+        if (!literal("%", E_PERCENT)) {
+            pos = start
+            return null
+        }
+        val slice = slice()
+        if (slice == null) {
+            pos = start
+            return null
+        }
+        return slice
+    }
+
+    private fun slowSequence(): MiniNode? {
+        val start = pos
+        ws()
+        if (!literal("<", E_LT)) {
+            pos = start
+            return null
+        }
+        ws()
+        val inner = polymeterStack()
+        if (inner == null) {
+            pos = start
+            return null
+        }
+        ws()
+        if (!literal(">", E_GT)) {
+            pos = start
+            return null
+        }
+        ws()
+        inner.alignment = Alignment.POLYMETER_SLOWCAT
+        return inner
+    }
+
+    /** `slice`: `step / sub_cycle / polymeter / slow_sequence`. */
+    private fun slice(): MiniNode? {
+        if (++depth > MAX_DEPTH) throw CosicError(TOO_DEEP)
+        try {
+            return step() ?: subCycle() ?: polymeter() ?: slowSequence()
+        } finally {
+            depth--
+        }
+    }
+
+    // ---- operators --------------------------------------------------------------------------------------------------
+
+    private fun opWeight(): Pending? {
+        val start = pos
+        ws()
+        if (!charClass(E_WEIGHT) { it == '@' || it == '_' }) {
+            pos = start
+            return null
+        }
+        return Pending.Weight(number())
+    }
+
+    private fun opReplicate(): Pending? {
+        val start = pos
+        ws()
+        if (!literal("!", E_BANG)) {
+            pos = start
+            return null
+        }
+        return Pending.Replicate(number())
+    }
+
+    private fun opBjorklund(): Pending? {
+        val start = pos
+        if (!literal("(", E_LPAREN)) {
+            pos = start
+            return null
+        }
+        ws()
+        val pulse = sliceWithOps()
+        if (pulse == null) {
+            pos = start
+            return null
+        }
+        ws()
+        if (!comma()) {
+            pos = start
+            return null
+        }
+        ws()
+        val steps = sliceWithOps()
+        if (steps == null) {
+            pos = start
+            return null
+        }
+        ws()
+        comma()
+        ws()
+        val rotation = sliceWithOps()
+        ws()
+        if (!literal(")", E_RPAREN)) {
+            pos = start
+            return null
+        }
+        return Pending.Bjorklund(pulse, steps, rotation)
+    }
+
+    /** `"/" slice` and `"*" slice`, `":" slice` and `".." slice`: an operator with one slice for argument. */
+    private inline fun sliceOp(text: String, description: String, make: (MiniNode) -> Pending): Pending? {
+        val start = pos
+        if (!literal(text, description)) {
+            pos = start
+            return null
+        }
+        val slice = slice()
+        if (slice == null) {
+            pos = start
+            return null
+        }
+        return make(slice)
+    }
+
+    private fun opDegrade(): Pending? {
+        val start = pos
+        if (!literal("?", E_QUESTION)) {
+            pos = start
+            return null
+        }
+        return Pending.Degrade(number())
+    }
+
+    /** `slice_op`: the first operator that matches. */
+    private fun sliceOp(): Pending? =
+        opWeight()
+            ?: opBjorklund()
+            ?: sliceOp("/", E_SLASH) { Pending.Stretch(false, it) }
+            ?: sliceOp("*", E_STAR) { Pending.Stretch(true, it) }
+            ?: opReplicate()
+            ?: opDegrade()
+            ?: sliceOp(":", E_COLON) { Pending.Tail(it) }
+            ?: sliceOp("..", E_RANGE) { Pending.Range(it) }
+
+    /**
+     * `slice_with_ops`: a slice and the operators after it. The operators are applied, in the order they were written,
+     * once the last of them has been read; `?` takes the next random stream then.
+     */
+    private fun sliceWithOps(): ElementNode? {
+        val start = pos
+        val slice = slice()
+        if (slice == null) {
+            pos = start
+            return null
+        }
+        val pending = ArrayList<Pending>()
+        while (true) pending.add(sliceOp() ?: break)
+        val element = ElementNode(slice)
+        for (op in pending) apply(op, element)
+        return element
+    }
+
+    private fun apply(op: Pending, element: ElementNode) {
+        when (op) {
+            is Pending.Weight -> element.weight = element.weight + (op.amount ?: 2.0) - 1.0
+            is Pending.Replicate -> {
+                val reps = element.reps + (op.amount ?: 2.0) - 1.0
+                element.reps = reps
+                element.ops.removeAll { it is Op.Replicate }
+                element.ops.add(Op.Replicate(reps))
+                element.weight = reps
+            }
+            is Pending.Bjorklund -> element.ops.add(Op.Bjorklund(op.pulse, op.step, op.rotation))
+            is Pending.Stretch -> element.ops.add(Op.Stretch(op.fast, op.amount))
+            is Pending.Degrade -> element.ops.add(Op.DegradeBy(op.amount, seed++))
+            is Pending.Tail -> element.ops.add(Op.Tail(op.element))
+            is Pending.Range -> element.ops.add(Op.Range(op.element))
+        }
+    }
+
+    // ---- sequences, stacks and choices ------------------------------------------------------------------------------
+
+    private fun sequence(): PatternNode? {
+        val start = pos
+        val stepsFlag = literal("^", E_CARET)
+        val elements = ArrayList<MiniNode>()
+        var element = sliceWithOps()
+        if (element == null) {
+            pos = start
+            return null
+        }
+        while (element != null) {
+            elements.add(element)
+            element = sliceWithOps()
+        }
+        return PatternNode(elements, Alignment.FASTCAT, null, stepsFlag)
+    }
+
+    /** One or more sequences, each after [delimiter]; null when there is not even one. */
+    private fun sequences(delimiter: () -> Boolean): List<PatternNode>? {
+        val list = ArrayList<PatternNode>()
+        while (true) {
+            val start = pos
+            if (delimiter()) {
+                val sequence = sequence()
+                if (sequence != null) {
+                    list.add(sequence)
+                    continue
+                }
+            }
+            pos = start
+            break
+        }
+        return if (list.isEmpty()) null else list
+    }
+
+    private fun stackTail(): Tail? = sequences(::comma)?.let { Tail(Alignment.STACK, it, null) }
+
+    // the seed is taken when the whole tail has been read, so the `?` inside it have the lower numbers
+    private fun chooseTail(): Tail? = sequences(::pipe)?.let { Tail(Alignment.RAND, it, seed++) }
+
+    private fun dotTail(): Tail? = sequences(::dot)?.let { Tail(Alignment.FEET, it, seed++) }
+
+    /** `stack_or_choose`: a sequence, alone or followed by a stack, a choice or feet. */
+    private fun stackOrChoose(): PatternNode? {
+        val start = pos
+        val head = sequence()
+        if (head == null) {
+            pos = start
+            return null
+        }
+        val tail = stackTail() ?: chooseTail() ?: dotTail()
+        return if (tail != null && tail.list.isNotEmpty()) {
+            PatternNode(listOf(head) + tail.list, tail.alignment, tail.seed, false)
+        } else {
+            head
+        }
+    }
+
+    private fun polymeterStack(): PatternNode? {
+        val start = pos
+        val head = sequence()
+        if (head == null) {
+            pos = start
+            return null
+        }
+        val tail = stackTail()
+        return PatternNode(if (tail != null) listOf(head) + tail.list else listOf(head), Alignment.POLYMETER, null, false)
+    }
+
+    /** `mini`: the quoted notation. A quote inside it ends it, as the grammar has it. */
+    private fun mini(): PatternNode? {
+        val start = pos
+        ws()
+        if (!quote()) {
+            pos = start
+            return null
+        }
+        ws()
+        val inner = stackOrChoose()
+        if (inner == null) {
+            pos = start
+            return null
+        }
+        ws()
+        if (!quote()) {
+            pos = start
+            return null
+        }
+        return inner
+    }
+}
+
+/** How Peggy writes a string it expects or found: `"` and `\` escaped, control characters as `\t`, `\x0B` and the like. */
+internal fun literalEscape(s: String): String {
+    val out = StringBuilder()
+    for (ch in s) {
+        when {
+            ch == '\\' -> out.append("\\\\")
+            ch == '"' -> out.append("\\\"")
+            ch == '\u0000' -> out.append("\\0")
+            ch == '\t' -> out.append("\\t")
+            ch == '\n' -> out.append("\\n")
+            ch == '\r' -> out.append("\\r")
+            ch <= '\u000F' -> out.append("\\x0").append(ch.code.toString(16).uppercase())
+            ch in '\u0010'..'\u001F' || ch in '\u007F'..'\u009F' -> out.append("\\x").append(ch.code.toString(16).uppercase())
+            else -> out.append(ch)
+        }
+    }
+    return out.toString()
+}
 
 /**
- * Parses mini-notation: the rhythm language inside double quotes, e.g. `"bd*2 [sd cp] ~ hh(3,8)"`.
- *
- * ```
- * list     := sequence ((',' sequence)+ | ('|' sequence)+)?     stack | random choice per cycle
- * sequence := step*                                              a step takes a share of the cycle
- * step     := term modifier* | '_' | '!'                         '_' stretches, '!' repeats the previous step
- * term     := atom | '~' | '-' | '[' list ']' | '<' list '>' | '{' list '}' ('%' factor)?
- * modifier := '*' factor | '/' factor | '!' INT? | '@' NUMBER | '?' NUMBER? | '(' sequence ',' sequence (',' sequence)? ')'
- * factor   := number atom | '[' list ']' | '<' list '>'
- * ```
- *
- * Every atom hap carries the [SourceRange] of its text, shifted by [baseOffset] so the ranges point into the
- * program the string came from. Numbers inside modifiers are plain constants and carry no range; patterned
- * modifier arguments (`bd*<2 3>`) add the ranges of their atoms after the step's own.
- * Errors are [CosicError]s with the range of the offending character.
+ * `mini2ast(code, start, userCode)`: the tree of the quoted mini-notation [code] (the notation with its quotes). An error
+ * says on which line of [userCode] (by default [code]) it is, counting from [start], the position of [code] in it. The
+ * error also carries the range of the character that could not be read, counted from [rangeStart], the position of the
+ * opening quote in the program.
  */
-internal fun parseMini(src: String, baseOffset: Int): Pattern = MiniParser(src, baseOffset).parse()
-
-/** The `[from, to]` offsets (shifted by [baseOffset]) of every atom of [src], in source order. Parse errors are thrown. */
-internal fun parseMiniLeaves(src: String, baseOffset: Int): List<IntArray> {
-    val parser = MiniParser(src, baseOffset)
-    parser.parse()
-    return parser.leaves
-}
-
-private const val PIPE_SEED_BASE = 1000
-private const val SEQUENCE_END = ",|]>})"
-private const val ATOM_SYMBOLS = "#.-_:^'"
-
-/** One step of a sequence; [number] is set while the step is still a bare numeric atom. */
-private class Step(val pattern: Pattern, val weight: Rational, val number: Double?)
-
-private class Term(val pattern: Pattern, val number: Double? = null)
-
-/** The sequences between one pair of brackets; [pipeSeed] is set when they are alternatives (`|`). */
-private class Group(val sequences: List<List<Step>>, val pipeSeed: Int?) {
-    fun build(sequence: (List<Step>) -> Pattern): Pattern {
-        val built = sequences.map(sequence)
-        return if (pipeSeed != null) randomChoice(built, pipeSeed) else legacyStack(built)
+internal fun mini2ast(code: String, start: Int = 0, userCode: String = code, rangeStart: Int = start): PatternNode {
+    try {
+        return KrillParser(code).parse()
+    } catch (e: MiniSyntaxError) {
+        val region = e.position + start
+        val line = userCode.substring(0, minOf(region, userCode.length)).count { it == '\n' } + 1
+        val at = rangeStart + minOf(e.position, code.length - 1)
+        throw CosicError("[mini] parse error at line $line: ${e.message}", SourceRange(at, at + 1))
     }
-}
-
-/** A number argument of a modifier: a plain number, or a pattern of numbers. */
-private sealed interface Arg {
-    class Constant(val value: Double) : Arg
-    class Patterned(val pattern: Pattern) : Arg
-}
-
-private fun Arg.join(f: (Double) -> Pattern): Pattern = when (this) {
-    is Arg.Constant -> f(value)
-    is Arg.Patterned -> pattern.fmap { f(numberOf(it)) }.innerJoin()
-}
-
-private fun numberOf(value: Any?): Double =
-    value as? Double ?: throw CosicError("Mini-notation: expected a number, got '$value'")
-
-private fun timecatSteps(steps: List<Step>): Pattern = when (steps.size) {
-    0 -> silence
-    1 -> steps[0].pattern
-    else -> timecat(steps.map { it.weight to it.pattern })
-}
-
-private fun isAtomChar(c: Char): Boolean = c in 'a'..'z' || c in 'A'..'Z' || c in '0'..'9' || c in ATOM_SYMBOLS
-
-/** Whether [value] may be a count of steps, copies or events (see [MAX_COUNT]); false for NaN too. */
-private fun isCount(value: Double): Boolean = Math.abs(value) <= MAX_COUNT
-
-private class MiniParser(private val src: String, private val base: Int) {
-    private var pos = 0
-    private var questionMarks = 0
-    private var pipeGroups = 0
-
-    /** The location of every atom parsed so far. */
-    val leaves = ArrayList<IntArray>()
-
-    fun parse(): Pattern {
-        val group = parseGroup()
-        skipSpace()
-        if (pos < src.length) unexpected(pos)
-        return group.build(::timecatSteps)
-    }
-
-    // ---- structure ----------------------------------------------------------------------
-
-    private fun parseGroup(): Group {
-        val sequences = ArrayList<List<Step>>()
-        sequences.add(parseSequence())
-        var separator = ' '
-        var pipeSeed: Int? = null
-        while (true) {
-            skipSpace()
-            val c = peek() ?: break
-            if (c != ',' && c != '|') break
-            if (separator != ' ' && separator != c) unexpected(pos)
-            if (c == '|' && pipeSeed == null) pipeSeed = PIPE_SEED_BASE + pipeGroups++
-            separator = c
-            pos++
-            sequences.add(parseSequence())
-        }
-        return Group(sequences, pipeSeed)
-    }
-
-    private fun parseSequence(): List<Step> {
-        val steps = ArrayList<Step>()
-        while (true) {
-            skipSpace()
-            val c = peek() ?: return steps
-            when {
-                c in SEQUENCE_END -> return steps
-                c == '!' -> {
-                    if (steps.isEmpty()) unexpected(pos)
-                    steps.add(steps[steps.lastIndex])
-                    pos++
-                }
-                else -> parseStep(steps)
-            }
-        }
-    }
-
-    private fun parseStep(steps: MutableList<Step>) {
-        if (isAtomChar(src[pos])) {
-            val end = atomEnd(pos)
-            if ((pos until end).all { src[it] == '_' }) {
-                stretch(steps, end - pos)
-                pos = end
-                return
-            }
-        }
-        val term = parseTerm()
-        var pattern = term.pattern
-        var number = term.number
-        var weight = Rational.ONE
-        var copies = 1
-        while (true) {
-            when (peek()) {
-                '*' -> {
-                    pos++
-                    val factor = parseFactor()
-                    val inner = pattern
-                    pattern = factor.join { inner.fast(Rational.of(it)) }
-                    number = null
-                }
-                '/' -> {
-                    pos++
-                    val factor = parseFactor()
-                    val inner = pattern
-                    pattern = factor.join { inner.slow(Rational.of(it)) }
-                    number = null
-                }
-                '!' -> {
-                    pos++
-                    copies = readInt() ?: (copies + 1)
-                }
-                '@' -> {
-                    pos++
-                    weight = parseWeight()
-                }
-                '?' -> {
-                    pos++
-                    pattern = pattern.degradeBy(parseProbability(), questionMarks++)
-                    number = null
-                }
-                '(' -> {
-                    pattern = parseEuclid(pattern)
-                    number = null
-                }
-                else -> break
-            }
-        }
-        repeat(copies) { steps.add(Step(pattern, weight, number)) }
-    }
-
-    /** `_` adds its length to the weight of the step before it. */
-    private fun stretch(steps: MutableList<Step>, by: Int) {
-        if (steps.isEmpty()) unexpected(pos)
-        val last = steps[steps.lastIndex]
-        steps[steps.lastIndex] = Step(last.pattern, last.weight + Rational(by.toLong()), last.number)
-    }
-
-    // ---- terms --------------------------------------------------------------------------
-
-    private fun parseTerm(): Term {
-        val c = peek() ?: unexpected(pos)
-        return when {
-            c == '~' -> {
-                pos++
-                Term(silence)
-            }
-            c == '[' -> bracketed(']') { group -> group.build(::timecatSteps) }
-            c == '<' -> bracketed('>') { group -> group.build { steps -> slowcat(steps.map { it.pattern }) } }
-            c == '{' -> parsePolymeter()
-            isAtomChar(c) -> parseAtom()
-            else -> unexpected(pos)
-        }
-    }
-
-    private fun bracketed(close: Char, build: (Group) -> Pattern): Term {
-        val open = pos
-        pos++
-        val group = parseGroup()
-        expect(close, open)
-        return Term(build(group))
-    }
-
-    private fun parsePolymeter(): Term {
-        val open = pos
-        pos++
-        val group = parseGroup()
-        expect('}', open)
-        val steps: Arg = if (peek() == '%') {
-            pos++
-            parseFactor()
-        } else {
-            Arg.Constant((group.sequences.firstOrNull()?.size ?: 0).toDouble())
-        }
-        return Term(group.build { sequence -> polymeter(sequence, steps) })
-    }
-
-    /** Plays the steps of one sequence at the pace of a sequence with [base] steps per cycle. */
-    private fun polymeter(sequence: List<Step>, base: Arg): Pattern {
-        if (sequence.isEmpty()) return silence
-        val steps = fastcat(sequence.map { it.pattern })
-        return base.join { count -> steps.fast(Rational.of(count) / Rational(sequence.size.toLong())) }
-    }
-
-    private fun parseAtom(): Term {
-        val start = pos
-        pos = atomEnd(start)
-        val text = src.substring(start, pos)
-        if (text.all { it == '-' }) return Term(silence)
-        val number = if (NUMBER_TEXT.matches(text)) text.toDouble() else null
-        val value: Any = number ?: colonList(text) ?: text
-        val at = SourceRange(base + start, base + pos)
-        leaves.add(intArrayOf(at.start, at.end))
-        return Term(pure(value).withLoc(at), number)
-    }
-
-    /** `bd:3` is the list `["bd", 3]` (the `:` operator of the mini-notation): the parts that read as numbers are numbers. */
-    private fun colonList(text: String): List<Any>? =
-        if (':' in text) text.split(':').map { part -> if (NUMBER_TEXT.matches(part)) part.toDouble() else part } else null
-
-    // ---- modifier arguments -------------------------------------------------------------
-
-    private fun parseFactor(): Arg {
-        val c = peek() ?: unexpected(pos)
-        if (c == '[') return Arg.Patterned(bracketed(']') { group -> group.build(::timecatSteps) }.pattern)
-        if (c == '<') return Arg.Patterned(bracketed('>') { group -> group.build { steps -> slowcat(steps.map { it.pattern }) } }.pattern)
-        if (!isAtomChar(c)) unexpected(pos)
-        val start = pos
-        val text = src.substring(start, atomEnd(start))
-        if (!NUMBER_TEXT.matches(text)) fail("unexpected '$text'", start, text.length)
-        val value = text.toDouble()
-        if (!isCount(value)) fail("number out of range", start, text.length)
-        pos += text.length
-        leaves.add(intArrayOf(base + start, base + pos))
-        return Arg.Constant(value)
-    }
-
-    private fun parseWeight(): Rational {
-        val start = pos
-        val text = readNumberText()
-        if (text.isEmpty()) unexpected(start)
-        return try {
-            Rational.of(text.toDoubleOrNull() ?: fail("unexpected '$text'", start, text.length))
-        } catch (e: IllegalArgumentException) {
-            fail("number out of range", start, text.length)
-        }
-    }
-
-    private fun parseProbability(): Double {
-        val start = pos
-        val text = readNumberText()
-        if (text.isEmpty()) return 0.5
-        return text.toDoubleOrNull() ?: fail("unexpected '$text'", start, text.length)
-    }
-
-    private fun parseEuclid(pattern: Pattern): Pattern {
-        val open = pos
-        pos++
-        val hits = parseArg()
-        expectComma()
-        val steps = parseArg()
-        skipSpace()
-        val rotation = if (peek() == ',') {
-            pos++
-            parseArg()
-        } else {
-            null
-        }
-        expect(')', open)
-        return hits.join { k ->
-            steps.join { n ->
-                if (rotation == null) {
-                    pattern.euclid(count(k), count(n))
-                } else {
-                    rotation.join { r -> pattern.euclidRot(count(k), count(n), count(r)) }
-                }
-            }
-        }
-    }
-
-    private fun parseArg(): Arg {
-        skipSpace()
-        val start = pos
-        val steps = parseSequence()
-        val number = steps.singleOrNull()?.number ?: return Arg.Patterned(timecatSteps(steps))
-        if (!isCount(number)) fail("number out of range", start, atomEnd(start) - start)
-        return Arg.Constant(number)
-    }
-
-    // ---- scanning -----------------------------------------------------------------------
-
-    private fun peek(): Char? = if (pos < src.length) src[pos] else null
-
-    private fun skipSpace() {
-        while (pos < src.length && src[pos].isWhitespace()) pos++
-    }
-
-    private fun atomEnd(from: Int): Int {
-        var end = from
-        while (end < src.length && isAtomChar(src[end])) end++
-        return end
-    }
-
-    private fun readInt(): Int? {
-        val start = pos
-        while (pos < src.length && src[pos] in '0'..'9') pos++
-        if (pos == start) return null
-        return src.substring(start, pos).toIntOrNull()?.takeIf { it <= MAX_COUNT } ?: fail("number out of range", start, pos - start)
-    }
-
-    private fun count(value: Double): Int {
-        if (!isCount(value)) throw CosicError("Mini-notation: number out of range")
-        return value.roundToInt()
-    }
-
-    private fun readNumberText(): String {
-        val start = pos
-        while (pos < src.length && (src[pos] in '0'..'9' || src[pos] == '.')) pos++
-        return src.substring(start, pos)
-    }
-
-    private fun expect(close: Char, open: Int) {
-        skipSpace()
-        if (pos >= src.length) fail("missing '$close'", open)
-        if (src[pos] != close) unexpected(pos)
-        pos++
-    }
-
-    private fun expectComma() {
-        skipSpace()
-        if (peek() != ',') unexpected(pos)
-        pos++
-    }
-
-    private fun unexpected(at: Int): Nothing =
-        if (at >= src.length) fail("unexpected end of pattern", maxOf(src.length - 1, 0)) else fail("unexpected '${src[at]}'", at)
-
-    private fun fail(message: String, at: Int, length: Int = 1): Nothing =
-        throw CosicError("Mini-notation: $message", SourceRange(base + at, base + at + length))
 }

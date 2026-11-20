@@ -2,387 +2,611 @@ package cosic.mini
 
 import cosic.SourceRange
 import cosic.pattern.CosicError
-import cosic.pattern.Hap
 import cosic.pattern.Pattern
-import cosic.pattern.cycleSpan
-import cosic.pattern.cycleValues
-import cosic.pattern.query
-import cosic.pattern.r
-import cosic.pattern.shown
-import cosic.pattern.shownCycle
-import cosic.pattern.span
-import cosic.pattern.legacy.timeRand
+import cosic.pattern.Rational
+import cosic.pattern.TOO_DEEP
+import cosic.pattern.TOO_DENSE
+import cosic.pattern.callMethod
+import org.junit.Assume.assumeTrue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
+/**
+ * The mini-notation: the tests of Strudel's package (packages/mini/test/mini.test.mjs) and the corners of the grammar
+ * that its tests do not reach. MiniOracleTest compares the whole grammar with Strudel's own output; these say what the
+ * results are meant to be. Tests of what the notation makes of `euclid` and `degradeBy` run once those functions are
+ * Strudel's (see [StrudelRegistry]).
+ */
 class MiniTest {
-    private fun mini(src: String, base: Int = 0): Pattern = parseMini(src, base)
+    init {
+        StrudelRegistry // registers the functions
+    }
 
-    private fun Pattern.picks(cycles: LongRange): List<Any?> = cycles.map { cycleValues(it).single() }
-
-    private fun error(src: String, base: Int = 0): CosicError = assertFailsWith<CosicError> { mini(src, base) }
-
-    // ---- sequences and groups ---------------------------------------------------------
+    // ---- mini.test.mjs ----------------------------------------------------------------------------------------------
 
     @Test
-    fun aSequenceDividesTheCycle() {
-        assertEquals(listOf("bd@0-1/2", "sd@1/2-1"), mini("bd sd").shownCycle())
-        assertEquals(listOf("bd@1-3/2", "sd@3/2-2"), mini("bd sd").shownCycle(1))
+    fun supportsSingleElements() {
+        assertEquals(listOf<Any?>("a"), minV("a"))
     }
 
     @Test
-    fun aSingleStepIsTheWholeCycle() {
-        assertEquals(listOf("bd@0-1"), mini("bd").shownCycle())
+    fun supportsRest() {
+        assertEquals(emptyList(), minV("~"))
     }
 
     @Test
-    fun squareBracketsGroupSteps() {
-        assertEquals(listOf("a@0-1/2", "b@1/2-3/4", "c@3/4-1"), mini("a [b c]").shownCycle())
+    fun supportsCat() {
+        assertEquals(listOf("a: 0 - 1/2", "b: 1/2 - 1"), minS("a b"))
+        assertEquals(listOf("a: 0 - 1/3", "b: 1/3 - 2/3", "c: 2/3 - 1"), minS("a b c"))
     }
 
     @Test
-    fun angleBracketsAlternatePerCycle() {
-        val p = mini("<a b>")
-        assertEquals(listOf<Any>("a", "b", "a"), p.picks(0L..2L))
-        assertEquals(listOf("b@1-2"), p.shownCycle(1))
+    fun supportsFast() {
+        assertEquals(minS("[a a a] b"), minS("a*3 b"))
     }
 
     @Test
-    fun angleBracketsWithCommasStackAlternations() {
-        val p = mini("<a b, c d e>")
-        assertEquals(listOf<Any>("a", "c"), p.cycleValues(0))
-        assertEquals(listOf<Any>("b", "d"), p.cycleValues(1))
-        assertEquals(listOf<Any>("a", "e"), p.cycleValues(2))
-        assertEquals(listOf<Any>("b", "c"), p.cycleValues(3))
+    fun supportsPatternedFast() {
+        assertEquals(minS("[a a a] [a a a a a]"), minS("[a*<3 5>]*2"))
     }
 
     @Test
-    fun angleBracketsExpandRepeatsAndIgnoreWeights() {
-        assertEquals(listOf<Any>("a", "a", "b", "a"), mini("<a!2 b>").picks(0L..3L))
-        assertEquals(listOf<Any>("a", "b", "a"), mini("<a@3 b>").picks(0L..2L))
+    fun supportsSlow() {
+        assertEquals(minS("a b"), minS("[a a a]/3 b"))
     }
 
     @Test
-    fun commasStackSequences() {
-        assertEquals(listOf("a@0-1", "b@0-1"), mini("a, b").shownCycle())
-        assertEquals(listOf("a@0-1/2", "c@0-1/2", "b@1/2-1", "d@1/2-1"), mini("a b, c d").shownCycle())
+    fun supportsPatternedSlow() {
+        assertEquals(minS("[a a] a"), minS("[a a a a a a a a]/[2 4]"))
     }
 
     @Test
-    fun restsTakeUpTimeWithoutSound() {
-        assertEquals(listOf("a@1/2-1"), mini("~ a").shownCycle())
-        assertEquals(listOf("a@1/2-1"), mini("- a").shownCycle())
-        assertEquals(listOf("a@0-1/3", "b@2/3-1"), mini("a ~ b").shownCycle())
+    fun supportsSlowcat() {
+        assertEquals(listOf<Any?>("a"), minV("<a b>"))
     }
 
     @Test
-    fun emptyPatternsAreSilent() {
-        assertEquals(emptyList(), mini("").shownCycle())
-        assertEquals(emptyList(), mini("   ").shownCycle())
-        assertEquals(emptyList(), mini("~").shownCycle())
-        assertEquals(emptyList(), mini("[]").shownCycle())
-        assertEquals(listOf("a@0-1/3", "b@2/3-1"), mini("a [] b").shownCycle())
+    fun supportsDivision() {
+        assertEquals(listOf("a: 0 - 2"), minS("a/2"))
+        assertEquals(listOf("c3: 0 - 1"), minS("[c3 d3]/2"))
     }
 
     @Test
-    fun anyWhitespaceSeparatesSteps() {
-        assertEquals(listOf("bd@0-1/3", "sd@1/3-2/3", "hh@2/3-1"), mini("  bd\n  sd\t hh ").shownCycle())
-    }
-
-    // ---- modifiers --------------------------------------------------------------------
-
-    @Test
-    fun starSpeedsAStepUp() {
-        assertEquals(listOf("a@0-1/4", "a@1/4-1/2", "b@1/2-3/4", "c@3/4-1"), mini("a*2 [b c]").shownCycle())
+    fun supportsMultiplication() {
+        assertEquals(listOf("c3: 0 - 1/2", "c3: 1/2 - 1"), minS("c3*2"))
+        assertEquals(listOf<Any?>("c3", "d3", "c3", "d3"), minV("[c3 d3]*2"))
     }
 
     @Test
-    fun slashSlowsAStepDown() {
-        assertEquals(listOf("a@0-2"), mini("a/2").shown(span(r(0), r(2))))
-        assertEquals(listOf("a@0-2|1-2"), mini("a/2").shownCycle(1))
+    fun supportsBrackets() {
+        assertEquals(listOf("c3: 0 - 1/2", "d3: 1/2 - 3/4", "e3: 3/4 - 1"), minS("c3 [d3 e3]"))
+        assertEquals(listOf("c3: 0 - 1/2", "d3: 1/2 - 3/4", "e3: 3/4 - 7/8", "f3: 7/8 - 1"), minS("c3 [d3 [e3 f3]]"))
     }
 
     @Test
-    fun factorsMayBePatterns() {
-        val p = mini("a*<2 3>")
-        assertEquals(listOf("a@0-1/2", "a@1/2-1"), p.shownCycle(0))
-        assertEquals(listOf("a@1-4/3", "a@4/3-5/3", "a@5/3-2"), p.shownCycle(1))
-        assertEquals(mini("a*2").shownCycle(), mini("a*[2 2]").shownCycle())
-        assertEquals(listOf("a@0-1/2", "b@1/2-1"), mini("<a b>*2").shownCycle(0))
+    fun supportsCurlyBrackets() {
+        assertEquals(minS("[a b a b a b, c d e c d e]"), minS("{a b, c d e}*3"))
+        assertEquals(minS("[a b a b a b, c [d e] f c [d e] f]"), minS("{a b, c [d e] f}*3"))
+        assertEquals(minS("[a b c a b c, d e d e d e]"), minS("{a b c, d e}*2"))
     }
 
     @Test
-    fun weightsStretchSteps() {
-        assertEquals(listOf("a@0-3/4", "b@3/4-1"), mini("a@3 b").shownCycle())
-        assertEquals(listOf("a@0-3/5", "b@3/5-1"), mini("a@1.5 b").shownCycle())
+    fun supportsCurlyBracketsWithExplicitStepPerCycle() {
+        assertEquals(minS("[a b a, c d e]"), minS("{a b, c d e}%3"))
+        assertEquals(minS("[a b a b a, c d e c d]"), minS("{a b, c d e}%5"))
+        assertEquals(minS("[a b a b a b, c d e c d e]"), minS("{a b, c d e}%6"))
     }
 
     @Test
-    fun bangRepeatsSteps() {
-        assertEquals(listOf("a@0-1/3", "a@1/3-2/3", "a@2/3-1"), mini("a!3").shownCycle())
-        assertEquals(listOf("a@0-1/3", "a@1/3-2/3", "b@2/3-1"), mini("a! b").shownCycle())
-        assertEquals(listOf("a@0-1/3", "a@1/3-2/3", "b@2/3-1"), mini("a ! b").shownCycle())
-        assertEquals(listOf("a@0-1/4", "b@1/4-1/2", "a@1/2-3/4", "b@3/4-1"), mini("[a b]!2").shownCycle())
+    fun supportsCommas() {
+        assertEquals(listOf("c3: 0 - 1", "e3: 0 - 1", "g3: 0 - 1"), minS("c3,e3,g3"))
+        assertEquals(listOf("c3: 0 - 1/2", "e3: 0 - 1/2", "g3: 0 - 1/2", "f3: 1/2 - 1"), minS("[c3,e3,g3] f3"))
     }
 
     @Test
-    fun underscoreElongatesTheStepBefore() {
-        assertEquals(listOf("a@0-2/3", "b@2/3-1"), mini("a _ b").shownCycle())
-        assertEquals(listOf("a@0-3/4", "b@3/4-1"), mini("a _ _ b").shownCycle())
-        assertEquals(listOf("a@0-3/4", "b@3/4-1"), mini("a@2 _ b").shownCycle())
+    fun supportsElongation() {
+        assertEquals(listOf("a: 0 - 3/4", "b: 3/4 - 1"), minS("a@3 b"))
+        assertEquals(listOf("a: 0 - 2/5", "b: 2/5 - 1"), minS("a@2 b@3"))
     }
 
     @Test
-    fun underscoresAndDashesInsideAtomsStayAtoms() {
-        assertEquals(listOf<Any>("bd_2", -1.0, "a-b"), mini("bd_2 -1 a-b").cycleValues())
+    fun supportsReplication() {
+        assertEquals(listOf("a: 0 - 1/4", "a: 1/4 - 1/2", "a: 1/2 - 3/4", "b: 3/4 - 1"), minS("a!3 b"))
+        assertEquals(minS("<a b c> <a b c> <a b c> d"), minS("[<a b c>]!3 d"))
     }
 
     @Test
-    fun questionMarkDropsHapsDeterministically() {
-        val p = mini("a?")
-        val played = (0L..31L).filter { p.cycleValues(it).isNotEmpty() }
-        assertEquals(played, (0L..31L).filter { mini("a?").cycleValues(it).isNotEmpty() })
-        assertEquals((0L..31L).filter { timeRand(r(it), 0) >= 0.5 }, played)
-        assertTrue(played.isNotEmpty() && played.size < 32)
+    fun supportsReplicationViaRepeatedBang() {
+        assertEquals(listOf("a: 0 - 1/4", "a: 1/4 - 1/2", "a: 1/2 - 3/4", "b: 3/4 - 1"), minS("a ! ! b"))
+        assertEquals(minS("<a b c> <a b c> <a b c> d"), minS("[<a b c>]!! d"))
     }
 
     @Test
-    fun questionMarkTakesAProbability() {
-        val p = mini("a?0.9")
-        assertEquals((0L..31L).filter { timeRand(r(it), 0) >= 0.9 }, (0L..31L).filter { p.cycleValues(it).isNotEmpty() })
+    fun supportsEuclideanRhythms() {
+        assumeTrue(StrudelRegistry.euclid)
+        assertEquals(listOf("a: 0 - 1/8", "a: 3/8 - 1/2", "a: 3/4 - 7/8"), minS("a(3, 8)"))
     }
 
     @Test
-    fun questionMarksInOnePatternUseSeparateSeeds() {
-        // seed 0 keeps cycle 0 (timeRand 0.88), seed 1 drops it (timeRand 0.43)
-        assertEquals(listOf("a@0-1/2"), mini("a? a?").shownCycle())
+    fun supportsPatterningEuclideanRhythms() {
+        assumeTrue(StrudelRegistry.euclid)
+        assertEquals(minS("a(3,8) a(5,16)"), minS("[a(<3 5>, <8 16>)]*2"))
     }
 
     @Test
-    fun questionMarkJudgesEachFastHapOnItsOwn() {
-        val kept = mini("a*8?").query(cycleSpan(0)).map { it.whole!!.begin }
-        assertEquals((0L..7L).filter { timeRand(r(it, 8), 0) >= 0.5 }.map { r(it, 8) }, kept.sorted())
-        assertTrue(kept.isNotEmpty() && kept.size < 8)
+    fun supportsInvertedEuclideanRhythms() {
+        assumeTrue(StrudelRegistry.euclid)
+        assertEquals(listOf("a: 1/8 - 1/4", "a: 1/4 - 3/8", "a: 1/2 - 5/8", "a: 5/8 - 3/4", "a: 7/8 - 1"), minS("a(-3, 8)"))
     }
 
     @Test
-    fun parenthesesMakeAEuclideanRhythm() {
-        assertEquals(listOf("x@0-1/8", "x@3/8-1/2", "x@3/4-7/8"), mini("x(3,8)").shownCycle())
-        assertEquals(listOf("x@1/8-1/4", "x@1/2-5/8", "x@3/4-7/8"), mini("x(3,8,2)").shownCycle())
-        assertEquals(listOf<Any>("bd", "bd", "bd"), mini("bd(3,8)").cycleValues())
+    fun supportsEuclideanLegatoRhythms() {
+        assumeTrue(StrudelRegistry.euclid)
+        assertEquals(listOf("a: 0 - 3/8", "a: 3/8 - 3/4", "a: 3/4 - 1"), minS("a(3, -8)"))
     }
 
     @Test
-    fun euclideanArgumentsMayBePatterns() {
-        val p = mini("x(<3 5>,8)")
-        assertEquals(3, p.cycleValues(0).size)
-        assertEquals(5, p.cycleValues(1).size)
-        assertEquals(3, mini("x([3 3],8)").cycleValues(0).size)
-    }
-
-    @Test
-    fun polymeterFollowsTheFirstSequenceByDefault() {
-        assertEquals(listOf("a@0-1/3", "b@1/3-2/3", "c@2/3-1"), mini("{a b c}").shownCycle())
+    fun supportsInvertedEuclideanLegatoRhythms() {
+        assumeTrue(StrudelRegistry.euclid)
         assertEquals(
-            listOf("a@0-1/3", "d@0-1/3", "b@1/3-2/3", "e@1/3-2/3", "c@2/3-1", "d@2/3-1"),
-            mini("{a b c, d e}").shownCycle(),
+            listOf("a: -1/8 - 1/8", "a: 1/8 - 1/4", "a: 1/4 - 1/2", "a: 1/2 - 5/8", "a: 5/8 - 7/8", "a: 7/8 - 9/8"),
+            minS("a(-3, -8)"),
         )
     }
 
     @Test
-    fun percentSetsThePolymeterStepCount() {
-        val p = mini("{a b c}%4")
-        assertEquals(listOf("a@0-1/4", "b@1/4-1/2", "c@1/2-3/4", "a@3/4-1"), p.shownCycle(0))
-        assertEquals(listOf("b@1-5/4", "c@5/4-3/2", "a@3/2-7/4", "b@7/4-2"), p.shownCycle(1))
-        val patterned = mini("{a b}%<2 4>")
-        assertEquals(2, patterned.cycleValues(0).size)
-        assertEquals(4, patterned.cycleValues(1).size)
+    fun reproducesToussaintsExampleEuclideanAlgorithms() {
+        assumeTrue(StrudelRegistry.euclid)
+        // Toussaint's own table is wrong for (3,4), (5,6), (5,16) and (7,8); the corrected rows are what Strudel checks
+        val cases = listOf(
+            1 to 2 to "x ~", 1 to 3 to "x ~ ~", 1 to 4 to "x ~ ~ ~", 4 to 12 to "x ~ ~ x ~ ~ x ~ ~ x ~ ~", 2 to 5 to "x ~ x ~ ~",
+            3 to 4 to "x x x ~", 3 to 5 to "x ~ x ~ x", 3 to 7 to "x ~ x ~ x ~ ~", 3 to 8 to "x ~ ~ x ~ ~ x ~", 4 to 7 to "x ~ x ~ x ~ x",
+            4 to 9 to "x ~ x ~ x ~ x ~ ~", 4 to 11 to "x ~ ~ x ~ ~ x ~ ~ x ~", 5 to 6 to "x x x x x ~", 5 to 7 to "x ~ x x ~ x x",
+            5 to 8 to "x ~ x x ~ x x ~", 5 to 9 to "x ~ x ~ x ~ x ~ x", 5 to 11 to "x ~ x ~ x ~ x ~ x ~ ~",
+            5 to 12 to "x ~ ~ x ~ x ~ ~ x ~ x ~", 5 to 16 to "x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ ~", 7 to 8 to "x x x x x x x ~",
+            7 to 12 to "x ~ x x ~ x ~ x x ~ x ~", 7 to 16 to "x ~ ~ x ~ x ~ x ~ ~ x ~ x ~ x ~", 9 to 16 to "x ~ x x ~ x ~ x ~ x x ~ x ~ x ~",
+            11 to 24 to "x ~ ~ x ~ x ~ x ~ x ~ x ~ ~ x ~ x ~ x ~ x ~ x ~", 13 to 24 to "x ~ x x ~ x ~ x ~ x ~ x ~ x x ~ x ~ x ~ x ~ x ~",
+        )
+        for ((spec, target) in cases) assertEquals(minS(target), minS("x(${spec.first},${spec.second})"), "x(${spec.first},${spec.second})")
     }
 
     @Test
-    fun pipeChoosesOneSequencePerCycle() {
-        val p = mini("a | b | c")
-        val expected = (0L..39L).map { c -> listOf<Any>("a", "b", "c")[Math.floor(timeRand(r(c), 1000) * 3).toInt()] }
-        assertEquals(expected, p.picks(0L..39L))
-        assertEquals(setOf<Any>("a", "b", "c"), expected.toSet())
+    fun reproducesToussaintsExampleEuclideanLegatoAlgorithms() {
+        assumeTrue(StrudelRegistry.euclid)
+        val cases = listOf(
+            1 to 2 to "x _", 1 to 3 to "x _ _", 1 to 4 to "x _ _ _", 4 to 12 to "x _ _ x _ _ x _ _ x _ _", 2 to 5 to "x _ x _ _",
+            3 to 4 to "x x x _", 3 to 5 to "x _ x _ x", 3 to 7 to "x _ x _ x _ _", 3 to 8 to "x _ _ x _ _ x _", 4 to 7 to "x _ x _ x _ x",
+            4 to 9 to "x _ x _ x _ x _ _", 4 to 11 to "x _ _ x _ _ x _ _ x _", 5 to 6 to "x x x x x _", 5 to 7 to "x _ x x _ x x",
+            5 to 8 to "x _ x x _ x x _", 5 to 9 to "x _ x _ x _ x _ x", 5 to 11 to "x _ x _ x _ x _ x _ _",
+            5 to 12 to "x _ _ x _ x _ _ x _ x _", 5 to 16 to "x _ _ x _ _ x _ _ x _ _ x _ _ _", 7 to 8 to "x x x x x x x _",
+            7 to 12 to "x _ x x _ x _ x x _ x _", 7 to 16 to "x _ _ x _ x _ x _ _ x _ x _ x _", 9 to 16 to "x _ x x _ x _ x _ x x _ x _ x _",
+            11 to 24 to "x _ _ x _ x _ x _ x _ x _ _ x _ x _ x _ x _ x _", 13 to 24 to "x _ x x _ x _ x _ x _ x _ x x _ x _ x _ x _ x _",
+        )
+        for ((spec, target) in cases) assertEquals(minS(target), minS("x(${spec.first},-${spec.second})"), "x(${spec.first},-${spec.second})")
     }
 
     @Test
-    fun eachPipeGroupHasItsOwnSeed() {
-        val p = mini("[a|b] [c|d]")
-        for (c in 0L..19L) {
-            val first = listOf<Any>("a", "b")[Math.floor(timeRand(r(c), 1000) * 2).toInt()]
-            val second = listOf<Any>("c", "d")[Math.floor(timeRand(r(c), 1001) * 2).toInt()]
-            assertEquals(listOf(first, second), p.cycleValues(c), "cycle $c")
+    fun supportsTheMinusAliasForTilde() {
+        assertEquals(minS("a ~ b [~ c]"), minS("a - b [- c]"))
+    }
+
+    @Test
+    fun supportsTheQuestionMarkOperator() {
+        assumeTrue(StrudelRegistry.degradeBy)
+        val wholes = { p: Pattern -> p.queryArc(Rational.ZERO, Rational(20)).map { it.whole!!.begin } }
+        assertEquals(wholes(mini("a").callMethod("degradeBy", 0.5)), wholes(mini("a?")))
+    }
+
+    // statistical tests: they work with the random stream of Strudel and are meant to succeed with p > 0.99 for any stream
+
+    @Test
+    fun supportsDegradeByWithDefaultOf50Percent() {
+        val haps = mini("a?").queryArc(Rational.ZERO, Rational(1000))
+        assertTrue(haps.size in 459..541, "${haps.size} of 1000 cycles kept their event")
+    }
+
+    @Test
+    fun supportsDegradeByWithAnArgument() {
+        val haps = mini("a?0.8").queryArc(Rational.ZERO, Rational(1000))
+        assertTrue(haps.isNotEmpty(), "at least one event should have been kept at 0.8")
+        assertTrue(haps.size < 230, "${haps.size} events kept at 0.8")
+    }
+
+    @Test
+    fun supportsMultipleIndependentUsesOfTheRandomChoiceOperator() {
+        val values = mini("[a|b] [a|b]").queryArc(Rational.ZERO, Rational(1000)).map { it.value }
+        val observed = HashMap<String, Int>()
+        for (i in values.indices step 2) observed.merge(values[i].toString() + values[i + 1], 1, Int::plus)
+        for (key in listOf("aa", "ab", "ba", "bb")) {
+            assertTrue((observed[key] ?: 0) in 215..286, "$key came up ${observed[key]} times of 1000")
         }
     }
 
     @Test
-    fun pipeGroupsAreNumberedByTheirFirstPipe() {
-        val p = mini("x | [a | b]")
-        for (c in 0L..19L) {
-            val outer = Math.floor(timeRand(r(c), 1000) * 2).toInt()
-            val inner = listOf<Any>("a", "b")[Math.floor(timeRand(r(c), 1001) * 2).toInt()]
-            assertEquals(listOf(if (outer == 0) "x" else inner), p.cycleValues(c), "cycle $c")
+    fun supportsTheRandomChoiceOperatorWithNesting() {
+        val cycles = 900
+        val haps = mini("a | [b | c] | [d | e | f]").queryArc(Rational.ZERO, Rational(cycles.toLong()))
+        // 1/3 a, 1/6 each of b and c, 1/9 each of d, e and f: a chi-squared test with 5 degrees of freedom at 99%
+        val observed = haps.groupingBy { it.value.toString() }.eachCount()
+        val expected = mapOf("a" to cycles / 3.0, "b" to cycles / 6.0, "c" to cycles / 6.0, "d" to cycles / 9.0, "e" to cycles / 9.0, "f" to cycles / 9.0)
+        var chi = -cycles.toDouble()
+        for ((k, e) in expected) chi += (observed[k] ?: 0).let { it * it } / e
+        assertTrue(chi <= 15.086, "chi-squared $chi")
+    }
+
+    @Test
+    fun supportsLists() {
+        assertEquals(
+            listOf<Any?>(listOf("a", "b"), listOf("c", "d", listOf("e", "f")), "g"),
+            minV("a:b c:d:[e:f] g"),
+        )
+    }
+
+    @Test
+    fun supportsRanges() {
+        assertEquals(listOf<Any?>(0.0, 1.0, 2.0, 3.0, 4.0), minV("0 .. 4"))
+    }
+
+    @Test
+    fun supportsPatternedRanges() {
+        assertEquals(minS("[0 1 2] [1 2 3 4]"), minS("[<0 1> .. <2 4>]*2"))
+    }
+
+    @Test
+    fun supportsTheDotOperator() {
+        assertEquals(minS("a [b c]"), minS("a . b c"))
+        assertEquals(minS("a [b c] [[d e f] [g h]]"), minS("a . b c . [d e f . g h]"))
+    }
+
+    @Test
+    fun supportsTheUnderscoreOperator() {
+        assertEquals(minS("a@2 b@3"), minS("a _ b _ _"))
+    }
+
+    @Test
+    fun underscoreAndAtAreAlmostInterchangeable() {
+        assertEquals(minS("a _2 b _3"), minS("a @ b @ @"))
+    }
+
+    @Test
+    fun supportsCaretStepMarking() {
+        val steps = mapOf(
+            "a [^b c]" to 4L, "[^b c]!3" to 6L, "[a b c] [d [e f]]" to 2L, "^[a b c] [d [e f]]" to 2L, "[a b c] [d [^e f]]" to 8L,
+            "[a b c] [^d [e f]]" to 4L, "[^a b c] [^d [e f]]" to 12L, "[^a b c] [d [^e f]]" to 24L, "[^a b c d e]" to 5L,
+        )
+        for ((src, expected) in steps) assertEquals(Rational(expected), mini(src).steps, src)
+    }
+
+    // ---- getLeafLocation(s) -----------------------------------------------------------------------------------------
+
+    @Test
+    fun getsTheLocationOfLeafNodes() {
+        val code = "\"bd sd\""
+        val ast = mini2ast(code)
+        val bd = (ast.source[0] as ElementNode).source as AtomNode
+        val sd = (ast.source[1] as ElementNode).source as AtomNode
+        assertEquals(listOf(1, 3), getLeafLocation(code, bd).toList())
+        assertEquals(listOf(4, 6), getLeafLocation(code, sd).toList())
+    }
+
+    @Test
+    fun getsTheLocationsOfLeafNodes() {
+        fun leaves(code: String) = getLeafLocations(code, 0).map { it.toList() }
+        assertEquals(listOf(listOf(1, 3), listOf(4, 6)), leaves("\"bd sd\""))
+        assertEquals(listOf(listOf(1, 3), listOf(7, 9), listOf(10, 12), listOf(4, 5)), leaves("\"bd*2 [sd cp]\""))
+        assertEquals(listOf(listOf(1, 3), listOf(5, 6), listOf(7, 8)), leaves("\"bd*<2 3>\""))
+    }
+
+    @Test
+    fun theLocationsOfAtomsAreShiftedByTheStartOfTheString() {
+        assertEquals(listOf(listOf(11, 13), listOf(14, 16), listOf(17, 18)), getLeafLocations("\"bd sd*2\"", 10).map { it.toList() })
+    }
+
+    @Test
+    fun onlySpacesAreTakenOffTheLocationOfAnAtom() {
+        // a newline is part of the range of the atom before it, and spaces after the newline are not
+        assertEquals(listOf(listOf(1, 3), listOf(4, 5)), getLeafLocations("\"a\n b\"", 0).map { it.toList() })
+        assertEquals(listOf(listOf(1, 2), listOf(4, 5)), getLeafLocations("\"a  b\"", 0).map { it.toList() })
+    }
+
+    @Test
+    fun theHapsOfAnAtomCarryItsLocation() {
+        val haps = m("bd sd", 4).queryArc(Rational.ZERO, Rational.ONE)
+        assertEquals(listOf(listOf(SourceRange(5, 7)), listOf(SourceRange(8, 10))), haps.map { it.context.locations })
+    }
+
+    @Test
+    fun anArgumentThatIsAPatternAddsItsLocationToTheHapsOfTheOperator() {
+        // `bd*2`: the `2` is read as an argument of `fast`, and `fast` adds where it was written to the haps
+        val locations = m("bd*2", 0).queryArc(Rational.ZERO, Rational.ONE).map { h -> h.context.locations.toSet() }
+        assertEquals(listOf(setOf(SourceRange(1, 3), SourceRange(4, 5)), setOf(SourceRange(1, 3), SourceRange(4, 5))), locations)
+    }
+
+    @Test
+    fun theZeroOfAnEuclideanRotationLeavesNoLocation() {
+        assumeTrue(StrudelRegistry.euclid)
+        fun locations(src: String) = m(src, 0).queryArc(Rational.ZERO, Rational.ONE).first().context.locations.toSet()
+        // the atom 0 is falsy, and a falsy constant argument does not remember where it was written
+        assertEquals(setOf(SourceRange(1, 3), SourceRange(4, 5), SourceRange(6, 7)), locations("bd(3,8,0)"))
+        assertEquals(setOf(SourceRange(1, 3), SourceRange(4, 5), SourceRange(6, 7), SourceRange(8, 9)), locations("bd(3,8,2)"))
+    }
+
+    @Test
+    fun theLocationsOfEuclideanArgumentsIgnoreTheirOperators() {
+        val ast = mini2ast("\"bd(3*2,8)\"")
+        val leaves = collectLeaves(ast).map { it.source }
+        assertEquals(listOf("bd", "3", "8"), leaves)
+    }
+
+    @Test
+    fun theLeavesAreInTheOrderThePatternsAreMadeIn() {
+        val sources = listOf(
+            "a*2 [b c]", "a*<2 3> b", "a(3,8,2) b(<3 5>,8)", "{a b c}%4 d", "{a b, c d e}%<2 3>", "a:b c:[d e]", "0 .. 3 a .. [b c]",
+            "<a b>!2 c? d@3", "a | b | c", "a . b c . d", "[a, b c]*2", "a(<3 5>,[8 16]) b:3", "~ - a",
+        )
+        for (src in sources) {
+            val code = "\"$src\""
+            val ast = mini2ast(code)
+            val entered = ArrayList<AtomNode>()
+            patternifyAST(ast, code, { if (it is AtomNode) entered.add(it) }, -1)
+            assertEquals(entered.map { it.start }, collectLeaves(ast).map { it.start }, src)
         }
     }
 
-    // ---- atoms and locations ----------------------------------------------------------
+    // ---- the grammar ------------------------------------------------------------------------------------------------
 
-    @Test
-    fun numbersAreDoublesAndEverythingElseIsAString() {
-        assertEquals(listOf<Any>(1.0, 2.5, 0.5, -1.0, 3.0), mini("1 2.5 .5 -1 3.").cycleValues())
-        assertEquals(listOf<Any>(listOf("bd", 3.0), listOf("C", "major"), "eb3", "e3", "c#4"), mini("bd:3 C:major eb3 e3 c#4").cycleValues())
-    }
-
-    @Test
-    fun atomLocationsIncludeTheBaseOffset() {
-        val haps: List<Hap> = mini("bd sd", 10).query(cycleSpan(0)).sortedBy { it.part.begin }
-        assertEquals(listOf(SourceRange(10, 12)), haps[0].context.locations)
-        assertEquals(listOf(SourceRange(13, 15)), haps[1].context.locations)
-    }
-
-    @Test
-    fun nestedAtomsKeepTheirOwnLocations() {
-        val haps = mini("a [b c]").query(cycleSpan(0)).sortedBy { it.part.begin }
-        assertEquals(listOf(SourceRange(0, 1)), haps[0].context.locations)
-        assertEquals(listOf(SourceRange(3, 4)), haps[1].context.locations)
-        assertEquals(listOf(SourceRange(5, 6)), haps[2].context.locations)
-    }
-
-    @Test
-    fun constantModifierNumbersAreNotHighlighted() {
-        assertEquals(listOf(listOf(SourceRange(0, 2)), listOf(SourceRange(0, 2))), mini("bd*2").query(cycleSpan(0)).map { it.context.locations })
-        assertEquals(listOf(listOf(SourceRange(0, 2))), mini("bd(1,4)").query(cycleSpan(0)).map { it.context.locations })
-    }
-
-    @Test
-    fun patternedModifierNumbersAreHighlightedAfterTheStep() {
-        val p = mini("bd*<2 3>")
-        assertEquals(listOf(SourceRange(4, 5), SourceRange(0, 2)), p.query(cycleSpan(0)).first().context.locations)
-        assertEquals(listOf(SourceRange(6, 7), SourceRange(0, 2)), p.query(cycleSpan(1)).first().context.locations)
-    }
-
-    // ---- errors -----------------------------------------------------------------------
-
-    @Test
-    fun unexpectedCharactersReportTheirRange() {
-        val e = error("bd ]")
-        assertEquals("Mini-notation: unexpected ']'", e.message)
-        assertEquals(SourceRange(3, 4), e.range)
-        assertEquals(SourceRange(13, 14), error("bd ]", 10).range)
-    }
-
-    @Test
-    fun unmatchedOpeningBracketsPointAtTheBracket() {
-        val e = error("a [b c")
-        assertEquals("Mini-notation: missing ']'", e.message)
-        assertEquals(SourceRange(2, 3), e.range)
-        assertEquals("Mini-notation: missing '>'", error("<a b").message)
-        assertEquals("Mini-notation: missing '}'", error("{a b").message)
-        assertEquals("Mini-notation: missing ')'", error("a(3,8").message)
-    }
-
-    @Test
-    fun strayClosingBracketsAreRejected() {
-        assertEquals("Mini-notation: unexpected ')'", error("a b)").message)
-        assertEquals("Mini-notation: unexpected '>'", error("[a b>").message)
-        assertEquals("Mini-notation: unexpected ']'", error("[a b]]").message)
-    }
-
-    @Test
-    fun modifiersNeedTheirArguments() {
-        assertEquals("Mini-notation: unexpected end of pattern", error("a*").message)
-        assertEquals("Mini-notation: unexpected end of pattern", error("a@").message)
-        assertEquals("Mini-notation: unexpected end of pattern", error("{a b}%").message)
-        val e = error("a*x")
-        assertEquals("Mini-notation: unexpected 'x'", e.message)
-        assertEquals(SourceRange(2, 3), e.range)
-        assertEquals("Mini-notation: unexpected 'x'", error("a@x").message)
-    }
-
-    @Test
-    fun euclidNeedsTwoOrThreeArguments() {
-        assertEquals("Mini-notation: unexpected ')'", error("a(3)").message)
-        assertEquals("Mini-notation: unexpected ','", error("a(3,8,1,2)").message)
-    }
-
-    @Test
-    fun stepsCannotStartWithAModifier() {
-        assertEquals("Mini-notation: unexpected '*'", error("*2").message)
-        assertEquals("Mini-notation: unexpected '@'", error("@3").message)
-        assertEquals("Mini-notation: unexpected '!'", error("!a").message)
-        assertEquals("Mini-notation: unexpected '_'", error("_ a").message)
-        assertEquals("Mini-notation: unexpected '%'", error("bd %").message)
-        assertEquals("Mini-notation: unexpected '*'", error("bd *2").message)
-    }
-
-    @Test
-    fun commasAndPipesCannotBeMixed() {
-        assertEquals("Mini-notation: unexpected '|'", error("a, b | c").message)
-        assertEquals("Mini-notation: unexpected ','", error("a | b, c").message)
-    }
-
-    // ---- edge cases -------------------------------------------------------------------
-
-    @Test
-    fun restsMayBeWeighted() {
-        assertEquals(listOf("a@0-1/4", "b@3/4-1"), mini("a ~@2 b").shownCycle())
-    }
-
-    @Test
-    fun repeatsKeepTheModifiersOfTheirStep() {
-        assertEquals(listOf("a@0-1/4", "a@1/4-1/2", "a@1/2-3/4", "a@3/4-1"), mini("a*2!2").shownCycle())
-    }
-
-    @Test
-    fun repeatedAlternationsPlayInStep() {
-        val p = mini("<a b>!2")
-        assertEquals(listOf<Any>("a", "a"), p.cycleValues(0))
-        assertEquals(listOf<Any>("b", "b"), p.cycleValues(1))
-    }
-
-    @Test
-    fun emptyBracketsAreSilent() {
-        assertEquals(emptyList(), mini("{}").shownCycle())
-        assertEquals(emptyList(), mini("<>").shownCycle())
-        assertEquals(listOf("a@0-1"), mini("a, ").shownCycle())
-    }
-
-    @Test
-    fun hugeCountsAreRejected() {
-        val copies = error("bd!1000000")
-        assertEquals("Mini-notation: number out of range", copies.message)
-        assertEquals(SourceRange(3, 10), copies.range)
-        assertEquals("Mini-notation: number out of range", error("bd(3,1000000)").message)
-        assertEquals("Mini-notation: number out of range", assertFailsWith<CosicError> { mini("bd(<3 1000000>,8)").shownCycle(1) }.message)
-    }
-
-    @Test
-    fun hugeFactorsAndEuclidArgumentsPointAtTheNumber() {
-        fun assertOutOfRange(src: String, start: Int, end: Int) {
-            val e = error(src, 10)
-            assertEquals("Mini-notation: number out of range", e.message, src)
-            assertEquals(SourceRange(10 + start, 10 + end), e.range, src)
+    private fun degradeSeeds(src: String): Map<String, Int> {
+        val seeds = LinkedHashMap<String, Int>()
+        fun visit(node: MiniNode) {
+            when (node) {
+                is AtomNode -> Unit
+                is ElementNode -> {
+                    for (op in node.ops) if (op is Op.DegradeBy) seeds[(node.source as? AtomNode)?.source ?: "?"] = op.seed
+                    visit(node.source)
+                }
+                is PatternNode -> {
+                    node.source.forEach(::visit)
+                    if (node.seed != null) seeds[node.alignment.name.lowercase()] = node.seed
+                }
+            }
         }
-        assertOutOfRange("bd*20000", 3, 8)
-        assertOutOfRange("bd*-20000", 3, 9)
-        assertOutOfRange("bd/20000", 3, 8)
-        assertOutOfRange("{a b c}%20000", 8, 13)
-        assertOutOfRange("x(20000,8)", 2, 7)
-        assertOutOfRange("x(3,20000)", 4, 9)
-        assertOutOfRange("x(3, 8, 20000)", 8, 13)
-        assertOutOfRange("bd*99999999999999999999", 3, 23)
-        assertOutOfRange("x(3,99999999999999999999)", 4, 24)
+        visit(mini2ast("\"$src\""))
+        return seeds
     }
 
     @Test
-    fun theLargestAllowedFactorsAndEuclidArgumentsAreAccepted() {
-        assertEquals(10_000, mini("bd*10000").query(cycleSpan(0)).size)
-        assertEquals(1, mini("bd/10000").query(cycleSpan(0)).size)
-        assertEquals(10_000, mini("x(10000,10000)").query(cycleSpan(0)).size)
-        assertEquals(10_000, mini("{a b c}%10000").query(cycleSpan(0)).size)
+    fun theRandomStreamsOfQuestionMarksAreNumberedInTheOrderTheyAreRead() {
+        assertEquals(mapOf("a" to 0, "b" to 1, "c" to 2), degradeSeeds("a? b? c?"))
+    }
+
+    @Test
+    fun aChoiceTakesItsNumberAfterTheStreamsInsideIt() {
+        assertEquals(mapOf("a" to 0, "b" to 1, "rand" to 2), degradeSeeds("a? | b?"))
+    }
+
+    @Test
+    fun everyChoiceInAStringHasItsOwnStream() {
+        val choices = ArrayList<Int>()
+        fun visit(node: MiniNode) {
+            if (node is PatternNode) {
+                node.source.forEach(::visit)
+                if (node.alignment == Alignment.RAND) choices.add(node.seed!!)
+            } else if (node is ElementNode) {
+                visit(node.source)
+            }
+        }
+        visit(mini2ast("\"[a|b] [c|d]\""))
+        assertEquals(listOf(0, 1), choices)
+    }
+
+    @Test
+    fun feetTakeASeedThatTheyDoNotUse() {
+        assertEquals(mapOf("b" to 0, "c" to 1, "feet" to 2), degradeSeeds("a . b? . c?"))
+    }
+
+    @Test
+    fun theStreamsRestartForEachString() {
+        assertEquals(degradeSeeds("a? b?"), degradeSeeds("a? b?"))
+        assertEquals(mapOf("a" to 0), degradeSeeds("a?"))
+    }
+
+    @Test
+    fun aWeightInsideAnAlternationLastsThatManyCycles() {
+        val p = mini("<a@3 b>")
+        assertEquals(listOf<Any?>("a", "a", "a", "b", "a"), (0L..4L).map { c -> p.queryArc(Rational(c), Rational(c + 1)).single().value })
+    }
+
+    @Test
+    fun weightsAndRepetitionsCombineInTheOrderTheyAreWritten() {
+        // a@3!2: the weight is the number of copies (2), a!2@3: the copies and then the weight (2 + 3 - 1)
+        assertEquals(listOf("a: 0 - 1/3", "a: 1/3 - 2/3", "b: 2/3 - 1"), minS("a@3!2 b"))
+        assertEquals(listOf("a: 0 - 2/5", "a: 2/5 - 4/5", "b: 4/5 - 1"), minS("a!2@3 b"))
+    }
+
+    @Test
+    fun aWeightOfZeroCountsAsOne() {
+        assertEquals(minS("a b"), minS("a@0 b"))
+        assertEquals(minS("a"), minS("a@0"))
+    }
+
+    @Test
+    fun anUnderscoreWithANumberIsAWeight() {
+        assertEquals(minS("bd@3 sd"), minS("bd _3 sd"))
+    }
+
+    @Test
+    fun zeroCopiesLeaveASilentStep() {
+        assertEquals(listOf("b: 1/2 - 1"), minS("a!0 b"))
+    }
+
+    @Test
+    fun aRangeNeedsSpacesAroundItsDots() {
+        assertEquals(listOf<Any?>(0.0, 1.0, 2.0, 3.0), minV("0 .. 3"))
+        assertEquals(listOf<Any?>(0.0, 1.0, 2.0, 3.0), minV("0 ..3"))
+        assertEquals(listOf<Any?>("0..3"), minV("0..3"))
+    }
+
+    @Test
+    fun rangesCountDownAndAcceptFractions() {
+        assertEquals(listOf<Any?>(3.0, 2.0, 1.0, 0.0), minV("3 .. 0"))
+        assertEquals(listOf<Any?>(0.0, 1.0, 2.0), minV("0 .. 2.5"))
+        assertEquals(listOf<Any?>(0.5, 1.5, 2.5), minV("0.5 .. 3"))
+        assertEquals(listOf<Any?>(2.0), minV("2 .. 2"))
+    }
+
+    @Test
+    fun aRangeOfWordsIsEmpty() {
+        assertEquals(emptyList(), minV("a .. c"))
+    }
+
+    @Test
+    fun aRangeThatIsTooLongIsRefused() {
+        assertEquals(TOO_DENSE, assertFailsWith<CosicError> { mini("0 .. 100000").firstValues() }.message)
+        assertEquals("Invalid array length", assertFailsWith<CosicError> { mini("0 .. 1e300").firstValues() }.message)
+    }
+
+    @Test
+    fun theTailOfAnAtomMakesAList() {
+        assertEquals(listOf<Any?>(listOf("a", 3.0)), minV("a:3"))
+        assertEquals(listOf<Any?>(listOf("a", 3.0, "b")), minV("a:3:b"))
+        assertEquals(listOf<Any?>(listOf("a", "b")), minV("a:<b c>"))
+    }
+
+    @Test
+    fun numbersAreReadTheWayJavaScriptReadsThem() {
+        assertEquals(listOf<Any?>(16.0), minV("0x10"))
+        assertEquals(listOf<Any?>(1000.0), minV("1e3"))
+        assertEquals(listOf<Any?>(3000.0), minV("3e3"))
+        assertEquals(listOf<Any?>(Double.POSITIVE_INFINITY), minV("Infinity"))
+        assertEquals(listOf<Any?>(-1.0), minV("-1"))
+        assertEquals(listOf<Any?>(7.0), minV("007"))
+        assertEquals(listOf<Any?>("e3"), minV("e3"))
+        assertEquals(listOf<Any?>("1_000"), minV("1_000"))
+        assertEquals(listOf<Any?>("~~"), minV("~~"))
+    }
+
+    @Test
+    fun wordsMayHoldAnyLetter() {
+        assertEquals(listOf<Any?>("é", "日本語", "Ω", "c#3", "a.b", "a_b", "a^b"), minV("é 日本語 Ω c#3 a.b a_b a^b"))
+    }
+
+    @Test
+    fun anAtomThatIsASingleDotOrUnderscoreIsNotAnAtom() {
+        // a `.` needs a sequence after it, and a `_` before it is a weight that has nothing to weigh
+        assertTrue(assertFailsWith<CosicError> { mini("a .") }.message!!.startsWith("[mini] parse error at line 1: Expected \"<\", "))
+        assertEquals("[mini] parse error at line 1: Expected whitespace but \"a\" found.", assertFailsWith<CosicError> { mini("_ a") }.message)
+        assertEquals(listOf<Any?>("a"), minV("a _"))
+    }
+
+    @Test
+    fun euclidArgumentsIgnoreTheirOwnOperators() {
+        assumeTrue(StrudelRegistry.euclid)
+        assertEquals(minS("bd(3,8)"), minS("bd(3*2,8)"))
+    }
+
+    @Test
+    fun theSecondCommaOfAnEuclideanRhythmIsOptional() {
+        assumeTrue(StrudelRegistry.euclid)
+        assertEquals(minS("bd(3,8,2)"), minS("bd(3,8 2)"))
+    }
+
+    @Test
+    fun aQuoteInsideTheNotationEndsItAndThatIsAnError() {
+        assertEquals(
+            "[mini] parse error at line 1: Expected \"//\", end of input, or whitespace but \"m\" found.",
+            assertFailsWith<CosicError> { mini("c'major") }.message,
+        )
+    }
+
+    @Test
+    fun aQuoteThatEndsTheNotationLeavesACommentAfterIt() {
+        // `"a" // x"` is the notation `a` and a comment: what Strudel's grammar reads
+        assertEquals(listOf<Any?>("a"), minV("a\" // x"))
+    }
+
+    @Test
+    fun anErrorSaysWhatWasExpectedWhereItWentWrong() {
+        assertEquals(
+            "[mini] parse error at line 1: Expected \"<\", \"[\", \"^\", \"{\", a letter, a number, \"-\", \"#\", \".\", \"^\", \"_\", or whitespace but \"\\\"\" found.",
+            assertFailsWith<CosicError> { mini("") }.message,
+        )
+        assertEquals(
+            "[mini] parse error at line 1: Expected \"!\", \"(\", \"*\", \",\", \".\", \"..\", \"/\", \":\", \"<\", \"?\", \"[\", \"{\", \"|\", [\"'], [@_], a letter, a number, \"-\", \"#\", \".\", \"^\", \"_\", or whitespace but \"]\" found.",
+            assertFailsWith<CosicError> { mini("a b]") }.message,
+        )
+    }
+
+    @Test
+    fun anErrorCountsTheLinesOfTheNotation() {
+        val message = assertFailsWith<CosicError> { mini("a\nb\n]") }.message!!
+        assertTrue(message.startsWith("[mini] parse error at line 3: "), message)
+    }
+
+    @Test
+    fun anErrorPointsAtTheCharacterThatWentWrong() {
+        // `m('a b ]', 20)` is the string "a b ]" that starts at 20: its `]` is at 20 + 1 + 4
+        val error = assertFailsWith<CosicError> { m("a b ]", 20) }
+        assertEquals(SourceRange(25, 26), error.range)
+        // a notation that ends too early fails at its closing quote
+        assertEquals(SourceRange(26, 27), assertFailsWith<CosicError> { m("a b (", 20) }.range)
+    }
+
+    @Test
+    fun theErrorOfRuntimeMiniHasNoRange() {
+        assertEquals(null, assertFailsWith<CosicError> { mini("a b ]") }.range)
+    }
+
+    @Test
+    fun theLineOfAnErrorCanBeCountedInTheProgram() {
+        val program = "n(1)\ns(\"a ]\")"
+        val start = program.indexOf('"')
+        val message = assertFailsWith<CosicError> { getLeafLocations("\"a ]\"", start, program) }.message!!
+        assertTrue(message.startsWith("[mini] parse error at line 2: "), message)
+    }
+
+    @Test
+    fun nestingTooDeepIsAnError() {
+        val deep = "[".repeat(300) + "a" + "]".repeat(300)
+        assertEquals(TOO_DEEP, assertFailsWith<CosicError> { mini(deep) }.message)
+        val ok = "[".repeat(50) + "a" + "]".repeat(50)
+        assertEquals(listOf<Any?>("a"), minV(ok))
+    }
+
+    @Test
+    fun aPolymeterTakesTheStepsOfItsFirstSequence() {
+        assertEquals(minS("a b c a"), minS("{a b c}%4"))
+        assertEquals(minS("a b c"), minS("{a b c}"))
+        assertEquals(minS("[a b, c d]"), minS("{a b, c d e}"))
+    }
+
+    @Test
+    fun aSequenceOfFeetIsASequenceOfSequences() {
+        assertEquals(minS("[a b] [c d]"), minS("a b . c d"))
+    }
+
+    @Test
+    fun theRestsOfASequenceTakeUpTheirTime() {
+        assertEquals(listOf("a: 0 - 1/3", "b: 2/3 - 1"), minS("a ~ b"))
+    }
+
+    @Test
+    fun aStringOfSpacesAndTabsIsReadAsASequence() {
+        assertEquals(minS("a b c"), minS("  a\tb\n c "))
+    }
+
+    @Test
+    fun theStepsOfASequenceAreTheSumOfTheWeights() {
+        assertEquals(Rational(5), mini("a _ b _ _").steps)
+        assertEquals(Rational(3), mini("a b c").steps)
+        assertEquals(Rational.ONE, mini("a").steps)
+    }
+
+    @Test
+    fun aNotationIsNotAConstantPatternEvenWhenItIsOneAtom() {
+        // the steps of a sequence are set after the atoms were read, which makes a new pattern: `fast("3")` joins, in Strudel too
+        assertEquals(null, mini("3").pureValue)
+        assertEquals(null, m("3", 0).pureValue)
     }
 }
