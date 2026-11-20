@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MIDI devices (Task 4.5) -->
+    <string name="midi_devices_title">MIDI devices</string>
+    <string name="midi_not_supported">This phone has no MIDI support.</string>
+    <string name="midi_outputs_title">Outputs</string>
+    <string name="midi_inputs_title">Inputs</string>
+    <string name="midi_no_outputs">No MIDI output. Connect a keyboard or synth over USB, or add a Bluetooth device below.</string>
+    <string name="midi_no_inputs">No MIDI input.</string>
+    <string name="midi_bluetooth_title">Bluetooth</string>
+    <string name="midi_scan_bluetooth">Scan Bluetooth</string>
+    <string name="midi_stop_scan">Stop scanning</string>
+    <string name="midi_scanning">Looking for Bluetooth MIDI devices…</string>
+    <string name="midi_scan_none">No Bluetooth MIDI device found yet.</string>
+    <string name="midi_connect">Connect</string>
+    <string name="midi_connecting">Connecting…</string>
+    <string name="midi_connected">Connected</string>
+    <string name="midi_connect_failed">Could not connect to %1$s.</string>
+    <string name="midi_bluetooth_permission">Allow nearby devices to look for Bluetooth MIDI devices.</string>
+    <string name="midi_bluetooth_permission_denied">Bluetooth permission was denied. USB MIDI keeps working.</string>
+    <string name="midi_bluetooth_off">Bluetooth is off. Turn it on to look for devices.</string>
+    <string name="midi_bluetooth_unavailable">This phone has no Bluetooth LE.</string>
+    <string name="midi_close">Close</string>
+    <string name="settings_midi_devices">MIDI devices</string>
+    <string name="settings_midi_devices_summary">USB and Bluetooth ports used by midi(), midin() and midikeys()</string>
+</resources>

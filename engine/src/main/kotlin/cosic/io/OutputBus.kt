@@ -6,6 +6,7 @@ import cosic.OscSink
 import cosic.SpeechSink
 import cosic.io.serial.SerialSink
 import cosic.io.osc.OscHook
+import cosic.io.midi.MidiHub
 import cosic.pattern.ScheduleHook
 import cosic.pattern.ScheduledHap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -79,6 +80,12 @@ class OutputBus(
     /** What the default output becomes while [oscTarget] is on (`superdirtOutput`): what `.osc()` does, to the same device. */
     @Volatile
     internal var oscOutput: ScheduleHook? = OscHook(this)
+
+    /**
+     * The MIDI state of the engine: the mappings of `midimaps`, the inputs that `midin` and `midikeys` listen to and what they received. The
+     * app plugs its MIDI devices into it (`midi` of this bus for outputs, [MidiHub.source] for inputs) and passes on what it receives.
+     */
+    val midiHub = MidiHub(console) { midi?.outputNames() ?: emptyList() }
 
     private class Post(val hooks: List<ScheduleHook>, val hap: ScheduledHap)
 

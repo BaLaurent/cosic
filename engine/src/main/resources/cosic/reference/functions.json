@@ -3707,8 +3707,7 @@
   "params": "midibend",
   "doc": "MIDI pitch bend: Sends a MIDI pitch bend message.",
   "example": "note(\"c4\").midibend(sine.slow(4).range(-0.4,0.4)).midi()",
-  "snippet": "$: note(\"c4\").midibend(sine.slow(4).range(-0.4,0.4)).midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c4\").midibend(sine.slow(4).range(-0.4,0.4)).midi()"
  },
  {
   "name": "midichan",
@@ -3718,8 +3717,7 @@
   "params": "channel",
   "doc": "MIDI channel: Sets the MIDI channel for the event.",
   "example": "note(\"c4\").midichan(1).midi()",
-  "snippet": "$: note(\"c4\").midichan(1).midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c4\").midichan(1).midi()"
  },
  {
   "name": "midicmd",
@@ -3729,8 +3727,7 @@
   "params": "command",
   "doc": "MIDI command: Sends a MIDI command message.",
   "example": "midicmd(\"clock*48,<start stop>/2\").midi()",
-  "snippet": "$: midicmd(\"clock*48,<start stop>/2\").midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: midicmd(\"clock*48,<start stop>/2\").midi()"
  },
  {
   "name": "midikeys",
@@ -3740,7 +3737,8 @@
   "params": "input",
   "doc": "MIDI keyboard: Opens a MIDI input port to receive MIDI keyboard messages.",
   "example": "const kb = await midikeys('Arturia KeyStep 32')\nkb().s(\"tri\").lpf(80).lpe(6).lpd(0.1).room(2).delay(0.35)",
-  "snippet": "const kb = await midikeys('Arturia KeyStep 32')\nkb().s(\"tri\").lpf(80).lpe(6).lpd(0.1).room(2).delay(0.35)"
+  "snippet": "const kb = await midikeys('Arturia KeyStep 32')\nkb().s(\"tri\").lpf(80).lpe(6).lpd(0.1).room(2).delay(0.35)",
+  "excluded": "the example opens the 'Arturia KeyStep 32'"
  },
  {
   "name": "midimaps",
@@ -3770,8 +3768,7 @@
   "params": "port",
   "doc": "MIDI port: Sets the MIDI port for the event.",
   "example": "note(\"c a f e\").midiport(\"<0 1 2 3>\").midi()",
-  "snippet": "$: note(\"c a f e\").midiport(\"<0 1 2 3>\").midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c a f e\").midiport(\"<0 1 2 3>\").midi()"
  },
  {
   "name": "miditouch",
@@ -3781,8 +3778,7 @@
   "params": "miditouch",
   "doc": "MIDI key after touch: Sends a MIDI key after touch message.",
   "example": "note(\"c4\").miditouch(sine.slow(4).range(0,1)).midi()",
-  "snippet": "$: note(\"c4\").miditouch(sine.slow(4).range(0,1)).midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c4\").miditouch(sine.slow(4).range(0,1)).midi()"
  },
  {
   "name": "nrpnn",
@@ -3792,8 +3788,7 @@
   "params": "nrpnn",
   "doc": "MIDI NRPN non-registered parameter number: Sends a MIDI NRPN non-registered parameter number message.",
   "example": "note(\"c4\").nrpnn(\"1:8\").nrpv(\"123\").midichan(1).midi()",
-  "snippet": "$: note(\"c4\").nrpnn(\"1:8\").nrpv(\"123\").midichan(1).midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c4\").nrpnn(\"1:8\").nrpv(\"123\").midichan(1).midi()"
  },
  {
   "name": "nrpv",
@@ -3803,8 +3798,7 @@
   "params": "nrpv",
   "doc": "MIDI NRPN non-registered parameter value: Sends a MIDI NRPN non-registered parameter value message.",
   "example": "note(\"c4\").nrpnn(\"1:8\").nrpv(\"123\").midichan(1).midi()",
-  "snippet": "$: note(\"c4\").nrpnn(\"1:8\").nrpv(\"123\").midichan(1).midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c4\").nrpnn(\"1:8\").nrpv(\"123\").midichan(1).midi()"
  },
  {
   "name": "sysex",
@@ -3814,8 +3808,7 @@
   "params": "id, data",
   "doc": "MIDI sysex: Sends a MIDI sysex message.",
   "example": "note(\"c4\").sysex([\"0x77\", \"0x01:0x02:0x03:0x04\"]).midichan(1).midi()",
-  "snippet": "$: note(\"c4\").sysex([\"0x77\", \"0x01:0x02:0x03:0x04\"]).midichan(1).midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c4\").sysex([\"0x77\", \"0x01:0x02:0x03:0x04\"]).midichan(1).midi()"
  },
  {
   "name": "sysexdata",
@@ -3825,8 +3818,7 @@
   "params": "data",
   "doc": "MIDI sysex data: Sends a MIDI sysex message.",
   "example": "note(\"c4\").sysexid(\"0x77\").sysexdata(\"0x01:0x02:0x03:0x04\").midichan(1).midi()",
-  "snippet": "$: note(\"c4\").sysexid(\"0x77\").sysexdata(\"0x01:0x02:0x03:0x04\").midichan(1).midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c4\").sysexid(\"0x77\").sysexdata(\"0x01:0x02:0x03:0x04\").midichan(1).midi()"
  },
  {
   "name": "sysexid",
@@ -3836,8 +3828,7 @@
   "params": "id",
   "doc": "MIDI sysex ID: Sends a MIDI sysex identifier message.",
   "example": "note(\"c4\").sysexid(\"0x77\").sysexdata(\"0x01:0x02:0x03:0x04\").midichan(1).midi()",
-  "snippet": "$: note(\"c4\").sysexid(\"0x77\").sysexdata(\"0x01:0x02:0x03:0x04\").midichan(1).midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c4\").sysexid(\"0x77\").sysexdata(\"0x01:0x02:0x03:0x04\").midichan(1).midi()"
  },
  {
   "name": "absoluteOrientationAlpha",
@@ -4119,8 +4110,7 @@
   "params": "program",
   "doc": "MIDI program number: Sends a MIDI program change message.",
   "example": "note(\"c4\").progNum(10).midichan(1).midi()",
-  "snippet": "$: note(\"c4\").progNum(10).midichan(1).midi()",
-  "excluded": "the example ends in .midi()"
+  "snippet": "$: note(\"c4\").progNum(10).midichan(1).midi()"
  },
  {
   "name": "rotationAlpha",

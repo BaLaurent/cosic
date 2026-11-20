@@ -105,6 +105,11 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     /** Turns the engine's frames into the system's time (for MIDI and OSC): the app feeds it the time stamps of its audio track. */
     val clock = ClockBridge().also { outputs.clock = it }
 
+    init {
+        // a note played on a MIDI keyboard (`midikeys`) is made to sound at once, not at the next chunk the scheduler queries
+        outputs.midiHub.attach(trigger = ::trigger, isPlaying = { snapshot.playing })
+    }
+
     /** Where programs fetch remote JSON from (`midimaps('github:...')`); the app implements it. */
     @Volatile
     var remote: RemoteJson? = null
