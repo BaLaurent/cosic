@@ -1,7 +1,7 @@
 // Builds the reference data of the app (what its Reference panel shows for every function) from Strudel's own JSDoc.
 //
-//   node tools/reference/build-reference.mjs            writes engine/src/main/resources/cosic/reference/functions.json
-//   node tools/reference/build-reference.mjs --check    exits with 1 when that file is not what this script writes now
+//   node tools/reference/build-reference.mjs            writes engine/src/main/resources/cosic/reference/functions.json and docs.json
+//   node tools/reference/build-reference.mjs --check    exits with 1 when either file is not what this script writes now
 //
 // Input   tools/strudel-ref/strudel/doc.json                        the JSDoc of the pinned Strudel checkout (tools/strudel-ref/fetch.sh makes it)
 //         tools/strudel-ref/strudel/website/src/pages/learn/*.mdx   which guide page a function is documented on (splits the `temporal` tag)
@@ -31,6 +31,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..', '..');
 const checkout = path.join(root, 'tools/strudel-ref/strudel');
 const output = path.join(root, 'engine/src/main/resources/cosic/reference/functions.json');
+const docsOutput = path.join(root, 'engine/src/main/resources/cosic/reference/docs.json');
 const acorn = createRequire(path.join(checkout, 'packages/transpiler/package.json'))('acorn');
 
 // ---- categories ---------------------------------------------------------------------------------------------------
@@ -281,15 +282,85 @@ function build() {
   return `${JSON.stringify(entries.map((e) => e.entry), null, 1)}\n`;
 }
 
-const text = build();
-if (process.argv.includes('--check')) {
-  const current = fs.existsSync(output) ? fs.readFileSync(output, 'utf8') : '';
-  if (current !== text) {
-    console.error(`${path.relative(root, output)} is out of date: run node tools/reference/build-reference.mjs`);
-    process.exit(1);
+// ---- the cards ----------------------------------------------------------------------------------------------------
+//
+// docs.json is what the editor's autocomplete and documentation card show: the JSDoc of the functions Strudel's own editor knows
+// (packages/codemirror/autocomplete.mjs and tooltip.mjs), in the order of doc.json, which decides which of two entries of one name wins.
+// One entry:
+//
+//   name         the function, as Strudel documents it
+//   hidden       (only when set) Strudel's editor shows the card of the function but does not offer its name (`@noAutocomplete`, `@superdirtOnly`)
+//   synonyms     its other names (omitted when there are none)
+//   description  the JSDoc description, as the HTML the JSDoc made of its markdown (omitted when there is none)
+//   params       [{ name, types, description }]: the documented parameters (omitted when there are none)
+//   examples     [{ code, snippet }]: every `@example`, and the same ready to insert into a program (see `snippet` above)
+//
+// An entry that no program of this app can call is left out: an internal (`_euclidRot`), a class (`MidiInput`), a private function, and what
+// decision 4 of the parity plan rules out (CSound).
+
+/** Names the app does not have, although Strudel documents them (Hydra and CSound are out of scope; their entry points are errors). */
+const NOT_AVAILABLE = new Set(['csoundm']);
+
+/** Whether a program of the app can call the function [doc] documents (`isValidDoc` of Strudel's autocomplete, less the classes and what is private). */
+function isCard(doc) {
+  const label = doc.name || doc.longname;
+  if (!label || label.startsWith('_') || doc.kind === 'package' || doc.kind === 'class') return false;
+  return doc.access !== 'private' && !NOT_AVAILABLE.has(label);
+}
+
+/** `hasExcludedTags` of Strudel's autocomplete: the function has a card, but its name is not offered. */
+const isHidden = (doc) => ['superdirtOnly', 'noAutocomplete'].some((tag) => doc.tags?.find((t) => t.originalTitle === tag));
+
+/** Whether Strudel's own run of each example plays anything, by function name and example index. */
+function playsByExample() {
+  const examples = JSON.parse(fs.readFileSync(path.join(root, 'engine/src/test/resources/parity/examples.json'), 'utf8'));
+  const plays = new Map();
+  for (const e of examples) plays.set(`${e.name}#${e.index}`, e.haps === null || e.haps.length > 0);
+  return plays;
+}
+
+function buildCards() {
+  const docs = JSON.parse(fs.readFileSync(path.join(checkout, 'doc.json'), 'utf8')).docs;
+  const plays = playsByExample();
+  const cards = [];
+  for (const doc of docs) {
+    if (!isCard(doc)) continue;
+    const name = doc.name || doc.longname;
+    const card = { name };
+    if (isHidden(doc)) card.hidden = true;
+    if (doc.synonyms?.length) card.synonyms = doc.synonyms;
+    if (doc.description) card.description = doc.description;
+    const params = (doc.params ?? []).filter((p) => p.name);
+    if (params.length) card.params = params.map((p) => ({ name: p.name, types: p.type?.names ?? [], ...(p.description ? { description: p.description } : {}) }));
+    if (doc.examples?.length) {
+      card.examples = doc.examples.map((example, i) => {
+        const code = example.trim();
+        return { code, snippet: snippetOf(code, plays.get(`${name}#${i}`) ?? true) };
+      });
+    }
+    cards.push(card);
   }
+  return `[\n${cards.map((c) => JSON.stringify(c)).join(',\n')}\n]\n`;
+}
+
+const outputs = [
+  { file: output, text: build(), summary: (text) => `${JSON.parse(text).length} functions` },
+  { file: docsOutput, text: buildCards(), summary: (text) => `${JSON.parse(text).length} cards` },
+];
+if (process.argv.includes('--check')) {
+  let stale = false;
+  for (const { file, text } of outputs) {
+    const current = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+    if (current !== text) {
+      console.error(`${path.relative(root, file)} is out of date: run node tools/reference/build-reference.mjs`);
+      stale = true;
+    }
+  }
+  if (stale) process.exit(1);
 } else {
-  fs.mkdirSync(path.dirname(output), { recursive: true });
-  fs.writeFileSync(output, text);
-  console.log(`${path.relative(root, output)}: ${JSON.parse(text).length} functions`);
+  for (const { file, text, summary } of outputs) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, text);
+    console.log(`${path.relative(root, file)}: ${summary(text)}`);
+  }
 }

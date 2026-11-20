@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Autocomplete and documentation cards -->
+    <string name="autocomplete_suggestions">Suggestions</string>
+    <string name="autocomplete_pick">Insert %1$s</string>
+    <string name="autocomplete_info">Documentation of %1$s</string>
+    <string name="doc_card_close">Close documentation</string>
+    <string name="doc_card_synonyms">Synonyms: %1$s</string>
+    <string name="doc_card_parameters">Parameters</string>
+    <string name="doc_card_examples">Examples</string>
+    <string name="doc_card_insert">Insert</string>
+    <string name="doc_card_insert_example">Insert example</string>
+    <string name="doc_at_cursor_none">Nothing documented at the cursor</string>
+
+    <!-- Console -->
+    <string name="console_title">Console</string>
+    <string name="console_empty">Nothing has been logged yet.</string>
+</resources>

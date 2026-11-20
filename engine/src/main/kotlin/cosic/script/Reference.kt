@@ -32,6 +32,14 @@ public fun reference(): List<ReferenceEntry> = listed
 public fun scaleModes(): List<String> = Tonal.scaleModeNames()
 
 /**
+ * Whether a program can use [name]: as a global function or value, or as a method of patterns. The editor's autocomplete offers the names
+ * Strudel documents, and only those that this is true for.
+ */
+public fun isDefined(name: String): Boolean = world.defines(name)
+
+private val world: World by lazy { World.read() }
+
+/**
  * One entry of `functions.json`, as the generator wrote it. [form] is how the first example calls the function (`"method"`: `.fast(2)`,
  * `"function"`: `stack(a, b)`, null: it does not call it); [params] the JSDoc parameter names, `""` when the example calls it without
  * arguments, null when the JSDoc names none; [excluded] why the reference leaves it out although it is implemented, when it does.
@@ -52,7 +60,6 @@ internal class DocData(
 internal val documented: List<DocData> by lazy { readDocumented() }
 
 private val listed: List<ReferenceEntry> by lazy {
-    val world = World.read()
     val entries = documented.filter { it.excluded == null && world.defines(it.name) }
     val names = entries.map { it.name }.toSet()
     val claims = entries.flatMap { it.aliases.toSet() }.groupingBy { it }.eachCount()

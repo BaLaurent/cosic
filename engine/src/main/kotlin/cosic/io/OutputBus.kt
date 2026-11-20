@@ -65,6 +65,9 @@ class OutputBus(
     /** The MQTT connections `.mqtt()` sends through (Task 4.10); set by the app, or by a test. */
     @Volatile
     var mqtt: cosic.io.mqtt.MqttOutput? = null
+    /** Where `theme()`, `fontFamily()` and `fontSize()` of a program send the setting they ask for (see [SettingsSink]); the app implements it. */
+    @Volatile
+    var settings: SettingsSink? = null
 
     /**
      * Sends every hap that is not made to sound by a dominant hook to OSC instead of playing it (the audio engine target `osc`: "all events

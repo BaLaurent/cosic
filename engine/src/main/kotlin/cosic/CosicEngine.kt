@@ -11,7 +11,9 @@ import cosic.audio.sources.SynthRegistry
 import cosic.io.ClockBridge
 import cosic.io.ConsoleLog
 import cosic.io.InputState
+import cosic.io.Metadata
 import cosic.io.OutputBus
+import cosic.io.Prebake
 import cosic.io.ScopeTaps
 import cosic.pattern.CosicError
 import cosic.pattern.Hap
@@ -107,9 +109,28 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     @Volatile
     var remote: RemoteJson? = null
 
-    /** Reads the metadata comments of a program (`// @title ...`) for [ProgramInfo.metadata]; no metadata is read while it is null. */
+    /**
+     * Reads the metadata comments of a program (`// @title ...`) for [ProgramInfo.metadata]: [Metadata.parse] unless the host sets another
+     * reader; none is read while it is null.
+     */
     @Volatile
-    var metadataParser: ((String) -> Map<String, Any>)? = null
+    var metadataParser: ((String) -> Map<String, Any>)? = Metadata::parse
+
+    /**
+     * The prebake script of the REPL's settings: code that runs once in every session, before its first program, to define what all programs
+     * use (the default one defines `ratchet`). Setting it makes the next evaluation run it again; null runs nothing. A script that fails is
+     * reported to the console (`[prebake] error: ...`) and the program is evaluated anyway.
+     */
+    @Volatile
+    var prebake: String? = Prebake.DEFAULT
+        set(value) {
+            field = value
+            prebaked = false
+        }
+
+    /** Whether the prebake script has run in the current session. */
+    @Volatile
+    private var prebaked = false
 
     /** What the last program that [evaluate] accepted is: its sliders, widgets, visuals, metadata and the inputs it uses. */
     @Volatile
@@ -165,6 +186,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     fun evaluate(code: String): EvalReport = try {
         library.awaitReady(LIBRARY_READY_MILLIS) // the sounds a program names must be registered when its first events are looked up
         onBigStack {
+            runPrebake()
             effects.beginEvaluation()
             val program = session.evaluate(code)
             val warnings = host.quietly { dryRun(program.pattern, currentCycle(), sounds, program.cps, outputs) }
@@ -189,6 +211,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     @Synchronized
     fun resetSession() {
         session = ReplSession(host)
+        prebaked = false
         host.cps = DEFAULT_CPS
     }
 
@@ -362,6 +385,20 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
         } catch (e: Exception) {
             emptyMap()
         }
+
+    /** Runs the prebake script when the session has not yet (see [prebake]); what it labels or sets stays out of the program that follows. */
+    private fun runPrebake() {
+        if (prebaked) return
+        prebaked = true
+        val script = prebake ?: return
+        try {
+            session.evaluate(script, shouldHush = false)
+        } catch (e: CosicError) {
+            console.error("prebake", e.message)
+        } catch (e: Exception) {
+            console.error("prebake", errorMessage(e))
+        }
+    }
 
     private fun failed(code: String, message: String, range: SourceRange?): EvalReport.Failed {
         console.log("[eval] error: $message", "error")
