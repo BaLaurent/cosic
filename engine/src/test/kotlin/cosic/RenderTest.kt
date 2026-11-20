@@ -87,6 +87,16 @@ class RenderTest {
     }
 
     @Test
+    fun aBuiltInDrumMachinePlaysWithoutAnyLibrary() {
+        for (machine in listOf("cosic808", "cosic909")) {
+            val out = OfflineRenderer.render("""s("bd sd hh*2 cp").bank("$machine")""", cycles = 1.0)
+            assertTrue(rms(out) > 0.01, "$machine is silent")
+            assertTrue(allFinite(out), "$machine produced NaN")
+            assertTrue(peak(out) <= 1.0f, "$machine clips")
+        }
+    }
+
+    @Test
     fun theEmptyLibraryHasNothing() {
         assertNull(EmptyLibrary.bank("kick"))
         assertNull(EmptyLibrary.sample("kick", 0))

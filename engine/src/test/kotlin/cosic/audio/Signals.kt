@@ -6,6 +6,7 @@ import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.log10
 import kotlin.math.max
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -40,6 +41,19 @@ internal fun noteForFrequency(hz: Double): Double = 69.0 + 12.0 * ln(hz / 440.0)
 internal fun allFinite(x: FloatArray): Boolean {
     for (v in x) if (!v.isFinite()) return false
     return true
+}
+
+/** The share of [x]'s energy below [cutoffHz], measured through a 2-pole low-pass. */
+internal fun energyBelow(x: FloatArray, cutoffHz: Double): Double {
+    val low = x.copyOf()
+    SvFilter(SR, FilterKind.LOW_PASS).also { it.configure(cutoffHz, 0.707) }.process(low, low.size)
+    return (rms(low) / rms(x)).pow(2)
+}
+
+/** How loud the 10 ms of [x] that start [seconds] in are, relative to its first 10 ms. */
+internal fun remainingAt(x: FloatArray, seconds: Double): Double {
+    val from = (seconds * SR).toInt()
+    return rms(x, from, from + 480) / rms(x, 0, 480)
 }
 
 /** One channel of an interleaved stereo buffer. */

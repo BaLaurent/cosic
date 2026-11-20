@@ -4,6 +4,7 @@ import cosic.BankInfo
 import cosic.FakeLibrary
 import cosic.SampleData
 import cosic.SoundLibrary
+import cosic.audio.DRUM_MACHINES
 import cosic.audio.SR
 import cosic.audio.VoiceSource
 import cosic.audio.Waveform
@@ -73,6 +74,44 @@ class SoundResolverTest {
     }
 
     @Test
+    fun drumMachineSoundsAreUnpitchedSamplesAtTheEngineRate() {
+        for ((machine, names) in DRUM_MACHINES) {
+            for (name in names) {
+                val source = assertIs<VoiceSource.Sample>(resolver().source("s" to name, "bank" to machine), "${machine}_$name")
+                assertNull(source.rootNote, "${machine}_$name")
+                assertEquals(SR, source.data.sampleRate, "${machine}_$name")
+            }
+        }
+    }
+
+    @Test
+    fun theBankControlChoosesTheMachineAndNItsVariantWrappedByFour() {
+        val resolver = resolver()
+        fun data(machine: String, n: Double) = assertIs<VoiceSource.Sample>(resolver.source("s" to "sd", "bank" to machine, "n" to n)).data
+        assertNotSame(data("cosic808", 0.0), data("cosic909", 0.0))
+        assertNotSame(data("cosic808", 0.0), data("cosic808", 1.0))
+        assertSame(data("cosic808", 1.0), data("cosic808", 5.0))
+        assertSame(data("cosic909", 1.0), data("cosic909", -3.0))
+    }
+
+    @Test
+    fun aMachineSoundCanBeNamedInFullInsteadOfThroughTheBankControl() {
+        val resolver = resolver()
+        assertSame(
+            assertIs<VoiceSource.Sample>(resolver.source("s" to "bd", "bank" to "cosic808")).data,
+            assertIs<VoiceSource.Sample>(resolver.source("s" to "cosic808_bd")).data,
+        )
+    }
+
+    @Test
+    fun aBankBeatsTheMachineSoundOfTheSameName() {
+        val mine = sample(0.5f)
+        val library = libraryWithBank("cosic808_bd", listOf(mine))
+        assertSame(mine, assertIs<VoiceSource.Sample>(resolver(library).source("s" to "bd", "bank" to "cosic808")).data)
+        assertNotSame(mine, assertIs<VoiceSource.Sample>(resolver(library).source("s" to "bd", "bank" to "cosic909")).data, "only that machine's sound is replaced")
+    }
+
+    @Test
     fun withoutASoundNameEventsPlayTheDefaultTriangle() {
         assertEquals(Waveform.TRIANGLE, assertIs<VoiceSource.Synth>(resolver().source("note" to 60.0)).waveform)
         assertEquals(Waveform.TRIANGLE, assertIs<VoiceSource.Synth>(resolver().source()).waveform)
@@ -124,6 +163,10 @@ class SoundResolverTest {
             "my_nope",
             assertIs<SoundLookup.Unknown>(resolver().resolve(controls("s" to "nope", "bank" to "my"))).key,
         )
+        assertEquals(
+            "cosic808_xx",
+            assertIs<SoundLookup.Unknown>(resolver().resolve(controls("s" to "xx", "bank" to "cosic808"))).key,
+        )
     }
 
     @Test
@@ -139,6 +182,7 @@ class SoundResolverTest {
         val resolver = resolver()
         assertIs<SoundLookup.Ready>(resolver.resolve("sine", 0.0, 60.0))
         assertIs<SoundLookup.Ready>(resolver.resolve("bd", 2.0, null))
+        assertIs<SoundLookup.Ready>(resolver.resolve("cosic909_bd", 2.0, null))
         assertIs<SoundLookup.Unknown>(resolver.resolve("nope", 0.0, null))
     }
 }

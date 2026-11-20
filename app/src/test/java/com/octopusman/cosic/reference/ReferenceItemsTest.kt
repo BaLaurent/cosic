@@ -1,7 +1,6 @@
 package com.octopusman.cosic.reference
 
 import com.octopusman.cosic.audio.BankOrigin
-import com.octopusman.cosic.audio.BankSummary
 import cosic.CosicEngine
 import cosic.script.ReferenceEntry
 import kotlin.test.Test
@@ -12,6 +11,7 @@ import kotlin.test.assertTrue
 
 class ReferenceItemsTest {
     private val texts = ReferenceTexts(
+        drumMachines = GroupText("Drum machines", "drum machines doc"),
         synth = GroupText("Synths", "synth doc"),
         drum = GroupText("Drum kit", "drum doc"),
         instrument = GroupText("Instruments", "instrument doc"),
@@ -19,6 +19,7 @@ class ReferenceItemsTest {
         imported = GroupText("Imported", "imported doc"),
         scale = GroupText("Scales", "scale doc"),
         showSounds = "Show sounds",
+        showDrumMachines = "Show drum machines",
         showScales = "Show scales",
     )
     private fun function(name: String, category: String = "Time", aliases: List<String> = emptyList()) =
@@ -31,12 +32,18 @@ class ReferenceItemsTest {
         function("scale", "Values"),
     )
     private val banks = listOf(
-        BankSummary("piano", 26, pitched = true, origin = BankOrigin.BUNDLED, treeUri = null),
-        BankSummary("kick", 8, pitched = false, origin = BankOrigin.BUNDLED, treeUri = null),
-        BankSummary("mine", 3, pitched = false, origin = BankOrigin.IMPORTED, treeUri = null),
+        testBank("piano", 26, pitched = true),
+        testBank("kick", 8),
+        testBank("mine", 3, origin = BankOrigin.IMPORTED),
+        testBank("vcsl_bd", 3, kit = "vcsl"),
+        testBank("vcsl_sd", 2, kit = "vcsl"),
+        testBank("vcsl_hh", 2, kit = "vcsl"),
+        testBank("mykit_cb", 1, origin = BankOrigin.IMPORTED, kit = "mykit"),
+        testBank("mykit_bd", 2, origin = BankOrigin.IMPORTED, kit = "mykit"),
     )
     private val scales = listOf("major", "minor", "blues")
     private val items = referenceItems(functions, banks, scales, texts)
+    private val soundItems = items.inTab(PanelTab.SOUNDS)
 
     private fun item(name: String) = items.first { it.name == name }
 
@@ -44,7 +51,10 @@ class ReferenceItemsTest {
     fun functionsComeFirstThenEverySoundGroupThenTheScales() {
         val categories = items.map { it.category }.distinct()
 
-        assertEquals(listOf("Time", "Sound", "Values", "Synths", "Drum kit", "Instruments", "Percussion", "Imported", "Scales"), categories)
+        assertEquals(
+            listOf("Time", "Sound", "Values", "Drum machines", "Synths", "Drum kit", "Instruments", "Percussion", "Imported", "Scales"),
+            categories,
+        )
     }
 
     @Test
@@ -58,9 +68,9 @@ class ReferenceItemsTest {
     }
 
     @Test
-    fun theFunctionsThatTakeASoundLeadToTheSounds() {
+    fun sLeadsToTheSoundsAndBankToTheDrumMachines() {
         assertEquals(ValuesLink("Synths", "Show sounds"), item("s").values)
-        assertEquals(ValuesLink("Synths", "Show sounds"), item("bank").values)
+        assertEquals(ValuesLink("Drum machines", "Show drum machines"), item("bank").values)
     }
 
     @Test
@@ -97,7 +107,7 @@ class ReferenceItemsTest {
         val drum = item("bd")
 
         assertEquals("\$: s(\"bd*4\")", drum.snippet)
-        assertEquals(SoundTarget("bd", pitched = false, count = 4), drum.sound)
+        assertEquals(SoundTarget("bd", pitched = false, count = null, variants = CosicEngine.DRUM_VARIANTS), drum.sound)
     }
 
     @Test
@@ -144,7 +154,8 @@ class ReferenceItemsTest {
 
     @Test
     fun aWordInsideACallThatTakesValuesOpensOnThoseValues() {
-        assertEquals(OpenOn.Group("Synths"), items.openOn(CursorHit("bank", insideCall = true)))
+        assertEquals(OpenOn.Group("Synths"), items.openOn(CursorHit("s", insideCall = true)))
+        assertEquals(OpenOn.Group("Drum machines"), items.openOn(CursorHit("bank", insideCall = true)))
         assertEquals(OpenOn.Group("Scales"), items.openOn(CursorHit("scale", insideCall = true)))
     }
 
@@ -167,7 +178,7 @@ class ReferenceItemsTest {
         val categories = items.map { it.category }.distinct()
 
         assertEquals(
-            listOf("Synths", "Drum kit", "Instruments", "Percussion", "Imported", "Scales", "Time", "Sound", "Values"),
+            listOf("Drum machines", "Synths", "Drum kit", "Instruments", "Percussion", "Imported", "Scales", "Time", "Sound", "Values"),
             chipOrder(categories, functions.map { it.category }.toSet()),
         )
     }
@@ -175,7 +186,9 @@ class ReferenceItemsTest {
     @Test
     fun soundsGoToTheSoundsTabAndEverythingElseToTheReference() {
         assertEquals(PanelTab.SOUNDS, items.tabFor(OpenOn.Group("Synths")))
+        assertEquals(PanelTab.SOUNDS, items.tabFor(OpenOn.Group("Drum machines")))
         assertEquals(PanelTab.SOUNDS, items.tabFor(OpenOn.Item(item("bd"))))
+        assertEquals(PanelTab.SOUNDS, items.tabFor(OpenOn.Item(item("vcsl"))))
         assertEquals(PanelTab.REFERENCE, items.tabFor(OpenOn.Group("Scales")))
         assertEquals(PanelTab.REFERENCE, items.tabFor(OpenOn.Item(item("fast"))))
         assertEquals(PanelTab.REFERENCE, items.tabFor(null))
@@ -191,7 +204,9 @@ class ReferenceItemsTest {
     @Test
     fun aBankKnowsHowManySamplesItHasAndADrumItsVariants() {
         assertEquals(26, item("piano").sound?.count)
-        assertEquals(4, item("bd").sound?.count)
+        assertEquals(CosicEngine.DRUM_VARIANTS, item("bd").sound?.variants)
+        assertNull(item("bd").sound?.count)
+        assertEquals(0, item("piano").sound?.variants)
         assertNull(items.first { it.name == "sine" && it.category == "Synths" }.sound?.count)
     }
 
@@ -201,5 +216,111 @@ class ReferenceItemsTest {
         assertEquals(PanelTab.SOUNDS, items.tabOnOpen(PanelTab.SOUNDS, OpenOn.Item(item("fast"))))
         assertEquals(PanelTab.REFERENCE, items.tabOnOpen(PanelTab.REFERENCE, OpenOn.Item(item("fast"))))
         assertEquals(PanelTab.REFERENCE, items.tabOnOpen(PanelTab.REFERENCE, null))
+    }
+
+    @Test
+    fun everyDrumMachineOfTheEngineIsListedWithItsSounds() {
+        for ((name, sounds) in CosicEngine.DRUM_MACHINES) {
+            val machine = items.first { it.name == name && it.category == "Drum machines" }
+
+            assertEquals(sounds, machine.members, name)
+            assertNull(machine.folder, name)
+        }
+    }
+
+    @Test
+    fun aKitOfBundledBanksIsOneRowWithItsSoundsInDrumOrder() {
+        val vcsl = item("vcsl")
+
+        assertEquals("Drum machines", vcsl.category)
+        assertEquals("bank(\"vcsl\")", vcsl.signature)
+        assertEquals("drum machines doc", vcsl.doc)
+        assertEquals(listOf("bd", "sd", "hh"), vcsl.members)
+    }
+
+    @Test
+    fun aKitOfImportedBanksIsListedTheSameWay() {
+        val mykit = item("mykit")
+
+        assertEquals("Drum machines", mykit.category)
+        assertEquals(listOf("bd", "cb"), mykit.members)
+    }
+
+    @Test
+    fun theSoundsOfAKitAreNotListedAgainAsPercussionOrImportedBanks() {
+        val names = items.map { it.name }
+
+        for (member in listOf("vcsl_bd", "vcsl_sd", "vcsl_hh", "mykit_bd", "mykit_cb")) assertFalse(member in names, member)
+        assertEquals(listOf("kick"), items.filter { it.category == "Percussion" }.map { it.name })
+        assertEquals(listOf("mine"), items.filter { it.category == "Imported" }.map { it.name })
+    }
+
+    @Test
+    fun tappingAKitPlaysItsKickWithoutPitch() {
+        assertEquals(SoundTarget("vcsl_bd", pitched = false, count = null), item("vcsl").sound)
+    }
+
+    @Test
+    fun aKitIsInsertedAsAGrooveOfTheSoundsItHas() {
+        assertEquals("\$: s(\"bd sd [~ bd] sd, hh*8\").bank(\"vcsl\")", item("vcsl").snippet)
+        assertEquals("\$: s(\"bd ~ [~ bd] ~\").bank(\"mykit\")", item("mykit").snippet)
+    }
+
+    @Test
+    fun aKitNameUnderTheCursorOpensOnItsRow() {
+        val code = "s(\"bd\").bank(\"vcsl\")"
+        val hit = functionAtCursor(code, code.indexOf("vcsl") + 2) { items.named(it) != null }
+
+        assertEquals(OpenOn.Item(item("vcsl")), items.openOn(hit))
+    }
+
+    @Test
+    fun theCursorBetweenTheQuotesOfBankOpensOnTheDrumMachinesAndInSOnTheSounds() {
+        val bank = "s(\"bd\").bank(\"\")"
+        val inBank = functionAtCursor(bank, bank.indexOf("\"\")") + 1) { items.named(it) != null }
+        val sound = "s(\"\")"
+        val inS = functionAtCursor(sound, 3) { items.named(it) != null }
+
+        assertEquals(OpenOn.Group("Drum machines"), items.openOn(inBank))
+        assertEquals(OpenOn.Group("Synths"), items.openOn(inS))
+    }
+
+    @Test
+    fun theSoundGroupsAreListedInTheOrderOfTheirItems() {
+        val headings = soundItems.rows("", "Imported").filterIsInstance<ListRow.Heading>().map { it.category }
+
+        assertEquals(listOf("Drum machines", "Synths", "Drum kit", "Instruments", "Percussion", "Imported"), headings)
+    }
+
+    @Test
+    fun theImportedGroupIsListedWithItsImportRowEvenWhenNothingIsImported() {
+        val bundled = referenceItems(functions, banks.filter { it.origin == BankOrigin.BUNDLED }, scales, texts).inTab(PanelTab.SOUNDS)
+
+        assertEquals(listOf(ListRow.Heading("Imported"), ListRow.Import("Imported")), bundled.rows("", "Imported").takeLast(2))
+    }
+
+    @Test
+    fun theImportRowComesAfterTheGroupDescriptionAndBeforeItsSounds() {
+        val rows = soundItems.rows("", "Imported")
+
+        assertEquals(
+            listOf(ListRow.Heading("Imported"), ListRow.Doc("Imported", "imported doc"), ListRow.Import("Imported"), ListRow.Entry(item("mine"))),
+            rows.dropWhile { it != ListRow.Heading("Imported") },
+        )
+    }
+
+    @Test
+    fun searchingListsOnlyWhatMatchesWithoutTheImportRow() {
+        val rows = soundItems.rows("kick", "Imported")
+
+        assertEquals(listOf(ListRow.Heading("Percussion"), ListRow.Doc("Percussion", "percussion doc"), ListRow.Entry(item("kick"))), rows)
+    }
+
+    @Test
+    fun theReferenceListsItsFunctionsAndScalesWithoutDescriptionsOrImportRow() {
+        val rows = items.inTab(PanelTab.REFERENCE).rows("")
+
+        assertTrue(rows.none { it is ListRow.Doc || it is ListRow.Import })
+        assertEquals(listOf("Time", "Sound", "Values", "Scales"), rows.filterIsInstance<ListRow.Heading>().map { it.category })
     }
 }

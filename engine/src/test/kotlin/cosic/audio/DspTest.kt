@@ -1,6 +1,5 @@
 package cosic.audio
 
-import cosic.SampleData
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -296,12 +295,7 @@ class DspTest {
 
     @Test
     fun noiseColoursTiltTowardsTheLowEnd() {
-        fun lowFraction(waveform: Waveform): Double {
-            val x = oscillate(waveform, 0.0, SR * 2)
-            val low = x.copyOf()
-            SvFilter(SR, FilterKind.LOW_PASS).also { it.configure(500.0, 0.707) }.process(low, low.size)
-            return (rms(low) / rms(x)).pow(2)
-        }
+        fun lowFraction(waveform: Waveform) = energyBelow(oscillate(waveform, 0.0, SR * 2), 500.0)
         assertTrue(lowFraction(Waveform.WHITE) < 0.06, "white ${lowFraction(Waveform.WHITE)}")
         assertTrue(lowFraction(Waveform.PINK) in 0.15..0.7, "pink ${lowFraction(Waveform.PINK)}")
         assertTrue(lowFraction(Waveform.BROWN) > 0.8, "brown ${lowFraction(Waveform.BROWN)}")
@@ -363,14 +357,15 @@ class DspTest {
     }
 
     @Test
-    fun warmUpRendersEverySoundInEveryVariantExactlyOnce() {
+    fun warmUpRendersEverySoundOfTheKitAndTheMachinesInEveryVariantExactlyOnce() {
         val kit = DrumKit(SR)
+        val expected = (DRUM_NAMES.size + DRUM_MACHINES.values.sumOf { it.size }) * 4
         assertEquals(0, kit.renderedCount, "nothing is rendered before it is asked for")
         kit.warmUp()
-        assertEquals(DRUM_NAMES.size * 4, kit.renderedCount)
+        assertEquals(expected, kit.renderedCount)
         val snare = kit.sample("sd", 3)
         kit.warmUp()
-        assertEquals(DRUM_NAMES.size * 4, kit.renderedCount)
+        assertEquals(expected, kit.renderedCount)
         assertSame(snare, kit.sample("sd", 3), "warming up again renders nothing twice")
     }
 
@@ -387,14 +382,9 @@ class DspTest {
     @Test
     fun drumSoundsHaveTheirCharacteristicSpectra() {
         val kit = DrumKit(SR)
-        fun lowFraction(data: SampleData, cutoff: Double): Double {
-            val low = data.samples.copyOf()
-            SvFilter(SR, FilterKind.LOW_PASS).also { it.configure(cutoff, 0.707) }.process(low, low.size)
-            return (rms(low) / rms(data.samples)).pow(2)
-        }
-        assertTrue(lowFraction(kit.sample("bd", 0)!!, 300.0) > 0.6, "bd should be mostly low frequency")
-        assertTrue(lowFraction(kit.sample("hh", 0)!!, 1000.0) < 0.05, "hh should be mostly high frequency")
-        assertTrue(lowFraction(kit.sample("oh", 0)!!, 1000.0) < 0.05, "oh should be mostly high frequency")
+        assertTrue(energyBelow(kit.sample("bd", 0)!!.samples, 300.0) > 0.6, "bd should be mostly low frequency")
+        assertTrue(energyBelow(kit.sample("hh", 0)!!.samples, 1000.0) < 0.05, "hh should be mostly high frequency")
+        assertTrue(energyBelow(kit.sample("oh", 0)!!.samples, 1000.0) < 0.05, "oh should be mostly high frequency")
 
         // Toms ring at 80, 120 and 180 Hz once their 80 ms pitch sweep has finished.
         fun crossings(name: String): Int {
@@ -409,15 +399,9 @@ class DspTest {
     @Test
     fun hatsAndCymbalDecayAtDifferentRates() {
         val kit = DrumKit(SR)
-        // RMS of a 10 ms window at `at` seconds relative to the first 10 ms of the same sound.
-        fun remaining(name: String, at: Double): Double {
-            val x = kit.sample(name, 0)!!.samples
-            val a = (at * SR).toInt()
-            return rms(x, a, a + 480) / rms(x, 0, 480)
-        }
         // hh has τ = 0.03 s (e^-3.3 after 100 ms), oh τ = 0.25 s (e^-0.4), cr τ = 1.2 s (e^-0.83 after 1 s).
-        assertTrue(remaining("hh", 0.10) < 0.1)
-        assertTrue(remaining("oh", 0.10) > 0.4)
-        assertTrue(remaining("cr", 1.0) > 0.25)
+        assertTrue(remainingAt(kit.sample("hh", 0)!!.samples, 0.10) < 0.1)
+        assertTrue(remainingAt(kit.sample("oh", 0)!!.samples, 0.10) > 0.4)
+        assertTrue(remainingAt(kit.sample("cr", 0)!!.samples, 1.0) > 0.25)
     }
 }

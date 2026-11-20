@@ -23,9 +23,10 @@ private val DEFAULT_SOUND = SoundLookup.Ready(VoiceSource.Synth(Waveform.TRIANGL
 
 /**
  * Finds what to play for the sound an event names: a synth waveform first, then a bank of the [library], then the
- * built-in drum kit. A user bank may thus replace a drum, but never a synth. Lookups ask the library for the sample
- * and render drum sounds on first use (unless [drums] has been warmed up), so doing one off the audio thread (see
- * [dryRun]) warms up what it needs.
+ * built-in drum sounds, which are the kit's (`bd`) and the drum machines' (`cosic808_bd`, the sound that
+ * `s("bd").bank("cosic808")` asks for). A user bank may thus replace a drum or a machine's sound, but never a
+ * synth. Lookups ask the library for the sample and render drum sounds on first use (unless [drums] has been warmed
+ * up), so doing one off the audio thread (see [dryRun]) warms up what it needs.
  */
 internal class SoundResolver(sampleRate: Int, private val library: SoundLibrary, private val drums: DrumKit = DrumKit(sampleRate)) {
     /** The sound of an event's controls: `s`, prefixed with `bank_` when `bank` is set, with `n` and `note` choosing the sample. */

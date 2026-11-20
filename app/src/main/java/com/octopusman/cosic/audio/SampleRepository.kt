@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.documentfile.provider.DocumentFile
 import cosic.BankInfo
+import cosic.CosicEngine
 import cosic.SampleData
 import cosic.SoundLibrary
 import java.util.concurrent.ConcurrentHashMap
@@ -40,7 +41,7 @@ private val json = Json { ignoreUnknownKeys = true }
 private class SampleIndex(val banks: List<IndexBank>)
 
 @Serializable
-private class IndexBank(val name: String, val pitched: Boolean, val files: List<IndexFile>)
+private class IndexBank(val name: String, val pitched: Boolean, val files: List<IndexFile>, val kit: String? = null)
 
 @Serializable
 private class IndexFile(val file: String, val root: Int? = null)
@@ -50,13 +51,17 @@ enum class BankOrigin { BUNDLED, IMPORTED }
 /** How a bank is grouped wherever sounds are listed. */
 enum class BankKind { INSTRUMENT, PERCUSSION, IMPORTED }
 
-/** A sample bank as listed on the Sounds screen; [treeUri] is the imported folder it came from. */
+/**
+ * A sample bank as listed in the Sounds tab; [treeUri] is the imported folder it came from. A bank named
+ * `<kit>_<sound>` is a sound of the drum machine [kit], played with `s("<sound>").bank("<kit>")`.
+ */
 data class BankSummary(
     val name: String,
     val count: Int,
     val pitched: Boolean,
     val origin: BankOrigin,
     val treeUri: Uri?,
+    val kit: String?,
 ) {
     val kind: BankKind
         get() = when {
@@ -84,6 +89,7 @@ private class BankRecord(
     val origin: BankOrigin,
     val treeUri: Uri?,
     val sources: List<SampleSource>,
+    val kit: String?,
 )
 
 private class CacheEntry(val data: SampleData, @Volatile var lastAccess: Long)
@@ -167,7 +173,7 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
     private fun publish(banks: Map<String, BankRecord>) {
         records = banks
         _banks.value = banks.values.sortedBy { it.info.name }.map {
-            BankSummary(it.info.name, it.info.count, it.info.rootNotes != null, it.origin, it.treeUri)
+            BankSummary(it.info.name, it.info.count, it.info.rootNotes != null, it.origin, it.treeUri, it.kit)
         }
     }
 
@@ -185,35 +191,39 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
                 BankOrigin.BUNDLED,
                 null,
                 files.map { SampleSource.Asset("samples/${it.file}") },
+                bank.kit,
             )
         }
     }
 
-    /** A tree is a bank of its own audio files plus one bank per direct subfolder that has audio files. */
+    /**
+     * A tree is a bank of its own audio files plus one bank per direct subfolder that has audio files.
+     * Those subfolders are also the sounds of a kit named after the tree (see [importedBanks]).
+     */
     private fun indexTree(treeUri: Uri): List<BankRecord> {
         // A tree that is no longer accessible (folder removed, drive gone) simply drops out of the index.
         val root = DocumentFile.fromTreeUri(appContext, treeUri)?.takeIf { it.canRead() } ?: return emptyList()
         val banks = ArrayList<BankRecord>()
         var remaining = MAX_IMPORT_FILES
 
-        fun addBank(folder: DocumentFile, entries: List<Pair<String, DocumentFile>>) {
-            val name = bankName(folder.name)
+        fun addBanks(names: List<ImportedBank>, entries: List<Pair<String, DocumentFile>>) {
             val audio = entries.filter { isAudio(it.first) }.sortedBy { it.first.lowercase() }.take(remaining)
-            if (name.isEmpty() || audio.isEmpty()) return
+            if (names.isEmpty() || audio.isEmpty()) return
+            // The banks of one folder share its files, which count against the limit once.
             remaining -= audio.size
-            banks += BankRecord(
-                BankInfo(name, audio.size, null),
-                BankOrigin.IMPORTED,
-                treeUri,
-                audio.map { SampleSource.Document(it.second.uri) },
-            )
+            val sources = audio.map { SampleSource.Document(it.second.uri) }
+            for (bank in names) {
+                banks += BankRecord(BankInfo(bank.name, audio.size, null), BankOrigin.IMPORTED, treeUri, sources, bank.kit)
+            }
         }
 
+        // A kit's sound folders keep their own names only where no built-in sound has that name.
+        val builtIn = { name: String -> name in CosicEngine.SYNTHS || name in CosicEngine.DRUMS || name in bundled }
         val rootEntries = root.entries()
-        addBank(root, rootEntries)
+        addBanks(importedBanks(root.name), rootEntries)
         for ((name, file) in rootEntries) {
             if (remaining <= 0) break
-            if (!isAudio(name) && file.isDirectory) addBank(file, file.entries())
+            if (!isAudio(name) && file.isDirectory) addBanks(importedBanks(file.name, parent = root.name, builtIn), file.entries())
         }
         return banks
     }
@@ -250,7 +260,3 @@ class SampleRepository(context: Context, private val prefs: DataStore<Preference
 private fun isAudio(fileName: String) = fileName.substringAfterLast('.', "").lowercase() in AUDIO_EXTENSIONS
 
 private fun DocumentFile.entries(): List<Pair<String, DocumentFile>> = listFiles().map { (it.name ?: "") to it }
-
-/** Lowercase, spaces and dashes become underscores, anything else outside `[a-z0-9_]` is dropped. */
-private fun bankName(folderName: String?): String =
-    folderName.orEmpty().lowercase().replace(' ', '_').replace('-', '_').filter { it in 'a'..'z' || it in '0'..'9' || it == '_' }

@@ -273,7 +273,7 @@ class ScriptTest {
     @Test
     fun samplesIsNotSupportedYet() {
         val e = failure("samples('x')")
-        assertEquals("samples() isn't supported yet \u2014 import sample folders from the Sounds screen instead", e.message)
+        assertEquals("samples() isn't supported yet \u2014 import a sample folder from the Sounds tab of the editor panel instead", e.message)
         assertEquals(SourceRange(0, 12), e.range)
     }
 

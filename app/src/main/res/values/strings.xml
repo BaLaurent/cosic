@@ -41,7 +41,6 @@
     <string name="editor_tab">Tab</string>
     <string name="editor_code">Code editor</string>
     <string name="editor_rename_project">Rename project</string>
-    <string name="editor_menu_sounds">Sounds</string>
     <string name="editor_reference_show">Show reference</string>
     <string name="editor_reference_hide">Hide reference</string>
     <string name="editor_sounds_show">Show sounds</string>
@@ -52,17 +51,15 @@
     <string name="editor_status_playing">%1$s cpm · cycle %2$d</string>
 
     <!-- Sounds -->
-    <string name="sounds_title">Sounds</string>
+    <string name="sounds_drum_machines">Drum machines</string>
     <string name="sounds_synths">Synths</string>
     <string name="sounds_drums">Drum kit</string>
     <string name="sounds_instruments">Instruments</string>
     <string name="sounds_percussion">Percussion</string>
     <string name="sounds_imported">Imported</string>
-    <string name="sounds_drum_variants">Variants, picked with n from 0 to 3</string>
     <string name="sounds_preview">Preview %1$s</string>
-    <string name="sounds_copied">Copied \'%1$s\'</string>
     <string name="sounds_import_folder">Import folder</string>
-    <string name="sounds_imported_empty">Pick a folder of audio files. Every folder that holds audio files becomes a sound named after it.</string>
+    <string name="sounds_import_hint">Each folder of audio files becomes a sound. A folder of sound folders (mykit/bd, mykit/sd) is a drum machine: bank(\"mykit\").</string>
     <string name="sounds_remove_title">Remove imported folder?</string>
     <string name="sounds_remove_message">All sounds imported from this folder are removed from Cosic. The files stay where they are.</string>
     <string name="sounds_remove_bank">Remove %1$s</string>
@@ -78,6 +75,7 @@
     <string name="reference_aliases">Also: %1$s</string>
     <string name="reference_insert_example">Insert</string>
     <string name="reference_handle">Resize reference</string>
+    <string name="reference_doc_drum_machines">A set of drum sounds. Pick one with bank() and play its sounds by name, as in s(\"bd sd\").bank(\"name\").</string>
     <string name="reference_doc_synth">A synth waveform. Give it pitch with note().</string>
     <string name="reference_doc_drum">A built-in drum sound. Pick one of four variants with a number, as in bd:2.</string>
     <string name="reference_doc_instrument">A sampled instrument. Play it with note(); each note uses the nearest recorded one.</string>
@@ -86,6 +84,7 @@
     <string name="reference_scales">Scales</string>
     <string name="reference_doc_scale">A scale for scale(): put a root note before it, as in C:minor or eb2:dorian.</string>
     <string name="reference_show_sounds">Show sounds</string>
+    <string name="reference_show_drum_machines">Show drum machines</string>
     <string name="reference_show_scales">Show scales</string>
     <string name="reference_empty">No matching functions, sounds or scales</string>
 

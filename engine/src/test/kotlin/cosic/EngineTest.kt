@@ -5,12 +5,14 @@ import cosic.audio.channel
 import cosic.audio.constantSample
 import cosic.audio.estimateFrequency
 import cosic.audio.peak
+import cosic.audio.rms
 import cosic.script.reference
 import java.lang.management.ManagementFactory
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
@@ -69,7 +71,7 @@ class EngineTest {
     @Test
     fun samplesExplainsThatItIsNotSupported() {
         val report = assertIs<EvalReport.Failed>(engineOf().evaluate("samples('x')"))
-        assertEquals("samples() isn't supported yet \u2014 import sample folders from the Sounds screen instead", report.message)
+        assertEquals("samples() isn't supported yet \u2014 import a sample folder from the Sounds tab of the editor panel instead", report.message)
     }
 
     @Test
@@ -130,6 +132,45 @@ class EngineTest {
         engine.evaluateOk("""s("sine")""")
         engine.renderFrames(BLOCK)
         assertEquals(emptyList(), engine.snapshot.warnings)
+    }
+
+    @Test
+    fun aDrumMachineIsChosenWithTheBankControlAndPlays() {
+        val engine = engineOf()
+        assertEquals(EvalReport.Ok(0.5, emptyList()), engine.evaluate("""s("bd sd").bank("cosic808")"""))
+        engine.play()
+        assertTrue(rms(engine.renderFrames(CYCLE)) > 0.01, "the machine's kick and snare are heard")
+    }
+
+    @Test
+    fun theBankControlSelectsWhichDrumMachinePlays() {
+        fun heard(code: String): FloatArray = engineOf().run {
+            evaluateOk(code)
+            play()
+            renderFrames(CYCLE / 2)
+        }
+        val bare = heard("""s("bd")""")
+        val machine808 = heard("""s("bd").bank("cosic808")""")
+        val machine909 = heard("""s("bd").bank("cosic909")""")
+        assertFalse(bare.contentEquals(machine808), "the bank control changes the kick")
+        assertFalse(bare.contentEquals(machine909), "the bank control changes the kick")
+        assertFalse(machine808.contentEquals(machine909), "each machine has its own kick")
+        assertContentEquals(machine808, heard("""s("cosic808_bd")"""), "naming the sound in full is the same as the bank control")
+    }
+
+    @Test
+    fun anUnknownSoundOfADrumMachineIsWarnedAboutByItsFullName() {
+        val engine = engineOf()
+        assertEquals(EvalReport.Ok(0.5, listOf("Unknown sound 'cosic808_xx'")), engine.evaluate("""s("xx bd").bank("cosic808")"""))
+        engine.play()
+        engine.renderFrames(CYCLE)
+        assertEquals(listOf("Unknown sound 'cosic808_xx'"), engine.snapshot.warnings)
+    }
+
+    @Test
+    fun theBankReferenceExamplePlaysABuiltInDrumMachine() {
+        val example = reference().first { it.name == "bank" }.example
+        assertEquals(EvalReport.Ok(0.5, emptyList()), engineOf().evaluate(example))
     }
 
     @Test
@@ -449,12 +490,15 @@ class EngineTest {
     fun theSoundListsForTheSoundsScreen() {
         assertEquals(listOf("sine", "sawtooth", "square", "triangle", "white", "pink", "brown"), CosicEngine.SYNTHS)
         assertEquals(listOf("bd", "sd", "hh", "oh", "cp", "rim", "lt", "mt", "ht", "cr"), CosicEngine.DRUMS)
+        assertEquals(listOf("cosic808", "cosic909"), CosicEngine.DRUM_MACHINES.keys.toList())
+        assertEquals(listOf("bd", "sd", "hh", "oh", "cp", "rim", "lt", "mt", "ht", "cr", "cb", "cl"), CosicEngine.DRUM_MACHINES["cosic808"])
+        assertEquals(listOf("bd", "sd", "hh", "oh", "cp", "rim", "lt", "mt", "ht", "cr", "rd"), CosicEngine.DRUM_MACHINES["cosic909"])
     }
 
     @Test
-    fun theWholeDrumKitIsRenderedInTheBackgroundOnceTheEngineExists() {
+    fun theWholeDrumKitAndEveryMachineAreRenderedInTheBackgroundOnceTheEngineExists() {
         val engine = engineOf()
-        val expected = CosicEngine.DRUMS.size * 4 // four variants of every sound
+        val expected = (CosicEngine.DRUMS.size + CosicEngine.DRUM_MACHINES.values.sumOf { it.size }) * 4 // four variants of every sound
         val deadline = System.nanoTime() + 10_000_000_000L
         while (engine.drums.renderedCount < expected && System.nanoTime() < deadline) Thread.sleep(5)
         assertEquals(expected, engine.drums.renderedCount)

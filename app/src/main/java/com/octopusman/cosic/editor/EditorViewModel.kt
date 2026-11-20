@@ -1,5 +1,6 @@
 package com.octopusman.cosic.editor
 
+import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -52,7 +53,7 @@ class EditorViewModel(
     private val projects: ProjectRepository,
     private val engine: CosicEngine,
     private val audioOutput: AudioOutput,
-    sampleRepository: SampleRepository,
+    private val sampleRepository: SampleRepository,
 ) : ViewModel() {
     private val loaded: Project? = projects.load(projectId)
     private val undoStack = UndoStack(SystemClock::uptimeMillis)
@@ -106,8 +107,14 @@ class EditorViewModel(
     /** The sample banks the reference lists next to the built-in sounds. */
     val banks: StateFlow<List<BankSummary>> = sampleRepository.banks
 
-    /** Plays a sound once from the reference, without touching the music that is playing. */
-    fun previewSound(name: String, pitched: Boolean) = engine.playPreview(audioOutput, name, 0, pitched)
+    /** Plays sample [index] of a sound once from the reference, without touching the music that is playing. */
+    fun previewSound(name: String, index: Int, pitched: Boolean) = engine.playPreview(audioOutput, name, index, pitched)
+
+    /** Adds a folder of samples picked on the Sounds tab; its sounds are listed once it is indexed. */
+    fun importFolder(uri: Uri) = sampleRepository.importTree(uri)
+
+    /** Takes an imported folder, and every sound made from it, away again. */
+    fun removeFolder(uri: Uri) = sampleRepository.removeImported(uri)
 
     fun onTextChange(value: TextFieldValue) {
         val before = textValue

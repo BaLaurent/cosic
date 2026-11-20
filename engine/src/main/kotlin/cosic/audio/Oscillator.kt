@@ -58,7 +58,7 @@ internal enum class Waveform(val soundName: String, val baseLevel: Float) {
     }
 }
 
-/** Canonical synth names in display order (aliases excluded), for the Sounds screen. */
+/** Canonical synth names in display order (aliases excluded), for the sound lists of the app. */
 internal val SYNTH_NAMES: List<String> = Waveform.entries.map { it.soundName }
 
 /**

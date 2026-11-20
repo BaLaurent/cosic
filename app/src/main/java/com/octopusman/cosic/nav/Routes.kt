@@ -9,9 +9,6 @@ data object Library
 data class Editor(val projectId: String)
 
 @Serializable
-data object Sounds
-
-@Serializable
 data object Settings
 
 @Serializable

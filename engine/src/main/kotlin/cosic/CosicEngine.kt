@@ -220,6 +220,12 @@ class CosicEngine(val sampleRate: Int, library: SoundLibrary) {
         val SYNTHS: List<String> = SYNTH_NAMES
         val DRUMS: List<String> = DRUM_NAMES
 
+        /**
+         * The synthesised drum machines in display order, each with its sound names in display order:
+         * `s("bd").bank("cosic808")` plays `cosic808_bd`. Every one has [DRUM_VARIANTS] variants, like the [DRUMS].
+         */
+        val DRUM_MACHINES: Map<String, List<String>> = cosic.audio.DRUM_MACHINES
+
         /** How many variants each of [DRUMS] has: `bd:0` to `bd:3`. */
         const val DRUM_VARIANTS: Int = cosic.audio.DRUM_VARIANTS
     }

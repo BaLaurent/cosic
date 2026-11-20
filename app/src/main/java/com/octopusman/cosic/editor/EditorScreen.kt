@@ -104,7 +104,6 @@ fun EditorScreen(
     vm: EditorViewModel,
     ads: AdsController,
     onBack: () -> Unit,
-    onOpenSounds: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     if (vm.missing) {
@@ -202,7 +201,6 @@ fun EditorScreen(
                     PanelToggle(PanelTab.SOUNDS, panelTab, onClick = { togglePanel(PanelTab.SOUNDS) })
                     PanelToggle(PanelTab.REFERENCE, panelTab, onClick = { togglePanel(PanelTab.REFERENCE) })
                     OverflowMenu(
-                        onSounds = onOpenSounds,
                         onShare = { context.shareText(vm.textValue.text) },
                         onSettings = onOpenSettings,
                     )
@@ -257,6 +255,8 @@ fun EditorScreen(
                         openOn = panelTarget,
                         onInsert = vm::insertSnippet,
                         onPreview = vm::previewSound,
+                        onImportFolder = vm::importFolder,
+                        onRemoveFolder = vm::removeFolder,
                         onClose = { panelTab = null },
                         modifier = modifier,
                     )
@@ -327,14 +327,13 @@ private fun PanelToggle(tab: PanelTab, shownTab: PanelTab?, onClick: () -> Unit)
 }
 
 @Composable
-private fun OverflowMenu(onSounds: () -> Unit, onShare: () -> Unit, onSettings: () -> Unit) {
+private fun OverflowMenu(onShare: () -> Unit, onSettings: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { expanded = true }, modifier = Modifier.tagged("editor_menu", stringResource(R.string.action_more))) {
             Icon(Icons.Filled.MoreVert, contentDescription = null)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            MenuItem("menu_sounds", stringResource(R.string.editor_menu_sounds)) { expanded = false; onSounds() }
             MenuItem("menu_share", stringResource(R.string.action_share)) { expanded = false; onShare() }
             MenuItem("menu_settings", stringResource(R.string.action_settings)) { expanded = false; onSettings() }
         }

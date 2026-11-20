@@ -1,16 +1,23 @@
 package com.octopusman.cosic.reference
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -21,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AssistChip
@@ -58,23 +66,16 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.octopusman.cosic.R
 import com.octopusman.cosic.audio.BankSummary
+import com.octopusman.cosic.ui.ConfirmDialog
 import com.octopusman.cosic.ui.tagged
 import cosic.script.reference
 import cosic.script.scaleModes
-
-/** A line of a list: a group heading, the group's description (sounds only), or an item. */
-private sealed interface Row {
-    data class Heading(val category: String) : Row
-
-    data class Doc(val category: String, val text: String) : Row
-
-    data class Entry(val item: ReferenceItem) : Row
-}
 
 /** Every function, sound and scale the panel lists, with the texts of the current language. */
 @Composable
 internal fun rememberReferenceItems(banks: List<BankSummary>): List<ReferenceItem> {
     val texts = ReferenceTexts(
+        drumMachines = GroupText(stringResource(R.string.sounds_drum_machines), stringResource(R.string.reference_doc_drum_machines)),
         synth = GroupText(stringResource(R.string.sounds_synths), stringResource(R.string.reference_doc_synth)),
         drum = GroupText(stringResource(R.string.sounds_drums), stringResource(R.string.reference_doc_drum)),
         instrument = GroupText(stringResource(R.string.sounds_instruments), stringResource(R.string.reference_doc_instrument)),
@@ -82,6 +83,7 @@ internal fun rememberReferenceItems(banks: List<BankSummary>): List<ReferenceIte
         imported = GroupText(stringResource(R.string.sounds_imported), stringResource(R.string.reference_doc_imported)),
         scale = GroupText(stringResource(R.string.reference_scales), stringResource(R.string.reference_doc_scale)),
         showSounds = stringResource(R.string.reference_show_sounds),
+        showDrumMachines = stringResource(R.string.reference_show_drum_machines),
         showScales = stringResource(R.string.reference_show_scales),
     )
     return remember(banks) { referenceItems(reference(), banks, scaleModes(), texts) }
@@ -90,8 +92,9 @@ internal fun rememberReferenceItems(banks: List<BankSummary>): List<ReferenceIte
 /**
  * The panel the editor shows next to the code, with two tabs: the reference of the language
  * (functions and scales) and the sounds. Each tab can be searched and has a row of groups to jump
- * to. Insert adds an example under the cursor's line; tapping a sound plays it. The panel scrolls to
- * [openOn] when it opens. The music keeps playing.
+ * to. Insert adds an example under the cursor's line; tapping a sound plays it. The Sounds tab also
+ * imports folders of samples and removes them again. The panel scrolls to [openOn] when it opens.
+ * The music keeps playing.
  */
 @Composable
 internal fun ReferencePanel(
@@ -100,7 +103,9 @@ internal fun ReferencePanel(
     onTabChange: (PanelTab) -> Unit,
     openOn: OpenOn?,
     onInsert: (String) -> Unit,
-    onPreview: (name: String, pitched: Boolean) -> Unit,
+    onPreview: (name: String, index: Int, pitched: Boolean) -> Unit,
+    onImportFolder: (Uri) -> Unit,
+    onRemoveFolder: (Uri) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -110,8 +115,14 @@ internal fun ReferencePanel(
     val soundList = rememberLazyListState()
     // Where the list of the current tab should scroll to next: first [openOn], then the groups picked.
     var target by remember { mutableStateOf(openOn) }
+    val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
+        if (uri != null) onImportFolder(uri)
+    }
+    // The imported folder the user is being asked to confirm the removal of.
+    var removing by remember { mutableStateOf<Uri?>(null) }
 
-    // "Show sounds" on s() and bank(), "Show scales" on scale(): the tab that lists them, at their group.
+    // "Show sounds" on s(), "Show drum machines" on bank() and "Show scales" on scale(): the tab that
+    // lists them, at their group.
     fun showGroup(category: String) {
         val groupTab = items.tabFor(OpenOn.Group(category))
         if (groupTab == PanelTab.SOUNDS) soundQuery = "" else referenceQuery = ""
@@ -142,9 +153,25 @@ internal fun ReferencePanel(
                     onTargetReached = { target = null },
                     onPickGroup = { target = OpenOn.Group(it) },
                     chips = { it },
-                ) { item, selected -> SoundRow(item, selected, onInsert, onPreview) }
+                    importCategory = stringResource(R.string.sounds_imported),
+                    importRow = { ImportRow(onImport = { folderPicker.launch(null) }) },
+                ) { item, selected -> SoundRow(item, selected, onInsert, onPreview, onRemove = { removing = it }) }
             }
         }
+    }
+
+    removing?.let { folder ->
+        ConfirmDialog(
+            title = stringResource(R.string.sounds_remove_title),
+            message = stringResource(R.string.sounds_remove_message),
+            confirmLabel = stringResource(R.string.action_remove),
+            onConfirm = {
+                // A folder can hold several sounds and a kit; they all go with it.
+                onRemoveFolder(folder)
+                removing = null
+            },
+            onDismiss = { removing = null },
+        )
     }
 }
 
@@ -168,7 +195,10 @@ private fun Tabs(tab: PanelTab, onTabChange: (PanelTab) -> Unit, onClose: () -> 
     }
 }
 
-/** A searchable list of [items] grouped under their headings, with a chip per group to jump to it. */
+/**
+ * A searchable list of [items] grouped under their headings, with a chip per group to jump to it. The
+ * group [importCategory], if there is one, is always listed and has [importRow] under its description.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TabContent(
@@ -180,23 +210,20 @@ private fun TabContent(
     onTargetReached: () -> Unit,
     onPickGroup: (String) -> Unit,
     chips: (List<String>) -> List<String>,
+    importCategory: String? = null,
+    importRow: @Composable () -> Unit = {},
     entry: @Composable (item: ReferenceItem, selected: Boolean) -> Unit,
 ) {
-    val rows = remember(items, query) {
-        items.filter { it.matches(query) }.groupBy { it.category }.flatMap { (category, group) ->
-            val doc = group.first().takeIf { it.sound != null }?.doc
-            listOfNotNull(Row.Heading(category), doc?.let { Row.Doc(category, it) }) + group.map { Row.Entry(it) }
-        }
-    }
-    val categories = remember(rows) { chips(rows.filterIsInstance<Row.Heading>().map { it.category }) }
+    val rows = remember(items, query, importCategory) { items.rows(query, importCategory) }
+    val categories = remember(rows) { chips(rows.filterIsInstance<ListRow.Heading>().map { it.category }) }
     // The item the panel opened on stays outlined after the list has scrolled to it.
     var outlined by remember { mutableStateOf((target as? OpenOn.Item)?.item) }
     // An item is shown with room above it for the heading that sticks to the top.
     val headingRoom = with(LocalDensity.current) { 36.dp.roundToPx() }
     LaunchedEffect(target, rows) {
         val index = when (target) {
-            is OpenOn.Item -> rows.indexOf(Row.Entry(target.item))
-            is OpenOn.Group -> rows.indexOf(Row.Heading(target.category))
+            is OpenOn.Item -> rows.indexOf(ListRow.Entry(target.item))
+            is OpenOn.Group -> rows.indexOf(ListRow.Heading(target.category))
             null -> return@LaunchedEffect
         }
         if (index < 0) return@LaunchedEffect
@@ -227,10 +254,11 @@ private fun TabContent(
     LazyColumn(Modifier.fillMaxSize(), state = listState) {
         for (row in rows) {
             when (row) {
-                is Row.Heading -> stickyHeader(key = "heading-${row.category}") { Heading(row.category) }
+                is ListRow.Heading -> stickyHeader(key = "heading-${row.category}") { Heading(row.category) }
                 // The description scrolls away; only the group name stays pinned, so the list keeps its room.
-                is Row.Doc -> item(key = "doc-${row.category}") { GroupDoc(row.text) }
-                is Row.Entry -> item(key = "${row.item.category}/${row.item.name}") { entry(row.item, row.item == outlined) }
+                is ListRow.Doc -> item(key = "doc-${row.category}") { GroupDoc(row.text) }
+                is ListRow.Import -> item(key = "import-${row.category}") { importRow() }
+                is ListRow.Entry -> item(key = "${row.item.category}/${row.item.name}") { entry(row.item, row.item == outlined) }
             }
         }
     }
@@ -314,19 +342,43 @@ private fun GroupDoc(doc: String) {
     )
 }
 
-/** A sound in one line: tap it to hear it, Insert to add a line that plays it. */
+/** The button that imports a folder of samples, and what to put in the folder. */
+@Composable
+private fun ImportRow(onImport: () -> Unit) {
+    val label = stringResource(R.string.sounds_import_folder)
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+        OutlinedButton(onClick = onImport, modifier = Modifier.tagged("import_folder", label)) {
+            Icon(Icons.Filled.FolderOpen, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text(label)
+        }
+        Text(
+            text = stringResource(R.string.sounds_import_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+    }
+}
+
+/**
+ * A sound in one line: tap it to hear it, Insert to add a line that plays it. A drum lists its variants
+ * under it, each of which can be heard on its own; a drum machine lists its sounds; a folder that was
+ * imported can be removed.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SoundRow(
     item: ReferenceItem,
     isSelected: Boolean,
     onInsert: (String) -> Unit,
-    onPreview: (name: String, pitched: Boolean) -> Unit,
+    onPreview: (name: String, index: Int, pitched: Boolean) -> Unit,
+    onRemove: (Uri) -> Unit,
 ) {
     val sound = item.sound ?: return
     val previewLabel = stringResource(R.string.sounds_preview, item.name)
     val insertLabel = stringResource(R.string.reference_insert_example)
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 2.dp)
@@ -334,32 +386,67 @@ private fun SoundRow(
                 if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent,
                 RoundedCornerShape(8.dp),
             )
-            .clickable(onClickLabel = previewLabel) { onPreview(sound.name, sound.pitched) }
+            .clickable(onClickLabel = previewLabel) { onPreview(sound.name, 0, sound.pitched) }
             .padding(start = 8.dp)
             .tagged("sound_${item.category}_${item.name}", item.name),
     ) {
-        Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(
-            text = item.name,
-            style = MaterialTheme.typography.bodyLarge,
-            fontFamily = FontFamily.Monospace,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 8.dp),
-        )
-        if (sound.count != null) {
-            Text(
-                text = pluralStringResource(R.plurals.sounds_sample_count, sound.count, sound.count),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 8.dp).weight(1f),
-            )
-        } else {
-            Row(Modifier.weight(1f)) {}
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            // The name and the sample count wrap together when the row is narrow, so the buttons stay in view.
+            FlowRow(
+                modifier = Modifier.weight(1f).padding(start = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                itemVerticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                if (sound.count != null) {
+                    Text(
+                        text = pluralStringResource(R.plurals.sounds_sample_count, sound.count, sound.count),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            item.folder?.let { folder ->
+                TextButton(
+                    onClick = { onRemove(folder) },
+                    modifier = Modifier.tagged("remove_${item.name}", stringResource(R.string.sounds_remove_bank, item.name)),
+                ) { Text(stringResource(R.string.action_remove)) }
+            }
+            TextButton(
+                onClick = { onInsert(item.snippet) },
+                modifier = Modifier.tagged("insert_example_${item.category}_${item.name}", insertLabel),
+            ) { Text(insertLabel) }
         }
-        TextButton(
-            onClick = { onInsert(item.snippet) },
-            modifier = Modifier.tagged("insert_example_${item.category}_${item.name}", insertLabel),
-        ) { Text(insertLabel) }
+        if (item.members.isNotEmpty()) {
+            Text(
+                text = item.members.joinToString(" "),
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 32.dp, end = 8.dp, bottom = 6.dp),
+            )
+        }
+        if (sound.variants > 0) {
+            FlowRow(
+                modifier = Modifier.padding(start = 32.dp, end = 8.dp, bottom = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                for (variant in 0 until sound.variants) {
+                    val label = "${sound.name}:$variant"
+                    AssistChip(
+                        onClick = { onPreview(sound.name, variant, sound.pitched) },
+                        label = { Text(label, fontFamily = FontFamily.Monospace) },
+                        modifier = Modifier.tagged("preview_${sound.name}_$variant", stringResource(R.string.sounds_preview, label)),
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -217,7 +217,7 @@ internal fun constructorBuiltins(): List<Builtin> = buildList {
     ) { session.cps = tempo(60.0) }
     setting("hush", "Silences the whole program, whatever else it contains.", "hush()") { session.hushed = true }
     setting("samples", "Not supported yet.", "samples('x')", variadic = ANY, listed = false) {
-        fail("samples() isn't supported yet \u2014 import sample folders from the Sounds screen instead")
+        fail("samples() isn't supported yet \u2014 import a sample folder from the Sounds tab of the editor panel instead")
     }
 }
 
@@ -464,8 +464,8 @@ internal fun controlBuiltins(): List<Builtin> = buildList {
         "note(\"c3 eb3 g3\").s(\"sawtooth\")", ANY,
     ) { mapOf("note" to noteNumber(it)) }
     control(
-        "bank", SOUND, "Prefixes sound names, for sound sets named like my_kick: kick with bank my plays my_kick. The bundled sounds are chosen with s() alone.",
-        "s(\"kick snare\").bank(\"my\")", STR,
+        "bank", SOUND, "Picks the drum machine or sound set: s(\"bd sd\").bank(\"cosic808\") plays cosic808_bd and cosic808_sd.",
+        "s(\"bd sd hh sd\").bank(\"cosic808\")", STR,
     ) { mapOf("bank" to text(it)) }
     numericControl(
         "speed", SOUND, "Playback speed of samples: 2 is an octave up, negative plays backwards.",
