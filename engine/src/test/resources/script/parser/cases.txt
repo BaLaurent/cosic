@@ -1,0 +1,2139 @@
+## Hand-written snippets for the parser. `node tools/strudel-ref/parser-oracle.mjs` parses each with acorn (strict mode) and writes
+## oracle.json; ParserOracleTest compares the Kotlin parser with it, tree and error alike.
+## Format: `### <name>` then the code; `### <name> !json` then one JSON string literal. `## ` lines are comments.
+
+## ---- programs and comments
+### program.empty
+
+### program.whitespace !json
+"  \n\t \r\n  \u00a0\ufeff\u2003"
+### program.line-comment
+// just a comment
+### program.line-comment-final-newline !json
+"a // c\n"
+### program.block-comment
+/* a */ b /* c */
+### program.block-comment-multiline
+a /* one
+two */ b
+### program.crlf !json
+"a\r\nb\r\n(c)"
+### program.line-separators !json
+"a\u2028b\u2029c"
+### program.unterminated-comment-error
+a /* never closed
+### program.unterminated-comment-at-start-error
+/* never closed
+
+## ---- simple statements
+### stmt.expression
+a;
+### stmt.expression-no-semicolon
+a
+### stmt.two-on-a-line
+a; b
+### stmt.empty-statements
+;;;
+### stmt.block
+{ a; b }
+### stmt.block-empty
+{}
+### stmt.block-nested
+{ { a } }
+### stmt.if
+if (a) b
+### stmt.if-else
+if (a) b; else c
+### stmt.if-else-chain
+if (a) b
+else if (c) d
+else e
+### stmt.if-block
+if (a) { b } else { c }
+### stmt.dangling-else
+if (a) if (b) c; else d
+### stmt.while
+while (a) b
+### stmt.while-block
+while (a < 3) { a++ }
+### stmt.do-while
+do a(); while (b)
+### stmt.do-while-semicolon
+do { a } while (b);
+### stmt.do-while-asi-quirk
+do a(); while (b) c()
+### stmt.for-classic
+for (let i = 0; i < 3; i++) a(i)
+### stmt.for-empty-parts
+for (;;) break
+### stmt.for-var-multi
+for (var i = 0, j = 10; i < j; i++, j--) {}
+### stmt.for-expression-init
+for (i = 0; i < 3; i++) a
+### stmt.for-in
+for (var k in o) a(k)
+### stmt.for-in-let
+for (let k in o) a(k)
+### stmt.for-in-expression
+for (k in o) a
+### stmt.for-in-member
+for (a.b in o) c
+### stmt.for-of-const-destructure
+for (const [k, v] of Object.entries(o)) a(k, v)
+### stmt.for-of-object-destructure
+for (const {a, b: c} of list) d
+### stmt.for-of-expression
+for (x of y) z
+### stmt.for-of-pattern-assign
+for ([a, b] of c) d
+### stmt.for-of-object-pattern-assign
+for ({a, b} of c) d
+### stmt.for-of-comma-right-error
+for (x of a, b) c
+### stmt.for-of-assign-right
+for (x of a = b) c
+### stmt.for-in-comma-right
+for (x in a, b) c
+### stmt.for-in-init-in-operator-error
+for (var i = a in b; ;) c
+### stmt.for-of-initializer-error
+for (const x = 1 of y) z
+### stmt.for-in-initializer-error
+for (var x = 1 in y) z
+### stmt.for-of-let-error
+for (let of x) y
+### stmt.for-await-top-level
+for await (const x of y) z
+### stmt.for-of-async-error
+for (async of x) y
+### stmt.for-of-two-declarators-error
+for (var a, b of c) d
+### stmt.for-body-declaration-error
+for (;;) let x = 1
+### stmt.labeled-loop-continue
+outer: for (;;) { for (;;) { continue outer } }
+### stmt.break-continue
+while (1) { if (a) break; else continue }
+### stmt.break-label
+a: { break a }
+### stmt.break-outside-error
+break
+### stmt.continue-outside-error
+continue
+### stmt.continue-label-not-loop-error
+a: { continue a }
+### stmt.break-unknown-label-error
+while (1) { break b }
+### stmt.break-label-newline
+a: while (1) { break
+a }
+### stmt.switch
+switch (a) { case 1: b; case 2: c; break; default: d }
+### stmt.switch-default-middle
+switch (a) { case 1: b; default: c; case 2: d }
+### stmt.switch-empty
+switch (a) {}
+### stmt.switch-two-defaults-error
+switch (a) { default: b; default: c }
+### stmt.switch-statement-before-case-error
+switch (a) { b; case 1: c }
+### stmt.switch-lexical-clash-error
+switch (a) { case 1: let x; case 2: let x }
+### stmt.try-catch
+try { a } catch (e) { b }
+### stmt.try-catch-no-binding
+try { a } catch { b }
+### stmt.try-finally
+try { a } finally { b }
+### stmt.try-catch-finally
+try { a } catch (e) { b } finally { c }
+### stmt.try-catch-destructure
+try { a } catch ({ message }) { b }
+### stmt.try-alone-error
+try { a }
+### stmt.catch-redeclare-error
+try { a } catch (e) { let e }
+### stmt.catch-var-redeclare
+try { a } catch (e) { var e }
+### stmt.catch-destructure-var-error
+try { a } catch ([e]) { var e }
+### stmt.throw
+throw new Error("x")
+### stmt.throw-newline-error
+throw
+new Error("x")
+### stmt.return-outside-error
+return 1
+### stmt.return-in-function
+function f() { return 1 }
+### stmt.return-empty
+function f() { return }
+### stmt.return-newline-value
+function f() { return
+1 }
+### stmt.return-semicolon-then-value
+function f() { return; 1 }
+### stmt.return-in-arrow
+() => { return 1 }
+### stmt.debugger
+debugger
+### stmt.with-error
+with (a) b
+### stmt.empty-body-function-in-if-error
+if (a) function f() {}
+### stmt.function-in-label-error
+a: function f() {}
+### stmt.function-in-block
+{ function f() {} }
+### stmt.async-function-in-if-error
+if (a) async function f() {}
+
+## ---- declarations
+### decl.var
+var a
+### decl.var-init
+var a = 1
+### decl.var-multi
+var a = 1, b, c = 3
+### decl.let
+let a = 1
+### decl.let-no-init
+let a
+### decl.const
+const a = 1
+### decl.const-no-init-error
+const a
+### decl.const-no-init-second-error
+const a = 1, b
+### decl.const-destructure-no-init-error
+const [a]
+### decl.let-destructure-no-init-error
+let {a}
+### decl.object-destructure
+const { a, b } = o
+### decl.object-destructure-rename
+const { a: x, b: y } = o
+### decl.object-destructure-default
+const { a = 1, b: y = 2 } = o
+### decl.object-destructure-rest
+const { a, ...rest } = o
+### decl.object-destructure-nested
+const { a: { b }, c: [d, e] } = o
+### decl.object-destructure-computed
+const { [k]: v } = o
+### decl.object-destructure-string-key
+const { "a": x, 1: y } = o
+### decl.object-destructure-keyword-key
+const { if: x, class: y } = o
+### decl.object-destructure-shorthand-keyword-error
+const { if } = o
+### decl.array-destructure
+const [a, b] = o
+### decl.array-destructure-holes
+const [, a, , b] = o
+### decl.array-destructure-default
+const [a = 1, [b] = []] = o
+### decl.array-destructure-rest
+const [a, ...rest] = o
+### decl.array-destructure-rest-pattern
+const [a, ...[b, c]] = o
+### decl.array-destructure-rest-comma-error
+const [a, ...rest,] = o
+### decl.array-destructure-rest-default-error
+const [...a = 1] = o
+### decl.object-rest-pattern-error
+const { ...{ a } } = o
+### decl.redeclare-let-let-error
+let a; let a
+### decl.redeclare-let-const-error
+let a; const a
+### decl.redeclare-const-var-error
+const a = 1; var a
+### decl.redeclare-var-let-error
+var a; let a
+### decl.redeclare-var-var
+var a; var a
+### decl.redeclare-function-let-error
+function a() {} let a
+### decl.redeclare-let-function-error
+let a; function a() {}
+### decl.redeclare-function-function
+function a() {} function a() {}
+### decl.redeclare-in-pattern-error
+let [a, a] = b
+### decl.redeclare-var-in-block-error
+let a; { var a }
+### decl.shadow-in-block
+let a; { let a }
+### decl.var-hoists-through-block-error
+{ var a } let a
+### decl.function-in-block-let-clash-error
+{ let a; function a() {} }
+### decl.function-in-block-duplicates-error
+{ function a() {} function a() {} }
+### decl.let-as-identifier-error
+let
+### decl.let-assign-error
+let = 1
+### decl.let-ident-in-expression-error
+a = let
+### decl.let-newline-binding
+let
+x = 1
+### decl.let-bracket-newline
+let
+[a] = b
+### decl.let-let-error
+let let = 1
+### decl.const-let-name-error
+const let = 1
+### decl.yield-binding-error
+var yield
+### decl.static-binding-error
+var static
+### decl.public-binding-error
+var public
+### decl.implements-binding-error
+var implements
+### decl.enum-binding-error
+var enum
+### decl.eval-binding-error
+var eval
+### decl.arguments-binding-error
+var arguments
+### decl.eval-assign-error
+eval = 1
+### decl.arguments-assign-error
+arguments++
+### decl.keyword-binding-error
+var if
+### decl.this-binding-error
+var this
+### decl.async-binding
+var async
+### decl.of-binding
+var of
+### decl.get-set-binding
+var get, set
+### decl.await-binding-top-level
+var await
+### decl.await-binding-in-function
+function f() { var await }
+### decl.await-binding-in-async-function-error
+async function f() { var await }
+
+## ---- functions
+### fn.declaration
+function f(a, b) { return a + b }
+### fn.declaration-no-params
+function f() {}
+### fn.declaration-defaults
+function f(a = 1, b = a) {}
+### fn.declaration-rest
+function f(a, ...rest) {}
+### fn.declaration-rest-not-last-error
+function f(...a, b) {}
+### fn.declaration-rest-default-error
+function f(...a = []) {}
+### fn.declaration-rest-trailing-comma-error
+function f(...a,) {}
+### fn.declaration-destructured-params
+function f({ a, b }, [c, d]) {}
+### fn.declaration-trailing-comma
+function f(a, b,) {}
+### fn.declaration-trailing-comma-only-error
+function f(,) {}
+### fn.declaration-duplicate-params-error
+function f(a, a) {}
+### fn.declaration-duplicate-in-destructuring-error
+function f(a, [a]) {}
+### fn.declaration-eval-param-error
+function f(eval) {}
+### fn.declaration-let-body-clash-error
+function f(a) { let a }
+### fn.declaration-var-body-clash
+function f(a) { var a }
+### fn.declaration-eval-name-error
+function eval() {}
+### fn.declaration-yield-name-error
+function yield() {}
+### fn.declaration-name-missing-error
+function () {}
+### fn.declaration-keyword-name-error
+function if() {}
+### fn.declaration-async
+async function f() { await a }
+### fn.declaration-async-newline
+async
+function f() {}
+### fn.declaration-nested
+function f() { function g() { return 1 } return g() }
+### fn.declaration-body-labels-reset-error
+a: { function f() { break a } }
+### fn.expression
+x = function () {}
+### fn.expression-named
+x = function f(a) { return f }
+### fn.expression-async
+x = async function () { await a }
+### fn.expression-async-named
+x = async function f() {}
+### fn.expression-iife
+(function () { a })()
+### fn.expression-iife-bang
+!function () { a }()
+### fn.expression-name-binding-eval-error
+x = function eval() {}
+### fn.generator-error
+function* g() { yield 1 }
+### fn.generator-expression-error
+x = function* () {}
+### fn.generator-async-error
+async function* g() {}
+### fn.generator-method-error
+x = { *g() {} }
+### fn.generator-async-method-error
+x = { async *g() {} }
+### fn.yield-keyword-error
+yield 1
+### fn.yield-in-function-error
+function f() { yield 1 }
+### fn.arrow-single-param
+x => x
+### fn.arrow-parenthesised
+(x) => x
+### fn.arrow-no-params
+() => 1
+### fn.arrow-two-params
+(x, y) => x + y
+### fn.arrow-block-body
+(x) => { return x }
+### fn.arrow-object-body
+() => ({})
+### fn.arrow-object-body-props
+() => ({ a: 1 })
+### fn.arrow-block-body-label-like
+() => { a: 1 }
+### fn.arrow-defaults
+(a = 1, b = a) => b
+### fn.arrow-rest
+(a, ...rest) => rest
+### fn.arrow-rest-only
+(...rest) => rest
+### fn.arrow-destructure
+({ a, b: [c] }, [d, e = 1]) => a
+### fn.arrow-trailing-comma
+(a, b,) => a
+### fn.arrow-nested
+a => b => c => a + b + c
+### fn.arrow-in-call
+f(x => x * 2, (a, b) => a)
+### fn.arrow-in-conditional
+a ? b => 1 : c => 2
+### fn.arrow-in-conditional-paren
+a ? (b) => 1 : (c) => 2
+### fn.arrow-assign
+f = x => x
+### fn.arrow-iife
+(() => 1)()
+### fn.arrow-body-comma
+a => b, c
+### fn.arrow-body-assign
+a => b = c
+### fn.arrow-body-conditional
+a => b ? c : d
+### fn.arrow-newline-before-arrow-error
+(a)
+=> a
+### fn.arrow-newline-before-arrow-ident-error
+a
+=> a
+### fn.arrow-newline-in-params
+(a,
+ b) => a
+### fn.arrow-invalid-param-error
+(1) => 1
+### fn.arrow-invalid-param-member-error
+(a.b) => 1
+### fn.arrow-duplicate-params-error
+(a, a) => 1
+### fn.arrow-duplicate-with-body-let-error
+(a) => { let a }
+### fn.arrow-rest-not-last-error
+(...a, b) => 1
+### fn.arrow-parenthesised-param-error
+((a)) => 1
+### fn.arrow-empty-parens-no-arrow-error
+()
+### fn.arrow-in-binary-error
+1 + a => a
+### fn.arrow-after-unary-error
+!a => a
+### fn.arrow-call-directly
+a => a()
+### fn.arrow-call-result
+(a => a)()
+### fn.arrow-member-after-body-error
+x => 1.foo
+### fn.arrow-async-single
+async x => x
+### fn.arrow-async-parenthesised
+async (x) => x
+### fn.arrow-async-no-params
+async () => await a
+### fn.arrow-async-block
+async (x) => { await x }
+### fn.arrow-async-newline
+async
+x => x
+### fn.arrow-async-call-not-arrow
+async(x)
+### fn.arrow-async-call-then-newline-arrow-error
+async(x)
+=> x
+### fn.arrow-async-member
+async.x
+### fn.arrow-async-await-param-error
+async (await) => 1
+### fn.arrow-await-param-top-level-error
+(await) => 1
+### fn.arrow-await-body-top-level-error
+() => await a
+### fn.arrow-await-in-nested-function-error
+function f() { await a }
+### fn.arrow-await-in-async-arrow
+async () => { (await a) }
+### fn.arrow-await-default-error
+async (a = await b) => 1
+### fn.arrow-yield-param-error
+(yield) => 1
+### fn.arrow-eval-param-error
+(eval) => 1
+### fn.arrow-let-param-error
+(let) => 1
+### fn.arrow-in-for-init-error
+for (var f = x => x in y; ;) z
+### fn.arrow-as-for-of-target-error
+for (x => x of y) z
+### fn.getter-property-no-parens
+x = { get a() { return 1 } }
+### fn.setter-property
+x = { set a(v) {} }
+### fn.getter-with-param-error
+x = { get a(v) {} }
+### fn.setter-without-param-error
+x = { set a() {} }
+### fn.setter-two-params-error
+x = { set a(v, w) {} }
+### fn.setter-rest-error
+x = { set a(...v) {} }
+
+## ---- expressions: literals
+### lit.integer
+1
+### lit.decimal
+1.5
+### lit.leading-dot
+.5
+### lit.trailing-dot
+5.
+### lit.exponent
+1e3
+### lit.exponent-negative
+1e-3
+### lit.exponent-positive
+1E+3
+### lit.exponent-without-digits-error
+1e
+### lit.exponent-sign-without-digits-error
+1e+
+### lit.dot-exponent
+.5e2
+### lit.hex
+0x1F
+### lit.hex-upper
+0XFF
+### lit.octal
+0o17
+### lit.binary
+0b101
+### lit.hex-empty-error
+0x
+### lit.binary-digit-error
+0b2
+### lit.zero
+0
+### lit.zero-dot
+0.
+### lit.zero-dot-digits
+0.0
+### lit.legacy-octal-error
+017
+### lit.legacy-octal-zero-prefix-error
+00
+### lit.eight-nine-error
+089
+### lit.separators
+1_000_000
+### lit.separators-fraction
+1_0.0_1
+### lit.separators-exponent
+1e1_0
+### lit.separators-hex
+0xFF_FF
+### lit.separator-double-error
+1__0
+### lit.separator-trailing-error
+1_
+### lit.separator-leading-fraction-error
+1._5
+### lit.separator-trailing-fraction-error
+1_.5
+### lit.separator-after-zero-error
+0_1
+### lit.separator-after-prefix-error
+0x_1
+### lit.identifier-after-number-error
+1a
+### lit.identifier-after-number-hex-error
+0x1g
+### lit.identifier-after-fraction-error
+1.5x
+### lit.number-member
+1..toString()
+### lit.number-space-member
+1 .toString()
+### lit.number-paren-member
+(1).toString()
+### lit.dot-after-int-method-error
+1.toString()
+### lit.bigint-error
+10n
+### lit.bigint-hex-error
+0x1n
+### lit.string-double
+"abc"
+### lit.string-single
+'abc'
+### lit.string-empty
+""
+### lit.string-escapes
+"a\nb\tc\rd\be\ff\vg\0h\\i\"j\'k"
+### lit.string-hex-escape
+"\x41\x7a"
+### lit.string-unicode-escape
+"\u0041\u00e9"
+### lit.string-unicode-brace-escape
+"\u{41}\u{1F600}"
+### lit.string-line-continuation !json
+"'a\\\nb'"
+### lit.string-line-continuation-crlf !json
+"'a\\\r\nb'"
+### lit.string-line-continuation-u2028 !json
+"'a\\\u2028b'"
+### lit.string-raw-u2028 !json
+"'a\u2028b'"
+### lit.string-other-escape
+'\q\a\z'
+### lit.string-surrogate-pair
+"😀"
+### lit.string-quote-in-other-quote
+"it's" + 'say "x"'
+### lit.string-bad-hex-error
+"\xZZ"
+### lit.string-short-hex-error
+"\x4"
+### lit.string-bad-unicode-error
+"\u12"
+### lit.string-unicode-brace-unclosed-error
+"\u{41"
+### lit.string-unicode-out-of-range-error
+"\u{110000}"
+### lit.string-octal-escape-error
+"\01"
+### lit.string-octal-escape-large-error
+"\377"
+### lit.string-zero-then-digit-error
+"\08"
+### lit.string-eight-error
+"\8"
+### lit.string-unterminated-error
+"abc
+### lit.string-newline-error
+"a
+b"
+### lit.string-eof-in-escape-error
+"abc\
+### lit.string-single-unterminated-error
+'abc
+### lit.template-empty
+``
+### lit.template-simple
+`abc`
+### lit.template-expression
+`a${b}c`
+### lit.template-two-expressions
+`${a}${b}`
+### lit.template-nested
+`a${`b${c}d`}e`
+### lit.template-expression-object
+`a${{ b: 1 }.b}c`
+### lit.template-expression-function
+`a${() => { return 1 }}c`
+### lit.template-expression-sequence
+`${a, b}`
+### lit.template-newline
+`a
+b`
+### lit.template-crlf !json
+"`a\r\nb\rc`"
+### lit.template-escapes
+`a\nb\`c\${d}\\`
+### lit.template-dollar
+`$ {a} $`
+### lit.template-dollar-brace-escaped
+`\${a}`
+### lit.template-unicode-escape
+`\u{41}\x42`
+### lit.template-line-continuation
+`a\
+b`
+### lit.template-unterminated-error
+`abc
+### lit.template-unterminated-after-expression-error
+`a${b}
+### lit.template-unterminated-in-expression-error
+`a${b
+### lit.template-empty-expression-error
+`a${}b`
+### lit.template-bad-escape-error
+`\xZZ`
+### lit.template-octal-error
+`\01`
+### lit.template-zero
+`\0`
+### lit.template-zero-digit-error
+`\08`
+### lit.template-eight-error
+`\8`
+### lit.tagged-simple
+a`b`
+### lit.tagged-expression
+a`b${c}d`
+### lit.tagged-member
+a.b`c`
+### lit.tagged-call
+a()`b`
+### lit.tagged-chain
+a`b``c`
+### lit.tagged-bad-escape
+a`\xZZ`
+### lit.tagged-octal
+a`\01`
+### lit.tagged-bad-escape-in-second-chunk
+a`ok${b}\u{`
+### lit.tagged-new
+new a`b`
+### lit.tagged-optional-error
+a?.b`c`
+### lit.tagged-optional-direct-error
+a?.`c`
+### lit.tagged-chain-after-optional-error
+a?.b.c`d`
+### lit.tagged-paren-optional
+(a?.b)`c`
+### lit.boolean-null
+[true, false, null]
+### lit.this
+this
+### lit.regex-error
+/ab+c/g
+### lit.regex-in-call-error
+f(/x/)
+### lit.regex-after-return-error
+function f() { return /x/ }
+### lit.division
+a / b / c
+### lit.division-after-paren
+(a + b) / 2
+### lit.division-after-bracket
+a[0] / 2
+### lit.division-after-number
+4 / 2
+### lit.division-after-string
+"a" / 2
+### lit.division-assign
+a /= 2
+### lit.division-after-this
+this / 2
+### lit.division-after-increment
+a++ / 2
+### lit.regex-unterminated-error
+a = /ab
+### lit.regex-class-slash-error
+a = /[/]/
+### lit.regex-after-assign-error
+a = /=/
+### lit.regex-after-comma-error
+f(1, /=/)
+### lit.regex-after-typeof-error
+typeof /x/
+### lit.regex-after-open-brace-error
+{ /x/ }
+### lit.regex-statement-start-error
+/x/.test(a)
+### lit.regex-after-paren-statement-error
+if (a) /x/.test(b)
+
+## ---- identifiers
+### ident.simple
+a
+### ident.dollar
+$
+### ident.underscore
+_
+### ident.dollar-underscore
+$_a1
+### ident.unicode
+ĳ
+### ident.unicode-letter
+é
+### ident.unicode-astral
+𠮷
+### ident.digit-start-error
+1a
+### ident.escape
+\u0061bc
+### ident.escape-brace
+a\u{62}c
+### ident.escape-invalid-error
+\u0031a
+### ident.escape-bad-error
+a\u00
+### ident.escape-without-u-error
+a\x41
+### ident.escape-in-keyword-error
+v\u0061r a
+### ident.escape-in-keyword-use-error
+x = \u0074his
+### ident.escape-contextual-error
+\u0061sync () => 1
+### ident.escape-property-keyword
+a.v\u0061r
+### ident.hash-error
+#a
+### ident.hash-space-error
+# a
+### ident.at-error
+@a
+### ident.backslash-error
+\
+### ident.lone-surrogate-error !json
+"\ud800"
+### ident.nbsp-space !json
+"a\u00a0+\u00a0b"
+### ident.question-error
+a ? b
+### ident.keyword-as-property
+a.if.class.new.default
+### ident.keyword-as-property-call
+a.delete(b).in(c)
+### ident.private-access-error
+a.#b
+
+## ---- arrays and objects
+### array.empty
+[]
+### array.elements
+[1, 2, 3]
+### array.trailing-comma
+[1, 2,]
+### array.holes
+[, , 1, , ]
+### array.holes-only
+[,]
+### array.spread
+[...a, b, ...c]
+### array.nested
+[[1], [2, [3]]]
+### array.member
+[1, 2][0]
+### array.double-comma-end
+[1,,]
+### array.unclosed-error
+[1, 2
+### object.empty
+x = {}
+### object.props
+x = { a: 1, b: 2 }
+### object.trailing-comma
+x = { a: 1, }
+### object.shorthand
+x = { a, b }
+### object.string-and-number-keys
+x = { "a": 1, 2: 3, 0x10: 4, 1.5: 5 }
+### object.computed
+x = { [a]: 1, [b + c]: 2 }
+### object.keyword-keys
+x = { if: 1, class: 2, new: 3, true: 4, null: 5 }
+### object.method
+x = { f() { return 1 }, g(a, b) {} }
+### object.method-computed
+x = { [a]() {} }
+### object.method-string-name
+x = { "a"() {}, 1() {} }
+### object.async-method
+x = { async f() { await 1 } }
+### object.async-method-newline-error
+x = { async
+f() {} }
+### object.async-as-key
+x = { async: 1 }
+### object.async-shorthand
+x = { async }
+### object.async-method-string-name
+x = { async "a"() {} }
+### object.async-computed
+x = { async [a]() {} }
+### object.async-keyword-name
+x = { async if() {} }
+### object.get-set-as-keys
+x = { get: 1, set: 2 }
+### object.get-set-shorthand
+x = { get, set }
+### object.get-set-method-names
+x = { get() {}, set() {} }
+### object.getter
+x = { get a() { return 1 } }
+### object.getter-computed
+x = { get [a]() { return 1 } }
+### object.getter-string
+x = { get "a"() { return 1 } }
+### object.getter-keyword
+x = { get if() { return 1 } }
+### object.setter
+x = { set a(v) { b = v } }
+### object.getter-setter-pair
+x = { get a() { return 1 }, set a(v) {} }
+### object.spread
+x = { ...a, b: 1, ...c }
+### object.spread-trailing-comma
+x = { ...a, }
+### object.spread-call
+x = { ...f() }
+### object.nested
+x = { a: { b: { c: 1 } } }
+### object.at-statement-start-is-block
+{ a: 1 }
+### object.at-statement-start-block-two-error
+{ a: 1, b: 2 }
+### object.paren-statement
+({ a: 1 })
+### object.paren-statement-member
+({ a: 1 }).a
+### object.shorthand-keyword-error
+x = { if }
+### object.shorthand-strict-reserved-error
+x = { static }
+### object.shorthand-yield-error
+x = { yield }
+### object.shorthand-eval
+x = { eval }
+### object.shorthand-await-top-level
+x = { await }
+### object.shorthand-let-error
+x = { let }
+### object.shorthand-initializer-error
+x = { a = 1 }
+### object.shorthand-initializer-in-pattern
+({ a = 1 } = x)
+### object.shorthand-initializer-in-arrow-params
+({ a = 1 }) => a
+### object.shorthand-initializer-nested-pattern
+({ a: { b = 1 } } = x)
+### object.shorthand-initializer-in-call-error
+f({ a = 1 })
+### object.shorthand-initializer-in-array-pattern
+[{ a = 1 }] = x
+### object.shorthand-initializer-then-use-error
+({ a = 1 }, x)
+### object.proto-duplicate-error
+x = { __proto__: a, __proto__: b }
+### object.proto-duplicate-shorthand
+x = { __proto__: a, __proto__ }
+### object.proto-duplicate-computed
+x = { __proto__: a, ["__proto__"]: b }
+### object.proto-duplicate-method
+x = { __proto__: a, __proto__() {} }
+### object.proto-duplicate-pattern
+({ __proto__: a, __proto__: b } = x)
+### object.proto-duplicate-arrow-params
+({ __proto__: a, __proto__: b }) => 1
+### object.proto-string-duplicate-error
+x = { "__proto__": a, __proto__: b }
+### object.missing-colon-error
+x = { a 1 }
+### object.missing-comma-error
+x = { a: 1 b: 2 }
+### object.double-comma-error
+x = { a: 1,, b: 2 }
+### object.unclosed-error
+x = { a: 1
+### object.number-key-method
+x = { 1() {} }
+### object.numeric-separator-key
+x = { 1_0: 1 }
+### object.async-getter-error
+x = { async get a() {} }
+### object.getter-generator-error
+x = { get *a() {} }
+### object.method-in-pattern-error
+({ a() {} } = x)
+### object.getter-in-pattern-error
+({ get a() {} } = x)
+
+## ---- operators and precedence
+### op.precedence-mul-add
+a + b * c
+### op.precedence-add-mul
+a * b + c
+### op.left-assoc
+a - b - c
+### op.exponent-right-assoc
+a ** b ** c
+### op.exponent-unary-error
+-a ** b
+### op.exponent-unary-paren
+(-a) ** b
+### op.exponent-after-unary-operand
+a ** -b
+### op.exponent-typeof-error
+typeof a ** b
+### op.exponent-await-error
+async () => await a ** b
+### op.exponent-update-prefix
+++a ** b
+### op.exponent-update-postfix
+a++ ** b
+### op.exponent-negative-number-error
+-2 ** 2
+### op.exponent-assign
+a **= b ** c
+### op.nullish-or-error
+a ?? b || c
+### op.or-nullish-error
+a || b ?? c
+### op.nullish-and-error
+a ?? b && c
+### op.and-nullish-error
+a && b ?? c
+### op.nullish-paren-or
+(a ?? b) || c
+### op.or-paren-nullish
+a || (b ?? c)
+### op.nullish-chain
+a ?? b ?? c
+### op.nullish-with-bitor
+a ?? b | c
+### op.nullish-then-comparison
+a ?? b == c
+### op.or-and-precedence
+a || b && c
+### op.and-or-precedence
+a && b || c
+### op.bitwise-chain
+a | b ^ c & d
+### op.equality-relational
+a == b < c
+### op.equality-chain
+a === b !== c
+### op.shift
+a << b >> c >>> d
+### op.relational-in-instanceof
+a in b instanceof c
+### op.in-in-for-init
+for (a in b in c) d
+### op.in-parenthesised-for-init
+for (var i = (a in b); ;) c
+### op.comparison-chain
+a < b > c <= d >= e
+### op.unary-chain
+!~-+a
+### op.unary-typeof
+typeof a === "string"
+### op.unary-void
+void 0
+### op.unary-delete-member
+delete a.b
+### op.unary-delete-ident-error
+delete a
+### op.unary-delete-paren-ident-error
+delete (a)
+### op.unary-delete-call
+delete a()
+### op.unary-not
+!a && b
+### op.unary-minus-minus
+- -a
+### op.unary-minus-prefix-decrement
+- --a
+### op.unary-plus-plus
++ +a
+### op.minus-minus-binary
+a - -b
+### op.update-prefix
+++a
+### op.update-postfix
+a++
+### op.update-prefix-member
+--a.b
+### op.update-postfix-member
+a[b]++
+### op.update-on-literal-error
+1++
+### op.update-on-call-error
+f()++
+### op.update-prefix-on-literal-error
+++1
+### op.update-on-paren-ident
+(a)++
+### op.update-on-paren-member
+(a.b)++
+### op.update-on-paren-literal-error
+(1)++
+### op.update-on-optional-error
+a?.b++
+### op.update-postfix-newline
+a
+++b
+### op.update-postfix-newline-binary
+a
+++
+b
+### op.update-chained-error
+a++++
+### op.update-plus-plus
+a++ + ++b
+### op.update-eval-error
+eval++
+### op.update-arguments-error
+++arguments
+### op.conditional
+a ? b : c
+### op.conditional-nested-right
+a ? b : c ? d : e
+### op.conditional-nested-middle
+a ? b ? c : d : e
+### op.conditional-sequence-middle
+a ? (b, c) : d
+### op.conditional-comma-middle-error
+a ? b, c : d
+### op.conditional-assign-parts
+a ? b = 1 : c = 2
+### op.conditional-in-for-init
+for (var i = a ? b in c : d; ;) e
+### op.conditional-missing-colon-error
+a ? b
+### op.assign
+a = b
+### op.assign-chain
+a = b = c
+### op.assign-compound
+a += b
+### op.assign-all
+a -= 1; a *= 1; a /= 1; a %= 1; a **= 1; a <<= 1; a >>= 1; a >>>= 1; a &= 1; a |= 1; a ^= 1
+### op.assign-logical
+a ||= b; a &&= c; a ??= d
+### op.assign-logical-member
+a.b ||= c
+### op.assign-member
+a.b = c
+### op.assign-computed
+a[b] = c
+### op.assign-call-error
+f() = 1
+### op.assign-literal-error
+1 = 2
+### op.assign-binary-error
+a + b = c
+### op.assign-compound-call-error
+f() += 1
+### op.assign-compound-pattern-error
+[a] += 1
+### op.assign-compound-object-pattern-error
+({ a } += 1)
+### op.assign-paren-ident
+(a) = 1
+### op.assign-paren-member
+(a.b) = 1
+### op.assign-paren-pattern-error
+([a]) = 1
+### op.assign-paren-object-pattern-error
+({ a }) = 1
+### op.assign-nested-paren-ident
+[(a)] = 1
+### op.assign-nested-paren-member
+[(a.b)] = 1
+### op.assign-nested-paren-pattern-error-2
+[([a])] = 1
+### op.assign-this-error
+this = 1
+### op.assign-optional-error
+a?.b = 1
+### op.assign-template-error
+`a` = 1
+### op.assign-arrow
+a => a = 1
+### op.assign-in-condition
+if (a = b) c
+### op.assign-logical-pattern-error
+[a] ||= b
+### op.assign-destructure-array
+[a, b] = [b, a]
+### op.assign-destructure-array-holes
+[, a, , b] = c
+### op.assign-destructure-object
+({ a, b } = c)
+### op.assign-destructure-object-rename
+({ a: x, b: y } = c)
+### op.assign-destructure-object-member
+({ a: x.y, b: z[0] } = c)
+### op.assign-destructure-array-member
+[a.b, c[d]] = e
+### op.assign-destructure-default
+[a = 1, b = 2] = c
+### op.assign-destructure-object-default
+({ a = 1, b: c = 2 } = d)
+### op.assign-destructure-rest
+[a, ...b] = c
+### op.assign-destructure-rest-member
+[a, ...b.c] = d
+### op.assign-destructure-rest-object
+({ a, ...b } = c)
+### op.assign-destructure-rest-object-member
+({ a, ...b.c } = d)
+### op.assign-destructure-rest-not-last-error
+[...a, b] = c
+### op.assign-destructure-rest-trailing-comma-error
+[...a,] = b
+### op.assign-destructure-rest-default-error
+[...a = 1] = b
+### op.assign-destructure-nested
+[a, [b, { c }]] = d
+### op.assign-destructure-literal-error
+[1] = a
+### op.assign-destructure-call-error
+[f()] = a
+### op.assign-destructure-binary-error
+[a + b] = c
+### op.assign-destructure-spread-pattern-error
+({ ...{ a } } = b)
+### op.assign-destructure-spread-array-error
+({ ...[a] } = b)
+### op.assign-destructure-spread-member
+({ ...a.b } = c)
+### op.assign-destructure-in-for-of-head
+for ([a, b] of c) d
+### op.assign-destructure-keyword-error
+[if] = a
+### op.assign-destructure-this-error
+[this] = a
+### op.assign-destructure-eval-error
+[eval] = a
+### op.assign-destructure-arrow-default
+[a = b => 1] = c
+### op.assign-destructure-paren-expression
+[(a)] = c
+### op.assign-destructure-async-arrow-params
+async ([a, b], { c }) => 1
+### op.sequence
+a, b, c
+### op.sequence-paren
+(a, b)
+### op.sequence-in-call-args-paren
+f((a, b))
+### op.sequence-trailing-comma-error
+(a, b,)
+### op.sequence-empty-parens-error
+()
+### op.sequence-in-for
+for (a = 1, b = 2; a < b; a++, b--) c
+### op.sequence-in-array-holes
+[a, b,, c]
+### op.paren-grouping
+(a + b) * c
+### op.paren-grouping-nested
+((a))
+### op.paren-call-result
+(a, b)()
+### op.paren-optional-chain-member
+(a?.b).c
+### op.paren-optional-chain-call
+(a?.b)()
+### op.paren-optional-chain-new
+new (a?.b)()
+
+## ---- member, call, new
+### member.dot
+a.b
+### member.chain
+a.b.c.d
+### member.computed
+a[b]
+### member.computed-expression
+a[b + 1][c]
+### member.call
+a.b(c)
+### member.call-chain
+a.b(c).d(e)[f](g)
+### member.call-no-args
+a()
+### member.call-trailing-comma
+a(b, c,)
+### member.call-trailing-comma-only-error
+a(,)
+### member.call-double-comma-error
+a(b,,c)
+### member.call-spread
+a(...b, c, ...d)
+### member.call-spread-trailing-comma
+a(...b,)
+### member.call-newline-before-paren
+a
+(b)
+### member.call-newline-before-bracket
+a
+[b]
+### member.call-newline-before-dot
+a
+.b
+.c()
+### member.call-newline-before-template
+a
+`b`
+### member.call-callee-literal
+"a"()
+### member.call-callee-number
+1()
+### member.call-callee-function
+(function () {})()
+### member.optional-member
+a?.b
+### member.optional-computed
+a?.[b]
+### member.optional-call
+a?.()
+### member.optional-call-args
+a?.(b, c)
+### member.optional-chain
+a?.b.c
+### member.optional-chain-call
+a?.b()
+### member.optional-chain-computed-call
+a?.[b](c)
+### member.optional-chain-twice
+a?.b?.c
+### member.optional-after-call
+a.b?.()
+### member.optional-ternary
+a?.5:1
+### member.optional-ternary-spaced
+a ? .5 : 1
+### member.optional-keyword
+a?.if
+### member.optional-new-error
+new a?.b()
+### member.optional-new-paren
+new (a?.b)
+### member.optional-template-error
+a?.b`c`
+### member.optional-then-assign-error
+a?.b = c
+### member.optional-delete
+delete a?.b
+### member.optional-in-condition
+a?.b ? c : d
+### member.new
+new a
+### member.new-args
+new a(b, c)
+### member.new-member
+new a.b.c
+### member.new-member-call
+new a.b.c(d)
+### member.new-computed
+new a[b](c)
+### member.new-call-result
+new a()()
+### member.new-new
+new new a()()
+### member.new-paren-call
+new (a())()
+### member.new-member-after
+new a().b
+### member.new-member-after-call
+new a().b()
+### member.new-no-args-then-dot
+new a.b
+### member.new-function-expression
+new function () {}
+### member.new-arrow-error
+new () => 1
+### member.new-literal
+new 1
+### member.new-regex-error
+new /x/
+### member.new-spread-args
+new a(...b)
+### member.new-target-error
+function f() { new.target }
+### member.new-target-top-level-error
+new.target
+### member.new-dot-other-error
+new.x
+### member.new-template
+new a`b`
+### member.new-await
+async () => new (await a)()
+### member.super-error
+super.a
+### member.super-call-error
+super()
+### member.import-call-error
+import("a")
+### member.import-meta-error
+import.meta
+### member.import-statement-error
+import a from "b"
+### member.import-side-effect-error
+import "a"
+### member.export-statement-error
+export const a = 1
+### member.export-default-error
+export default a
+### member.export-in-block-error
+{ export const a = 1 }
+### member.import-in-block-error
+{ import a from "b" }
+### member.class-error
+class A {}
+### member.class-expression-error
+x = class {}
+### member.class-extends-error
+class A extends B {}
+### member.private-in-error
+#a in b
+
+## ---- await
+### await.expression
+await a
+### await.call
+await f(x).y
+### await.paren
+await (a)
+### await.in-binary
+a + await b
+### await.nested
+await await a
+### await.unary
+await -a
+### await.in-call-arg
+f(await a)
+### await.in-array
+[await a, await b]
+### await.in-template
+`${await a}`
+### await.in-arrow-body-async
+async () => await a
+### await.statement-in-async-function
+async function f() { await a; return await b }
+### await.newline-operand
+await
+a
+### await.call-of-call
+await(a)(b)
+### await.no-operand-error
+await
+### await.no-operand-semicolon-error
+await;
+### await.with-exponent-error
+await a ** b
+### await.typeof
+typeof await a
+### await.in-for-of-right
+for (const x of await a) b
+### await.in-nested-function-is-identifier
+function f() { await }
+### await.in-nested-function-call
+function f() { await(a) }
+### await.in-nested-arrow-error
+() => { await a }
+### await.in-nested-arrow-ident
+() => { await }
+### await.in-async-nested-function-error
+async function f() { function g() { await a } }
+### await.top-level-for-await-in-function-error
+function f() { for await (const x of y) z }
+### await.in-async-for-await
+async function f() { for await (const x of y) z }
+### await.as-identifier-top-level-error
+await = 1
+### await.as-param-in-async-error
+async function f(await) {}
+### await.as-label-error
+async function f() { await: 1 }
+### await.label-top-level-error
+await: 1
+### await.member
+a.await
+### await.property-key
+x = { await: 1 }
+### await.optional-call
+await a?.()
+### await.async-arrow-nested-await-ident-in-default-error
+async function f() { (a = await 1) => 1 }
+
+## ---- labels, `$:`, ASI
+### label.dollar
+$: s("a")
+### label.name
+bass: s("a")
+### label.underscore-prefixed
+_bass: s("a")
+### label.underscore-suffixed
+bass_: s("a")
+### label.underscore-dollar
+_$: s("a")
+### label.dollar-multiple
+$: a
+$: b
+### label.solo
+Bass: s("a")
+### label.multiple-statements
+a: 1
+b: 2
+### label.nested
+a: b: c
+### label.duplicate-nested-error
+a: a: b
+### label.duplicate-sequential
+a: b
+a: c
+### label.duplicate-nested-via-block-error
+a: { a: b }
+### label.same-name-in-function
+a: { function f() { a: b } }
+### label.block
+a: { b }
+### label.if-body
+a: if (b) c
+### label.if-function-error
+a: if (b) function f() {}
+### label.loop
+a: while (b) c
+### label.loop-break-continue
+a: while (b) { break a; continue a }
+### label.switch-break
+a: switch (b) { case 1: break a }
+### label.switch-continue-error
+a: switch (b) { case 1: continue a }
+### label.keyword-error
+if: 1
+### label.default-in-switch
+switch (a) { default: b }
+### label.case-in-switch
+switch (a) { case b: c }
+### label.arrow-body-position
+x => { $: 1 }
+### label.async-label
+async: 1
+### label.of-label
+of: 1
+### label.let-label-error
+let: 1
+### label.yield-label-error
+yield: 1
+### label.after-expression-statement
+a(); $: b
+### label.in-parens-error
+($: a)
+### label.in-call-error
+f($: a)
+### label.in-object-position
+x = { $: a }
+### label.ternary-ambiguity
+a ? b : c
+### label.number-error
+1: a
+### label.string-error
+"a": b
+### label.call-error
+a(): b
+### label.member-error
+a.b: c
+### label.paren-ident-error
+(a): b
+### label.empty-body-error
+a:
+### label.with-semicolon
+a: ;
+### label.followed-by-closing-brace-error
+{ a: }
+### label.with-comment-between
+a: /* c */ b
+### label.newline-after-colon
+a:
+b
+### label.newline-before-colon
+a
+: b
+### label.dollar-newline-before-colon
+$
+: s("a")
+### asi.newline-between-statements
+a
+b
+### asi.call-continues
+a
+(b)
+### asi.call-continues-after-assignment
+const a = b
+(c)
+### asi.array-continues
+a
+[b]
+### asi.template-continues
+a
+`b`
+### asi.plus-continues
+a
++ b
+### asi.minus-continues
+a
+- b
+### asi.regex-or-division
+a
+/b/g
+### asi.postfix-increment-new-statement
+a
+++b
+### asi.postfix-increment-same-line
+a++
+b
+### asi.return-newline
+function f() { return
+a }
+### asi.break-newline
+while (1) { break
+}
+### asi.continue-newline
+while (1) { continue
+}
+### asi.throw-newline-error
+throw
+a
+### asi.arrow-newline-error
+a
+=> b
+### asi.closing-brace
+{ a }
+### asi.closing-brace-if
+if (a) { b }
+### asi.eof
+a
+### asi.eof-after-comment
+a // c
+### asi.var-statements
+var a = 1
+var b = 2
+### asi.let-statements
+let a = 1
+let b = 2
+### asi.const-then-paren-call
+const a = b
+(c)
+### asi.statement-then-paren-statement
+a;
+(b)
+### asi.do-while-newline
+do a
+while (b)
+c
+### asi.if-else-no-semicolon
+if (a) b
+else c
+### asi.if-newline-else
+if (a) b
+else
+c
+### asi.for-semicolons-required-error
+for (a
+b) c
+### asi.for-header-newline
+for (
+a;
+b;
+c
+) d
+### asi.semicolon-after-block
+{ a };
+### asi.semicolon-missing-same-line-error
+a b
+### asi.semicolon-missing-after-call-same-line-error
+a() b()
+### asi.semicolon-missing-after-block-same-line
+{ a } b
+### asi.semicolon-missing-after-function-same-line
+function f() {} g()
+### asi.function-expression-statement-needs-paren-error
+function () {}()
+### asi.object-then-paren
+x = { a: 1 }
+(b)
+### asi.string-then-paren
+"a"
+(b)
+### asi.comment-between-line-break
+a /* x
+y */ (b)
+### asi.comment-no-line-break
+a /* xy */ (b)
+### asi.line-comment-then-call
+a // c
+(b)
+### asi.let-in-expression-position-error
+a
+let
+### asi.let-followed-by-in-error
+let in a
+### asi.let-in-for-in-error
+for (let in a) b
+### asi.let-in-for-of-error
+for (let of a) b
+### asi.async-newline-function
+a = async
+function f() {}
+### asi.async-arrow-line-break-before-arrow-error
+async x
+=> 1
+### asi.yield-newline-error
+yield
+a
+### asi.increment-after-newline-then-literal-error
+a
+++
+1
+### asi.unary-start-new-statement
+a
+!b
+### asi.typeof-statement
+a
+typeof b
+### asi.new-statement
+a
+new b
+### asi.void-statement
+a
+void 0
+### asi.number-statement
+1
+2
+### asi.string-statements
+"use strict"
+"x"
+### asi.use-strict-with-paren-call
+"use strict"
+(a)
+
+## ---- the shapes Strudel programs actually have
+### strudel.chain
+s("bd sd").fast(2).lpf(800)
+### strudel.chain-newlines
+s("bd sd")
+  .fast(2)
+  // comment
+  .lpf(800)
+### strudel.chain-leading-commas
+stack(
+  s("bd"),
+  s("hh")
+  ,s("sd")
+)
+### strudel.trailing-comma-in-call
+stack(
+  s("a"),
+  s("b"),
+)
+### strudel.label-dollar
+$: s("bd").fast(2)
+### strudel.label-mixed
+bd: s("bd*2")
+_hh: s("hh*4")
+### strudel.const-pattern
+const drums = s("bd sd")
+$: drums.fast(2)
+### strudel.arrow-in-method
+s("a b").sometimes(x => x.speed(2))
+### strudel.arrow-two-params
+s("a b").withValue((v, i) => v)
+### strudel.object-arg
+samples({ bd: 'bd/BT0A0A7.wav', sd: ['sd/rytm-01.wav'] }, 'github:tidalcycles/dirt-samples')
+### strudel.await-samples
+await samples('github:a/b')
+### strudel.backtick-mini
+n(`0 1
+2 3`).s("piano")
+### strudel.template-tagged
+loadCsound`
+  instr 1
+  endin
+`
+### strudel.slider
+note(slider(0.5, 0, 1)).s("sawtooth")
+### strudel.pianoroll
+s("bd").pianoroll({ labels: 1 })
+### strudel.register
+register('add2', (a, pat) => pat.add(a).add(2))
+### strudel.register-block-arrow
+register('x', (n, pat) => { return pat.fast(n) })
+### strudel.log
+console.log("x")
+### strudel.math
+Math.pow(2, 3) + Math.sin(0) * 2
+### strudel.number-patterns
+n("0 .. 3").add(.5).mul(1/8)
+### strudel.operator-patterns
+note("c e g").add("<0 3>")
+### strudel.comment-banner
+/*
+ * header
+ */
+$: s("bd")
+### strudel.mini-off-comment
+// mini-off
+"a b"
+// mini-on
+"c d"
+### strudel.json-stringify
+JSON.stringify({ a: [1, 2, { b: null }] })
+### strudel.set-cpm
+setcpm(120/4)
+### strudel.chained-ternary
+const f = x => x > 1 ? "a" : x > 0 ? "b" : "c"
+### strudel.spread-args
+stack(...[1, 2, 3].map(i => s("bd").speed(i)))
+### strudel.destructure-createParams
+const { x, y } = createParams('x', 'y')
+### strudel.pattern-prototype
+Pattern.prototype.foo = function (a) { return this.fast(a) }
+### strudel.string-with-hash
+s("bd # hh")
+### strudel.hex-number
+note(0x43)
+### strudel.exponent-number
+gain(1e-1)
+### strudel.semicolons-everywhere
+const a = 1;
+$: s("bd");
+### strudel.unicode-string
+s("bd").bank("é")
+### strudel.empty-label-body-error
+$:
+### strudel.at-sign-error
+$: s("@")@
+### strudel.hash-error
+$: #a
+### strudel.unterminated-string-error
+s("bd
+### strudel.unterminated-string-at-eof-error
+s("bd
+### strudel.missing-paren-error
+s("bd"
+### strudel.extra-paren-error
+s("bd"))
+### strudel.dangling-dot-error
+s("bd").
+### strudel.dangling-dot-before-label-error
+s("bd").
+$: s("hh")
+### strudel.missing-comma-error
+stack(s("a") s("b"))
+### strudel.double-dot-error
+s("bd")..fast(2)
+### strudel.trailing-operator-error
+a +
+### strudel.unclosed-bracket-error
+[1, 2
+### strudel.unclosed-brace-error
+if (a) {
+### strudel.stray-closing-brace-error
+a }
+### strudel.stray-closing-paren-error
+a )
+### strudel.stray-closing-bracket-error
+a ]
+### strudel.stray-colon-is-label
+a : b
+### strudel.stray-question-error
+a ?
+### strudel.stray-arrow-error
+=> a
+### strudel.unexpected-keyword-error
+const if = 1
+### strudel.keyword-statement-error
+else a
+### strudel.case-outside-error
+case 1: a
+### strudel.catch-without-try-error
+catch (e) {}
+### strudel.finally-without-try-error
+finally {}
+### strudel.extends-error
+extends a
+### strudel.in-start-error
+in a
+### strudel.rest-outside-error
+...a
+### strudel.rest-in-call-wrong-place-error
+f(a, ...)
+### strudel.assign-to-const-is-runtime
+const a = 1; a = 2
+### strudel.semicolon-after-label
+a:; b
+### strudel.lone-semicolon-statement
+$: ;
+
+## ---- positions where only a statement may stand
+### body.const-as-if-body-error
+if (a) const x = 1
+### body.const-as-else-body-error
+if (a) b; else const x = 1
+### body.const-as-while-body-error
+while (a) const x = 1
+### body.const-as-do-body-error
+do const x = 1; while (a)
+### body.const-as-label-body-error
+a: const x = 1
+### body.let-as-if-body-error
+if (a) let x = 1
+### body.let-bracket-as-if-body-error
+if (a) let [x] = y
+### body.let-bracket-newline-as-if-body-error
+if (a) let
+[x] = y
+### body.let-as-label-body-error
+a: let x = 1
+### body.var-as-if-body
+if (a) var x = 1
+### body.var-as-for-body
+for (;;) var x = 1
+### body.function-as-while-body-error
+while (a) function f() {}
+### body.function-as-for-body-error
+for (;;) function f() {}
+### body.function-as-do-body-error
+do function f() {} while (a)
+### body.async-function-as-label-body-error
+a: async function f() {}
+### body.async-function-as-for-body-error
+for (;;) async function f() {}
+### body.async-arrow-as-if-body
+if (a) async () => 1
+### body.async-ident-as-if-body
+if (a) async
+### body.let-ident-newline-as-if-body-error
+if (a) let
+b
+### body.class-as-if-body-error
+if (a) class A {}
+### body.block-as-if-body
+if (a) { let x = 1 }
+### body.label-as-if-body
+if (a) b: c
+### body.label-with-function-error
+if (a) b: function f() {}
+### body.empty-as-for-body
+for (;;) ;
+### body.for-of-let-ident-error
+for (let of of x) y
+### body.for-in-var-pattern
+for (var [a, b] in c) d
+### body.for-of-var-destructure-default
+for (var { a = 1 } of c) d
+### body.for-of-member-target
+for (a.b of c) d
+### body.for-in-paren-member-target
+for ((a.b) in c) d
+### body.for-in-paren-pattern-error
+for (([a]) in c) d
+### body.for-of-call-target-error
+for (f() of c) d
+### body.for-of-literal-target-error
+for (1 of c) d
+### body.for-of-this-target-error
+for (this of c) d
+### body.for-of-assign-target-error
+for (a = 1 of c) d
+### body.for-in-sequence-left-error
+for (a, b in c) d
+### body.for-in-arrow-left-error
+for (a => 1 in c) d
+### body.for-await-in-error
+for await (a in b) c
+### body.for-of-in-operator-in-init
+for (var a = (1 in b); ; ) c
+### body.for-let-in-init
+for (let a = (1 in b); ; ) c
+### body.for-expression-in-operator-error
+for (a in b; ; ) c
+### body.for-let-bracket
+for (let [a] = b; ; ) c
+### body.for-let-ident-init
+for (let a = 1, b = 2; a < b; a++) c
+### body.for-const-no-init-in-classic-error
+for (const a; ; ) b
+### body.for-let-no-init-in-classic
+for (let a; ; ) b
+### body.for-pattern-no-init-in-classic-error
+for (let [a]; ; ) b
+
+## ---- corners of the cover grammar and of await
+### cover.await-default-nested-call-error
+async function f(a = await x(await y)) {}
+### cover.await-default-nested-call-arrow-error
+async (a = await x(await y)) => 1
+### cover.await-default-after-call-error
+async function f(a = g(await y), b = await z) {}
+### cover.await-default-in-paren-error
+async function f(a = (await y, 1)) {}
+### cover.await-default-method-error
+x = { async m(a = await y) {} }
+### cover.await-in-nested-arrow-body
+async function f(a) { return () => a }
+### cover.await-ident-param-of-nested-function
+async function f() { function g(await) {} }
+### cover.async-arrow-await-ident-param-error
+async (await) => 1
+### cover.async-arrow-await-shorthand-error
+async ({ await }) => 1
+### cover.async-arrow-await-nested-pattern-error
+async ([await]) => 1
+### cover.async-call-await-ident
+async(await)
+### cover.compound-default-in-array-pattern-error
+[a += 1] = b
+### cover.compound-default-in-object-pattern-error
+({ a: b += 1 } = c)
+### cover.compound-default-in-arrow-params-error
+(a += 1) => 1
+### cover.logical-default-in-array-pattern-error
+[a ||= 1] = b
+### cover.import-meta-other-name-error
+import.x
+### cover.import-new-error
+new import("a")
+### cover.paren-rest-then-no-arrow-error
+(...a)
+### cover.paren-rest-trailing-comma-error
+(...a,) => 1
+### cover.paren-trailing-comma-then-arrow
+(a, ) => 1
+### cover.paren-trailing-comma-no-arrow-error
+(a, )
+### cover.paren-empty-arrow
+( ) => 1
+### cover.paren-comment-empty-arrow
+(/* c */) => 1
+### cover.paren-default-object-shorthand-arrow
+({ a = 1 }, [b = 2]) => a
+### cover.paren-default-object-shorthand-sequence-error
+({ a = 1 }, b)
+### cover.paren-shorthand-default-in-array-error
+[{ a = 1 }]
+### cover.paren-spread-in-array-then-assign
+[...[a, b]] = c
+### cover.paren-spread-trailing-comma-in-array-error
+[...a,] = c
+### cover.paren-object-spread-trailing-comma-error
+({ ...a, } = c)
+### cover.paren-object-rest-in-arrow-params
+({ a, ...b }) => 1
+### cover.paren-object-rest-pattern-in-arrow-error
+({ ...{ a } }) => 1
+### cover.paren-nested-parenthesised-target-error
+[((a))] = b
+### cover.paren-nested-parenthesised-member
+[((a.b))] = c
+### cover.paren-nested-parenthesised-in-object
+({ a: (b) } = c)
+### cover.paren-nested-parenthesised-pattern-in-object-error
+({ a: ([b]) } = c)
+### cover.paren-in-binding-error
+(a) => (b) => 1
+### cover.paren-chained-assign-in-params-error
+(a = b = 1) => a
+### cover.arrow-params-in-ternary
+a ? (b, c) => 1 : (d) => 2
+### cover.arrow-after-call-on-new-line
+f(a)
+(b) => 1
+### cover.arrow-in-array-and-object
+[x => x, (y) => y, async z => z]
+### cover.arrow-in-object-value
+({ f: x => x, g: (y, z) => y })
+### cover.arrow-body-is-conditional-then-comma
+x => a ? b : c, d
+### cover.arrow-body-with-in-operator
+x => a in b
+### cover.arrow-body-with-in-operator-in-for-init-error
+for (var f = x => a in b; ; ) c
+### cover.for-init-parenthesised-in
+for (var i = (a in b); ; ) c
+### cover.template-in-arrow-params-default
+(a = `x${b}`) => a
+### cover.optional-call-with-template-arg
+a?.(`x`)
+### cover.new-with-member-and-call-chain
+new a.b[c]().d()
+### cover.new-target-like-member
+a.new.target
+### cover.object-key-number-methods
+x = { 0() {}, 1.5() {}, 0x1() {} }
+### cover.object-key-string-getter
+x = { get 'a'() { return 1 }, set 'a'(v) {} }
+### cover.object-key-keyword-getter-setter
+x = { get if() { return 1 }, set if(v) {} }
+### cover.object-async-keyword-name
+x = { async function() {}, async class() {} }
+### cover.object-async-then-newline-method-error
+x = { async
+m() {} }
+### cover.object-get-with-newline
+x = { get
+a() { return 1 } }
+### cover.object-getter-named-get
+x = { get get() { return 1 }, set set(v) {} }
+### cover.object-computed-getter
+x = { get [a + b]() { return 1 } }
+### cover.object-shorthand-get-and-set
+x = { get, set, async, of, let: 1 }
+### cover.object-shorthand-let-error
+x = { let }
+### cover.object-spread-in-pattern-with-default-error
+({ ...a = 1 } = b)
+### cover.object-pattern-numeric-keys
+({ 0: a, 1: [b] } = c)
+### cover.object-pattern-string-keys
+({ "a": b, 'c': d } = e)
+### cover.object-pattern-keyword-keys
+({ if: a, class: b } = c)
+### cover.object-pattern-computed
+({ [a + b]: c } = d)
+### cover.object-pattern-nested-defaults
+({ a: { b = 1 } = {}, c: [d = 2] = [] } = e)
+### cover.statement-start-object-pattern-assign-error
+{ a } = b
+### cover.statement-start-array-pattern-assign
+[a] = b
+### cover.statement-start-paren-object-pattern-assign
+({ a } = b)
