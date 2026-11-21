@@ -32,10 +32,14 @@ import cosic.script.TokenKind
 import cosic.script.TokenSpan
 import cosic.script.tokenize
 
+/** The size of the code text, and the height of a line at that size, when no program asked for another. */
+private const val DEFAULT_FONT_SP = 14f
+private const val LINE_HEIGHT_PER_FONT = 20f / 14f
+
 /**
  * The code field: monospace text coloured by token kind, with the steps that are sounding right
  * now highlighted. [activeRanges] is read while composing this function, so a change of the
- * highlights recomposes only the editor.
+ * highlights recomposes only the editor. [fontSizeSp] and [fontFamily] are what a program asked for with `fontSize()` and `fontFamily()`; null is the editor's own.
  */
 @Composable
 fun CodeEditor(
@@ -43,9 +47,12 @@ fun CodeEditor(
     onValueChange: (TextFieldValue) -> Unit,
     activeRanges: () -> List<SourceRange>,
     modifier: Modifier = Modifier,
+    fontSizeSp: Float? = null,
+    fontFamily: FontFamily? = null,
 ) {
     val tokens = remember(value.text) { tokenize(value.text) }
     val transformation = remember(tokens, activeRanges()) { SyntaxTransformation(tokens, activeRanges()) }
+    val size = fontSizeSp ?: DEFAULT_FONT_SP
 
     BasicTextField(
         value = value,
@@ -53,9 +60,9 @@ fun CodeEditor(
         modifier = modifier.tagged("code_editor", stringResource(R.string.editor_code)),
         textStyle = TextStyle(
             color = MaterialTheme.colorScheme.onBackground,
-            fontFamily = FontFamily.Monospace,
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
+            fontFamily = fontFamily ?: FontFamily.Monospace,
+            fontSize = size.sp,
+            lineHeight = (size * LINE_HEIGHT_PER_FONT).sp,
         ),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         keyboardOptions = KeyboardOptions(

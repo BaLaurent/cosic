@@ -3,6 +3,7 @@ package com.octopusman.cosic.reference
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -50,10 +51,11 @@ internal fun rememberCompleter(): Completer? {
 
 /**
  * The row of suggestions for the word being typed: the best [MAX_CHIPS], each a chip that inserts its name ([onPick]) with an info icon that shows
- * its documentation ([onInfo]). The part of a name that the word matched is in bold. It is for a place above the keyboard, where the word is being typed.
+ * its documentation ([onInfo]; no icon when it is null, as when the documentation is switched off). The part of a name that the word matched is in bold. It is for a
+ * place above the keyboard, where the word is being typed.
  */
 @Composable
-internal fun AutocompleteRow(suggestions: List<Suggestion>, onPick: (Suggestion) -> Unit, onInfo: (Suggestion) -> Unit, modifier: Modifier = Modifier) {
+internal fun AutocompleteRow(suggestions: List<Suggestion>, onPick: (Suggestion) -> Unit, onInfo: ((Suggestion) -> Unit)?, modifier: Modifier = Modifier) {
     val shown = remember(suggestions) { suggestions.take(MAX_CHIPS) }
     LazyRow(
         modifier = modifier.tagged("autocomplete_row", stringResource(R.string.autocomplete_suggestions)),
@@ -66,7 +68,7 @@ internal fun AutocompleteRow(suggestions: List<Suggestion>, onPick: (Suggestion)
 }
 
 @Composable
-private fun SuggestionChip(suggestion: Suggestion, onPick: (Suggestion) -> Unit, onInfo: (Suggestion) -> Unit) {
+private fun SuggestionChip(suggestion: Suggestion, onPick: (Suggestion) -> Unit, onInfo: ((Suggestion) -> Unit)?) {
     val pickLabel = stringResource(R.string.autocomplete_pick, suggestion.label)
     val infoLabel = stringResource(R.string.autocomplete_info, suggestion.label)
     Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
@@ -80,16 +82,20 @@ private fun SuggestionChip(suggestion: Suggestion, onPick: (Suggestion) -> Unit,
                     .tagged("autocomplete_${suggestion.label}", pickLabel)
                     .padding(start = 12.dp, top = 6.dp, bottom = 6.dp, end = 6.dp),
             )
-            Icon(
-                imageVector = Icons.Outlined.Info,
-                contentDescription = infoLabel,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .clickable(onClickLabel = infoLabel) { onInfo(suggestion) }
-                    .tagged("autocomplete_info_${suggestion.label}", infoLabel)
-                    .padding(start = 4.dp, end = 10.dp, top = 6.dp, bottom = 6.dp)
-                    .size(18.dp),
-            )
+            if (onInfo != null) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = infoLabel,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .clickable(onClickLabel = infoLabel) { onInfo(suggestion) }
+                        .tagged("autocomplete_info_${suggestion.label}", infoLabel)
+                        .padding(start = 4.dp, end = 10.dp, top = 6.dp, bottom = 6.dp)
+                        .size(18.dp),
+                )
+            } else {
+                Spacer(Modifier.size(6.dp))
+            }
         }
     }
 }

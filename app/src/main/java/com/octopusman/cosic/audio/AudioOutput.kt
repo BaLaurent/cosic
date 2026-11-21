@@ -19,6 +19,7 @@ private const val BYTES_PER_FRAME = 2 * Float.SIZE_BYTES
 private const val KEEP_ALIVE_MS = 1_500L
 private const val IDLE_BEFORE_EXIT_MS = 1_000L
 private const val LOG_INTERVAL_MS = 5_000L
+private const val CLOCK_OBSERVE_INTERVAL_MS = 200L
 private const val NANOS_PER_SECOND = 1_000_000_000L
 
 private val ATTRIBUTES = AudioAttributes.Builder()
@@ -125,12 +126,19 @@ class AudioOutput(private val engine: CosicEngine, context: Context) {
     private fun pump(track: AudioTrack) {
         val lowLatency = track.performanceMode == AudioTrack.PERFORMANCE_MODE_LOW_LATENCY
         Log.i(TAG, "start sr=${engine.sampleRate} bufferFrames=${track.bufferSizeInFrames} lowLatency=$lowLatency")
-        synchronized(lock) { session = Session(track, engine.snapshot.renderedFrames) }
+        val engineFrameAtStart = engine.snapshot.renderedFrames
+        synchronized(lock) { session = Session(track, engineFrameAtStart) }
+        // MIDI, OSC, MQTT and serial are sent at the system time of the frame that is heard: until the track reports its first time stamp the clock
+        // works from the moment it was started, then it follows the stamps (the engine's ClockBridge smooths them)
+        engine.clock.beginSession(System.nanoTime(), engineFrameAtStart, engine.sampleRate)
         track.play()
 
         val buffer = FloatArray(BLOCK_FRAMES * 2)
+        // the audio thread's own; playheadFrame() has another for the UI thread
+        val clockStamp = AudioTimestamp()
         var idleSince = 0L
         var lastLog = SystemClock.elapsedRealtime()
+        var lastClockStamp = 0L
         while (true) {
             val snapshot = engine.snapshot
             val now = SystemClock.elapsedRealtime()
@@ -139,6 +147,12 @@ class AudioOutput(private val engine: CosicEngine, context: Context) {
             if (now - lastLog >= LOG_INTERVAL_MS) {
                 lastLog = now
                 Log.i(TAG, "frames=${snapshot.renderedFrames} underruns=${track.underrunCount} voices=${snapshot.activeVoices}")
+            }
+            if (now - lastClockStamp >= CLOCK_OBSERVE_INTERVAL_MS) {
+                lastClockStamp = now
+                if (track.getTimestamp(clockStamp)) {
+                    engine.clock.observe(clockStamp.framePosition, clockStamp.nanoTime, engine.sampleRate, engineFrameAtStart)
+                }
             }
 
             try {

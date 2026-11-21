@@ -23,6 +23,12 @@ data class PlaybackInfo(
     val warnings: List<String>,
 )
 
+/**
+ * A step of the code that sounds right now: where it is ([range], in the coordinates of the text being edited), the CSS colour of its event's `color` control
+ * and the style of its `markcss` control. Strudel draws the mark with `markcss` when the event has one, else as an outline of 2 px in `color`, white when unset.
+ */
+data class ActiveHighlight(val range: SourceRange, val color: String?, val markcss: String?)
+
 /** Tempo in cycles per minute, without a decimal when it is a whole number. */
 fun formatCpm(cps: Double): String {
     val cpm = cps * 60.0

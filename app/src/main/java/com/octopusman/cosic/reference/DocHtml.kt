@@ -67,7 +67,7 @@ internal object DocHtml {
                     }
                 }
                 val next = html.indexOf('<', i + 1).let { if (it < 0) html.length else it }
-                text(decode(html.substring(i, next)))
+                text(decode(html.substring(i, next)).inAppWords())
                 i = next
             }
             flush()

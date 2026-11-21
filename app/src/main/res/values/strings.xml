@@ -50,6 +50,18 @@
     <string name="editor_status_error">Line %1$d:%2$d — %3$s</string>
     <string name="editor_status_playing">%1$s cpm · cycle %2$d</string>
 
+    <!-- Editor menu: documentation, console, web links -->
+    <string name="menu_docs_at_cursor">Docs at cursor</string>
+    <string name="menu_console_show">Console</string>
+    <string name="menu_console_hide">Hide console</string>
+    <string name="menu_copy_link">Copy web link</string>
+    <string name="menu_import_link">Import shared link</string>
+    <string name="link_copied">Link copied</string>
+    <string name="import_clipboard_empty">The clipboard holds no text to import</string>
+    <string name="import_not_a_link">That is not a link to a pattern</string>
+    <string name="import_not_found">No pattern is behind that link</string>
+    <string name="import_failed">Could not load the link: %1$s</string>
+
     <!-- Sounds -->
     <string name="sounds_drum_machines">Drum machines</string>
     <string name="sounds_synths">Synths</string>
@@ -115,6 +127,20 @@
     <string name="settings_version">Version %1$s</string>
     <string name="settings_simulate_ads_removed">Simulate ads removed</string>
     <string name="settings_simulate_ads_removed_summary">Debug builds only</string>
+    <string name="settings_editor_title">Editor</string>
+    <string name="settings_highlight">Highlight playing steps</string>
+    <string name="settings_highlight_summary">Mark the steps of the code that sound while the music plays.</string>
+    <string name="settings_flash">Flash on evaluate</string>
+    <string name="settings_flash_summary">The code flashes when it is evaluated.</string>
+    <string name="settings_autocomplete">Autocomplete</string>
+    <string name="settings_autocomplete_summary">Suggest function names above the keyboard while you type.</string>
+    <string name="settings_docs">Documentation</string>
+    <string name="settings_docs_summary">Show the documentation of a function from a suggestion and from the menu.</string>
+    <string name="settings_share_prebake">Prebake script in web links</string>
+    <string name="settings_share_prebake_summary">A web link carries the prebake script in front of the code.</string>
+    <string name="settings_prebake_title">Prebake script</string>
+    <string name="settings_prebake_summary">Code that runs before the first pattern of a session. Define functions here to use them in every pattern.</string>
+    <string name="settings_prebake_reset">Reset</string>
 
     <!-- Credits -->
     <string name="credits_title">Credits &amp; licenses</string>
