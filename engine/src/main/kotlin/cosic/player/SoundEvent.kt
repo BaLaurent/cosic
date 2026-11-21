@@ -1,5 +1,7 @@
 package cosic.player
 
+import cosic.audio.AudioSettings
+import cosic.audio.DEFAULT_VOICE_RELEASE
 import cosic.audio.LIST_KEYS
 import cosic.audio.MAX_FX
 import cosic.audio.ModKind
@@ -36,6 +38,10 @@ internal class SoundEvent(val startFrame: Long, val voice: VoiceParams)
  * With a [kabel] factory, every chain whose controls hold a `workletSrc` (`K(...)`, `worklet(...)`) gets the program that runs it, made in the order superdough
  * sends them to the worklets (the `FX(...)` elements, then the event) and with the frequency `sFreq` stands for always that of the event. A program that does not
  * compile is a [cosic.pattern.CosicError], the event's own error.
+ *
+ * With [settings] that are not the ones superdough starts with (a program called `setGainCurve`, `setDefaultValue`...) every chain is built as `superdough()` builds
+ * it from them: a control the event leaves unset takes the current default value, and the gains go through the gain curve (see [applyDefaults]); the release
+ * the chain lives for takes its default from them too. A gain curve of the program runs here, once for each gain of each chain.
  */
 internal fun voiceParams(
     controls: ControlMap,
@@ -44,7 +50,9 @@ internal fun voiceParams(
     cps: Double,
     cycle: Double,
     kabel: cosic.kabel.KabelFactory? = null,
+    settings: AudioSettings? = null,
 ): VoiceParams {
+    val state = settings?.current?.takeUnless { it.pristine }
     val fxElements = (controls["FX"] as? List<*>)?.filterIsInstance<Map<*, *>>().orEmpty()
     if (fxElements.size > MAX_FX) logger("only the first $MAX_FX FX(...) elements are used, ${fxElements.size - MAX_FX} dropped", "warning", null)
     val fx = ArrayList<ParamSet>(fxElements.size.coerceAtMost(MAX_FX))
@@ -53,16 +61,22 @@ internal fun voiceParams(
     for (i in 0 until fxElements.size.coerceAtMost(MAX_FX)) {
         @Suppress("UNCHECKED_CAST")
         val element = fxElements[i] as Map<String, Any?>
-        fx.add(paramSetOf(element, kabel?.create(element["workletSrc"], element["workletInputs"], eventControls!!)))
+        fx.add(paramSetOf(element, kabel?.create(element["workletSrc"], element["workletInputs"], eventControls!!), state, main = false))
         addModulators(element, i.toString(), mods)
     }
-    val main = paramSetOf(controls, kabel?.create(controls["workletSrc"], controls["workletInputs"], eventControls!!))
+    val main = paramSetOf(controls, kabel?.create(controls["workletSrc"], controls["workletInputs"], eventControls!!), state, main = true)
     addModulators(controls, "main", mods)
-    return VoiceParams(source, durationSec, cps, cycle, main, fx, mods)
+    val defaultRelease = state?.number("release")?.takeUnless { it.isNaN() } ?: DEFAULT_VOICE_RELEASE
+    return VoiceParams(source, durationSec, cps, cycle, main, fx, mods, defaultRelease = defaultRelease)
 }
 
 /** [ParamSet] of one control map, with the kabelsalat program [kabel] of its chain when it has one; see [voiceParams]. */
-internal fun paramSetOf(controls: Map<String, Any?>, kabel: cosic.kabel.KabelInstance? = null): ParamSet {
+internal fun paramSetOf(
+    controls: Map<String, Any?>,
+    kabel: cosic.kabel.KabelInstance? = null,
+    state: AudioSettings.Snapshot? = null,
+    main: Boolean = true,
+): ParamSet {
     val values = DoubleArray(Param.COUNT) { Double.NaN }
     var strings: HashMap<String, String>? = null
     var lists: HashMap<String, DoubleArray>? = null
@@ -105,7 +119,82 @@ internal fun paramSetOf(controls: Map<String, Any?>, kabel: cosic.kabel.KabelIns
     // gain = applyGainCurve(nanFallback(gain, 1)): a gain that is no number is 1, not the default 0.8
     val rawGain = controls["gain"]
     if (rawGain != null && rawGain !== Undefined && values[Param.gain.ordinal].isNaN()) values[Param.gain.ordinal] = 1.0
+    if (state != null) {
+        applyDefaults(values, state, main)
+        if (main && lists?.containsKey("channels") != true) {
+            val channels = defaultChannels(values, state)
+            if (channels != null) {
+                if (lists == null) lists = HashMap()
+                lists["channels"] = channels
+            }
+        }
+        if (values[Param.distorttype.ordinal].isNaN() && strings?.containsKey("distorttype") != true) {
+            val named = state.default("distorttype")
+            if (named is String && jsStringToNumber(named).isNaN()) {
+                if (strings == null) strings = HashMap()
+                strings["distorttype"] = named
+            }
+        }
+    }
     return ParamSet(values, strings ?: emptyMap(), lists ?: emptyMap(), kabel)
+}
+
+/** The controls that fall back to a default value in every chain: `getDefaultValue(key)` of the per-chain destructuring of superdough.mjs:614-627. */
+private val CHAIN_DEFAULTS = arrayOf(Param.phaserdepth, Param.delayfeedback, Param.delaysync, Param.distorttype)
+
+/** The controls that go through the gain curve in every chain (superdough.mjs:628-633): `gain` is the one that [nanFallback]s as well. */
+private val CHAIN_CURVED = arrayOf(Param.velocity, Param.shapevol, Param.distortvol, Param.tremolodepth)
+
+/** The controls only the event itself has, which go through the curve with their defaults (`dry`, which has none, is curved only when set). */
+private val MAIN_CURVED = arrayOf(Param.postgain, Param.delay, Param.busgain)
+
+/**
+ * What `superdough()` does with the settings before it builds a chain, for the controls in [values] (NaN: unset) of one chain, the main one when
+ * [main] or an `FX(...)` element: the destructuring defaults of superdough.mjs:491-523 and 614-627 (`getDefaultValue`), and `applyGainCurve` on the gains
+ * (537-539, 628-633, 996). Per chain: `gain` (`nanFallback(gain, 1)`, so a default that is no number counts as 1), `velocity`, `shapevol`, `distortvol`,
+ * `tremolodepth`; the main chain, whose event is the one `superdough()` destructures, also `postgain`, `delay` (an element's `delay` is not curved),
+ * `busgain` and `dry`, which has no default and is only curved when set; and takes the defaults of `orbit` and `i`.
+ */
+private fun applyDefaults(values: DoubleArray, s: AudioSettings.Snapshot, main: Boolean) {
+    for (p in CHAIN_DEFAULTS) defaulted(values, p, s)
+    if (main) {
+        defaulted(values, Param.orbit, s)
+        defaulted(values, Param.i, s)
+    }
+    var gain = values[Param.gain.ordinal]
+    if (gain.isNaN()) gain = s.number("gain")
+    if (gain.isNaN()) gain = 1.0
+    values[Param.gain.ordinal] = if (s.hasCurve) s.curve(gain) else gain
+    for (p in CHAIN_CURVED) {
+        defaulted(values, p, s)
+        if (s.hasCurve && !values[p.ordinal].isNaN()) values[p.ordinal] = s.curve(values[p.ordinal])
+    }
+    if (main) {
+        for (p in MAIN_CURVED) {
+            defaulted(values, p, s)
+            if (s.hasCurve && !values[p.ordinal].isNaN()) values[p.ordinal] = s.curve(values[p.ordinal])
+        }
+        if (s.hasCurve && !values[Param.dry.ordinal].isNaN()) values[Param.dry.ordinal] = s.curve(values[Param.dry.ordinal])
+    } else {
+        defaulted(values, Param.delay, s)
+    }
+}
+
+/** [p] takes the current default value of its control when the event sets none and the default is a number. */
+private fun defaulted(values: DoubleArray, p: Param, s: AudioSettings.Snapshot) {
+    if (!values[p.ordinal].isNaN()) return
+    val d = s.number(p.key)
+    if (!d.isNaN()) values[p.ordinal] = d
+}
+
+/**
+ * The output channels of an event that sets none, when the default is not `[1, 2]` and nothing else decides them: `multiChannelOrbits && orbit > 0 ? [orbit * 2 - 1, orbit * 2] :
+ * getDefaultValue('channels')` (superdough.mjs:527-529). Null when the orbit's own channels or the usual ones apply.
+ */
+private fun defaultChannels(values: DoubleArray, s: AudioSettings.Snapshot): DoubleArray? {
+    val list = s.numbers("channels") ?: return null
+    if (list.size == 2 && list[0] == 1.0 && list[1] == 2.0) return null
+    return if (s.multiChannelOrbits && values[Param.orbit.ordinal] > 0.0) null else list
 }
 
 /**

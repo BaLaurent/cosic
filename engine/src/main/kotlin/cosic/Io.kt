@@ -1,5 +1,6 @@
 package cosic
 
+import cosic.audio.AudioSettings
 import cosic.io.ConsoleLog
 import cosic.io.InputState
 import cosic.io.OutputBus
@@ -71,6 +72,9 @@ internal interface EvalEffects {
     val console: ConsoleLog
     val outputs: OutputBus
 
+    /** The settings of the sound engine a program changes (`setGainCurve`, `setMaxPolyphony`, the default values...); they outlive one evaluation. */
+    val audio: AudioSettings
+
     /** Where programs get remote JSON from, if the host can. */
     val remote: RemoteJson?
 
@@ -89,6 +93,7 @@ internal class EngineEffects(
     override val inputs: InputState = InputState(),
     override val console: ConsoleLog = ConsoleLog(),
     override val outputs: OutputBus = OutputBus(console),
+    override val audio: AudioSettings = AudioSettings(),
     private val remoteSource: () -> RemoteJson? = { null },
 ) : EvalEffects {
     override val remote: RemoteJson? get() = remoteSource()

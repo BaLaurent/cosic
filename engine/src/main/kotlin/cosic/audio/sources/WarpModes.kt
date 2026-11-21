@@ -94,7 +94,8 @@ internal object WarpModes {
     const val NONE = 0.0
     const val FLIP = 21.0
 
-    private val NAMES = mapOf(
+    /** The names of the modes and their numbers, in the order of `Warpmode`; the global of that name is made from it. */
+    internal val NAMES = mapOf(
         "NONE" to 0.0, "ASYM" to 1.0, "MIRROR" to 2.0, "BENDP" to 3.0, "BENDM" to 4.0, "BENDMP" to 5.0, "SYNC" to 6.0, "QUANT" to 7.0,
         "FOLD" to 8.0, "PWM" to 9.0, "ORBIT" to 10.0, "SPIN" to 11.0, "CHAOS" to 12.0, "PRIMES" to 13.0, "BINARY" to 14.0,
         "BROWNIAN" to 15.0, "RECIPROCAL" to 16.0, "WORMHOLE" to 17.0, "LOGISTIC" to 18.0, "SIGMOID" to 19.0, "FRACTAL" to 20.0, "FLIP" to 21.0,

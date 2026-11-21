@@ -179,8 +179,4 @@ internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.IN
         }
         return oldest!!
     }
-
-    private companion object {
-        const val MAX_POLYPHONY_LIMIT = 192
-    }
 }

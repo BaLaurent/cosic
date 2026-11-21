@@ -2,6 +2,9 @@
 # ids: examples:<function>#<index>, tunes:<tune>, extra:<file>/<snippet> (the file stem of parity/extra/<file>.json)
 # ParityTest fails on a case that mismatches and is not listed, and on a listed case that now matches.
 # Regenerate: ./gradlew :engine:test --tests 'cosic.parity.*' -Dcosic.parity.writeGaps=true
+# Phase 5: only a case whose code calls an entry point of Hydra or CSound (`initHydra`, `H(`, `loadOrc`, `loadCsound`, `.csound`, `.csoundm`) may be listed, as
+# `<id>  # out of scope: <entry point>`. None needs it: the oracle's own runtime mocks `csound`, `loadCsound`, `loadOrc` and the like with functions that do nothing,
+# `ParityHost` repeats those mocks, so the tunes `csoundDemo` and `loungeSponge` are compared with Strudel's haps like any other (the CSound calls are mocked away);
+# what a program of the app gets from those entry points is the error `'<name>' is not available in this app`, which `OutOfScopeTest` checks.
+# The 19 examples marked `skipped` in examples.json are Strudel's own skip list (the oracle has no snapshot for them), not gaps.
 
-examples:setGainCurve#0  # Task 3.4: gain (`setGainCurve(fn)`)
-examples:setMaxPolyphony#0  # Task 3.4: polyphony (`setMaxPolyphony(n)`)

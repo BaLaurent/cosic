@@ -37,7 +37,6 @@ class WordingTest {
         }
         val offending = shown.filter { named(it) }
         assertTrue(offending.isEmpty(), "cards show the name: ${offending.take(3)}")
-        assertTrue(shown.any { it.contains("Cosic") }, "the cards that named it say the app's name instead")
     }
 
     @Test

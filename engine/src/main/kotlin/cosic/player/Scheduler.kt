@@ -422,7 +422,7 @@ internal class Scheduler(
             is SoundLookup.Ready -> {
                 val cycle = checkNotNull(hap.whole).begin.toDouble()
                 // an event with `stretch` starts early by the vocoder's latency (superdough.mjs:468-473); its highlight stays where it is heard
-                val voice = voiceParams(controls, lookup.source, seconds, tempo, cycle, sounds.kabel)
+                val voice = voiceParams(controls, lookup.source, seconds, tempo, cycle, sounds.kabel, sounds.settings)
                 // the tap of the analyser the voice feeds is made here, so that the audio thread, which adds to it, never has to
                 voice.main.str("analyze")?.let { scopes?.prepare(it) }
                 events.add(SoundEvent(start - stretchLeadFrames(controls), voice))

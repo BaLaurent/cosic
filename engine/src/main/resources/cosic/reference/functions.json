@@ -151,7 +151,7 @@
   "category": "Combining patterns",
   "form": "function",
   "params": "method",
-  "doc": "Sets the default method of combining events from two patterns (aka alignment) in Strudel.",
+  "doc": "Sets the default method of combining events from two patterns (aka alignment).",
   "example": "setDefaultJoin('mix') // also try 'in', 'out', 'squeeze', etc.\ns(\"saw\").vel(\"1 0.5\").note(\"F A C E\").delay(\"0 0.2 0.3\")",
   "snippet": "setDefaultJoin('mix') // also try 'in', 'out', 'squeeze', etc.\n$: s(\"saw\").vel(\"1 0.5\").note(\"F A C E\").delay(\"0 0.2 0.3\")"
  },
@@ -2141,7 +2141,7 @@
   "doc": "Loads a collection of samples to use with s.",
   "example": "samples('github:tidalcycles/dirt-samples');\ns(\"[bd ~]*2, [~ hh]*2, ~ sd\")",
   "snippet": "samples('github:tidalcycles/dirt-samples');\n$: s(\"[bd ~]*2, [~ hh]*2, ~ sd\")",
-  "excluded": "samples() is a stand-in that refuses until Task 3.16"
+  "excluded": "the example fetches a sample map from the network (the tests run offline)"
  },
  {
   "name": "scrub",
@@ -3915,7 +3915,7 @@
   "category": "Input & output",
   "form": "method",
   "params": "",
-  "doc": "Uses dough as the audio engine. more info at https://dough.strudel.cc.",
+  "doc": "Uses dough as the audio engine.",
   "example": "$: chord(\"<Dm9 Dm11 Dm7>\").offset(\"<-1 0 1 0>\").voicing()\n.phaser(3).fm(1.4).fmh(1.01)\n.dough()",
   "snippet": "$: chord(\"<Dm9 Dm11 Dm7>\").offset(\"<-1 0 1 0>\").voicing()\n.phaser(3).fm(1.4).fmh(1.01)\n.dough()"
  },

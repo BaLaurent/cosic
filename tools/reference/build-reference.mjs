@@ -184,6 +184,44 @@ function docOf(html) {
   return sentence;
 }
 
+// ---- wording ------------------------------------------------------------------------------------------------------
+//
+// The app never names Strudel in what it shows (decision 5 of the parity plan), and the reference is what the app shows: the sentences of the JSDoc that do
+// are reworded here, each one exactly as it stands in the JSDoc. A rewording that matches nothing any more (the JSDoc changed under it) is an error, and so
+// is a mention that is left in what this script writes.
+
+const REWORDINGS = [
+  ['(aka <a href="https://strudel.cc/technical-manual/alignment/">alignment</a>) in Strudel.', '(aka alignment).'],
+  ['<li>Strudel mini notation works fine in K(..)', '<li>Mini notation works fine in K(..)'],
+  ['More complex Strudel expressions (like', 'More complex pattern expressions (like'],
+  ["We expose Strudel's note frequency under <code>sFreq</code> and Strudel's gate\ninformation", 'We expose the note frequency under <code>sFreq</code> and the gate\ninformation'],
+  ['Historically Strudel would\nuse', 'Historically the engine would\nuse'],
+  ['Uses dough as the audio engine. more info at https://dough.strudel.cc', 'Uses dough as the audio engine.'],
+  ['\nFor more info, read <a href="https://strudel.cc/learn/input-output/">MIDI &amp; OSC in the docs</a>', ''],
+];
+const usedRewordings = new Set();
+
+/** [text] with the sentences of REWORDINGS that it holds reworded. */
+function reworded(text) {
+  let out = text;
+  REWORDINGS.forEach(([find, replace], i) => {
+    if (!out.includes(find)) return;
+    out = out.split(find).join(replace);
+    usedRewordings.add(i);
+  });
+  return out;
+}
+
+/** The entries of `doc.json`, with the descriptions of the functions and of their parameters reworded. */
+function readDocs() {
+  const docs = JSON.parse(fs.readFileSync(path.join(checkout, 'doc.json'), 'utf8')).docs;
+  return docs.map((doc) => ({
+    ...doc,
+    ...(doc.description ? { description: reworded(doc.description) } : {}),
+    ...(doc.params ? { params: doc.params.map((p) => (p.description ? { ...p, description: reworded(p.description) } : p)) } : {}),
+  }));
+}
+
 // ---- how a function is called, and the snippet --------------------------------------------------------------------
 
 const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -248,7 +286,7 @@ function playsOf() {
 }
 
 function build() {
-  const docs = JSON.parse(fs.readFileSync(path.join(checkout, 'doc.json'), 'utf8')).docs;
+  const docs = readDocs();
   const pageOf = pageOfEachFunction();
   const plays = playsOf();
   const excluded = exclusions();
@@ -320,7 +358,7 @@ function playsByExample() {
 }
 
 function buildCards() {
-  const docs = JSON.parse(fs.readFileSync(path.join(checkout, 'doc.json'), 'utf8')).docs;
+  const docs = readDocs();
   const plays = playsByExample();
   const cards = [];
   for (const doc of docs) {
@@ -347,6 +385,16 @@ const outputs = [
   { file: output, text: build(), summary: (text) => `${JSON.parse(text).length} functions` },
   { file: docsOutput, text: buildCards(), summary: (text) => `${JSON.parse(text).length} cards` },
 ];
+for (const { file, text } of outputs) {
+  const found = /strudel/i.exec(text);
+  if (found) {
+    const around = text.slice(Math.max(0, found.index - 70), found.index + 70).replace(/\s+/g, ' ');
+    throw new Error(`${path.relative(root, file)} names Strudel: "...${around}...": add a rewording`);
+  }
+}
+REWORDINGS.forEach(([find], i) => {
+  if (!usedRewordings.has(i)) throw new Error(`rewording ${i} ("${find.slice(0, 50)}...") matches nothing: the JSDoc changed`);
+});
 if (process.argv.includes('--check')) {
   let stale = false;
   for (const { file, text } of outputs) {

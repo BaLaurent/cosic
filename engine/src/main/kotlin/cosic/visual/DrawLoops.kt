@@ -130,11 +130,19 @@ internal class PianorollLoop(key: String, target: String, receiver: Pattern, pri
 internal fun interface AnalyserFeed {
     /** The waveform ([frequency] false: the oldest half of the latest [fftSize] samples) or the decibels of each bin, or null while no sound with the id has played. */
     fun read(fftSize: Int, frequency: Boolean): FloatArray?
+
+    /** The `fft` of a hap that sets none: `getDefaultValue('fft')`, 8 unless a program changed it. NaN (a default that is no number) is the sizes' own 8. */
+    val defaultFft: Double get() = 8.0
 }
 
-/** The [AnalyserFeed] of the sound in the [ScopeTaps] of the engine under [id]: one [Analyser] per size (its smoothing is state of its own). */
-internal class TapFeed(private val id: String, private val taps: () -> ScopeTaps?) : AnalyserFeed {
+/**
+ * The [AnalyserFeed] of the sound in the [ScopeTaps] of the engine under [id]: one [Analyser] per size (its smoothing is state of its own). [fftDefault] is asked
+ * for the default `fft` when the haps set none.
+ */
+internal class TapFeed(private val id: String, private val fftDefault: () -> Double = { 8.0 }, private val taps: () -> ScopeTaps?) : AnalyserFeed {
     private var analyser: Analyser? = null
+
+    override val defaultFft: Double get() = fftDefault()
 
     override fun read(fftSize: Int, frequency: Boolean): FloatArray? {
         val source = taps() ?: return null
@@ -145,9 +153,12 @@ internal class TapFeed(private val id: String, private val taps: () -> ScopeTaps
     }
 }
 
-/** The data of an analyser loop for the haps in [memory]: the analyser follows the `fft` of the hap that sounded last (superdough resizes the node for every hap). */
+/**
+ * The data of an analyser loop for the haps in [memory]: the analyser follows the `fft` of the hap that sounded last (superdough resizes the node for every hap), and the
+ * default one of the feed ([AnalyserFeed.defaultFft]) when no hap in memory sets one.
+ */
 private fun readFeed(feed: AnalyserFeed, memory: List<Hap>, frequency: Boolean): FloatArray? {
-    var fft = 8.0
+    var fft = feed.defaultFft
     for (i in memory.indices.reversed()) {
         val f = propOf(memory[i].value, "fft")
         if (f is Double) {

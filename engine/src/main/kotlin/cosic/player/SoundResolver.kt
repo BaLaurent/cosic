@@ -4,6 +4,7 @@ import cosic.BuiltinSound
 import cosic.SampleBank
 import cosic.SoundLibrary
 import cosic.WaveTableBank
+import cosic.audio.AudioSettings
 import cosic.audio.DRUM_VARIANTS
 import cosic.audio.DrumKit
 import cosic.audio.SampleSourceParams
@@ -58,7 +59,13 @@ private val REST_NAMES = setOf("-", "~", "_")
  * so doing one off the audio thread (see [dryRun]) warms up what it needs; the first source of each wave builds its tables. A soundfont (`gm_*`) is played by
  * [resolveSoundfont]. A wavetable that is not decoded yet is [SoundLookup.Loading], as a sample is.
  */
-internal class SoundResolver(private val sampleRate: Int, val library: SoundLibrary, private val drums: DrumKit = DrumKit(sampleRate)) {
+internal class SoundResolver(
+    private val sampleRate: Int,
+    val library: SoundLibrary,
+    private val drums: DrumKit = DrumKit(sampleRate),
+    /** The settings programs change; an event with no `s` plays the sound they default it to (`getDefaultValue('s')`, a triangle at first). */
+    val settings: AudioSettings = AudioSettings(),
+) {
     private val sourceCount = AtomicLong()
 
     /** The programs of the events' `K(...)` and `worklet(...)` controls: made and compiled here, off the audio thread's render path, like the sources. */
@@ -71,7 +78,7 @@ internal class SoundResolver(private val sampleRate: Int, val library: SoundLibr
     fun resolve(controls: ControlMap, durationSec: Double, cps: Double): SoundLookup {
         (controls[PRESET_CONTROL] as? PresetRef)?.let { return resolvePreset(it, controls) } // `.soundfont(sf)`: the preset of a loaded soundfont, not a named sound
         val given = controls["s"]
-        val s: Any? = if (given === Undefined || (given == null && !controls.containsKey("s"))) "triangle" else given
+        val s: Any? = if (given === Undefined || (given == null && !controls.containsKey("s"))) settings.current.default("s") else given
         if (s is String && s in REST_NAMES) return SoundLookup.Silent
         val bank = controls["bank"]
         val name: Any? = if (jsTruthy(bank) && jsTruthy(s)) "${jsToString(bank)}_${jsToString(s)}" else s

@@ -164,7 +164,7 @@ internal class Voice(
         val t = startFrame.toDouble() / sampleRate
         val duration = if (params.durationSec > 0.0) params.durationSec else 0.0 // NaN becomes 0 too
         val end = t + duration
-        val release = valueOr(main[Param.release], DEFAULT_RELEASE)
+        val release = valueOr(main[Param.release], params.defaultRelease)
         val fullRelease = Math.max(release, valueOr(main[Param.FXrelease], 0.0))
         val endWithRelease = end + fullRelease
         timing.set(t, end, endWithRelease, params.cps, params.cycle)
@@ -495,9 +495,6 @@ internal class Voice(
     private companion object {
         /** The controls of a preset note: a gain of 1 and everything else unset. */
         val PRESET_MAIN = ParamSet(DoubleArray(Param.COUNT) { Double.NaN }.also { it[Param.gain.ordinal] = 1.0 })
-
-        /** `release` when the pattern sets none (superdough.mjs:206). */
-        const val DEFAULT_RELEASE = 0.01
 
         /** Times beyond this many frames (about 1900 years at 48 kHz) count as for ever. */
         const val HORIZON_FRAMES = 9.0e16

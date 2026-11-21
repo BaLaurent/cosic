@@ -26,6 +26,12 @@ internal const val MAX_MODS = 8
 /** Strudel's `maxPolyphony` default: the 129th sounding voice ramps the oldest one down over 0.25 s. */
 internal const val DEFAULT_MAX_POLYPHONY = 128
 
+/** The most voices the pool can count toward `maxPolyphony`: a limit above it, or none at all, means this many (stolen and cut voices keep their slot for a while). */
+internal const val MAX_POLYPHONY_LIMIT = 192
+
+/** `release` when the pattern sets none (superdough.mjs:206): how long the chain of a voice lives after its event ends. `setDefaultValue('release', ...)` changes it. */
+internal const val DEFAULT_VOICE_RELEASE = 0.01
+
 /** Voice slots in the pool. Stolen and cut voices keep their slot until they are done, so there are more slots than [DEFAULT_MAX_POLYPHONY]. */
 internal const val VOICE_SLOTS = 256
 

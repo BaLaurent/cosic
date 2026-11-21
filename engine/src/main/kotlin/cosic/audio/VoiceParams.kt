@@ -14,6 +14,8 @@ import cosic.SampleData
  *   (at most [MAX_FX]); [mods]: the `.lfo`, `.env` and `.bmod` modulators of all of them, in the order `superdough` connects them.
  * - [irSample]: the sample named by the `ir` control, which the reverb convolves with instead of generating a room, when the
  *   scheduler resolved one (null: none asked for or not loaded yet).
+ * - [defaultRelease]: `getDefaultValue('release')`, the release the chain of a voice lives for when the event sets none (0.01). Only how long the chain stays up
+ *   counts it: the envelopes of the sources have a release default of their own.
  */
 internal class VoiceParams(
     val source: VoiceSource,
@@ -24,4 +26,5 @@ internal class VoiceParams(
     val fx: List<ParamSet> = emptyList(),
     val mods: List<ModSpec> = emptyList(),
     val irSample: SampleData? = null,
+    val defaultRelease: Double = DEFAULT_VOICE_RELEASE,
 )

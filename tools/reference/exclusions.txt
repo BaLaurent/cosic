@@ -12,14 +12,14 @@ withValue     # the example plays plain values
 # Strudel's own sound throws on these examples too (every hap fails in `createPeriodicWave`, the console shows the error and nothing plays)
 phases        # the example gives `partials` a control object where a list belongs: partials(partials([1, 1, 1]))
 #
-# What a later task of the parity plan makes real: samples(...) is a stand-in that refuses (Task 3.16: samples, soundAlias, aliasBank, piano)
+# The example loads sounds from the network with samples(...), which the tests (they run offline) cannot do
 irbegin       # the example loads its impulse response with samples()
 irspeed       # the example loads its impulse response with samples()
-samples       # samples() is a stand-in that refuses until Task 3.16
+samples       # the example fetches a sample map from the network (the tests run offline)
 scrub         # the example loads its sample with samples()
 slice         # the example loads its samples with samples()
 splice        # the example loads its samples with samples()
 getDuration   # the example fetches a sample map from the network (the tests run offline)
 
-# MIDI input of Task 4.5: the example opens the keyboard it names, which a test engine does not have (midikeys throws when no device fits)
+# MIDI input: the example opens the keyboard it names, which a test engine does not have (midikeys throws when no device fits)
 midikeys      # the example opens the 'Arturia KeyStep 32'

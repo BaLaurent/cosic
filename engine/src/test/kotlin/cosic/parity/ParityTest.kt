@@ -86,6 +86,13 @@ internal object KnownGaps {
     val entries: Map<String, String> by lazy { readAnnotated(ParityData.knownGapsFile) }
 }
 
+/**
+ * A call of an entry point of Hydra or CSound (decision 4 of the parity plan): `initHydra`, `clearHydra`, `H(`, `loadOrc`, `loadCsound` and its spellings, `.csound(` and
+ * `.csoundm(`. A case whose code has one is out of scope in the app, where the call is an error (`OutOfScopeTest`).
+ */
+internal val OUT_OF_SCOPE_ENTRY_POINT =
+    Regex("""\binitHydra\b|\bclearHydra\b|\bH\(|\bloadOrc\b|\bloadCsound\b|\bloadCSound\b|\bloadcsound\b|\.csoundm?\(""")
+
 /** known-gaps.txt must only name cases that exist and that can fail. */
 internal class KnownGapsTest {
     @Test
@@ -244,6 +251,7 @@ internal object ParityReport {
                 section("Examples, by Strudel function", CaseSource.EXAMPLES, all)
                 section("Tunes", CaseSource.TUNES, all)
                 section("Extra snippets", CaseSource.EXTRA, all)
+                outOfScope(all)
             },
         )
     }
@@ -266,6 +274,21 @@ internal object ParityReport {
         }
     }
 
+    /** The cases that call Hydra or CSound, which the oracle's runtime mocks away and the app reports as errors. */
+    private fun StringBuilder.outOfScope(all: List<Entry>) {
+        val cases = all.filter { entry -> entry.case.codes.any { OUT_OF_SCOPE_ENTRY_POINT.containsMatchIn(it) } }
+        append("\n## Out of scope: Hydra and CSound\n\n")
+        append("Decision 4 of the parity plan rules both out: in the app their entry points are the error `'<name>' is not available in this app` (`OutOfScopeTest`). ")
+        append("Strudel's own test runtime mocks `csound`, `loadCsound`, `loadOrc` and the like with functions that do nothing and `ParityHost` repeats that, ")
+        append("so what these cases have besides the CSound calls is compared like any other.\n\n")
+        if (cases.isEmpty()) {
+            append("No case calls one.\n")
+            return
+        }
+        append("| case | result |\n|---|---|\n")
+        for (entry in cases) append("| `${entry.case.id}` | ${label(entry)} |\n")
+    }
+
     private fun label(entry: Entry): String =
         entry.status.word + if (entry.status == Status.FAIL && entry.case.id in KnownGaps.entries) " (gap)" else ""
 
@@ -285,6 +308,11 @@ internal object ParityReport {
                 "ids: examples:<function>#<index>, tunes:<tune>, extra:<file>/<snippet> (the file stem of parity/extra/<file>.json)",
                 "ParityTest fails on a case that mismatches and is not listed, and on a listed case that now matches.",
                 "Regenerate: ./gradlew :engine:test --tests 'cosic.parity.*' -Dcosic.parity.writeGaps=true",
+                "Phase 5: only a case whose code calls an entry point of Hydra or CSound (`initHydra`, `H(`, `loadOrc`, `loadCsound`, `.csound`, `.csoundm`) may be listed, as",
+                "`<id>  # out of scope: <entry point>`. None needs it: the oracle's own runtime mocks `csound`, `loadCsound`, `loadOrc` and the like with functions that do nothing,",
+                "`ParityHost` repeats those mocks, so the tunes `csoundDemo` and `loungeSponge` are compared with Strudel's haps like any other (the CSound calls are mocked away);",
+                "what a program of the app gets from those entry points is the error `'<name>' is not available in this app`, which `OutOfScopeTest` checks.",
+                "The 19 examples marked `skipped` in examples.json are Strudel's own skip list (the oracle has no snapshot for them), not gaps.",
             ),
             failing.associate { it.id to (reasons[it.id]?.takeIf(String::isNotEmpty) ?: NOT_IMPLEMENTED_YET) },
         )

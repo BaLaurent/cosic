@@ -1,5 +1,6 @@
 package cosic
 
+import cosic.audio.AudioSettings
 import cosic.audio.BackgroundIrExecutor
 import cosic.audio.DRUM_NAMES
 import cosic.audio.ChainDemand
@@ -74,6 +75,9 @@ private sealed interface Command {
 
     class Preview(val sound: String, val index: Int, val note: Double?) : Command
 
+    /** A program changed the polyphony or the multi-channel orbits (`setMaxPolyphony`, `setMultiChannelOrbits`): the mixer takes them from the settings. */
+    data object ApplyAudioSettings : Command
+
     /** A live input just made events the program turns into sounds (`midikeys`); [done] is told whether any were played. */
     class Trigger(val latencySeconds: Double, val match: (Hap) -> Boolean, val done: ((Boolean) -> Unit)?) : Command
 }
@@ -93,8 +97,15 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     /** An engine that builds the impulse responses of its reverbs on a background thread (offline rendering builds them on the spot instead). */
     constructor(sampleRate: Int, library: SoundLibrary) : this(sampleRate, library, BackgroundIrExecutor.shared)
 
+    /**
+     * What programs change about the sound engine itself (`setMaxPolyphony`, `setMultiChannelOrbits`, `setGainCurve`, the default values): the functions
+     * of the program write it ([EvalEffects.audio]), the sound resolver and the voices read it, and the mixer takes the polyphony and the channels from it
+     * on the audio thread. It lives from one evaluation to the next, as superdough's module variables do, and [resetSession] clears it.
+     */
+    internal val audioSettings = AudioSettings().also { it.onChange = { commands.add(Command.ApplyAudioSettings) } }
+
     internal val drums = DrumKit(sampleRate)
-    private val sounds = SoundResolver(sampleRate, library, drums)
+    private val sounds = SoundResolver(sampleRate, library, drums, audioSettings)
 
     /** The sound of the voices with an `analyze` id, for `scope`, `fscope` and `spectrum`: the voices add to it, the visuals read it (`VisualSession`). */
     val scopes = ScopeTaps()
@@ -158,7 +169,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     /** The pattern and tempo of the last program that [evaluate] accepted, for [soundsLoading]. */
     private var lastPattern: Pair<Pattern, Double>? = null
 
-    private val effects = EngineEffects(inputs, console, outputs) { remote }
+    private val effects = EngineEffects(inputs, console, outputs, audioSettings) { remote }
     private val scheduler = Scheduler(sampleRate, sounds, outputs, scopes)
     private val chainDemand = ChainDemand()
 
@@ -214,12 +225,14 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
             val warnings = host.quietly { dryRun(program.pattern, currentCycle(), sounds, program.cps, outputs) }
             commands.add(Command.SetProgram(program.pattern, program.cps, warnings))
             // the visuals follow the program that plays, and read the sound of their analysers from the engine
-            (effects.visuals as? VisualSession)?.attach(program.pattern, scopes)
+            (effects.visuals as? VisualSession)?.attach(program.pattern, scopes) { audioSettings.current.number("fft") }
             lastPattern = program.pattern to program.cps
             val info = ProgramInfo(
                 program.miniLocations, program.sliders, program.widgets, effects.visuals, metadataOf(code), effects.inputsUsed(),
             )
             this.program = info
+            // the web REPL ends every successful evaluation with `setVersionDefaultsFrom(code)` (useReplContext.jsx): the live default values go back to the base ones
+            audioSettings.setVersionDefaults(info.metadata["version"])
             console.log("[eval] code updated")
             EvalReport.Ok(program.cps, warnings, info)
         }
@@ -237,6 +250,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     fun resetSession() {
         session = ReplSession(host)
         sounds.kabel.reset()
+        audioSettings.reset()
         prebaked = false
         host.cps = DEFAULT_CPS
     }
@@ -344,6 +358,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
             when (command) {
                 is Command.SetProgram -> scheduler.setProgram(command.pattern, command.cps, command.warnings)
                 is Command.SetCps -> scheduler.setCps(command.cps)
+                Command.ApplyAudioSettings -> applyAudioSettings()
                 Command.Play -> if (!scheduler.playing) scheduler.play(renderedFrames + startDelayFrames)
                 is Command.PlayFrom -> {
                     // a program that is playing starts over: what was queued for the old timeline goes, voices that sound keep sounding
@@ -378,13 +393,26 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
         when (val lookup = sounds.resolve(preview.sound, preview.index.toDouble(), preview.note, PREVIEW_SECONDS, scheduler.cps)) {
             is SoundLookup.Ready -> {
                 waitingPreview = null
-                start(voiceParams(preview.note?.let { mapOf("note" to it) } ?: emptyMap(), lookup.source, PREVIEW_SECONDS, scheduler.cps, 0.0))
+                start(voiceParams(preview.note?.let { mapOf("note" to it) } ?: emptyMap(), lookup.source, PREVIEW_SECONDS, scheduler.cps, 0.0, settings = audioSettings))
             }
             SoundLookup.Loading -> if (renderedFrames >= previewGivesUpAt) waitingPreview = null
             is SoundLookup.Unknown -> waitingPreview = null
             SoundLookup.Silent -> waitingPreview = null
         }
     }
+
+    /** Hands the polyphony and the channel mode the settings now have to the mixer. Audio thread only. */
+    private fun applyAudioSettings() {
+        val settings = audioSettings.current
+        mixer.maxPolyphony = settings.voiceLimit
+        mixer.multiChannelOrbits = settings.multiChannelOrbits
+    }
+
+    /** The polyphony the mixer works with now, as the last block took it from [audioSettings]. Read it between renders; for tests. */
+    internal val mixerPolyphony: Int get() = mixer.maxPolyphony
+
+    /** Whether the mixer gives orbits channels of their own now, as the last block took it from [audioSettings]. Read it between renders; for tests. */
+    internal val mixerMultiChannelOrbits: Boolean get() = mixer.multiChannelOrbits
 
     /** Renders the block in pieces, starting every due event exactly on its frame. */
     private fun renderSegments(out: FloatArray, frames: Int) {

@@ -77,6 +77,9 @@ class VisualSession internal constructor(private val log: (String) -> Unit = {})
     @Volatile
     private var scopes: ScopeTaps? = null
 
+    @Volatile
+    private var fftDefault: () -> Double = { 8.0 }
+
     /** Whether a call made a painter (`.punchcard()` and the like), which makes the session follow the haps of the whole program. */
     private var usesPainters = false
     private var usesBackground = false
@@ -150,13 +153,20 @@ class VisualSession internal constructor(private val log: (String) -> Unit = {})
 
     internal fun scopeTaps(): ScopeTaps? = scopes
 
+    /** The `fft` an analyser takes when the haps set none, as the engine's settings have it now (`getDefaultValue('fft')`). */
+    internal fun defaultFft(): Double = fftDefault()
+
     // ---- the engine ---------------------------------------------------------------------------------------------------------------------
 
-    /** The engine ([cosic.CosicEngine.evaluate]) says which program the visuals belong to and where the sound of the analysers is. */
-    internal fun attach(program: Pattern, scopes: ScopeTaps) {
+    /**
+     * The engine ([cosic.CosicEngine.evaluate]) says which program the visuals belong to, where the sound of the analysers is, and how to read the default `fft`
+     * (`getDefaultValue('fft')` of its settings).
+     */
+    internal fun attach(program: Pattern, scopes: ScopeTaps, fftDefault: () -> Double = { 8.0 }) {
         synchronized(lock) {
             this.program = program
             this.scopes = scopes
+            this.fftDefault = fftDefault
             armed = false
         }
     }

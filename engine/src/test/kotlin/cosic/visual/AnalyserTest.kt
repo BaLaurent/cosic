@@ -1,6 +1,8 @@
 package cosic.visual
 
 import cosic.io.ScopeTaps
+import cosic.pattern.tag
+import cosic.script.evaluateProgram
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -70,5 +72,37 @@ class AnalyserTest {
         // the first read of the smoothing: 0.5 * 0.21 = 0.105
         assertEquals(-19.58, bins[4].toDouble(), 0.3)
         assertEquals(null, TapFeed("1") { null }.read(64, false))
+    }
+
+    @Test
+    fun aScopeSizesItsAnalyserByTheDefaultFftOfTheFeed() {
+        fun sizesRead(defaultFft: Double): List<Int> {
+            val sizes = ArrayList<Int>()
+            val feed = object : AnalyserFeed {
+                override val defaultFft: Double = defaultFft
+
+                override fun read(fftSize: Int, frequency: Boolean): FloatArray? {
+                    sizes.add(fftSize)
+                    return null
+                }
+            }
+            val session = VisualSession()
+            session.scope(evaluateProgram("""s("sine")""").pattern.tag("1"), VisualOptions(), feed = feed)
+            session.tick(0.25, true)
+            return sizes.distinct()
+        }
+        assertEquals(listOf(8192), sizesRead(8.0), "the default fft of superdough, 2^(8 + 5)")
+        assertEquals(listOf(2048), sizesRead(6.0), "setDefault('fft', 6)")
+        assertEquals(listOf(8192), sizesRead(Double.NaN), "a default that is no number is the sizes' own")
+    }
+
+    @Test
+    fun aTapFeedAsksForTheDefaultFftWhenItIsUsed() {
+        var fft = 8.0
+        val feed = TapFeed("1", { fft }) { null }
+        assertEquals(8.0, feed.defaultFft)
+        fft = 5.0
+        assertEquals(5.0, feed.defaultFft, "read when it is needed, so a program that changed it is heard")
+        assertEquals(8.0, TapFeed("1") { null }.defaultFft, "8 without a reader")
     }
 }

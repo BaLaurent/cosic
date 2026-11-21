@@ -1,17 +1,16 @@
-# Strudel names (globals, Pattern methods and controls of the oracle runtime) that Cosic has no builtin for,
+# Strudel names (globals, Pattern methods and controls of the oracle runtime) that Cosic does not implement,
 # one per line: <name>  # reason. A name is covered once Cosic implements it; delete its line then.
-# A reason says who covers the name: `Task N.N: ...` (the task of the plan that implements it), an internal of Strudel's
-# (REPL, Web Audio, pattern.mjs) or a mock of its test runtime that no program uses, `out of scope: ...` (Hydra, CSound and
-# what decision 4 of the parity plan rules out), or `no task in the plan` / `Phase 2 gap` (it needs an owner).
-# "not implemented yet" is the temporary reason the generator writes for a new name; Phase 5 requires that none is left.
+# A reason says why the name is left out: an internal of Strudel's (REPL, Web Audio, the sound registry, pattern.mjs) or a mock of its test runtime
+# that no program uses, `out of scope: ...` (Hydra and CSound, ruled out by decision 4 of the parity plan: the name is defined and is an error that says so),
+# or `Task N.N: ...` for a name that a task of the plan has still to cover (only the dough engine, which is being done).
+# "not implemented yet" is the temporary reason the generator writes for a new name; the final acceptance requires that none is left.
 # Regenerate: ./gradlew :engine:test --tests 'cosic.parity.*' -Dcosic.parity.writeGaps=true
 
 Chorus  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 Clock  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-ClockBridge  # superdough's clock bridge (Web Audio timing); Cosic's ClockBridge is Kotlin (Task 4.1)
-ClockCollator  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-Cyclist  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-DEFAULT_MAX_POLYPHONY  # Task 3.4: polyphony (Strudel's maxPolyphony, 128 by default)
+ClockBridge  # internal of superdough: maps the audio context's clock to the scheduler's; Cosic's scheduler and its `ClockBridge` (io/ClockBridge.kt, which times MIDI and OSC) are Kotlin and a program does not call them
+ClockCollator  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+Cyclist  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
 FeedbackDelay  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 Freeverb  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 Gain  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
@@ -21,159 +20,143 @@ NoiseSynth  # mock in the oracle's test runtime for the removed Tone.js integrat
 PolySynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 Reverb  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 Synth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-Warpmode  # Task 3.14: wavetables (the warp modes of the `warp` controls)
 _fitslice  # internal helper of pattern.mjs, not meant to be called by programs
 _match  # internal helper of pattern.mjs, not meant to be called by programs
-_opIn  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
-_opMix  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
-_opOut  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
-_opPoly  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
-_opReset  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
-_opRestart  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
-_opSqueeze  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
-_opSqueezeOut  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
+_opIn  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (`Alignment`, `AlignedFunction`)
+_opMix  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (`Alignment`, `AlignedFunction`)
+_opOut  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (`Alignment`, `AlignedFunction`)
+_opPoly  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (`Alignment`, `AlignedFunction`)
+_opReset  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (`Alignment`, `AlignedFunction`)
+_opRestart  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (`Alignment`, `AlignedFunction`)
+_opSqueeze  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (`Alignment`, `AlignedFunction`)
+_opSqueezeOut  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (`Alignment`, `AlignedFunction`)
 _retime  # internal helper of pattern.mjs, not meant to be called by programs
 _slices  # internal helper of pattern.mjs, not meant to be called by programs
-_strudelLoaded  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-analysers  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-analysersData  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-applyFM  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-applyGainCurve  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-applyParameterModulators  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+_strudelLoaded  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+analysers  # internal of superdough: the AnalyserNodes of `analyze`; Cosic's analysers are Kotlin (ScopeTaps and visual/Analyser.kt), read by the visuals
+analysersData  # internal of superdough: the AnalyserNodes of `analyze`; Cosic's analysers are Kotlin (ScopeTaps and visual/Analyser.kt), read by the visuals
+applyFM  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+applyParameterModulators  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
 bindWhole  # internal helper of pattern.mjs, not meant to be called by programs
-cleanupOnEnd  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-cleanupUi  # browser DOM function (document, html); no Android counterpart and no task in the plan
-connectBusModulator  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-connectEnvelope  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-connectLFO  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-connectToDestination  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+cleanupOnEnd  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+cleanupUi  # browser DOM function (`document`, `html`): removes what the web REPL's widgets drew into the page; Cosic's widgets are drawn by the app's own Compose host
+connectBusModulator  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+connectEnvelope  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+connectLFO  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+connectToDestination  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
 controls  # internal: namespace object of controls.mjs (`controls.s` is `s`); every control is a global
-createClock  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-createFilter  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-csound  # out of scope: CSound (decision 4 of the parity plan)
+createClock  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+createFilter  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+csound  # out of scope: CSound (decision 4 of the parity plan); the name is defined, as a function and as a method, and is the error `'csound' is not available in this app`
 defragmentHaps  # internal helper of pattern.mjs, not meant to be called by programs
-distortionAlgorithms  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-drawFrequencyScope  # internal helper of `fscope` (draws an analyser on a canvas); Cosic's widgets are Compose (Task 4.3)
-drawTimeScope  # internal helper of `scope` (draws an analyser on a canvas); Cosic's widgets are Compose (Task 4.3)
-drywet  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-dspWorklet  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-effectSend  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-ensureMinimalOutput  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-errorLogger  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-evaluate  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-expDecay  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-fetchSampleMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+distortionAlgorithms  # internal of superdough: the waveshaping curves of `distort` as functions on samples; Cosic has them in Kotlin (audio/dsp/Distortion.kt)
+drawFrequencyScope  # internal helper of `fscope` (draws an analyser on a canvas); Cosic's widgets are drawn by the app's own Compose host
+drawTimeScope  # internal helper of `scope` (draws an analyser on a canvas); Cosic's widgets are drawn by the app's own Compose host
+drywet  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+dspWorklet  # AudioWorklet API of superdough (loading and running worklet modules); Cosic's DSP kernels are Kotlin
+effectSend  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+ensureMinimalOutput  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+errorLogger  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+evaluate  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+expDecay  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+fetchSampleMap  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
 firstCycleValues  # internal helper of pattern.mjs, not meant to be called by programs
 fmsynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-gainNode  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getADSRValues  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getAnalyserById  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getAnalyzerData  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getAudioContext  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getAudioContextCurrentTime  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getAudioDevices  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getCachedBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-getClockBridge  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getClockTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-getCompressor  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getCps  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-getDefaultValue  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
+gainNode  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getADSRValues  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getAnalyserById  # internal of superdough: the AnalyserNodes of `analyze`; Cosic's analysers are Kotlin (ScopeTaps and visual/Analyser.kt), read by the visuals
+getAnalyzerData  # internal of superdough: the AnalyserNodes of `analyze`; Cosic's analysers are Kotlin (ScopeTaps and visual/Analyser.kt), read by the visuals
+getAudioContext  # browser audio context and device API (AudioContext, mediaDevices); Cosic's audio goes through the app's own audio output
+getAudioContextCurrentTime  # browser audio context and device API (AudioContext, mediaDevices); Cosic's audio goes through the app's own audio output
+getAudioDevices  # browser audio context and device API (AudioContext, mediaDevices); Cosic's audio goes through the app's own audio output
+getCachedBuffer  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+getClockBridge  # internal of superdough: maps the audio context's clock to the scheduler's; Cosic's scheduler and its `ClockBridge` (io/ClockBridge.kt, which times MIDI and OSC) are Kotlin and a program does not call them
+getClockTime  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+getCompressor  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getCps  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
 getDestination  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-getDistortion  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getDistortionAlgorithm  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getEnvelope  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getFrequencyFromValue  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getIsStarted  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-getLfo  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getLoadedBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-getOscillator  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getParamADSR  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getParamLfo  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getPattern  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-getPitchEnvelope  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getSampleBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-getSampleBufferSource  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-getSampleInfo  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-getSchedule  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-getScheduleFunc  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-getSound  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-getSuperdoughAudioController  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-getVibratoOscillator  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getWorklet  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getZZFX  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+getDistortion  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getDistortionAlgorithm  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getEnvelope  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getFrequencyFromValue  # internal of superdough: a helper of custom sounds that read the pitch of an event for their Web Audio nodes; Cosic's sources read it in Kotlin (audio/sources/PitchMath.kt)
+getIsStarted  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+getLfo  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getLoadedBuffer  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+getOscillator  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getParamADSR  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getParamLfo  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getPattern  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+getPitchEnvelope  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getSampleBuffer  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+getSampleBufferSource  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+getSampleInfo  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+getSchedule  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+getScheduleFunc  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+getSound  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+getSuperdoughAudioController  # browser audio context and device API (AudioContext, mediaDevices); Cosic's audio goes through the app's own audio output
+getTime  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+getVibratoOscillator  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+getWorklet  # AudioWorklet API of superdough (loading and running worklet modules); Cosic's DSP kernels are Kotlin
+getZZFX  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
 highpass  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-initAudio  # boot of superdough (creates the AudioContext, loads the worklets); its maxPolyphony and multiChannelOrbits options are Tasks 3.4 and 3.9
-initAudioOnFirstClick  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-loadBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-loadCSound  # out of scope: CSound (decision 4 of the parity plan)
-loadCsound  # out of scope: CSound (decision 4 of the parity plan)
-loadOrc  # out of scope: CSound (decision 4 of the parity plan)
-loadWorklets  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-loadcsound  # out of scope: CSound (decision 4 of the parity plan)
-logKey  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+initAudioOnFirstClick  # browser entry that waits for the first click (`document` mousedown) to start the audio context; Cosic's audio output is started by the app
+loadBuffer  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+loadCSound  # out of scope: CSound (decision 4 of the parity plan); the name is defined and is the error `'loadCSound' is not available in this app`
+loadCsound  # out of scope: CSound (decision 4 of the parity plan); the name is defined and is the error `'loadCsound' is not available in this app`
+loadOrc  # out of scope: CSound (decision 4 of the parity plan); the name is defined and is the error `'loadOrc' is not available in this app`
+loadWorklets  # AudioWorklet API of superdough (loading and running worklet modules); Cosic's DSP kernels are Kotlin
+loadcsound  # out of scope: CSound (decision 4 of the parity plan); the name is defined and is the error `'loadcsound' is not available in this app`
+logKey  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
 lowpass  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-maxPolyphony  # Task 3.4: polyphony (Strudel's maxPolyphony, 128 by default)
 membrane  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 metal  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-multiChannelOrbits  # Task 3.9: orbit buses (multiChannelOrbits)
-noises  # constant of superdough (the names of the noise sources); Cosic's noise sources are Kotlin (Task 3.11)
-onTriggerSample  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-onTriggerSynth  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-onceEnded  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-packageName  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+onTriggerSample  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+onTriggerSynth  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+onceEnded  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+packageName  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
 players  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 polysynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-processSampleMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-rawdsp  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-rawdspOutput  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-registerSampleSource  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-registerSamplesPrefix  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-registerSound  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-registerSynthSounds  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-registerWaveTable  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-registerWorklet  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-registerZZFXSounds  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-releaseAudioNode  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-renderPatternAudio  # Task 4.13: audio export (the app's OfflineRenderer is the counterpart; a program does not call it)
-repl  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-resetDefaultValues  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
-resetDefaults  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
-resetGlobalEffects  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-resetLoadedSounds  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-resetSeenKeys  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-reverseBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
+processSampleMap  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+rawdsp  # AudioWorklet API of superdough (loading and running worklet modules); Cosic's DSP kernels are Kotlin
+rawdspOutput  # AudioWorklet API of superdough (loading and running worklet modules); Cosic's DSP kernels are Kotlin
+registerSampleSource  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+registerSamplesPrefix  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+registerSound  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+registerSynthSounds  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+registerWaveTable  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+registerWorklet  # AudioWorklet API of superdough (loading and running worklet modules); Cosic's DSP kernels are Kotlin
+registerZZFXSounds  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+releaseAudioNode  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+renderPatternAudio  # audio export of superdough (renders cycles of a pattern to an AudioBuffer in the browser); the app's export screen and `OfflineRenderer` are the counterpart, and a program does not call it
+repl  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+resetGlobalEffects  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+resetLoadedSounds  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+resetSeenKeys  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+reverseBuffer  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
 sampler  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-scheduleAtTime  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-setAudioContext  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-setClockTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-setCpsFunc  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-setDefault  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
-setDefaultAudioContext  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-setDefaultValue  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
-setDefaultValues  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
-setGainCurve  # Task 3.4: gain (`setGainCurve(fn)`, example setGainCurve#0)
-setIsStarted  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-setLogger  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-setMaxPolyphony  # Task 3.4: polyphony (`setMaxPolyphony(n)`, example setMaxPolyphony#0)
-setMultiChannelOrbits  # Task 3.9: orbit buses (`setMultiChannelOrbits(bool)`)
-setPattern  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-setScheduleFunc  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
+scheduleAtTime  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+setAudioContext  # browser audio context and device API (AudioContext, mediaDevices); Cosic's audio goes through the app's own audio output
+setClockTime  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+setCpsFunc  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+setDefaultAudioContext  # browser audio context and device API (AudioContext, mediaDevices); Cosic's audio goes through the app's own audio output
+setIsStarted  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+setLogger  # internal of superdough: replaces the function it logs through; Cosic's engine logs to the console of the app (ConsoleLog)
+setPattern  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
+setScheduleFunc  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
 setStringParser  # internal helper of pattern.mjs, not meant to be called by programs
-setSuperdoughAudioController  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-setTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-setVersionDefaults  # no task in the plan: superdough's default-value API (`setVersionDefaults('1.0')` sets fanchor 0.5); it needs an owner or an exclusion
+setSuperdoughAudioController  # browser audio context and device API (AudioContext, mediaDevices); Cosic's audio goes through the app's own audio output
+setTime  # internal of Strudel's REPL and its scheduler (the clock, the cyclist); Cosic's ReplSession and Scheduler are Kotlin and a program has no use for these
 showFirstCycle  # internal helper of pattern.mjs, not meant to be called by programs
-soundMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-superdough  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+soundMap  # sound registry API of superdough, whose callbacks and values are Web Audio ones (AudioBuffer, onTrigger with audio nodes); Cosic's registry is the Kotlin SoundLibrary, driven by `samples()`, `soundAlias()` and `aliasBank()`
+superdough  # internal of superdough: plays one event on its Web Audio graph; Cosic's equivalent is the scheduler starting a voice of the mixer, which a program does not call
 synth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 tone  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
 vol  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 wave  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
-waveformN  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-webAudioTimeout  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+waveformN  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+webAudioTimeout  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
 webaudio  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
-webaudioOutput  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-webaudioRepl  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
+webaudioOutput  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
+webaudioRepl  # internal of superdough: builds and connects Web Audio nodes (GainNode, oscillators, AudioParam automation); Cosic's engine is Kotlin DSP, not Web Audio
 webdirt  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
 withLoc  # internal helper of pattern.mjs, not meant to be called by programs

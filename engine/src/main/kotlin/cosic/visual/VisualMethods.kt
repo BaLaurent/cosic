@@ -62,8 +62,8 @@ internal fun VisualSession.pitchwheel(receiver: Pattern, options: VisualOptions,
 /** The id of an analyser loop: `config.id ?? 1`. */
 private fun analyserId(options: VisualOptions): Any? = options.raw("id").let { if (it === Undefined || it == null) 1.0 else it }
 
-/** The feed of the analyser [id]: the sound the engine's voices make with `analyze: id`. */
-private fun VisualSession.feedOf(id: Any?): AnalyserFeed = TapFeed(jsToString(id)) { scopeTaps() }
+/** The feed of the analyser [id]: the sound the engine's voices make with `analyze: id`, sized by the default `fft` of the engine's settings unless a hap sets one. */
+private fun VisualSession.feedOf(id: Any?): AnalyserFeed = TapFeed(jsToString(id), { defaultFft() }) { scopeTaps() }
 
 /** `.scope(config)` and `.tscope(config)`: the waveform of the sound that the receiver's haps make (the receiver gets the `analyze` control with the id). */
 internal fun VisualSession.scope(receiver: Pattern, options: VisualOptions, target: String = BG, feed: AnalyserFeed? = null): Pattern {
