@@ -98,6 +98,12 @@ interface SampleStore {
     /** The sample at [url], waiting for it: blocking, throws [java.io.IOException] when it cannot be loaded. */
     fun awaitSample(url: String): SampleData
 
+    /**
+     * Why the load of [url] failed, in words for the user, for as long as the store remembers the failure (it does not ask again for a while): `HTTP 404 for ...`,
+     * `Unable to resolve host ...`. Null while the file loads, after it loaded, when nobody asked for it, and once the store is ready to try again.
+     */
+    fun failureOf(url: String): String? = null
+
     /** Decodes audio file [bytes] (a soundfont zone); [nameHint] names the data in errors. Blocking; throws [java.io.IOException]. */
     fun decode(bytes: ByteArray, nameHint: String): SampleData
 }
@@ -117,6 +123,9 @@ interface SoundLibrary {
 
     /** The frames of the wavetable file [index] of group [group] of [bank], or null while it loads. */
     fun wavetable(bank: WaveTableBank, group: Int, index: Int): WavetableFrames?
+
+    /** Why the file at [url] of a bank of this library cannot be loaded right now (see [SampleStore.failureOf]), or null: it loads, it loaded, or the library cannot say. */
+    fun fileFailure(url: String): String? = null
 
     /** The registered sounds, each once, in the order they were first registered (aliases and built-ins are not listed). */
     fun entries(): List<SoundEntry>

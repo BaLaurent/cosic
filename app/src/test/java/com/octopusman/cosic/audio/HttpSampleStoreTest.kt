@@ -381,6 +381,36 @@ class HttpSampleStoreTest {
     }
 
     @Test
+    fun theReasonOfAFailureIsToldWhileItIsRememberedAndNeverForAFileThatLoadsOrWasNotAskedFor() {
+        val there = AtomicBoolean(false)
+        server.handle("/maybe.wav") { exchange ->
+            if (there.get()) {
+                exchange.sendResponseHeaders(200, 3)
+                exchange.responseBody.write(byteArrayOf(1, 2, 3))
+            } else {
+                exchange.sendResponseHeaders(404, -1)
+            }
+        }
+        val store = store()
+        val url = server.url("/maybe.wav")
+
+        assertNull(store.failureOf(url), "nobody asked for it")
+        assertNull(store.sample(url))
+        store.settled()
+        val reason = assertNotNull(store.failureOf(url), "it failed")
+        assertTrue("404" in reason && url in reason, reason)
+        assertNull(store.failureOf(server.url("/other.wav")))
+
+        clock.addAndGet(30_001)
+        assertNull(store.failureOf(url), "the store is ready to try again, so there is no failure to tell of")
+
+        there.set(true)
+        assertNull(store.sample(url)) // the load is started again
+        store.loaded(url)
+        assertNull(store.failureOf(url), "it loaded")
+    }
+
+    @Test
     fun awaitSampleDoesNotWaitOutThe30SecondsOfAFailure() {
         val there = AtomicBoolean(false)
         server.handle("/soon.wav") { exchange ->

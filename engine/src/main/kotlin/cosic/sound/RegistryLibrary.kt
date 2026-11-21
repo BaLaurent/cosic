@@ -71,6 +71,8 @@ class RegistryLibrary(private val store: SampleStore, builtins: Set<String>, rea
         return tables.computeIfAbsent(key) { cutFrames(data, bank.frameLen) }
     }
 
+    override fun fileFailure(url: String): String? = store.failureOf(url)
+
     override fun entries(): List<SoundEntry> = registry.entries()
 
     override val revision: Long get() = registry.revision

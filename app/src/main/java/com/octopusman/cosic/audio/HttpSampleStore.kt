@@ -151,6 +151,13 @@ internal class HttpSampleStore internal constructor(
         }
     }
 
+    override fun failureOf(url: String): String? {
+        if (decoded.containsKey(url) || inflight.containsKey(url)) return null
+        val failure = failures[url] ?: return null
+        if (config.monotonicMillis() - failure.at >= config.failureMemoryMs) return null
+        return failure.error.message ?: failure.error.toString()
+    }
+
     override fun decode(bytes: ByteArray, nameHint: String): SampleData = decoder(bytes, nameHint)
 
     override fun fetchText(url: String): String {

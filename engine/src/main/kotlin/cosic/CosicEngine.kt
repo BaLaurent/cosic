@@ -397,6 +397,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
             }
             SoundLookup.Loading -> if (renderedFrames >= previewGivesUpAt) waitingPreview = null
             is SoundLookup.Unknown -> waitingPreview = null
+            is SoundLookup.Failed -> waitingPreview = null
             SoundLookup.Silent -> waitingPreview = null
         }
     }

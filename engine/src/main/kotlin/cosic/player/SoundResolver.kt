@@ -35,6 +35,12 @@ internal sealed interface SoundLookup {
     /** A sound that exists but whose sample is not decoded yet. The library has been asked to load it. */
     data object Loading : SoundLookup
 
+    /**
+     * A sound that exists but whose file could not be loaded (the library asked, the load failed, and it will not ask again for a while): [sound] is `name:index` as
+     * Strudel says it (`[sampler] could not load "bd:0"`), [reason] what went wrong. Unlike [Loading] it ends: the event is skipped, with a warning, and an export need not wait for it.
+     */
+    class Failed(val sound: String, val reason: String) : SoundLookup
+
     /** A rest: `s` was `-`, `~` or `_`. No event, no warning. */
     data object Silent : SoundLookup
 
@@ -89,12 +95,12 @@ internal class SoundResolver(
         return when (val entry = library.sound(name)) {
             is SampleBank -> {
                 val choice = commonSampleInfo(entry.groups, controls)
-                val data = library.sample(entry, choice.group, choice.index) ?: return SoundLookup.Loading
+                val data = library.sample(entry, choice.group, choice.index) ?: return notLoaded(name, choice.index, entry.groups.getOrNull(choice.group)?.urls?.getOrNull(choice.index))
                 SoundLookup.Ready(VoiceSource.Sample(SampleSourceParams(data, choice.transposeSemitones, nudgeSeconds = nudgeOf(controls))))
             }
             is WaveTableBank -> {
                 val choice = commonSampleInfo(entry.groups, controls)
-                val frames = library.wavetable(entry, choice.group, choice.index) ?: return SoundLookup.Loading
+                val frames = library.wavetable(entry, choice.group, choice.index) ?: return notLoaded(name, choice.index, entry.groups.getOrNull(choice.group)?.urls?.getOrNull(choice.index))
                 SoundLookup.Ready(VoiceSource.Synth(entry.name, SynthRegistry.wavetable(frames, specOf(controls, durationSec, cps))))
             }
             is SoundfontBank -> resolveSoundfont(library, entry, controls)
@@ -102,6 +108,12 @@ internal class SoundResolver(
             null -> builtin(name, controls, durationSec, cps) ?: SoundLookup.Unknown(name)
             else -> SoundLookup.Unknown(name)
         }
+    }
+
+    /** A file the library has no data for: [SoundLookup.Failed] when its load failed lately, [SoundLookup.Loading] otherwise (it is being fetched, or nobody asked yet). */
+    private fun notLoaded(name: String, index: Int, url: String?): SoundLookup {
+        val reason = url?.let(library::fileFailure) ?: return SoundLookup.Loading
+        return SoundLookup.Failed("$name:$index", reason)
     }
 
     /** The sound called [key] for a preview: sample [n] of it, at MIDI note [note] when that is given, lasting [durationSec] at the tempo [cps]. */

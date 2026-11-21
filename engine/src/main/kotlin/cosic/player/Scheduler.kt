@@ -45,6 +45,9 @@ private const val QUERY_ERROR_ORIGIN = "cyclist"
 /** What Strudel says when a sound is not registered (superdough.mjs:594). */
 private fun unknownSoundWarning(key: String) = "sound $key not found! Is it loaded?"
 
+/** What Strudel says when a sample cannot be loaded (sampler.mjs:317, `[sampler] could not load "bd:0"`), with what went wrong. */
+private fun failedSampleWarning(lookup: SoundLookup.Failed) = "[sampler] could not load \"${lookup.sound}\": ${lookup.reason}"
+
 /** What to tell the user about an exception thrown while a pattern was queried. */
 internal fun errorMessage(error: Throwable): String = error.message ?: error.toString()
 
@@ -170,6 +173,7 @@ internal fun lookAhead(
             val whole = checkNotNull(hap.whole)
             val lookup = sounds.resolve(controls, hapSeconds(controls, whole.end - whole.begin, cps), cps)
             if (lookup is SoundLookup.Unknown) warnings.add(unknownSoundWarning(lookup.key))
+            if (lookup is SoundLookup.Failed) warnings.add(failedSampleWarning(lookup))
             if (lookup is SoundLookup.Loading) loading++
             // a K(...) program is compiled here, off the audio thread, and a program that does not compile rejects this evaluation (a CosicError)
             if (lookup is SoundLookup.Ready || lookup === SoundLookup.Loading) sounds.kabel.warm(controls)
@@ -429,6 +433,7 @@ internal class Scheduler(
                 events.add(SoundEvent(start - stretchLeadFrames(controls), voice))
             }
             is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))
+            is SoundLookup.Failed -> warningLog.add(failedSampleWarning(lookup))
             SoundLookup.Loading, SoundLookup.Silent -> Unit
         }
     }
