@@ -88,10 +88,10 @@ class SamplePlayerTest {
     }
 
     @Test
-    fun theSampleRateOfTheFileIsConvertedWithLinearInterpolation() {
+    fun theSampleRateOfTheFileIsConvertedWithACubicInterpolationThatIsExactOnARamp() {
         val out = start(counting(10, rate = 24_000)).drain()
         assertEquals(20, out.size, "half the rate: twice the frames")
-        for (i in out.indices) assertEquals(minOf(i / 2f, 9f), out[i], 1e-6f)
+        for (i in out.indices) assertEquals(minOf(i / 2f, 9f), out[i], 1e-5f, "frame $i")
     }
 
     @Test
@@ -234,5 +234,34 @@ class SamplePlayerTest {
         assertFalse(Sampler.gateIsHap(p, params()))
         for (key in listOf("clip", "loop", "release")) assertTrue(Sampler.gateIsHap(p, params(key to 0.0)), "$key set, even to 0, makes the gate the hap's")
         assertTrue(Sampler.gateIsHap(SampleSourceParams(data, honoursSampleControls = false), params()))
+    }
+
+    @Test
+    fun aFileAtAnotherRateKeepsItsHighsWhereLinearReadingDullsThem() {
+        // a tone at 10 kHz in a 44.1 kHz file, played at 48 kHz: the ideal output is the same tone sampled at the output frames. (sampler-loop of the audio parity:
+        // Chromium resamples the file before it plays; linear reading at play time came out 1.2 dB quieter and 17% darker on a noise sample.)
+        val fileRate = 44_100
+        val hz = 10_000.0
+        val tone = SampleData(FloatArray(8192) { kotlin.math.sin(2.0 * Math.PI * hz * it / fileRate).toFloat() }, fileRate)
+        val out = start(tone).drain(limit = 7000)
+        val ratio = fileRate.toDouble() / SR
+        var cubic = 0.0
+        var linear = 0.0
+        var n = 0
+        for (k in 8 until out.size - 8) {
+            val t = k * ratio
+            val ideal = kotlin.math.sin(2.0 * Math.PI * hz * t / fileRate)
+            val i0 = t.toInt()
+            val line = tone.samples[i0] + (tone.samples[i0 + 1] - tone.samples[i0]) * (t - i0)
+            cubic += (out[k] - ideal) * (out[k] - ideal)
+            linear += (line - ideal) * (line - ideal)
+            n++
+        }
+        val cubicRms = kotlin.math.sqrt(cubic / n)
+        val linearRms = kotlin.math.sqrt(linear / n)
+        assertTrue(cubicRms < 0.5 * linearRms, "the cubic reading is off by $cubicRms, the linear one by $linearRms")
+        // at the engine's own rate the frames come out as they are, as an AudioBufferSourceNode plays them
+        val same = SampleData(FloatArray(64) { kotlin.math.sin(it * 0.7).toFloat() }, SR)
+        assertContentEquals(same.samples, start(same).drain())
     }
 }

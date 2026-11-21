@@ -32,6 +32,9 @@ tasks.test {
     System.getProperty("cosic.parity.dir")?.let { systemProperty("cosic.parity.dir", it) }
     // `-Dcosic.parity.only=<regex>` runs only the cases whose id matches (and ignores known-gaps.txt: every mismatch fails).
     System.getProperty("cosic.parity.only")?.let { systemProperty("cosic.parity.only", it) }
+    // `-Dcosic.audioParity=true` runs the audio parity against Strudel's offline renderer (Task 5.2); `.only=<regex>` selects entries, `.cache=<dir>` moves the sample cache,
+    // `.stability=<dir>` checks the reference against a second render of Strudel.
+    for (key in listOf("cosic.audioParity", "cosic.audioParity.only", "cosic.audioParity.cache", "cosic.audioParity.stability")) System.getProperty(key)?.let { systemProperty(key, it) }
     maxHeapSize = "2g"
     // BundledExamplesTest reads the examples of the app from disk, so Gradle must rerun the tests when they change.
     inputs.dir("../app/src/main/assets/examples")

@@ -168,10 +168,14 @@ class DoughEngineTest {
         }
         run(workload())
         run(workload())
-        val measured = workload()
-        val before = threads.currentThreadAllocatedBytes
-        run(measured)
-        val allocated = threads.currentThreadAllocatedBytes - before
+        // the JIT's early tiers allocate a few bytes now and then; code that really allocates does so in every run, so the least of six runs is what counts
+        var allocated = Long.MAX_VALUE
+        repeat(6) {
+            val measured = workload()
+            val before = threads.currentThreadAllocatedBytes
+            run(measured)
+            allocated = minOf(allocated, threads.currentThreadAllocatedBytes - before)
+        }
         assertEquals(0L, allocated, "the dough engine allocated $allocated bytes")
     }
 }

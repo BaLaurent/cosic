@@ -1,0 +1,243 @@
+{
+ "tunes": {
+  "cycles": 8,
+  "cps": 0.5,
+  "names": [ "amensister", "arpoon", "barryHarris", "bassFuge", "belldub", "blippyRhodes", "caverave", "chop", "delay", "dinofunk", "echoPiano", "festivalOfFingers", "festivalOfFingers3", "flatrave", "giantSteps", "goodTimes", "holyflute", "juxUndTollerei", "meltingsubmarine", "orbit", "randomBells", "sampleDemo", "sampleDrums", "sml1", "swimming", "undergroundPlumber", "waa2", "wavyKalimba", "zeldasRescue"
+  ],
+  "skip": { "sampleDrums": "every sound comes from loophole-letters.vercel.app, which redirects to a host that answers 522: Strudel renders silence for it as well"
+  },
+  "random": { "holyflute": "the impulse response of a reverb is random noise (reverbGen.mjs randomSample), so the tail differs between two renders of Strudel", "juxUndTollerei": "the impulse response of a reverb is random noise (reverbGen.mjs randomSample), so the tail differs between two renders of Strudel", "zeldasRescue": "the impulse response of a reverb is random noise (reverbGen.mjs randomSample), so the tail differs between two renders of Strudel"
+  }
+ },
+ "entries": [
+  { "id": "osc-sine", "group": "oscillators", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sine\")"
+  },
+  { "id": "osc-sawtooth", "group": "oscillators", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\")"
+  },
+  { "id": "osc-square", "group": "oscillators", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"square\")"
+  },
+  { "id": "osc-triangle", "group": "oscillators", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"triangle\")"
+  },
+  { "id": "osc-supersaw", "group": "supersaw", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"supersaw\")", "random": "every voice of the supersaw starts at a random phase (Math.random in the AudioWorklet), so the level of each note differs between two renders of Strudel"
+  },
+  { "id": "osc-supersaw-wide", "group": "supersaw", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"supersaw\").unison(7).spread(.8).detune(.5)", "random": "every voice of the supersaw starts at a random phase (Math.random in the AudioWorklet), so the level of each note differs between two renders of Strudel"
+  },
+  { "id": "osc-supersaw-single", "group": "supersaw", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"supersaw\").unison(1)"
+  },
+  { "id": "osc-pulse", "group": "pulse", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"pulse\")"
+  },
+  { "id": "osc-pulse-width", "group": "pulse", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"pulse\").pw(.2)"
+  },
+  { "id": "osc-pulse-sweep", "group": "pulse", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"pulse\").pw(.3).pwrate(2).pwsweep(.4)"
+  },
+  { "id": "noise-white", "group": "noise", "cycles": 4, "code": "s(\"white*2\")"
+  },
+  { "id": "noise-pink", "group": "noise", "cycles": 4, "code": "s(\"pink*2\")"
+  },
+  { "id": "noise-brown", "group": "noise", "cycles": 4, "code": "s(\"brown*2\")"
+  },
+  { "id": "noise-crackle", "group": "noise", "cycles": 4, "code": "s(\"crackle*2\").density(10)"
+  },
+  { "id": "osc-additive", "group": "additive", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"user\").partials([1, 0, .5, 0, .25])"
+  },
+  { "id": "osc-additive-phases", "group": "additive", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"user\").partials([1, .5, .3, .2]).phases([0, .25, .5, .75])"
+  },
+  { "id": "filter-lpf-q0", "group": "filters", "cycles": 3, "code": "note(\"c2 e2 g2 c3\").s(\"sawtooth\").lpf(\"<300 1200 4000>\").lpq(0)"
+  },
+  { "id": "filter-hpf-q0", "group": "filters", "cycles": 3, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").hpf(\"<300 1200 4000>\").hpq(0)"
+  },
+  { "id": "filter-bpf-q0", "group": "filters", "cycles": 3, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").bpf(\"<300 1200 4000>\").bpq(0)"
+  },
+  { "id": "filter-lpf-q10", "group": "filters", "cycles": 3, "code": "note(\"c2 e2 g2 c3\").s(\"sawtooth\").lpf(\"<300 1200 4000>\").lpq(10)"
+  },
+  { "id": "filter-hpf-q10", "group": "filters", "cycles": 3, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").hpf(\"<300 1200 4000>\").hpq(10)"
+  },
+  { "id": "filter-bpf-q10", "group": "filters", "cycles": 3, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").bpf(\"<300 1200 4000>\").bpq(10)"
+  },
+  { "id": "filter-lpf-q30", "group": "filters", "cycles": 3, "code": "note(\"c2 e2 g2 c3\").s(\"sawtooth\").lpf(\"<300 1200 4000>\").lpq(30)"
+  },
+  { "id": "filter-hpf-q30", "group": "filters", "cycles": 3, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").hpf(\"<300 1200 4000>\").hpq(30)"
+  },
+  { "id": "filter-bpf-q30", "group": "filters", "cycles": 3, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").bpf(\"<300 1200 4000>\").bpq(30)"
+  },
+  { "id": "filter-12db", "group": "filters", "cycles": 3, "code": "note(\"c2 e2 g2 c3\").s(\"sawtooth\").lpf(\"<400 1500 5000>\").lpq(10).ftype(\"12db\")"
+  },
+  { "id": "filter-ladder", "group": "filters", "cycles": 3, "code": "note(\"c2 e2 g2 c3\").s(\"sawtooth\").lpf(\"<400 1500 5000>\").lpq(10).ftype(\"ladder\")"
+  },
+  { "id": "filter-24db", "group": "filters", "cycles": 3, "code": "note(\"c2 e2 g2 c3\").s(\"sawtooth\").lpf(\"<400 1500 5000>\").lpq(10).ftype(\"24db\")"
+  },
+  { "id": "fenv-lp", "group": "filter-envelopes", "cycles": 4, "code": "note(\"c2 e2 g2 c3\").s(\"sawtooth\").lpf(300).lpq(5).lpenv(4).lpattack(.01).lpdecay(.15).lpsustain(.2).lprelease(.1)"
+  },
+  { "id": "fenv-lp-negative", "group": "filter-envelopes", "cycles": 4, "code": "note(\"c2 e2 g2 c3\").s(\"sawtooth\").lpf(3000).lpq(5).lpenv(-3).lpattack(.01).lpdecay(.2).lpsustain(.2)"
+  },
+  { "id": "fenv-hp", "group": "filter-envelopes", "cycles": 4, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").hpf(200).hpenv(4).hpattack(.01).hpdecay(.2).hpsustain(.1)"
+  },
+  { "id": "fenv-bp", "group": "filter-envelopes", "cycles": 4, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").bpf(500).bpq(3).bpenv(3).bpattack(.01).bpdecay(.2).bpsustain(.1)"
+  },
+  { "id": "fenv-anchor", "group": "filter-envelopes", "cycles": 4, "code": "note(\"c2 e2 g2 c3\").s(\"sawtooth\").lpf(500).lpenv(4).lpdecay(.2).lpsustain(.2).fanchor(.5)"
+  },
+  { "id": "vowel-a", "group": "vowel", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").vowel(\"a\")"
+  },
+  { "id": "vowel-e", "group": "vowel", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").vowel(\"e\")"
+  },
+  { "id": "vowel-i", "group": "vowel", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").vowel(\"i\")"
+  },
+  { "id": "vowel-o", "group": "vowel", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").vowel(\"o\")"
+  },
+  { "id": "vowel-u", "group": "vowel", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").vowel(\"u\")"
+  },
+  { "id": "distort-scurve", "group": "distortion", "cycles": 4, "code": "note(\"c2 e2 g2\").s(\"sawtooth\").lpf(1500).distort(2).distorttype(\"scurve\")"
+  },
+  { "id": "distort-soft", "group": "distortion", "cycles": 4, "code": "note(\"c2 e2 g2\").s(\"sawtooth\").lpf(1500).distort(2).distorttype(\"soft\")"
+  },
+  { "id": "distort-hard", "group": "distortion", "cycles": 4, "code": "note(\"c2 e2 g2\").s(\"sawtooth\").lpf(1500).distort(2).distorttype(\"hard\")"
+  },
+  { "id": "distort-cubic", "group": "distortion", "cycles": 4, "code": "note(\"c2 e2 g2\").s(\"sawtooth\").lpf(1500).distort(2).distorttype(\"cubic\")"
+  },
+  { "id": "distort-diode", "group": "distortion", "cycles": 4, "code": "note(\"c2 e2 g2\").s(\"sawtooth\").lpf(1500).distort(2).distorttype(\"diode\")"
+  },
+  { "id": "distort-asym", "group": "distortion", "cycles": 4, "code": "note(\"c2 e2 g2\").s(\"sawtooth\").lpf(1500).distort(2).distorttype(\"asym\")"
+  },
+  { "id": "distort-fold", "group": "distortion", "cycles": 4, "code": "note(\"c2 e2 g2\").s(\"sawtooth\").lpf(1500).distort(2).distorttype(\"fold\")"
+  },
+  { "id": "distort-sinefold", "group": "distortion", "cycles": 4, "code": "note(\"c2 e2 g2\").s(\"sawtooth\").lpf(1500).distort(2).distorttype(\"sinefold\")"
+  },
+  { "id": "distort-chebyshev", "group": "distortion", "cycles": 4, "code": "note(\"c2 e2 g2\").s(\"sawtooth\").lpf(1500).distort(2).distorttype(\"chebyshev\")"
+  },
+  { "id": "shape", "group": "distortion", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").shape(.7)"
+  },
+  { "id": "crush", "group": "distortion", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").crush(4)"
+  },
+  { "id": "coarse", "group": "distortion", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").coarse(8)"
+  },
+  { "id": "tremolo", "group": "modulation", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").tremolo(4).tremolodepth(.9)"
+  },
+  { "id": "phaser", "group": "modulation", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").phaser(2).phaserdepth(.8)"
+  },
+  { "id": "phaser-sweep", "group": "modulation", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").phaser(.5).phaserdepth(1).phasercenter(800).phasersweep(2000)"
+  },
+  { "id": "compressor", "group": "dynamics", "cycles": 4, "code": "s(\"bd sd [~ bd] sd,hh*8\").compressor(\"-20:20:10:.002:.02\").postgain(1.5)"
+  },
+  { "id": "delay-1", "group": "delay", "cycles": 4, "code": "note(\"c3 ~ g3 ~\").s(\"triangle\").delay(.6).delaytime(.125).delayfeedback(.3)"
+  },
+  { "id": "delay-2", "group": "delay", "cycles": 4, "code": "note(\"c3 ~ g3 ~\").s(\"triangle\").delay(.5).delaytime(.25).delayfeedback(.6)"
+  },
+  { "id": "delay-3", "group": "delay", "cycles": 4, "code": "note(\"c3 ~ g3 ~\").s(\"triangle\").delay(\"0.4:0.375:0.7\")"
+  },
+  { "id": "delay-sync", "group": "delay", "cycles": 4, "code": "note(\"c3 ~ g3 ~\").s(\"triangle\").delay(.5).delaysync(.125).delayfeedback(.5)"
+  },
+  { "id": "room-1", "group": "room", "cycles": 4, "code": "note(\"c3 ~ g3 ~\").s(\"sawtooth\").lpf(1500).room(.5)", "random": "the impulse response of a reverb is random noise (reverbGen.mjs randomSample), so the tail differs between two renders of Strudel"
+  },
+  { "id": "room-2", "group": "room", "cycles": 4, "code": "note(\"c3 ~ g3 ~\").s(\"sawtooth\").lpf(1500).room(.8).roomsize(6)", "random": "the impulse response of a reverb is random noise (reverbGen.mjs randomSample), so the tail differs between two renders of Strudel"
+  },
+  { "id": "room-3", "group": "room", "cycles": 4, "code": "note(\"c3 ~ g3 ~\").s(\"sawtooth\").lpf(1500).room(.4).rlp(2000).rfade(.5).rdim(400)", "random": "the impulse response of a reverb is random noise (reverbGen.mjs randomSample), so the tail differs between two renders of Strudel"
+  },
+  { "id": "room-dry", "group": "room", "cycles": 4, "code": "note(\"c3 ~ g3 ~\").s(\"sawtooth\").lpf(1500).room(.6).dry(.3)", "random": "the impulse response of a reverb is random noise (reverbGen.mjs randomSample), so the tail differs between two renders of Strudel"
+  },
+  { "id": "duck-orbit", "group": "orbits", "cycles": 4, "code": "$: note(\"c2 g2 c2 g2\").s(\"sawtooth\").lpf(600).orbit(2)\n$: s(\"bd*4\").late(.05).duckorbit(2).duckattack(.2).duckdepth(1)", "random": "Strudel applies a duck from a callback that webAudioTimeout runs on the main thread once the context has reached the onset; an offline render is far ahead by then, so which hits are ducked, and from when, differs between two renders"
+  },
+  { "id": "orbit-effects", "group": "orbits", "cycles": 4, "code": "$: s(\"bd*2\").orbit(1).delay(.5).delaytime(.25).delayfeedback(.6)\n$: note(\"c4 e4 g4\").s(\"triangle\").orbit(2).room(.6)", "random": "the impulse response of a reverb is random noise (reverbGen.mjs randomSample), so the tail differs between two renders of Strudel"
+  },
+  { "id": "fm-1", "group": "fm", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sine\").fm(2).fmh(1)"
+  },
+  { "id": "fm-2", "group": "fm", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sine\").fm(8).fmh(2).fmdecay(.2).fmsustain(0)"
+  },
+  { "id": "fm-3", "group": "fm", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sine\").fm(4).fmh(3.5).fmattack(.05).fmenv(\"exp\")"
+  },
+  { "id": "pitch-envelope", "group": "pitch", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sine\").penv(12).pdecay(.15)"
+  },
+  { "id": "vibrato", "group": "pitch", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sine\").vib(5).vibmod(.5)"
+  },
+  { "id": "zzfx-sine", "group": "zzfx", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"z_sine\")"
+  },
+  { "id": "zzfx-sawtooth", "group": "zzfx", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"z_sawtooth\")"
+  },
+  { "id": "zzfx-triangle", "group": "zzfx", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"z_triangle\")"
+  },
+  { "id": "zzfx-square", "group": "zzfx", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"z_square\")"
+  },
+  { "id": "zzfx-tan", "group": "zzfx", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"z_tan\")"
+  },
+  { "id": "zzfx-noise", "group": "zzfx", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"z_noise\")"
+  },
+  { "id": "gm-piano", "group": "soundfonts", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"gm_piano\")"
+  },
+  { "id": "gm-violin", "group": "soundfonts", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"gm_violin\")"
+  },
+  { "id": "gm-flute", "group": "soundfonts", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"gm_flute\")"
+  },
+  { "id": "gm-acoustic-guitar-nylon", "group": "soundfonts", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"gm_acoustic_guitar_nylon\")"
+  },
+  { "id": "gm-marimba", "group": "soundfonts", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"gm_marimba\")"
+  },
+  { "id": "wt-digital", "group": "wavetables", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"wt_digital\")"
+  },
+  { "id": "wt-vgame", "group": "wavetables", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"wt_vgame\").n(1)"
+  },
+  { "id": "wt-bad-day", "group": "wavetables", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"wt_digital_bad_day\")"
+  },
+  { "id": "sampler-begin", "group": "sampler", "cycles": 4, "code": "s(\"brk\").begin(.25)"
+  },
+  { "id": "sampler-end", "group": "sampler", "cycles": 4, "code": "s(\"brk\").end(.5)"
+  },
+  { "id": "sampler-begin-end", "group": "sampler", "cycles": 4, "code": "s(\"brk*2\").begin(\"0 .5\").end(\".25 .75\")"
+  },
+  { "id": "sampler-speed", "group": "sampler", "cycles": 4, "code": "s(\"brk\").speed(\"<1.5 .75>\")"
+  },
+  { "id": "sampler-speed-negative", "group": "sampler", "cycles": 4, "code": "s(\"brk\").speed(-1)"
+  },
+  { "id": "sampler-loop", "group": "sampler", "cycles": 4, "code": "s(\"casio:2\").loop(1).loopBegin(.1).loopEnd(.3).clip(1)"
+  },
+  { "id": "sampler-cut", "group": "sampler", "cycles": 4, "code": "s(\"brk*4\").cut(1)"
+  },
+  { "id": "sampler-unit", "group": "sampler", "cycles": 4, "code": "s(\"brk\").speed(1).unit(\"c\")"
+  },
+  { "id": "sampler-accelerate", "group": "sampler", "cycles": 4, "code": "s(\"brk\").accelerate(\"<0 1>\")"
+  },
+  { "id": "sampler-n", "group": "sampler", "cycles": 4, "code": "s(\"bd*4\").n(\"0 1 2 3\")"
+  },
+  { "id": "sampler-bank", "group": "sampler", "cycles": 4, "code": "s(\"bd sd bd sd\").bank(\"RolandTR909\")"
+  },
+  { "id": "sampler-colon-gain", "group": "sampler", "cycles": 4, "code": "s(\"bd:2:.5 sd:1:1 bd:2:1 sd:1:.5\")"
+  },
+  { "id": "sampler-piano", "group": "sampler", "cycles": 4, "code": "note(\"c3 e3 g3 c4\").s(\"piano\")"
+  },
+  { "id": "gain-0.5", "group": "level", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").gain(0.5)"
+  },
+  { "id": "gain-1", "group": "level", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").gain(1)"
+  },
+  { "id": "gain-1.5", "group": "level", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").gain(1.5)"
+  },
+  { "id": "pan", "group": "level", "cycles": 4, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").pan(\"0 1 .5 .25\")"
+  },
+  { "id": "velocity", "group": "level", "cycles": 4, "code": "note(\"c3 e3 g3 c4\").s(\"sawtooth\").velocity(\"1 .5\")"
+  },
+  { "id": "postgain", "group": "level", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").postgain(.5)"
+  },
+  { "id": "postgain-room", "group": "level", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").room(.5).postgain(.5)"
+  },
+  { "id": "envelope-adsr-slow", "group": "envelope", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").attack(.2).decay(.1).sustain(.5).release(.5)"
+  },
+  { "id": "envelope-adsr-string", "group": "envelope", "cycles": 4, "code": "note(\"[c3 bb2 f3 eb3]*2\").sound(\"sawtooth\").lpf(600).adsr(\".1:.1:.5:.2\")"
+  },
+  { "id": "envelope-legato", "group": "envelope", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").legato(.5)"
+  },
+  { "id": "envelope-hold", "group": "envelope", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").hold(.3).release(.3)"
+  },
+  { "id": "envelope-clip", "group": "envelope", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"triangle\").clip(2).release(.2)"
+  },
+  { "id": "mod-lfo", "group": "modulators", "cycles": 4, "code": "s(\"saw\").note(\"F1\").lpf(500).lfo()"
+  },
+  { "id": "mod-env", "group": "modulators", "cycles": 4, "code": "s(\"saw\").note(\"F1\").lpf(500).env({ a: 1 })"
+  },
+  { "id": "djf", "group": "filters", "cycles": 4, "code": "note(\"c3 e3 g3\").s(\"sawtooth\").djf(\"<.2 .5 .8 .75>\")"
+  },
+  { "id": "transient", "group": "dynamics", "cycles": 4, "code": "s(\"bd\").transient(\"<-1 -0.5 0 0.5 1>\")"
+  },
+  { "id": "stretch", "group": "dynamics", "cycles": 4, "code": "s(\"gm_flute\").late(.05).stretch(\"<2 1 0 -2>\")"
+  },
+  { "id": "freq", "group": "sources", "cycles": 4, "code": "freq(\"220 110 440 110\").s(\"sawtooth\")"
+  },
+  { "id": "kabel-saw", "group": "kabelsalat", "cycles": 4, "code": "note(\"A c e\".fast(4)).transpose(\"<0 2 4 6 8>\")\n  .scale(\"F:minor\").transpose(\"12\")\n  .s(\"saw\")\n  .K(\n    saw(saw(sFreq / \"2!3 16\").mul(8).add(sFreq).lag(\"0!3 0.1\")).mul(0.3)\n    .mul(sGate.adsr(0, 0.15, 0.5, \"0.1!3 1\"))\n    .lpf(sGate.adsr(0, 0.2, 0.3, 0.2).mul(1).add(0))\n    .add(x => x.delay(S(\"0.3 0.2\".fast(2))).mul(0.7))\n    .add(x => x.delay(\"0.03 [0.08 0.01] 0.01 0.013\").mul(0.77)).mul(0.7)\n    .add(x => x.delay(.13).mul(0.7))\n    .out()\n  )", "compareCycles": 3, "note": "the last cycle of a K() voice is silent in the chunked render of Strudel (both seeds): only the first three cycles are compared"
+  } ]
+}
