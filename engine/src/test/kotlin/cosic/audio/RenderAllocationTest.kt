@@ -3,6 +3,7 @@ package cosic.audio
 import java.lang.management.ManagementFactory
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /** The audio thread must not allocate while rendering: garbage collection there means dropouts. */
 class RenderAllocationTest {
@@ -23,6 +24,9 @@ class RenderAllocationTest {
         voices.add(synthVp("square", 0.4, "note" to 62.0, "hcutoff" to 200.0, "bandf" to 2000.0, "shape" to 0.6, "pan" to 0.9, "orbit" to 2.0))
         voices.add(synthVp("pink", 0.3, "crush" to 5.0, "coarse" to 3.0, "room" to 0.6, "roomsize" to 0.9, "dry" to 0.5))
         voices.add(synthVp("brown", 0.3, "delay" to 0.3, "delaytime" to 0.12, "bus" to 1.0, "analyze" to 1.0))
+        // analysed voices: a stereo one (down-mixed into the tap), a mono one, under a numeric and a widget id
+        voices.add(synthVp("sine", 0.3, "note" to 60.0, "pan" to 0.8, "analyze" to "_widget__scope_0"))
+        voices.add(vp(VoiceSource.Sample(SampleSourceParams(sineSample(200.0, 0.5))), 0.4, "analyze" to 1.0))
         voices.add(
             vp(
                 VoiceSource.Sample(SampleSourceParams(sineSample(200.0, 0.5), transposeSemitones = 12.0)), 0.5,
@@ -57,24 +61,85 @@ class RenderAllocationTest {
         return voices
     }
 
+    /**
+     * The bytes that [run] allocates on this thread, the least of [ATTEMPTS] runs after [warmUps] runs to warm up. [prepare] makes what a run needs off the measured path (a source plays
+     * once, so every run has voices of its own). Code that allocates does so every time it runs; the sporadic few bytes of a run are the JIT's (a deoptimisation boxes a value of an
+     * interpreter frame), which come and go with the timing of the compiler and are not the audio thread's.
+     */
+    private fun <T> leastAllocated(warmUps: Int, prepare: () -> T, run: (T) -> Unit): Long {
+        repeat(warmUps) { run(prepare()) }
+        var least = Long.MAX_VALUE
+        for (attempt in 0 until ATTEMPTS) {
+            val input = prepare()
+            val before = threads.currentThreadAllocatedBytes
+            run(input)
+            least = minOf(least, threads.currentThreadAllocatedBytes - before)
+            if (least == 0L) break
+        }
+        return least
+    }
+
     @Test
     fun renderingAndStartingVoicesDoNotAllocate() {
         val mixer = Mixer(SR)
         val out = FloatArray(512)
-
-        fun workload(voices: List<VoiceParams>) {
+        val allocated = leastAllocated(3, ::workloadVoices) { voices ->
             for (i in voices.indices) mixer.startVoice(voices[i])
-            for (block in 0 until 200) mixer.render(out, 256)
+            for (block in 0 until 200) {
+                mixer.render(out, 256)
+                mixer.scopes.endBlock(256) // the analysers take in the block, as the engine does at the end of each one
+            }
             mixer.stopAll(5)
             mixer.render(out, 256)
         }
-
-        workload(workloadVoices()) // warm up: class loading, lazy tables, orbits
-        workload(workloadVoices())
-        val measured = workloadVoices()
-        val before = threads.currentThreadAllocatedBytes
-        workload(measured)
-        val allocated = threads.currentThreadAllocatedBytes - before
         assertEquals(0L, allocated, "rendering allocated $allocated bytes")
+        assertTrue(mixer.scopes.read("1", 64, FloatArray(64)) && mixer.scopes.read("_widget__scope_0", 64, FloatArray(64)), "the analysers were fed")
+    }
+
+    /**
+     * Voices with `FX(...)` chains and vocoders, the pools grown ahead of them by the background preparer as the engine does: queued events ask until the pools hold what they
+     * need, the voices start, and while they sound every block asks again with nothing queued. The audio thread allocates nothing once the pools have grown, and makes no chain.
+     */
+    @Test
+    fun fxVoicesWithABackgroundPreparedPoolDoNotAllocateOnTheAudioThread() {
+        val mixer = Mixer(SR)
+        val preparer = PoolPreparer(mixer, background = true)
+        val out = FloatArray(512)
+        val none = ChainDemand() // what the scheduler has queued once the events have started
+        fun fxVoices() = listOf(
+            vp(dcSource(), 0.2, "gain" to 0.1, "FX" to List(3) { mapOf("gain" to 0.5, "pan" to 0.3) }, "pan" to 0.8),
+            synthVp("sine", 0.3, "note" to 62.0, "gain" to 0.1, "FX" to List(MAX_FX) { mapOf("gain" to 0.7) }),
+            vp(dcSource(), 0.1, "FX" to listOf(mapOf("velocity" to 0.5)), "FXrelease" to 0.2),
+        )
+        class Round(val voices: List<VoiceParams>, val queued: ChainDemand)
+        val allocated = leastAllocated(
+            3,
+            {
+                val voices = List(14) { fxVoices() }.flatten()
+                Round(voices, ChainDemand().also { demand -> for (v in voices) demand.add(v) })
+            },
+        ) { round ->
+            val voices = round.voices
+            val queued = round.queued
+            val deadline = System.nanoTime() + 10_000_000_000L
+            do {
+                preparer.request(queued)
+                if (mixer.isPrepared(queued.fxChains, queued.vocoders)) break
+                Thread.onSpinWait()
+            } while (System.nanoTime() < deadline)
+            for (i in voices.indices) mixer.startVoice(voices[i])
+            for (block in 0 until 120) {
+                preparer.request(none)
+                mixer.render(out, 256)
+            }
+            mixer.stopAll(5)
+            mixer.render(out, 256)
+        }
+        assertEquals(0L, allocated, "requesting, starting, rendering and ending voices with FX chains allocated $allocated bytes on the audio thread")
+        assertEquals(0, mixer.chainsMadeOnTheSpot, "the audio thread made no chain: the worker had grown the pools")
+    }
+
+    private companion object {
+        const val ATTEMPTS = 6
     }
 }

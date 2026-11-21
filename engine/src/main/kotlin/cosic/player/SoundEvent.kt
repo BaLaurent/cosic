@@ -12,6 +12,7 @@ import cosic.audio.VoiceSource
 import cosic.pattern.ControlMap
 import cosic.pattern.Undefined
 import cosic.pattern.jsStringToNumber
+import cosic.pattern.jsNumberToString
 import cosic.pattern.jsToNumber
 import cosic.pattern.jsToString
 import cosic.pattern.logger
@@ -54,6 +55,13 @@ internal fun paramSetOf(controls: Map<String, Any?>): ParamSet {
     var lists: HashMap<String, DoubleArray>? = null
     for ((key, value) in controls) {
         val param = Param.byKey[key]
+        if (key == "analyze") {
+            analyzeIdOf(value)?.let {
+                if (strings == null) strings = HashMap()
+                strings[key] = it
+            }
+            continue
+        }
         if (key in LIST_KEYS) {
             val list = when (value) {
                 is List<*> -> DoubleArray(value.size) { jsToNumber(value[it]) }
@@ -85,6 +93,17 @@ internal fun paramSetOf(controls: Map<String, Any?>): ParamSet {
     val rawGain = controls["gain"]
     if (rawGain != null && rawGain !== Undefined && values[Param.gain.ordinal].isNaN()) values[Param.gain.ordinal] = 1.0
     return ParamSet(values, strings ?: emptyMap(), lists ?: emptyMap())
+}
+
+/**
+ * The id of the analyser that `analyze: [value]` names, as a string: the key of the voice's tap in [cosic.io.ScopeTaps], which the visuals read under `String(analyze)`
+ * (`1` for the plain methods, the widget id for `_scope`). Null when the control turns no analyser on: superdough's `if (analyze)` is false for 0, NaN, `false` and the empty string.
+ */
+internal fun analyzeIdOf(value: Any?): String? = when (value) {
+    is Double -> if (value == 0.0 || value.isNaN()) null else jsNumberToString(value)
+    is Boolean -> if (value) "true" else null
+    is String -> value.ifEmpty { null }
+    else -> null
 }
 
 /** The `lfo`, `env` and `bmod` entries of [element], in the order `superdough()` connects them, as [ModSpec]s living in chain [key]. */

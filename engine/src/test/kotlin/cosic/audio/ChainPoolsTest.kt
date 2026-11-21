@@ -206,4 +206,52 @@ class ChainPoolsTest {
         assertEquals(0L, allocated, "starting, rendering and ending voices with FX chains allocated $allocated bytes")
         assertEquals(0, mixer.fxPool.madeOnTheSpot, "the audio thread made no chain: the pool was prepared every block")
     }
+
+    // ------------------------------------------------------------------ PoolPreparer: growth off the audio thread
+
+    @Test
+    fun aBackgroundPreparerGrowsThePoolsAheadOfFortyOverlappingFxVoicesAndNoneGoesWithoutItsChains() {
+        val voice = fxVoice(3)
+        val single = levelAt(renderLeft(voice, SR / 10), 0.05)
+        val mixer = Mixer(SR)
+        val preparer = PoolPreparer(mixer, background = true)
+
+        preparer.request(demandOf(40, voice)) // what the engine does every block with the queued events: it returns at once
+        assertTrue(preparer.awaitIdle(10_000), "the worker finished growing the pools")
+        assertTrue(mixer.fxPool.capacity >= 120, "capacity ${mixer.fxPool.capacity}")
+        assertTrue(mixer.isPrepared(120, 0))
+
+        repeat(40) { assertTrue(mixer.startVoice(voice)) }
+        assertEquals(120, mixer.fxPool.inUse)
+        assertEquals(0, mixer.chainsMadeOnTheSpot, "the pool was grown by the worker, not by the audio thread")
+        val left = channel(mixer.renderFrames(SR / 10), 0)
+        assertEquals(40 * single, levelAt(left, 0.05), 1e-4, "every voice has all three chains")
+    }
+
+    @Test
+    fun anInlinePreparerGrowsThePoolsOnTheSpotForOfflineRenders() {
+        val voice = fxVoice(3)
+        val mixer = Mixer(SR)
+        val preparer = PoolPreparer(mixer, background = false)
+        preparer.request(demandOf(40, voice))
+        assertTrue(mixer.fxPool.capacity >= 120, "grown before request returned")
+        repeat(40) { assertTrue(mixer.startVoice(voice)) }
+        assertEquals(0, mixer.chainsMadeOnTheSpot)
+    }
+
+    @Test
+    fun aPreparerAsksTheWorkerOnlyWhenThePoolsAreShort() {
+        val voice = fxVoice(2)
+        val mixer = Mixer(SR)
+        val preparer = PoolPreparer(mixer, background = true)
+        preparer.request(demandOf(4, voice)) // 8 chains: the initial pool holds FX_GROUP_POOL
+        assertTrue(preparer.awaitIdle(10_000))
+        val capacity = mixer.fxPool.capacity
+        preparer.request(demandOf(4, voice))
+        assertTrue(preparer.awaitIdle(10_000))
+        assertEquals(capacity, mixer.fxPool.capacity, "a demand that is covered makes nothing")
+        preparer.request(ChainDemand())
+        assertTrue(preparer.awaitIdle(1_000))
+        assertEquals(capacity, mixer.fxPool.capacity)
+    }
 }

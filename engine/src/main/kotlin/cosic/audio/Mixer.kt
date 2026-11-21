@@ -1,5 +1,6 @@
 package cosic.audio
 
+import cosic.io.ScopeTaps
 import kotlin.math.max
 import kotlin.math.min
 
@@ -14,11 +15,11 @@ import kotlin.math.min
  * The mixer counts frames from the first one it renders: [frame] is the frame the next voice starts on, and `frame / sampleRate`
  * the time every automation of every voice is written in.
  */
-internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.INLINE) {
+internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.INLINE, val scopes: ScopeTaps = ScopeTaps()) {
     private val orbits = OrbitSet(sampleRate, irExecutor)
     private val buses = AudioBuses(sampleRate)
     internal val fxPool = FxGroupPool(sampleRate, FX_GROUP_POOL, FX_GROUP_LIMIT, InChainSpace(sampleRate, irExecutor))
-    private val voices = Array(VOICE_SLOTS) { Voice(sampleRate, orbits, buses, fxPool) }
+    private val voices = Array(VOICE_SLOTS) { Voice(sampleRate, orbits, buses, fxPool, scopes) }
     private val ledger = PolyphonyLedger(VOICE_SLOTS)
     private val block = AudioBlock(BLOCK_FRAMES)
     private val ctx = BlockContext(sampleRate)
@@ -120,6 +121,15 @@ internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.IN
      */
     fun prepare(demand: ChainDemand) = fxPool.prepare(demand)
 
+    /** [prepare] for a demand of [fxChains] chains and [vocoders] vocoders; this is what [PoolPreparer] calls from its worker thread. */
+    fun prepare(fxChains: Int, vocoders: Int) = fxPool.prepare(fxChains, vocoders)
+
+    /** True when the pools already hold what [prepare] would make for that demand. Any thread. */
+    fun isPrepared(fxChains: Int, vocoders: Int): Boolean = fxPool.covers(fxChains, vocoders)
+
+    /** How many chains and vocoders the audio thread has had to make itself because [prepare] was too late: the last resort of the pools. */
+    val chainsMadeOnTheSpot: Int get() = fxPool.madeOnTheSpotTotal
+
     /** Empties the orbits' tails and the buses; call when going idle so old tails cannot return. */
     fun clearBuses() {
         orbits.clear()
@@ -127,14 +137,9 @@ internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.IN
     }
 
     /**
-     * The analyser that voices with `analyze: id` feed (`getAnalyserById`), or null before the first one. Any thread: this is how the scope and spectrum visuals
-     * read what the engine plays.
-     */
-    fun analyser(id: Int): AnalyserTap? = buses.analyser(id)
-
-    /**
      * Renders [frames] frames of interleaved stereo into `out[frameOffset * 2 until (frameOffset + frames) * 2]`,
-     * overwriting it (silence is written as zeros). Output is always within `[-1, 1]`.
+     * overwriting it (silence is written as zeros). Output is always within `[-1, 1]`. The voices that feed an analyser add to [scopes] at the frame they sound
+     * on, [frameOffset] counted from the start of the block the caller ends with [ScopeTaps.endBlock] (the engine does, once per block it renders).
      */
     fun render(out: FloatArray, frames: Int, frameOffset: Int = 0) {
         var done = 0
@@ -145,10 +150,9 @@ internal class Mixer(val sampleRate: Int, irExecutor: IrExecutor = IrExecutor.IN
             ctx.n = n
             orbits.beginBlock(n)
             buses.beginBlock()
-            for (voice in voices) if (voice.isActive && !voice.isBusReader) voice.render(ctx, block)
+            for (voice in voices) if (voice.isActive && !voice.isBusReader) voice.render(ctx, block, frameOffset + done)
             buses.beginReaders()
-            for (voice in voices) if (voice.isActive && voice.isBusReader) voice.render(ctx, block)
-            buses.endBlock(n)
+            for (voice in voices) if (voice.isActive && voice.isBusReader) voice.render(ctx, block, frameOffset + done)
 
             if (stopFramesLeft > 0) {
                 val step = 1f / stopFrames // the gain falls to 0 over the frames left

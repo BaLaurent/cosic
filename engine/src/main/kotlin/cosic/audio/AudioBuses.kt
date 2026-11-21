@@ -1,24 +1,17 @@
 package cosic.audio
 
-import java.util.concurrent.atomic.AtomicReferenceArray
-
 /** Buses numbered `0 until MAX_BUSES` exist; a send to another one is dropped. */
 internal const val MAX_BUSES = 64
 
-/** Analysers with ids `1 until MAX_ANALYSERS` exist (id 0 is "no analyser"). */
-internal const val MAX_ANALYSERS = 64
-
 /**
- * The buses voices can send to (`bus`, `busgain`: superdough's `getBus(n)`, a stereo gain node) and the analysers they can feed (`analyze`, `fft`: its
- * `getAnalyserById`): `s("bus")` and `.bmod()` read the former, the scope and spectrum visuals the latter.
+ * The buses voices can send to (`bus`, `busgain`: superdough's `getBus(n)`, a stereo gain node): `s("bus")` and `.bmod()` read them. The analysers that voices
+ * feed (`analyze`, superdough's `getAnalyserById`) are the [cosic.io.ScopeTaps] of the engine, not buses.
  *
  * Buses: a voice's sends are added into the bus for the block being rendered ([send]). A voice that reads a bus (a `bus` source, a `bmod` modulator; the [Mixer] calls
  * these readers) is rendered after all the others, so [tap] holds everything sent by non-readers in the same block: the graph is acyclic and Web Audio would
  * give the same. What a reader sends itself ([beginReaders] switches to this) arrives one block later: an exact answer would need the readers sorted by what they
  * read and send. A bus of the mono voices' sum is up-mixed (L = R) like every explicit-stereo node of superdough.
- *
- * Analysers ([analyse], [analyser]) are created, on the audio thread, by the first voice that asks for an id (and `fft` can resize them later); they are read
- * from any thread. Nothing allocates after a bus or analyser exists.
+ * Nothing allocates after a bus exists.
  */
 internal class AudioBuses(private val sampleRate: Int) {
     private val current = arrayOfNulls<StereoBuffer>(MAX_BUSES)
@@ -26,9 +19,6 @@ internal class AudioBuses(private val sampleRate: Int) {
     private val used = IntArray(MAX_BUSES)
     private var usedCount = 0
     private var readersPhase = false
-    private val taps = AtomicReferenceArray<AnalyserTap?>(MAX_ANALYSERS)
-    private val tapIds = IntArray(MAX_ANALYSERS)
-    private var tapCount = 0
 
     /**
      * The sum of the sends to bus [bus] in the block being rendered, frames `0 until ctx.n` valid (a mono send reaches both channels); null when the bus does not exist
@@ -84,31 +74,6 @@ internal class AudioBuses(private val sampleRate: Int) {
     fun beginReaders() {
         readersPhase = true
     }
-
-    /**
-     * Adds the block to analyser [id] (`post -> AnalyserNode`), creating it of size [fftSize] on first use and resizing it when the voice asks for another size.
-     * Ids outside `1 until MAX_ANALYSERS` are ignored.
-     */
-    fun analyse(id: Int, fftSize: Int, b: AudioBlock, ctx: BlockContext) {
-        if (id <= 0 || id >= MAX_ANALYSERS) return
-        var tap = taps.get(id)
-        if (tap == null) {
-            tap = AnalyserTap(id, fftSize)
-            tapIds[tapCount++] = id
-            taps.set(id, tap)
-        } else if (tap.fftSize != fftSize) {
-            tap.resize(fftSize)
-        }
-        tap.add(b, ctx.n)
-    }
-
-    /** Ends a block of [n] frames: every analyser takes in the block's signal (silence for those nobody sent to). */
-    fun endBlock(n: Int) {
-        for (i in 0 until tapCount) taps.get(tapIds[i])!!.commit(n)
-    }
-
-    /** Analyser [id] (any thread), or null before the first voice that feeds it. */
-    fun analyser(id: Int): AnalyserTap? = if (id > 0 && id < MAX_ANALYSERS) taps.get(id) else null
 
     /** Empties the buses (the analysers keep what they heard: they are for looking at). */
     fun clear() {

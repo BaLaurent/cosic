@@ -178,8 +178,17 @@ internal class FxGroupPool(
     }
 
     /** Makes both pools big enough for [demand] on top of what voices hold now. Any thread. */
-    fun prepare(demand: ChainDemand) {
-        groups.ensureFree(demand.fxChains)
-        vocoders.ensureFree(demand.vocoders)
+    fun prepare(demand: ChainDemand) = prepare(demand.fxChains, demand.vocoders)
+
+    /** Makes the pools big enough for [fxChains] more chains and [vocoders] more vocoders on top of what voices hold now. Any thread. */
+    fun prepare(fxChains: Int, vocoders: Int) {
+        groups.ensureFree(fxChains)
+        this.vocoders.ensureFree(vocoders)
     }
+
+    /** True when [fxChains] more chains and [vocoders] more vocoders can be taken without making any. Any thread. */
+    fun covers(fxChains: Int, vocoders: Int): Boolean = groups.covers(fxChains) && this.vocoders.covers(vocoders)
+
+    /** The chains and vocoders that the audio thread had to make itself. */
+    val madeOnTheSpotTotal: Int get() = groups.madeOnTheSpot + vocoders.madeOnTheSpot
 }

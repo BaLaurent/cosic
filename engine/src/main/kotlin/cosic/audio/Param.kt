@@ -24,8 +24,6 @@ internal enum class Param {
     FXrelease,
     pan,
     djf,
-    analyze,
-    fft,
 
     // filters: low-pass, high-pass, band-pass
     cutoff,
@@ -166,6 +164,7 @@ internal val STRING_KEYS: Set<String> = setOf(
     "hpshape",
     "bpshape",
     "unit",
+    "analyze", // the id of the analyser a voice feeds (see `voiceParams`): a text, whatever the control was written as
 )
 
 /** Controls that carry a list of numbers (`orbit` of a duck, `channels`): they land in [ParamSet.lists], a plain number as a list of one. */

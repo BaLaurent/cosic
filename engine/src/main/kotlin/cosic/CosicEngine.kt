@@ -6,6 +6,7 @@ import cosic.audio.ChainDemand
 import cosic.audio.DrumKit
 import cosic.audio.IrExecutor
 import cosic.audio.Mixer
+import cosic.audio.PoolPreparer
 import cosic.audio.VoiceParams
 import cosic.audio.sources.SynthRegistry
 import cosic.io.ClockBridge
@@ -93,7 +94,13 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
 
     internal val drums = DrumKit(sampleRate)
     private val sounds = SoundResolver(sampleRate, library, drums)
-    private val mixer = Mixer(sampleRate, irExecutor)
+
+    /** The sound of the voices with an `analyze` id, for `scope`, `fscope` and `spectrum`: the voices add to it, the visuals read it (`VisualSession`). */
+    val scopes = ScopeTaps()
+    private val mixer = Mixer(sampleRate, irExecutor, scopes)
+
+    /** Grows the pools of the mixer ahead of the queued events on a background thread; offline renders (inline executor) do it on the spot. */
+    private val preparer = PoolPreparer(mixer, background = irExecutor !== IrExecutor.INLINE)
 
     /** What the program, the engine and the patterns being played write to the console: the last 40 lines. */
     val console = ConsoleLog()
@@ -103,9 +110,6 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
 
     /** What the person playing does to the device: pointer, keys, motion sensors, sliders. The app sets it; patterns read it. */
     val inputs = InputState()
-
-    /** The sound of the voices with an `analyze` id, for `scope`, `fscope` and `spectrum`. */
-    val scopes = ScopeTaps()
 
     /** Turns the engine's frames into the system's time (for MIDI and OSC): the app feeds it the time stamps of its audio track. */
     val clock = ClockBridge().also { outputs.clock = it }
@@ -151,7 +155,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     private var lastPattern: Pair<Pattern, Double>? = null
 
     private val effects = EngineEffects(inputs, console, outputs) { remote }
-    private val scheduler = Scheduler(sampleRate, sounds, outputs)
+    private val scheduler = Scheduler(sampleRate, sounds, outputs, scopes)
     private val chainDemand = ChainDemand()
 
     private val idleTracker = IdleTracker(sampleRate)
@@ -175,6 +179,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     private var waitingPreview: Command.Preview? = null
     private var previewGivesUpAt = 0L
     private var publishedAt = 0L
+    private var chainsReported = 0
 
     init {
         // Rendering a drum sound takes milliseconds, and so does building the tables of a wave or the loop of a noise, which the audio thread must not spend on one it meets first.
@@ -292,18 +297,6 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
         commands.add(Command.Preview(sound, index, note))
     }
 
-    /**
-     * Any thread. Copies what analyser [id] (the `id` of `.scope()` and the like, the `analyze` control) has heard into [out], the oldest [out]`.size` (at most `2^(fft + 5)`) frames of the
-     * latest `2^(fft + 5)` mono frames, oldest first, as `AnalyserNode.getFloatTimeDomainData` does. Returns the number of frames copied: 0 before any voice has fed the analyser.
-     */
-    fun copyScope(id: Int, out: FloatArray): Int = mixer.analyser(id)?.timeDomain(out) ?: 0
-
-    /**
-     * Any thread. `AnalyserNode.getFloatFrequencyData` of analyser [id] into [out]: decibels of the first [out]`.size` (at most `2^(fft + 4)`) bins, smoothed over the calls
-     * (0.5 per call that finds new audio). Returns the number of bins written: 0 before any voice has fed the analyser.
-     */
-    fun copySpectrum(id: Int, out: FloatArray): Int = mixer.analyser(id)?.frequencyDb(out) ?: 0
-
     /** Audio thread only. Renders [frames] frames of interleaved stereo into [out], which must hold `frames * 2` samples. */
     fun render(out: FloatArray, frames: Int) {
         require(frames >= 0 && out.size >= frames * 2) { "a buffer of ${out.size} samples cannot hold $frames stereo frames" }
@@ -311,12 +304,13 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
         var changed = drainCommands()
         startWaitingPreview()
         scheduler.schedule(renderedFrames + frames)
-        // the chains and vocoders the queued events will need are made now, not by the audio thread when they start
+        // the chains and vocoders the queued events will need are made ahead of them, by the preparer's thread, not by this one when they start
         chainDemand.clear()
         scheduler.addQueuedDemand(chainDemand)
-        mixer.prepare(chainDemand)
+        preparer.request(chainDemand)
         renderSegments(out, frames)
         scopes.endBlock(frames)
+        reportChainsMadeHere()
         renderedFrames += frames
         scheduler.highlights.expire(renderedFrames - HIGHLIGHT_KEEP_SECONDS * sampleRate)
 
@@ -327,6 +321,14 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
         if (idleTracker.blockRendered(renderedFrames, scheduler.playing, voices)) mixer.clearBuses()
         changed = changed || idleTracker.idle != wasIdle
         if (changed || renderedFrames - publishedAt >= SNAPSHOT_INTERVAL_FRAMES) publish()
+    }
+
+    /** The pools were too late for a voice, which then got its chain from the audio thread (a glitch risk, not a lost effect): said once per occasion. */
+    private fun reportChainsMadeHere() {
+        val made = mixer.chainsMadeOnTheSpot
+        if (made == chainsReported) return
+        console.log("[audio] ${made - chainsReported} effect chain(s) had to be made while rendering: the pool was not ready in time", "warning")
+        chainsReported = made
     }
 
     private fun drainCommands(): Boolean {

@@ -79,6 +79,9 @@ internal class GrowablePool<T : Any>(private val limit: Int, initial: Int, priva
         }
     }
 
+    /** True when [wanted] more instances can be taken on top of those in use now without making any: what [ensureFree] would leave. Any thread. */
+    fun covers(wanted: Int): Boolean = wanted <= 0 || created.get() >= Math.min(limit, taken.get() + wanted)
+
     private fun drain() {
         while (true) {
             val item = incoming.poll() ?: return

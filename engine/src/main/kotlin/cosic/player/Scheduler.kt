@@ -1,9 +1,10 @@
 package cosic.player
 
 import cosic.HighlightEvent
-import cosic.io.OutputBus
 import cosic.audio.ChainDemand
 import cosic.audio.stretchLeadFrames
+import cosic.io.OutputBus
+import cosic.io.ScopeTaps
 import cosic.pattern.ControlMap
 import cosic.pattern.CosicError
 import cosic.pattern.Hap
@@ -186,6 +187,7 @@ internal class Scheduler(
     private val sampleRate: Int,
     private val sounds: SoundResolver,
     private val outputs: OutputBus = OutputBus(),
+    private val scopes: ScopeTaps? = null,
 ) {
     private val lookaheadFrames = Math.round(LOOKAHEAD_SECONDS * sampleRate)
     private val pending = ArrayDeque<SoundEvent>()
@@ -395,7 +397,10 @@ internal class Scheduler(
             is SoundLookup.Ready -> {
                 val cycle = checkNotNull(hap.whole).begin.toDouble()
                 // an event with `stretch` starts early by the vocoder's latency (superdough.mjs:468-473); its highlight stays where it is heard
-                events.add(SoundEvent(start - stretchLeadFrames(controls), voiceParams(controls, lookup.source, seconds, tempo, cycle)))
+                val voice = voiceParams(controls, lookup.source, seconds, tempo, cycle)
+                // the tap of the analyser the voice feeds is made here, so that the audio thread, which adds to it, never has to
+                voice.main.str("analyze")?.let { scopes?.prepare(it) }
+                events.add(SoundEvent(start - stretchLeadFrames(controls), voice))
             }
             is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))
             SoundLookup.Loading, SoundLookup.Silent -> Unit

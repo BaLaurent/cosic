@@ -1,6 +1,7 @@
 package cosic.audio
 
 import cosic.audio.sources.SoundSource
+import cosic.io.ScopeTaps
 import cosic.soundfont.sf2.PresetPlayer
 
 private const val MAX_GAIN_PARAM = 3.4e38
@@ -50,7 +51,13 @@ internal fun VoiceParams.canSound(): Boolean {
  * A voice stays active, silent or not, until `max(end of its source, endWithRelease)`: that is when Strudel releases its nodes, and
  * until then it counts toward `maxPolyphony`.
  */
-internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, private val buses: AudioBuses, private val fxPool: FxGroupPool) {
+internal class Voice(
+    private val sampleRate: Int,
+    private val orbits: OrbitSet,
+    private val buses: AudioBuses,
+    private val fxPool: FxGroupPool,
+    private val scopes: ScopeTaps = ScopeTaps(),
+) {
     // The sampler is the player of superdough's; the sources of the built-in sounds are made per event and carried by the VoiceSource.
     private val player = SamplePlayer(sampleRate)
     private val presetPlayer = PresetPlayer(sampleRate)
@@ -88,8 +95,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     private var delayUsed = false
     private var reverbUsed = false
     private var busIndex = -1
-    private var analyzeId = -1
-    private var fftSize = 0
+    private var analyzeId: String? = null
     private var orbit: Orbit? = null
 
     private var activeUntilFrame = 0L
@@ -295,9 +301,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         busIndex = if (main.has(Param.bus)) main[Param.bus].toInt() else -1
         if (busIndex >= 0) busSend.reset(main.or(Param.busgain, 1.0))
         if (main.has(Param.djf)) orbit.setDjf(main[Param.djf], t)
-        val analyze = main[Param.analyze]
-        analyzeId = if (!analyze.isNaN() && analyze != 0.0) analyze.toInt() else -1
-        fftSize = 1 shl main.or(Param.fft, 8.0).toInt().coerceIn(0, 10).plus(5)
+        analyzeId = main.str("analyze")
 
         val duck = main.list("duckorbit")
         if (duck != null) {
@@ -403,9 +407,25 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
     }
 
     /**
-     * Adds the next `ctx.n` frames of this voice to its orbit and buses. [blk] is the mixer's scratch block.
+     * `post -> AnalyserNode`: the voice's sound after its chain, down-mixed to mono as Web Audio does (`(L + R) / 2`), is added to the tap [id] of the engine's [scopes]
+     * (made ahead of time by the scheduler, see [ScopeTaps.prepare]).
      */
-    fun render(ctx: BlockContext, blk: AudioBlock) {
+    private fun feedAnalyser(id: String, ctx: BlockContext, blk: AudioBlock, n: Int, scopeOffset: Int) {
+        if (blk.channels == 2) {
+            val mono = ctx.borrow()
+            for (i in 0 until n) mono[i] = (blk.l[i] + blk.r[i]) * 0.5f
+            scopes.add(id, mono, scopeOffset, n)
+            ctx.release()
+        } else {
+            scopes.add(id, blk.l, scopeOffset, n)
+        }
+    }
+
+    /**
+     * Adds the next `ctx.n` frames of this voice to its orbit and buses. [blk] is the mixer's scratch block. [scopeOffset] is where these frames lie in the
+     * block that the engine ends with [ScopeTaps.endBlock], for the analyser the voice feeds.
+     */
+    fun render(ctx: BlockContext, blk: AudioBlock, scopeOffset: Int) {
         val n = ctx.n
         val left = activeUntilFrame - ctx.startFrame
         if (left <= 0L) {
@@ -467,7 +487,7 @@ internal class Voice(private val sampleRate: Int, private val orbits: OrbitSet, 
         if (delayUsed) orbit.sendDelay(blk, delaySend, ctx)
         if (reverbUsed) orbit.sendReverb(blk, reverbSend, ctx)
         if (busIndex >= 0) buses.send(busIndex, blk, busSend, ctx)
-        if (analyzeId >= 0) buses.analyse(analyzeId, fftSize, blk, ctx)
+        analyzeId?.let { feedAnalyser(it, ctx, blk, n, scopeOffset) }
         if (left <= n) isActive = false
         if (!isActive) releaseFxGroups()
     }
