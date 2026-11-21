@@ -22,13 +22,14 @@ import cosic.pattern.silence
 import cosic.pattern.withQueryBudget
 import cosic.script.DEFAULT_CPS
 
-/** The pattern is queried in pieces of this many cycles. */
-private val CHUNK = Rational(1, 16)
+/** The pattern is queried in pieces of `1 / CHUNK_DENOMINATOR` cycles (public for the editor, which maps the events of a program that replaces another one). */
+const val CHUNK_DENOMINATOR = 16
+private val CHUNK = Rational(1L, CHUNK_DENOMINATOR.toLong())
 
 private const val MAX_HAPS_PER_CHUNK = 2000
 
 /** How far ahead of the audio the scheduler queues events: the latency of Strudel's cyclist (`latency = 0.1`). */
-internal const val LOOKAHEAD_SECONDS = 0.1
+const val LOOKAHEAD_SECONDS = 0.1
 private const val DRY_RUN_CYCLES = 2L
 
 /** The window `_triggerKeyboard` of midi.mjs queries around the instant of a key: `eps = 1e-6` either side. */
