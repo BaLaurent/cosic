@@ -63,7 +63,4 @@ object CosicColors {
     val Number = Color(0xFF7CC5FF)
     val Call = Color(0xFFC792EA)
     val Label = Mint
-
-    /** Background of the mini-notation steps that are sounding right now. */
-    val ActiveStep = Mint.copy(alpha = 0.35f)
 }

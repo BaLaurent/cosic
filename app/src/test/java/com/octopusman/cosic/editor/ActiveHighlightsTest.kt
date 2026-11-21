@@ -66,26 +66,27 @@ class ActiveHighlightsTest {
     }
 
     @Test
-    fun mappingCarriesColourAndStyleToTheEditedText() {
-        val mapper = HighlightMapper("bd sd")
-        val highlights = listOf(ActiveHighlight(bd, "red", null), ActiveHighlight(sd, "blue", "color: blue"))
-        assertEquals(
-            listOf(ActiveHighlight(SourceRange(2, 4), "red", null), ActiveHighlight(SourceRange(5, 7), "blue", "color: blue")),
-            mapper.mapActive(highlights, "a bd sd"),
-        )
+    fun placesAreWhereTheTextHasThemNow() {
+        val events = listOf(event(0, 100, bd, color = "red"), event(0, 100, sd, color = "blue", markcss = "color: blue"))
+        val shifted = activeHighlights(events, 50) { _, range -> SourceRange(range.start + 2, range.end + 2) }
+        assertEquals(listOf(ActiveHighlight(SourceRange(2, 4), "red", null), ActiveHighlight(SourceRange(5, 7), "blue", "color: blue")), shifted)
     }
 
     @Test
-    fun mappingDropsAHighlightThatAnEditTouches() {
-        val mapper = HighlightMapper("bd sd")
-        val highlights = listOf(ActiveHighlight(bd, "red", null), ActiveHighlight(sd, "blue", null))
-        assertEquals(listOf(highlights[0]), mapper.mapActive(highlights, "bd sXd"))
+    fun aPlaceThatIsGoneHasNoMark() {
+        val events = listOf(event(0, 100, bd, color = "red"), event(0, 100, sd, color = "blue"))
+        assertEquals(listOf(ActiveHighlight(bd, "red", null)), activeHighlights(events, 50) { _, range -> range.takeIf { it == bd } })
     }
 
     @Test
-    fun mappingUnchangedTextKeepsTheHighlights() {
-        val mapper = HighlightMapper("bd sd")
-        val highlights = listOf(ActiveHighlight(bd, null, null), ActiveHighlight(sd, "red", null))
-        assertEquals(highlights, mapper.mapActive(highlights, "bd sd"))
+    fun eventsOfTwoProgramsShareAPlaceWhenTheyAreInTheSamePlaceOfTheTextNow() {
+        val old = event(0, 100, SourceRange(0, 2), color = "old")
+        val new = event(50, 100, SourceRange(4, 6), color = "new")
+        // the old program's text had two characters less in front: its (0,2) is the new text's (2,4)... and the new program's (4,6) is (4,6)
+        val place = { e: HighlightEvent, r: SourceRange -> if (e === old) SourceRange(r.start + 2, r.end + 2) else r }
+        assertEquals(listOf(ActiveHighlight(SourceRange(2, 4), "old", null), ActiveHighlight(SourceRange(4, 6), "new", null)), activeHighlights(listOf(old, new), 60, place))
+        // the same place after the mapping: the one that began last wins
+        val same = { _: HighlightEvent, _: SourceRange -> SourceRange(1, 2) }
+        assertEquals(listOf(ActiveHighlight(SourceRange(1, 2), "new", null)), activeHighlights(listOf(old, new), 60, same))
     }
 }

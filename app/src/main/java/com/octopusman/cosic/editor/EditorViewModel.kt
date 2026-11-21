@@ -5,8 +5,10 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
@@ -25,16 +27,17 @@ import com.octopusman.cosic.library.ProjectRepository
 import com.octopusman.cosic.reference.InsertText
 import com.octopusman.cosic.settings.EditorSettings
 import com.octopusman.cosic.settings.ProgramEditorSettings
-import com.octopusman.cosic.widgets.SliderEdits
 import cosic.CosicEngine
+import cosic.EngineSnapshot
 import cosic.EvalReport
+import cosic.HighlightEvent
 import cosic.ProgramInfo
-import cosic.SliderConfig
 import cosic.SourceRange
 import cosic.io.ConsoleLog
 import cosic.io.InputState
 import cosic.io.ShareLink
-import cosic.io.SliderBank
+import cosic.io.SliderCodec
+import cosic.script.tokenize
 import cosic.visual.VisualSession
 import java.io.IOException
 import kotlin.math.floor
@@ -50,6 +53,16 @@ private const val SAVE_DEBOUNCE_MS = 1_000L
 
 /** How long the code flashes when it is evaluated (`flash.mjs` of the web editor). */
 const val FLASH_MS = 200L
+
+// The scheduler of the engine queues the events of a program 0.1 s ahead of what it has rendered, a chunk of 1/16 cycle at a time (`LOOKAHEAD_SECONDS` and `CHUNK` of its Scheduler.kt),
+// and a program that replaces another one takes over where the queue ends: the events that start before that are the old program's, those after it the new one's, and in between
+// is not known to the editor. The slack is for the block that is being rendered while the swap is taken up.
+private const val SCHEDULER_LOOKAHEAD_SECONDS = 0.1
+private const val SCHEDULER_CHUNK_CYCLES = 1.0 / 16
+private const val HANDOVER_SLACK_SECONDS = 0.05
+
+/** Which of the events of the engine belong to which of two programs, one replacing the other: [oldUntil] and [newFrom] are frames (`oldUntil <= newFrom`). */
+private class Handover(val oldUntil: Long, val newFrom: Long)
 
 // After a play request the engine reports "stopped" until its audio thread has taken the request
 // up. A stop reported after that thread has rendered a few blocks means the engine stopped by
@@ -110,9 +123,6 @@ class EditorViewModel(
     var activeHighlights by mutableStateOf<List<ActiveHighlight>>(emptyList())
         private set
 
-    /** Where those steps are, for the editor that only marks them. */
-    val activeRanges: List<SourceRange> get() = activeHighlights.map { it.range }
-
     /** The engine's view of the music while it plays, null otherwise. */
     var playback by mutableStateOf<PlaybackInfo?>(null)
         private set
@@ -135,14 +145,14 @@ class EditorViewModel(
         private set
 
     /**
-     * The sliders of the last program that have a number to move, with where that number is in the text now: the edits since the evaluation moved them, and a slider
-     * whose number was edited away is gone.
+     * Where the widgets and sliders of the last program are in the text being edited. A widget the edits cut its call off from, and a slider whose number was removed, are gone
+     * until the next evaluation.
      */
-    var sliders by mutableStateOf<List<LiveSlider>>(emptyList())
+    internal var widgets by mutableStateOf(EditorAnchors.EMPTY)
         private set
 
-    /** The values of the sliders, where the playing pattern reads them: a slider card sets its own, and the sound follows with no new evaluation. */
-    val sliderBank: SliderBank get() = engine.inputs.sliders
+    /** The numbers the sliders of the last program are at: the thumbs follow these, and a drag of a thumb sets its own. */
+    val sliderValues: SnapshotStateMap<String, Double> = mutableStateMapOf()
 
     /** The pointer, keys, sensors and sliders of the engine, for the root of the screen that follows the pointer. */
     val inputs: InputState get() = engine.inputs
@@ -167,12 +177,20 @@ class EditorViewModel(
     private var playRequestedAt = 0L
     private var playRequestedFrames = 0L
 
-    // Maps highlights, and the error position, from the evaluated text to the text being edited.
-    private var highlightMapper = HighlightMapper("")
-    private var errorMapper = HighlightMapper("")
+    // Where the places a program speaks of are now, in the text being edited: every edit since the text was evaluated moves them. [highlightMapper] follows the program that plays
+    // (the steps that sound), [errorMapper] the text of the last evaluation that failed (the error's range), and [evalMapper] the evaluation in progress, whose program they are
+    // going to be those of.
+    private var highlightMapper = HighlightMapper()
+    private var errorMapper = HighlightMapper()
+    private var evalMapper: HighlightMapper? = null
 
-    // The text a slider drag began from: the whole drag is one step of the undo history.
-    private var sliderDragStart: TextFieldValue? = null
+    // Where the program's widgets and sliders are in the text: the edits between evaluations move them as they move the text.
+    private val anchorTracker = AnchorTracker()
+
+    // When a program that was made from an edited text replaces the playing one, the events of both are in the engine's log for a while, and their places are in two texts. The
+    // places of the old program's events are carried by [previousMapper], until [handover] says nothing of them is left to sound.
+    private var previousMapper: HighlightMapper? = null
+    private var handover: Handover? = null
 
     // Each edit gets a version; a save is skipped when a newer edit has been written already, so a
     // slow background save can never overwrite what leaving the editor wrote.
@@ -211,8 +229,13 @@ class EditorViewModel(
         val before = textValue
         textValue = value
         if (value.text == before.text) return // only the cursor or selection moved
-        sliders = SliderTracking.afterEdit(sliders, before.text, value.text)
-        undoStack.recordEdit(before, value)
+        commit(before, value, TextEdit.between(before.text, value.text, value.selection.end))
+    }
+
+    /** The text changed from [before] to [after] by [edit]: everything that follows places in it moves, and the change is a step of the history. */
+    private fun commit(before: TextFieldValue, after: TextFieldValue, edit: TextEdit?) {
+        trackEdit(edit)
+        undoStack.recordEdit(before, after)
         refreshHistory()
         markEdited()
     }
@@ -255,43 +278,45 @@ class EditorViewModel(
         saveNow()
     }
 
-    /** A drag of a slider begins: what it writes into the code until [onSliderDragEnd] is one step of the undo history. */
-    fun onSliderDragStart() {
-        if (sliderDragStart == null) sliderDragStart = textValue
+    // A slider drag in progress: which slider, and how long the number it has written into the code is now (the code says where it starts: the slider's anchor).
+    private class SliderDrag(val id: String, var length: Int)
+
+    private var sliderDrag: SliderDrag? = null
+
+    /** A drag of the slider [id] begins: what it writes into the code until [onSliderEnd] is one step of the undo history. */
+    fun onSliderStart(id: String) {
+        val anchor = widgets.slider(id) ?: return
+        val text = textValue.text
+        val end = literalEnd(text, tokenize(text), anchor.offset) ?: return
+        sliderDrag = SliderDrag(id, end - anchor.offset)
+        undoStack.beginRun(textValue)
     }
 
     /**
-     * The slider [spec] moved to the number written [newText]: its literal in the text is replaced by it, at once and without a new evaluation (the card has set the value
-     * where the pattern reads it). Nothing happens when the number is not in the code any more.
+     * The slider [id] moved to [raw], a position the control reports: the value is snapped to the slider's step and bounds, written into the code in place of its number
+     * and put where the playing pattern reads it, so the sound follows with no new evaluation.
      */
-    fun onSliderRewrite(spec: SliderConfig, newText: String) {
-        val live = sliders.firstOrNull { it.spec.id == spec.id } ?: return
+    fun onSliderChange(id: String, raw: Double) {
+        val drag = sliderDrag?.takeIf { it.id == id } ?: return
+        val anchor = widgets.slider(id) ?: return
+        val text = SliderCodec.format(raw, anchor.seed.min, anchor.seed.max, anchor.seed.step)
+        val number = text.toDouble()
+        engine.inputs.sliders.set(id, number)
+        sliderValues[id] = number
         val before = textValue
-        val length = SliderEdits.literalLength(before.text, live.start) ?: return
-        val (next, range) = SliderEdits.applyAt(before.text, live.start, length, newText)
-        val shift = range.end - range.start - length
-        fun moved(offset: Int) = when {
-            offset <= live.start -> offset
-            offset >= live.start + length -> offset + shift
-            else -> range.end // inside the number: after the new one
-        }
-        val after = TextFieldValue(next, TextRange(moved(before.selection.start), moved(before.selection.end)))
-        textValue = after
-        sliders = SliderTracking.afterEdit(sliders, before.text, next)
-        // a change that is no part of a drag is an edit of its own
-        if (sliderDragStart == null) undoStack.recordEdit(before, after)
-        refreshHistory()
-        markEdited()
+        if (before.text.regionMatches(anchor.offset, text, 0, text.length) && drag.length == text.length) return // the same number: no edit
+        val rewrite = replaceLiteral(before, anchor.offset, drag.length, text)
+        textValue = rewrite.value
+        drag.length = text.length
+        commit(before, rewrite.value, rewrite.edit)
     }
 
     /** The drag ended: if it changed the code, that is one step of the undo history. */
-    fun onSliderDragEnd() {
-        val start = sliderDragStart ?: return
-        sliderDragStart = null
-        if (start.text != textValue.text) {
-            undoStack.recordEdit(start, textValue)
-            refreshHistory()
-        }
+    fun onSliderEnd() {
+        if (sliderDrag == null) return
+        sliderDrag = null
+        undoStack.endRun(textValue)
+        refreshHistory()
     }
 
     /** Evaluates the text; on success it plays, or swaps in the new pattern when already playing. */
@@ -299,15 +324,24 @@ class EditorViewModel(
         if (missing || evalJob?.isActive == true) return
         val code = textValue.text
         if (settings.flash.value) flashUntilMs = SystemClock.uptimeMillis() + FLASH_MS
+        // What the program says about places in the code is true of this text: the edits made while it evaluates carry those places on to the text then.
+        val mapper = HighlightMapper()
+        evalMapper = mapper
+        anchorTracker.evaluationStarted()
+        val replacing = playing && highlightMapper.hasEdits
         evalJob = viewModelScope.launch {
             // withContext rethrows cancellation instead of returning when stop() cancelled this
             // job meanwhile, so a late result is discarded and never reaches play(). Evaluating can wait
             // for the network (samples() and the default sounds), which is what the IO threads are for.
-            when (val report = withContext(Dispatchers.IO) { engine.evaluate(code) }) {
+            val (report, swap) = withContext(Dispatchers.IO) { engine.evaluate(code) to handoverOf(engine.snapshot) }
+            when (report) {
                 is EvalReport.Ok -> {
-                    highlightMapper = HighlightMapper(code)
+                    previousMapper = if (replacing) highlightMapper else null
+                    handover = if (replacing) swap else null
+                    highlightMapper = mapper
+                    evalMapper = null
                     evalStatus = EvalStatus.Ok(report.warnings)
-                    takeProgram(report.program, code)
+                    takeProgram(report.program)
                     if (!playing) {
                         sampleRepository.awaitDownloads(SAMPLES_WAIT_MS)
                         engine.play()
@@ -317,31 +351,67 @@ class EditorViewModel(
                     }
                     audioOutput.ensureRunning()
                 }
-                // A failed update leaves whatever is playing playing.
+                // A failed update leaves whatever is playing playing, and the widgets where they are.
                 is EvalReport.Failed -> {
-                    errorMapper = HighlightMapper(code)
+                    errorMapper = mapper
+                    evalMapper = null
+                    anchorTracker.evaluationCancelled()
                     evalStatus = EvalStatus.Error(report.message, report.range, report.line, report.column)
                 }
             }
         }
     }
 
-    /** The program that was just evaluated from [evaluated] becomes the one the screen shows: its visuals, its sliders and the inputs it reads. */
-    private fun takeProgram(info: ProgramInfo, evaluated: String) {
+    /** Where the events of a program that has just been handed to the engine begin, read right after: the ones queued before are the previous program's. */
+    private fun handoverOf(snapshot: EngineSnapshot): Handover {
+        val rate = snapshot.sampleRate
+        val chunk = if (snapshot.cps > 0.0) SCHEDULER_CHUNK_CYCLES / snapshot.cps else 0.0
+        val queueEnd = snapshot.renderedFrames + Math.round(SCHEDULER_LOOKAHEAD_SECONDS * rate)
+        val slack = Math.round(HANDOVER_SLACK_SECONDS * rate)
+        return Handover(oldUntil = queueEnd - slack, newFrom = queueEnd + Math.round(chunk * rate) + slack)
+    }
+
+    /** Where the place [range] of [event]'s program is in the text being edited: its program's own mapper decides, and where the events of the two programs cannot be told apart, only an agreement does. */
+    private fun placeOf(event: HighlightEvent, range: SourceRange): SourceRange? {
+        val previous = previousMapper
+        val swap = handover
+        if (previous == null || swap == null || event.startFrame >= swap.newFrom) return highlightMapper.map(range)
+        if (event.startFrame < swap.oldUntil) return previous.map(range)
+        val before = previous.map(range)
+        return if (before == highlightMapper.map(range)) before else null
+    }
+
+    /**
+     * The program that was just evaluated (from the text that [evalMapper] has been following since) becomes the one the screen shows: its visuals, its widgets and sliders
+     * and the inputs it reads.
+     */
+    private fun takeProgram(info: ProgramInfo) {
         program = info
         visuals = info.visuals as? VisualSession
-        sliders = SliderTracking.place(evaluated, textValue.text, info.sliders)
+        val seeds = info.toSeeds()
+        anchorTracker.evaluationFinished(seeds.blocks, seeds.sliders)
+        widgets = anchorTracker.anchors
+        sliderValues.clear()
+        for (slider in seeds.sliders) slider.initial?.let { sliderValues[slider.id] = it }
         inputSwitches.use(info.inputsUsed)
     }
 
     fun stop() {
         evalJob?.cancel()
+        cancelEvaluation()
         engine.stop()
         playing = false
         activeHighlights = emptyList()
         playback = null
         // nothing needs the sensors, controllers or MIDI inputs of a program that does not play
         inputSwitches.releaseAll()
+    }
+
+    /** The evaluation in progress, if any, ends without a program: the widgets stay where the edits have moved them. */
+    private fun cancelEvaluation() {
+        if (evalMapper == null) return
+        evalMapper = null
+        anchorTracker.evaluationCancelled()
     }
 
     /** Leaves the editor: stops the music and saves. Returns whether music was playing. */
@@ -362,7 +432,7 @@ class EditorViewModel(
     fun selectError() {
         val error = evalStatus as? EvalStatus.Error ?: return
         val range = error.range ?: return
-        val mapped = errorMapper.map(listOf(range), textValue.text).firstOrNull() ?: return
+        val mapped = errorMapper.map(range) ?: return
         textValue = TextFieldValue(textValue.text, TextRange(mapped.start, mapped.end))
     }
 
@@ -389,9 +459,14 @@ class EditorViewModel(
             return
         }
         val playhead = audioOutput.playheadFrame()
-        val sounding = if (playhead == null || !settings.highlight.value) emptyList() else activeHighlights(snapshot.highlights, playhead)
-        val mapped = highlightMapper.mapActive(sounding, textValue.text)
-        if (mapped != activeHighlights) activeHighlights = mapped
+        val sounding = if (playhead == null || !settings.highlight.value) emptyList() else activeHighlights(snapshot.highlights, playhead, ::placeOf)
+        if (sounding != activeHighlights) activeHighlights = sounding
+        // once nothing of the old program is left in the log, its places are no longer needed
+        val swap = handover
+        if (swap != null && snapshot.highlights.none { it.startFrame < swap.newFrom }) {
+            previousMapper = null
+            handover = null
+        }
 
         val cycle = if (playhead == null) 0 else floor(snapshot.cycleAt(playhead)).toInt().coerceAtLeast(0)
         val info = PlaybackInfo(snapshot.cps, cycle, snapshot.runtimeError, snapshot.warnings)
@@ -404,11 +479,24 @@ class EditorViewModel(
         inputSwitches.releaseAll()
     }
 
+    /** Undo and redo put a text back: it is an edit like any other for what the editor keeps by place, but no step of the history. */
     private fun restore(value: TextFieldValue) {
-        sliders = SliderTracking.afterEdit(sliders, textValue.text, value.text)
+        val before = textValue
         textValue = value
+        trackEdit(TextEdit.between(before.text, value.text, value.selection.end))
         refreshHistory()
         markEdited()
+    }
+
+    /** The text changed by [edit] (null: it did not): the widgets, the highlights and the error of the programs move with it. */
+    private fun trackEdit(edit: TextEdit?) {
+        if (edit == null) return
+        anchorTracker.onEdit(edit)
+        widgets = anchorTracker.anchors
+        highlightMapper.onEdit(edit)
+        previousMapper?.onEdit(edit)
+        errorMapper.onEdit(edit)
+        evalMapper?.onEdit(edit)
     }
 
     private fun refreshHistory() {

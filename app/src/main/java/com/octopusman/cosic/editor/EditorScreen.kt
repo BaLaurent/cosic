@@ -118,10 +118,9 @@ import kotlinx.coroutines.withContext
 /** The least height the side panel opens at in portrait: its tabs, search, group chips and a few lines of its list. */
 private val MIN_PANEL_HEIGHT = 380.dp
 
-/** The height of the console when it is shown under the editor, and the most of the screen it and the widgets under the editor take. */
+/** The height of the console when it is shown under the editor, and the most of the screen it takes. */
 private val CONSOLE_HEIGHT = 220.dp
 private const val CONSOLE_SHARE = 0.25f
-private const val HOST_SHARE = 0.3f
 
 /** Until the content of the screen is measured, it is taken to be this share of the screen's height. */
 private const val UNMEASURED_CONTENT_SHARE = 0.7f
@@ -191,10 +190,22 @@ fun EditorScreen(
     // Room for the tabs, the search, the group chips and a few lines of the list.
     val minPanelPx = with(LocalDensity.current) { MIN_PANEL_HEIGHT.toPx() }
 
+    // A panel that opens or closes moves the editor in the layout, and a moved text field loses its focus, and the keyboard with it. When the code had the focus, it is given back
+    // once the editor is in its new place.
+    var refocusCode by remember { mutableStateOf(false) }
+    LaunchedEffect(panelTab) {
+        if (refocusCode) {
+            refocusCode = false
+            withFrameNanos { }
+            focusRequester.requestFocus()
+        }
+    }
+
     // A button of the top bar closes the panel when it shows that button's tab, and switches to that
     // tab when it shows the other one. When the panel opens, it opens on what the cursor is on; on the
     // sounds whenever the cursor is on a sound or inside s(…) or bank(…).
     fun togglePanel(button: PanelTab) {
+        if (codeFocused) refocusCode = true
         when (panelTab) {
             button -> panelTab = null
             null -> {
@@ -343,7 +354,8 @@ fun EditorScreen(
                 vm.selectError()
                 focusRequester.requestFocus()
             })
-            // Movable, so opening or closing the reference (or a rotation) keeps the editor's focus and keyboard. The visual that draws behind the code is under the field.
+            // Movable, so opening or closing the reference (or a rotation) keeps the editor's focus and keyboard. The visual that draws behind the code is under the field; the
+            // widgets and the sliders of the program are inside the editor, under the lines and in front of the numbers they were made by.
             val editor = remember {
                 movableContentOf<Modifier> { modifier ->
                     Box(modifier) {
@@ -351,8 +363,16 @@ fun EditorScreen(
                         CodeEditor(
                             value = vm.textValue,
                             onValueChange = vm::onTextChange,
-                            activeRanges = { vm.activeRanges },
-                            modifier = Modifier.fillMaxSize().focusRequester(focusRequester).onFocusChanged { codeFocused = it.hasFocus },
+                            highlights = { vm.activeHighlights },
+                            widgets = vm.widgets,
+                            sliderValues = vm.sliderValues,
+                            onSliderStart = vm::onSliderStart,
+                            onSliderChange = vm::onSliderChange,
+                            onSliderEnd = vm::onSliderEnd,
+                            blockContent = { block, visible -> WidgetBlock(block, vm.visuals, { visualHost.revision }, visible) },
+                            modifier = Modifier.fillMaxSize().onFocusChanged { codeFocused = it.hasFocus },
+                            fieldModifier = Modifier.focusRequester(focusRequester),
+                            flashUntilMs = vm.flashUntilMs,
                             fontSizeSp = fontSize,
                             fontFamily = fontFamily,
                         )
@@ -411,27 +431,13 @@ fun EditorScreen(
                 }
             }
 
-            // INTERIM: the sliders and inline widgets in a plain column under the editor, until the editor places them under their lines.
-            if (!typing) {
-                val widgets = remember(vm.sliders, vm.visuals) { widgetItems(vm.sliders, vm.visuals) }
-                WidgetHost(
-                    items = widgets,
-                    text = vm.textValue.text,
-                    session = vm.visuals,
-                    revision = { visualHost.revision },
-                    sliderBank = vm.sliderBank,
-                    onSliderRewrite = vm::onSliderRewrite,
-                    onSliderDragStart = vm::onSliderDragStart,
-                    onSliderDragEnd = vm::onSliderDragEnd,
-                    maxHeight = contentHeight * HOST_SHARE,
+            // Under the editor, but not while the code is typed on the soft keyboard, which leaves it little room.
+            if (!typing && showConsole) {
+                ConsolePanel(
+                    console = vm.console,
+                    modifier = Modifier.fillMaxWidth().height(minOf(CONSOLE_HEIGHT, contentHeight * CONSOLE_SHARE)),
+                    parseColor = ::parseCssColor,
                 )
-                if (showConsole) {
-                    ConsolePanel(
-                        console = vm.console,
-                        modifier = Modifier.fillMaxWidth().height(minOf(CONSOLE_HEIGHT, contentHeight * CONSOLE_SHARE)),
-                        parseColor = ::parseCssColor,
-                    )
-                }
             }
         }
     }

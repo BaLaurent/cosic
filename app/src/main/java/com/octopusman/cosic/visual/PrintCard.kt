@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -37,10 +38,18 @@ internal fun printTail(lines: List<String>, capacity: Int): List<String> = if (l
 
 /**
  * The output widget (`._print()`): the last lines the program printed, as many as the box holds, the newest at the bottom. [lines] is read when [revision] changes (the host
- * counts a frame that changed something), so a card for a program that is stopped does nothing. The box is [width] x [height] at most and keeps that shape on a narrower screen.
+ * counts a frame that changed something), so a card for a program that is stopped does nothing. The box is [width] x [height] at most and keeps that shape on a narrower screen,
+ * or, with [fill], as big as the box it is given ([height] says how many lines fit).
  */
 @Composable
-fun PrintCard(lines: () -> List<String>, revision: () -> Long, width: Dp = 600.dp, height: Dp = 100.dp, modifier: Modifier = Modifier) {
+fun PrintCard(
+    lines: () -> List<String>,
+    revision: () -> Long,
+    width: Dp = 600.dp,
+    height: Dp = 100.dp,
+    modifier: Modifier = Modifier,
+    fill: Boolean = false,
+) {
     val current by remember(lines, revision) { derivedStateOf(structuralEqualityPolicy()) { revision(); lines() } }
     val padding = 6.dp
     val lineHeight = 16.dp
@@ -48,14 +57,8 @@ fun PrintCard(lines: () -> List<String>, revision: () -> Long, width: Dp = 600.d
     val shown = printTail(current, capacity)
     val foreground = parseCssColor(VisualTheme.foreground) ?: MaterialTheme.colorScheme.onSurface
     val backdrop = parseCssColor(VisualTheme.background) ?: Color.Black
-    Box(
-        modifier
-            .widthIn(max = width)
-            .fillMaxWidth()
-            .aspectRatio(width.value / height.value)
-            .background(backdrop)
-            .clipToBounds(),
-    ) {
+    val shape = if (fill) Modifier.fillMaxSize() else Modifier.widthIn(max = width).fillMaxWidth().aspectRatio(width.value / height.value)
+    Box(modifier.then(shape).background(backdrop).clipToBounds()) {
         if (shown.isEmpty()) {
             Text(
                 stringResource(R.string.visual_print_empty),

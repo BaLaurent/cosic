@@ -34,10 +34,11 @@ internal fun widgetLabelRes(type: WidgetType): Int = when (type) {
  * The picture of one widget of the program (a `._pianoroll()`, `._scope()`, `._spiral()`, `._pitchwheel()`, `._spectrum()`, `._punchcard()`, or the lines of a `._print()`),
  * placed by the editor under the line that made it. It is [surface] of [session], drawn at the size the call asked for ([VisualSurface.width] x [VisualSurface.height] logical px,
  * the default sizes of the widgets) or, on a narrower screen, as wide as the room and as tall as the same shape asks. [revision] is read while drawing: when it changes
- * (the host counts a frame that changed something) the card repaints, without recomposing.
+ * (the host counts a frame that changed something) the card repaints, without recomposing. With [fill] the card is as big as the box it is given (the editor lays the box out, at
+ * the size of the call or smaller on a narrow screen) and ignores the shape of the surface.
  */
 @Composable
-fun VisualCard(session: VisualSession, surface: VisualSurface, revision: () -> Long, modifier: Modifier = Modifier) {
+fun VisualCard(session: VisualSession, surface: VisualSurface, revision: () -> Long, modifier: Modifier = Modifier, fill: Boolean = false) {
     val type = surface.widget?.type ?: return // the background is not a card: see VisualBackground
     val description = stringResource(widgetLabelRes(type))
     if (type == WidgetType.PRINT) {
@@ -47,26 +48,32 @@ fun VisualCard(session: VisualSession, surface: VisualSurface, revision: () -> L
             width = surface.width.dp,
             height = surface.height.dp,
             modifier = modifier.tagged("visual_${surface.key}", description),
+            fill = fill,
         )
     } else {
-        VisualSurfaceImage(session, surface, revision, description, modifier)
+        VisualSurfaceImage(session, surface, revision, description, modifier, fill)
     }
 }
 
-/** The widget's canvas as an image; the content description is given, so this can be shown without the app's string resources. */
+/**
+ * The widget's canvas as an image; the content description is given, so this can be shown without the app's string resources. The image is as wide as the room (at most the
+ * surface) with the surface's shape, or, with [fill], as big as the box it is given.
+ */
 @Composable
-internal fun VisualSurfaceImage(session: VisualSession, surface: VisualSurface, revision: () -> Long, description: String, modifier: Modifier = Modifier) {
+internal fun VisualSurfaceImage(
+    session: VisualSession,
+    surface: VisualSurface,
+    revision: () -> Long,
+    description: String,
+    modifier: Modifier = Modifier,
+    fill: Boolean = false,
+) {
     val density = LocalDensity.current.density
     val painter = remember(session, surface, density) { SurfacePainter(session, surface, surface.width, surface.height, density) }
     val w = surface.width.coerceAtLeast(1.0)
     val h = surface.height.coerceAtLeast(1.0)
-    Canvas(
-        modifier = modifier
-            .widthIn(max = w.dp)
-            .fillMaxWidth()
-            .aspectRatio((w / h).toFloat())
-            .tagged("visual_${surface.key}", description),
-    ) {
+    val shape = if (fill) Modifier.fillMaxSize() else Modifier.widthIn(max = w.dp).fillMaxWidth().aspectRatio((w / h).toFloat())
+    Canvas(modifier = modifier.then(shape).tagged("visual_${surface.key}", description)) {
         revision() // reading it here makes a changed frame redo this drawing and nothing else
         painter.refresh()
         drawImage(painter.image, dstSize = IntSize(size.width.toInt().coerceAtLeast(1), size.height.toInt().coerceAtLeast(1)), filterQuality = FilterQuality.Medium)

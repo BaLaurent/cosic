@@ -163,4 +163,86 @@ class UndoStackTest {
         assertEquals(TextRange(1, 2), restored?.selection)
         assertNull(restored?.composition)
     }
+
+    @Test
+    fun aRunOfManyEditsIsOneStepHoweverLongItTakes() {
+        clock = 0
+        stack.beginRun(value("a"))
+        // ten edits, 500 ms apart, alternating between inserting and deleting: every one of them would be a step of its own outside a run
+        val states = listOf("a", "ab", "a", "ab", "a", "ab", "a", "ab", "a", "ab", "abc")
+        for (i in 1..10) edit(states[i - 1], states[i], atMs = i * 500L)
+        stack.endRun(value("abc"))
+
+        assertTrue(stack.canUndo)
+        assertEquals("a", stack.undo(value("abc"))?.text)
+        assertFalse(stack.canUndo)
+    }
+
+    @Test
+    fun aRunThatLeftTheTextAsItWasLeavesNoStep() {
+        stack.beginRun(value("abc"))
+        edit("abc", "abcd", atMs = 10)
+        edit("abcd", "abc", atMs = 20)
+        stack.endRun(value("abc"))
+
+        assertFalse(stack.canUndo)
+    }
+
+    @Test
+    fun anEditRightAfterARunStartsAStepOfItsOwn() {
+        clock = 100
+        stack.beginRun(value("a"))
+        edit("a", "ab", atMs = 110)
+        stack.endRun(value("ab"))
+
+        // inside the window of the push the run made, and still not part of it
+        edit("ab", "abc", atMs = 150)
+
+        assertEquals("ab", stack.undo(value("abc"))?.text)
+        assertEquals("a", stack.undo(value("ab"))?.text)
+        assertFalse(stack.canUndo)
+    }
+
+    @Test
+    fun undoDuringARunEndsIt() {
+        stack.beginRun(value("a"))
+        edit("a", "ab", atMs = 10)
+
+        assertEquals("a", stack.undo(value("ab"))?.text)
+        // the run is over: this edit is recorded
+        edit("a", "ac", atMs = 20)
+        assertTrue(stack.canUndo)
+        assertEquals("a", stack.undo(value("ac"))?.text)
+    }
+
+    @Test
+    fun beginningARunClearsTheRedoHistory() {
+        edit("", "a", atMs = 0)
+        stack.undo(value("a"))
+        assertTrue(stack.canRedo)
+
+        stack.beginRun(value(""))
+
+        assertFalse(stack.canRedo)
+    }
+
+    @Test
+    fun endingARunThatNeverBeganChangesNothing() {
+        edit("", "a", atMs = 0)
+        stack.endRun(value("a"))
+
+        assertEquals("", stack.undo(value("a"))?.text)
+    }
+
+    @Test
+    fun theRunsStepCanBeRedone() {
+        stack.beginRun(value("0.5"))
+        edit("0.5", "0.6", atMs = 10)
+        edit("0.6", "0.7", atMs = 20)
+        stack.endRun(value("0.7"))
+
+        val undone = stack.undo(value("0.7"))
+        assertEquals("0.5", undone?.text)
+        assertEquals("0.7", stack.redo(undone!!)?.text)
+    }
 }

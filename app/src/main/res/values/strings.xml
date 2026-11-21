@@ -40,6 +40,14 @@
     <string name="editor_redo">Redo</string>
     <string name="editor_tab">Tab</string>
     <string name="editor_code">Code editor</string>
+    <string name="editor_widget_pianoroll">Piano roll, line %1$d</string>
+    <string name="editor_widget_punchcard">Punch card, line %1$d</string>
+    <string name="editor_widget_spiral">Spiral, line %1$d</string>
+    <string name="editor_widget_scope">Oscilloscope, line %1$d</string>
+    <string name="editor_widget_pitchwheel">Pitch wheel, line %1$d</string>
+    <string name="editor_widget_spectrum">Spectrum, line %1$d</string>
+    <string name="editor_widget_print">Printed values, line %1$d</string>
+    <string name="editor_slider">Slider, line %1$d</string>
     <string name="editor_rename_project">Rename project</string>
     <string name="editor_reference_show">Show reference</string>
     <string name="editor_reference_hide">Hide reference</string>
