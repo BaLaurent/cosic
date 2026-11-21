@@ -24,7 +24,6 @@ Synth  # mock in the oracle's test runtime for the removed Tone.js integration (
 Warpmode  # Task 3.14: wavetables (the warp modes of the `warp` controls)
 _fitslice  # internal helper of pattern.mjs, not meant to be called by programs
 _match  # internal helper of pattern.mjs, not meant to be called by programs
-_moveXY  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
 _opIn  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
 _opMix  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
 _opOut  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
@@ -33,31 +32,17 @@ _opReset  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(
 _opRestart  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
 _opSqueeze  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
 _opSqueezeOut  # internal of pattern.mjs: backs the alignment accessors (`pat.add.in(...)`, `.out`, ...), which Cosic has (Task 2.2)
-_pianoroll  # Task 4.2: visuals (inline widget method)
-_pitchwheel  # Task 4.2: visuals (inline widget method)
-_print  # Task 4.2: visuals (inline widget method, example print#1)
-_rescale  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
 _retime  # internal helper of pattern.mjs, not meant to be called by programs
-_scope  # Task 4.2: visuals (inline widget method)
 _slices  # internal helper of pattern.mjs, not meant to be called by programs
-_spectrum  # Task 4.2: visuals (inline widget method)
-_spiral  # Task 4.2: visuals (inline widget method)
 _strudelLoaded  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-_zoomIn  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
-aliasBank  # Task 3.16: library functions (`aliasBank`)
 analysers  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 analysersData  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-angle  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
-animate  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
 applyFM  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 applyGainCurve  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 applyParameterModulators  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-backgroundImage  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
 bindWhole  # internal helper of pattern.mjs, not meant to be called by programs
-buttonMap  # Task 4.7: gamepad (button name table of gamepad())
 cleanupOnEnd  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 cleanupUi  # browser DOM function (document, html); no Android counterpart and no task in the plan
-clearGamepadStates  # Task 4.7: gamepad (internal state of gamepad())
 connectBusModulator  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 connectEnvelope  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 connectLFO  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
@@ -69,7 +54,6 @@ csound  # out of scope: CSound (decision 4 of the parity plan)
 defragmentHaps  # internal helper of pattern.mjs, not meant to be called by programs
 distortionAlgorithms  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 dough  # Task 4.12: dough engine (`.dough()`)
-draw  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
 drawFrequencyScope  # internal helper of `fscope` (draws an analyser on a canvas); Cosic's widgets are Compose (Task 4.3)
 drawTimeScope  # internal helper of `scope` (draws an analyser on a canvas); Cosic's widgets are Compose (Task 4.3)
 drywet  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
@@ -80,12 +64,9 @@ errorLogger  # internal of the REPL and its scheduler with no meaning for a prog
 evaluate  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
 expDecay  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 fetchSampleMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-fill  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
 firstCycleValues  # internal helper of pattern.mjs, not meant to be called by programs
 fmsynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-fscope  # Task 4.2: visuals (example fscope#0)
 gainNode  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-gamepad  # Task 4.7: gamepad
 getADSRValues  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getAnalyserById  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getAnalyzerData  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
@@ -97,22 +78,16 @@ getClockBridge  # internal of superdough (Web Audio nodes and the helpers of cus
 getClockTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
 getCompressor  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getCps  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-getCurrentKeyboardState  # Task 4.7: keyboard (state of the keys the keyboard signals read)
 getDefaultValue  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
 getDestination  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 getDistortion  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getDistortionAlgorithm  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getDrawContext  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
-getDur  # Task 3.16: library functions (`getDur`, alias of getDuration)
-getDuration  # Task 3.16: library functions (`getDuration`)
 getEnvelope  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getFrequencyFromValue  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getGamepadStates  # Task 4.7: gamepad (internal state of gamepad())
 getIsStarted  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
 getLfo  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getLoadedBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
 getOscillator  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-getPainters  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
 getParamADSR  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getParamLfo  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getPattern  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
@@ -128,47 +103,30 @@ getTime  # internal of the REPL and its scheduler with no meaning for a program;
 getVibratoOscillator  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getWorklet  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 getZZFX  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-h  # browser DOM function (document, html); no Android counterpart and no task in the plan
 highpass  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 initAudio  # boot of superdough (creates the AudioContext, loads the worklets); its maxPolyphony and multiChannelOrbits options are Tasks 3.4 and 3.9
 initAudioOnFirstClick  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 initDough  # Task 4.12: dough engine (`initDough()`)
-keyAlias  # Task 4.7: keyboard (key name table of the keyboard signals)
 loadBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
 loadCSound  # out of scope: CSound (decision 4 of the parity plan)
 loadCsound  # out of scope: CSound (decision 4 of the parity plan)
 loadOrc  # out of scope: CSound (decision 4 of the parity plan)
-loadSoundfont  # Task 3.15: soundfonts (`loadSoundfont(url)`; SAMPLES R12 says it needs an explicit decision, it is not in the user's out-of-scope list)
 loadWorklets  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 loadcsound  # out of scope: CSound (decision 4 of the parity plan)
 logKey  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
 lowpass  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-markcss  # Task 4.1: highlight styling (`.markcss`)
 maxPolyphony  # Task 3.4: polyphony (Strudel's maxPolyphony, 128 by default)
 membrane  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 metal  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-midi  # Task 4.5: MIDI out
-midikeys  # Task 4.5: MIDI in
-midin  # Task 4.5: MIDI in
-moveXY  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
 multiChannelOrbits  # Task 3.9: orbit buses (multiChannelOrbits)
 noises  # constant of superdough (the names of the noise sources); Cosic's noise sources are Kotlin (Task 3.11)
-onPaint  # Task 4.2: canvas drawing API; accepted, callbacks never run, one console line says so (ENV D-4)
-onTrigger  # Task 4.1: scheduling hooks (`onTrigger`, the deprecated form of onSchedule)
 onTriggerSample  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
 onTriggerSynth  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-onTriggerTime  # Task 4.1: scheduling hooks (`onTriggerTime`, example onTriggerTime#0)
 onceEnded  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 packageName  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-piano  # Task 3.16: library functions (`.piano()`, the prebake variant)
-pianoroll  # Task 4.2: visuals
-pitchwheel  # Task 4.2: visuals
 players  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 polysynth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-print  # Task 4.2: visuals (`.print()`, example print#0)
 processSampleMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-punchcard  # Task 4.2: visuals
-r  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
 rawdsp  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 rawdspOutput  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 registerSampleSource  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
@@ -181,7 +139,6 @@ registerZZFXSounds  # sound registry API of superdough (AudioBuffer, Web Audio c
 releaseAudioNode  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 renderPatternAudio  # Task 4.13: audio export (the app's OfflineRenderer is the counterpart; a program does not call it)
 repl  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
-rescale  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
 resetDefaultValues  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
 resetDefaults  # no task in the plan: superdough's default-value API (`setDefaultValue('lpf', 500)`); it needs an owner (Task 3.4 or 3.7) or an exclusion
 resetGlobalEffects  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
@@ -190,7 +147,6 @@ resetSeenKeys  # sound registry API of superdough (AudioBuffer, Web Audio callba
 reverseBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
 sampler  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 scheduleAtTime  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-scope  # Task 4.2: visuals
 setAudioContext  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 setClockTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
 setCpsFunc  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
@@ -210,18 +166,11 @@ setSuperdoughAudioController  # internal of superdough (Web Audio nodes and the 
 setTime  # internal of the REPL and its scheduler with no meaning for a program; the plan keeps REPL packaging out
 setVersionDefaults  # no task in the plan: superdough's default-value API (`setVersionDefaults('1.0')` sets fanchor 0.5); it needs an owner or an exclusion
 showFirstCycle  # internal helper of pattern.mjs, not meant to be called by programs
-soundAlias  # Task 3.16: library functions (`soundAlias`)
 soundMap  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
-soundfont  # Task 3.15: soundfonts (`.soundfont(sf, n)`; SAMPLES R12 says it needs an explicit decision, it is not in the user's out-of-scope list)
-spectrum  # Task 4.2: visuals
-spiral  # Task 4.2: visuals
 superdough  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 synth  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-tables  # Task 3.16: library functions (`tables`, wavetable sample maps)
 tone  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
-tscope  # Task 4.2: visuals
 vol  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
-w  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
 wave  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
 waveformN  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 webAudioTimeout  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
@@ -230,7 +179,3 @@ webaudioOutput  # internal of superdough (Web Audio nodes and the helpers of cus
 webaudioRepl  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
 webdirt  # mock method of the oracle's test runtime (test/runtime.mjs): an identity there, not a Strudel function
 withLoc  # internal helper of pattern.mjs, not meant to be called by programs
-wordfall  # Task 4.2: visuals
-x  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
-y  # Task 4.2: control of the `.animate` family (draw/animate.mjs)
-zoomIn  # Task 4.2: `.animate` family of draw/animate.mjs (ENV D-4: accepted, callbacks never run)
