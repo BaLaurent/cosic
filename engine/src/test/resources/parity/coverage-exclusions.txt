@@ -53,7 +53,6 @@ createFilter  # internal of superdough (Web Audio nodes and the helpers of custo
 csound  # out of scope: CSound (decision 4 of the parity plan)
 defragmentHaps  # internal helper of pattern.mjs, not meant to be called by programs
 distortionAlgorithms  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-dough  # Task 4.12: dough engine (`.dough()`)
 drawFrequencyScope  # internal helper of `fscope` (draws an analyser on a canvas); Cosic's widgets are Compose (Task 4.3)
 drawTimeScope  # internal helper of `scope` (draws an analyser on a canvas); Cosic's widgets are Compose (Task 4.3)
 drywet  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
@@ -106,7 +105,6 @@ getZZFX  # internal of superdough (Web Audio nodes and the helpers of custom sou
 highpass  # mock in the oracle's test runtime for the removed Tone.js integration (test/runtime.mjs); not a Strudel function
 initAudio  # boot of superdough (creates the AudioContext, loads the worklets); its maxPolyphony and multiChannelOrbits options are Tasks 3.4 and 3.9
 initAudioOnFirstClick  # internal of superdough (Web Audio nodes and the helpers of custom sounds); Cosic's engine is Kotlin DSP, not Web Audio
-initDough  # Task 4.12: dough engine (`initDough()`)
 loadBuffer  # sound registry API of superdough (AudioBuffer, Web Audio callbacks); Task 3.16 does not list it and Cosic's library is Kotlin (SoundLibrary)
 loadCSound  # out of scope: CSound (decision 4 of the parity plan)
 loadCsound  # out of scope: CSound (decision 4 of the parity plan)

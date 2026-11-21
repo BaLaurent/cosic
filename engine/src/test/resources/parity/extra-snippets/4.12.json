@@ -1,0 +1,10 @@
+[
+  {"name": "group.1", "code": "s(\"bd hh\").group(1)", "cycles": 4, "modules": ["@strudel/dough"]},
+  {"name": "group.2", "code": "s(\"bd hh\").group(\"<1 2>\")", "cycles": 4, "modules": ["@strudel/dough"]},
+  {"name": "group.3", "code": "group(\"<3 4>\").s(\"bd hh\")", "cycles": 4, "modules": ["@strudel/dough"]},
+  {"name": "voices.1", "code": "s(\"bd hh\").group(1).voices(2)", "cycles": 4, "modules": ["@strudel/dough"]},
+  {"name": "voices.2", "code": "note(\"c e g\").voices(\"<1 2 3>\")", "cycles": 4, "modules": ["@strudel/dough"]},
+  {"name": "glide.1", "code": "note(\"c e\").glide(0.5)", "cycles": 4, "modules": ["@strudel/dough"]},
+  {"name": "glide.2", "code": "note(\"c e g\").glide(\"<0 0.25 1>\")", "cycles": 4, "modules": ["@strudel/dough"]},
+  {"name": "glide.3", "code": "glide(0.5).note(\"c e\")", "cycles": 4, "modules": ["@strudel/dough"]}
+]

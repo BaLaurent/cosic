@@ -20,6 +20,7 @@ import cosic.pattern.CosicError
 import cosic.pattern.Hap
 import cosic.pattern.Pattern
 import cosic.pattern.Rational
+import cosic.dough.DoughOutput
 import cosic.player.IdleTracker
 import cosic.player.Scheduler
 import cosic.player.SoundLookup
@@ -118,6 +119,9 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
         // a note played on a MIDI keyboard (`midikeys`) is made to sound at once, not at the next chunk the scheduler queries
         outputs.midiHub.attach(trigger = ::trigger, isPlaying = { snapshot.playing })
     }
+
+    /** Dough, the second audio engine (Task 4.12): the haps of a pattern that `.dough()` marked play with it, and it adds its sound to what the mixer made. */
+    internal val dough = DoughOutput(sampleRate, library.sampleStore).also { outputs.dough = it }
 
     /** Where programs fetch remote JSON from (`midimaps('github:...')`); the app implements it. */
     @Volatile
@@ -315,7 +319,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
         renderedFrames += frames
         scheduler.highlights.expire(renderedFrames - HIGHLIGHT_KEEP_SECONDS * sampleRate)
 
-        val sounding = mixer.isSounding
+        val sounding = mixer.isSounding || dough.isSounding
         val wasIdle = idleTracker.idle
         val voices = startedVoice || voicesWereSounding || sounding || waitingPreview != null
         voicesWereSounding = sounding
@@ -349,6 +353,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
                 Command.Stop -> {
                     scheduler.stop()
                     mixer.stopAll(STOP_FADE_MS)
+                    dough.stop(STOP_FADE_MS * sampleRate / 1000)
                     waitingPreview = null
                 }
                 Command.Halt -> scheduler.stop()
@@ -390,8 +395,13 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
                 val event = scheduler.takeDue(frame) ?: break
                 start(event.voice)
             }
+            while (true) {
+                val event = scheduler.takeDueDough(frame) ?: break
+                dough.start(event.event)
+            }
             val next = minOf(frames.toLong(), scheduler.nextEventFrame - renderedFrames).toInt()
             mixer.render(out, next - position, position)
+            dough.render(out, next - position, position)
             position = next
         }
     }

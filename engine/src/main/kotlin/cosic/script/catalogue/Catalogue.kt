@@ -152,6 +152,7 @@ internal object Catalogue {
             registerInput()
             registerMeta()
             registerMidi()
+            registerDough()
             registerKabelsalat() // before Language, after everything it could depend on: `K` is a transpiler hook and `worklet` needs only the kernel
             registerLanguage()
         }

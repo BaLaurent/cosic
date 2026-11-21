@@ -97,7 +97,7 @@ internal fun registerLibrary() = catalogue("Library") {
                 var location = url as? String ?: ctx.fail("Cannot read properties of ${if (url == null) "null" else "undefined"} (reading 'startsWith')")
                 if (location.startsWith("github:")) location = tablesGithubPath(location, "strudel.json")
                 if (location.startsWith("local:")) location = "http://localhost:5432"
-                val store = (library as? RegistryLibrary)?.sampleStore ?: ctx.fail("error loading \"$location\"")
+                val store = library.sampleStore ?: ctx.fail("error loading \"$location\"")
                 val parsed = try {
                     cosic.sound.LooseJson.parse(store.fetchText(location))
                 } catch (_: IOException) {

@@ -5,6 +5,8 @@ import cosic.audio.ChainDemand
 import cosic.audio.stretchLeadFrames
 import cosic.io.OutputBus
 import cosic.io.ScopeTaps
+import cosic.dough.DoughStart
+import cosic.dough.isDoughEvent
 import cosic.pattern.ControlMap
 import cosic.pattern.CosicError
 import cosic.pattern.Hap
@@ -158,6 +160,12 @@ internal fun lookAhead(
         for (hap in onsets(pattern, begin, cps, warnings)) {
             if (outputs?.oscTarget == true || takenOver(hap)) continue
             val controls = controlsOf(hap)
+            if (isDoughEvent(controls)) {
+                // a hap of the dough engine: nothing to look up in the main one, but its event is made now, which reports what is wrong with it and starts loading the files it names
+                val doughWhole = checkNotNull(hap.whole)
+                outputs?.dough?.event(controls, hapSeconds(controls, doughWhole.end - doughWhole.begin, cps)) { warnings.add(it) }
+                continue
+            }
             val whole = checkNotNull(hap.whole)
             val lookup = sounds.resolve(controls, hapSeconds(controls, whole.end - whole.begin, cps), cps)
             if (lookup is SoundLookup.Unknown) warnings.add(unknownSoundWarning(lookup.key))
@@ -193,6 +201,9 @@ internal class Scheduler(
 ) {
     private val lookaheadFrames = Math.round(LOOKAHEAD_SECONDS * sampleRate)
     private val pending = ArrayDeque<SoundEvent>()
+
+    /** The events of the dough engine (haps `.dough()` marked), in order of start frame like [pending]: the two engines do not share a queue. */
+    private val doughPending = ArrayDeque<DoughStart>()
     private var pattern: Pattern = silence
     private var warningLog = Warnings()
 
@@ -221,7 +232,8 @@ internal class Scheduler(
     val highlights = HighlightLog()
 
     /** The start frame of the earliest queued event, or [Long.MAX_VALUE] when there is none. */
-    val nextEventFrame: Long get() = if (pending.isEmpty()) Long.MAX_VALUE else pending.first().startFrame
+    val nextEventFrame: Long
+        get() = minOf(if (pending.isEmpty()) Long.MAX_VALUE else pending.first().startFrame, if (doughPending.isEmpty()) Long.MAX_VALUE else doughPending.first().startFrame)
 
     /**
      * Adds what the queued events will take from the mixer's shared pools (the chains of `FX(...)` elements, the phase vocoders of `stretch`) to [demand],
@@ -235,6 +247,12 @@ internal class Scheduler(
     fun takeDue(frame: Long): SoundEvent? {
         val next = pending.firstOrNull() ?: return null
         return if (next.startFrame <= frame) pending.removeFirst() else null
+    }
+
+    /** Removes and returns the earliest queued event of the dough engine if it starts at or before [frame]. */
+    fun takeDueDough(frame: Long): DoughStart? {
+        val next = doughPending.firstOrNull() ?: return null
+        return if (next.startFrame <= frame) doughPending.removeFirst() else null
     }
 
     /**
@@ -265,6 +283,7 @@ internal class Scheduler(
     /** Drops everything queued and goes back to cycle 0. Voices that are already sounding are the caller's to fade out. */
     fun stop() {
         pending.clear()
+        doughPending.clear()
         highlights.clear()
         horizon = Rational.ZERO
         playing = false
@@ -394,6 +413,10 @@ internal class Scheduler(
     private fun play(hap: Hap, wholeLength: Rational, start: Long, tempo: Double, events: MutableList<SoundEvent>) {
         // a value that is no object is the hap's own error (`expected hap.value to be an object, but got "c3". Hint: append .note() or .s() to the end`)
         val controls = controlsOf(hap)
+        if (isDoughEvent(controls)) {
+            playDough(controls, wholeLength, start, tempo)
+            return
+        }
         val seconds = hapSeconds(controls, wholeLength, tempo)
         when (val lookup = sounds.resolve(controls, seconds, tempo)) {
             is SoundLookup.Ready -> {
@@ -435,5 +458,21 @@ internal class Scheduler(
         var i = pending.size
         while (i > 0 && pending[i - 1].startFrame > event.startFrame) i--
         pending.add(i, event)
+    }
+
+    /**
+     * The default output of a hap that `.dough()` marked: an event of the dough engine that starts at frame [start], unless the file it names is still loading. Events of the same
+     * frame start newest first: dough's `schedule_update` walks its array from the end, so the voices of a chord are made (and a group steals) in that order.
+     */
+    private fun playDough(controls: ControlMap, wholeLength: Rational, start: Long, tempo: Double) {
+        val dough = outputs.dough
+        if (dough == null) {
+            warningLog.add("dough is not available")
+            return
+        }
+        val event = dough.event(controls, hapSeconds(controls, wholeLength, tempo)) { warningLog.add(it) } ?: return
+        var i = doughPending.size
+        while (i > 0 && doughPending[i - 1].startFrame >= start) i--
+        doughPending.add(i, DoughStart(start, event))
     }
 }

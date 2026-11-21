@@ -70,6 +70,10 @@ class OutputBus(
     @Volatile
     var settings: SettingsSink? = null
 
+    /** Dough, the second audio engine that haps marked by `.dough()` play with (Task 4.12): the engine makes it and the scheduler and the catalogue reach it here. */
+    @Volatile
+    internal var dough: cosic.dough.DoughOutput? = null
+
     /**
      * Sends every hap that is not made to sound by a dominant hook to OSC instead of playing it (the audio engine target `osc`: "all events
      * routed to OSC, audio is silenced"). The hook that does it is [oscOutput]; without one the haps are silenced and nothing is sent.

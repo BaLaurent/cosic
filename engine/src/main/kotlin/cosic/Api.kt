@@ -167,6 +167,12 @@ interface SoundLibrary {
      * failed, until it is tried again). Zones are chosen like `findZone` of Strudel's soundfont loader does.
      */
     fun fontZone(font: String, midi: Double): FontZone?
+
+    /**
+     * Where the library loads files from. For what loads files by URL besides it: dough's `doughsamples()` (its sounds are not the library's). A library with no store of its own
+     * ([NoSampleStore]) loads nothing; one that delegates to another passes the other's through.
+     */
+    val sampleStore: SampleStore get() = NoSampleStore
 }
 
 /** A [SampleStore] with nothing in it: every fetch fails and no sample ever loads. For libraries that only hold built-in sounds. */

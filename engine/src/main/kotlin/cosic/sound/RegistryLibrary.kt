@@ -46,8 +46,8 @@ class RegistryLibrary(private val store: SampleStore, builtins: Set<String>, rea
     internal var soundfontUrl: String = DEFAULT_SOUNDFONT_URL
         private set
 
-    /** The store the library loads from: for the code that decodes things other than samples (soundfonts). */
-    internal val sampleStore: SampleStore get() = store
+    /** The store the library loads from: for the code that decodes things other than samples (soundfonts) and for dough's sound map (see [SoundLibrary.sampleStore]). */
+    override val sampleStore: SampleStore get() = store
 
     /** What runs the jobs that fetch and decode soundfonts (`null`: [FontThreads]); a test sets one that runs them at once. */
     @Volatile
