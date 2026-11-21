@@ -490,6 +490,12 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
         val SYNTHS: List<String> = SynthRegistry.names
         val DRUMS: List<String> = DRUM_NAMES
 
+        /** How far ahead of the audio the scheduler queues events, in seconds: the editor maps the events of a program that replaces another one with it. */
+        const val SCHEDULER_LOOKAHEAD_SECONDS: Double = cosic.player.LOOKAHEAD_SECONDS
+
+        /** The pattern is queried in chunks of `1 / SCHEDULER_CHUNK_DENOMINATOR` cycles. */
+        const val SCHEDULER_CHUNK_DENOMINATOR: Int = cosic.player.CHUNK_DENOMINATOR
+
         /**
          * The synthesised drum machines in display order, each with its sound names in display order:
          * `s("bd").bank("cosic808")` plays `cosic808_bd`. Every one has [DRUM_VARIANTS] variants, like the [DRUMS].

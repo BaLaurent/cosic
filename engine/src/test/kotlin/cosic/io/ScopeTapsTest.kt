@@ -146,9 +146,6 @@ class ScopeTapsTest {
                 taps.add("a", block, 0, 256)
                 taps.endBlock(256)
                 written = n + 1
-                // real blocks come every few milliseconds; the copy of a reader is only whole when the writer cannot lap it while it copies,
-                // so the writer here is 25 times faster than the audio thread, not as fast as the machine allows
-                Thread.sleep(0, 200_000)
             }
         }
         val out = FloatArray(8192)

@@ -1,7 +1,5 @@
 package com.octopusman.cosic.editor
 
-import cosic.player.CHUNK_DENOMINATOR
-import cosic.player.LOOKAHEAD_SECONDS
 import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
@@ -56,7 +54,7 @@ private const val SAVE_DEBOUNCE_MS = 1_000L
 /** How long the code flashes when it is evaluated (`flash.mjs` of the web editor). */
 const val FLASH_MS = 200L
 
-// The scheduler of the engine queues the events of a program `LOOKAHEAD_SECONDS` ahead of what it has rendered, a chunk of `1 / CHUNK_DENOMINATOR` cycle at a time (both of its Scheduler.kt),
+// The scheduler of the engine queues the events of a program `SCHEDULER_LOOKAHEAD_SECONDS` ahead of what it has rendered, a chunk of `1 / SCHEDULER_CHUNK_DENOMINATOR` cycle at a time (both of its Scheduler.kt),
 // and a program that replaces another one takes over where the queue ends: the events that start before that are the old program's, those after it the new one's, and in between
 // is not known to the editor. The slack is for the block that is being rendered while the swap is taken up.
 private const val HANDOVER_SLACK_SECONDS = 0.05
@@ -365,8 +363,8 @@ class EditorViewModel(
     /** Where the events of a program that has just been handed to the engine begin, read right after: the ones queued before are the previous program's. */
     private fun handoverOf(snapshot: EngineSnapshot): Handover {
         val rate = snapshot.sampleRate
-        val chunk = if (snapshot.cps > 0.0) (1.0 / CHUNK_DENOMINATOR) / snapshot.cps else 0.0
-        val queueEnd = snapshot.renderedFrames + Math.round(LOOKAHEAD_SECONDS * rate)
+        val chunk = if (snapshot.cps > 0.0) (1.0 / CosicEngine.SCHEDULER_CHUNK_DENOMINATOR) / snapshot.cps else 0.0
+        val queueEnd = snapshot.renderedFrames + Math.round(CosicEngine.SCHEDULER_LOOKAHEAD_SECONDS * rate)
         val slack = Math.round(HANDOVER_SLACK_SECONDS * rate)
         return Handover(oldUntil = queueEnd - slack, newFrom = queueEnd + Math.round(chunk * rate) + slack)
     }

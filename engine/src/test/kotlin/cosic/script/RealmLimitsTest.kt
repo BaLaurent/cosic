@@ -164,16 +164,19 @@ class RealmLimitsTest {
         val stop = AtomicBoolean(false)
         val errors = ConcurrentLinkedQueue<Throwable>()
         var calls = 0
+        val firstCall = java.util.concurrent.CountDownLatch(1)
         val callbacks = thread {
             try {
                 while (!stop.get()) {
                     if (f.call(listOf(21.0)) != 42.0) errors.add(IllegalStateException("wrong answer"))
                     calls++
+                    firstCall.countDown()
                 }
             } catch (e: Throwable) {
                 errors.add(e)
             }
         }
+        assertTrue(firstCall.await(5, java.util.concurrent.TimeUnit.SECONDS), "the callback thread never ran")
         repeat(300) { i ->
             realm.defineGlobal("g$i", i.toDouble())
             realm.patternPrototype.defineOwn("p$i", i.toDouble())
