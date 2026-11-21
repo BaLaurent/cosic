@@ -528,7 +528,7 @@ private fun FunctionCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Text(text = item.doc.inAppWords(), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(end = 8.dp))
+            Text(text = item.doc, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(end = 8.dp))
             Text(
                 text = item.snippet,
                 style = MaterialTheme.typography.bodySmall,

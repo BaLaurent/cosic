@@ -3,30 +3,11 @@ package com.octopusman.cosic.reference
 import cosic.script.reference
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** The documentation texts come from the JSDoc of the environment the app is modelled on; what the app shows of them never names it. */
+/** The documentation texts are reworded where they are made (`tools/reference/build-reference.mjs`); what the app shows of them never names the environment it is modelled on. */
 class WordingTest {
     private fun named(text: String) = text.contains("strudel", ignoreCase = true)
-
-    @Test
-    fun theNameBecomesTheAppsOwn() {
-        assertEquals("in Cosic. The default", "in Strudel. The default".inAppWords())
-        assertEquals("Cosic mini notation and Cosic's note frequency", "Strudel mini notation and Strudel's note frequency".inAppWords())
-    }
-
-    @Test
-    fun anAddressOfTheOtherWebSiteIsLeftOutWithItsIntroduction() {
-        assertEquals("Uses dough as the audio engine.", "Uses dough as the audio engine. more info at https://dough.strudel.cc.".inAppWords())
-        assertEquals("See  for more", "See https://strudel.cc/learn/ for more".inAppWords())
-    }
-
-    @Test
-    fun textWithoutTheNameIsAsItWas() {
-        val text = "Speed up a pattern by the given factor. Used by \"*\" in mini notation."
-        assertEquals(text, text.inAppWords())
-    }
 
     @Test
     fun noDocumentationCardShowsTheName() {
@@ -41,17 +22,15 @@ class WordingTest {
 
     @Test
     fun noReferenceEntryShowsTheName() {
-        val offending = reference().filter { named(it.doc.inAppWords()) }.map { it.name }
-        assertEquals(emptyList(), offending)
-        assertFalse(reference().isEmpty())
+        val offending = reference().filter { named(it.doc) }.map { it.name }
+        assertTrue(offending.isEmpty(), "reference entries show the name: $offending")
     }
 
     @Test
     fun theLinksOfACardKeepTheirTargets() {
-        // an address is no text of the card: the link of "alignment" still goes where the documentation says
-        val blocks = DocHtml.parse("""<p>combining (aka <a href="https://strudel.cc/technical-manual/alignment/">alignment</a>) in Strudel.</p>""")
+        val blocks = DocHtml.parse("""<p>combining (aka <a href="https://example.org/technical-manual/alignment/">alignment</a>) here.</p>""")
         val spans = (blocks.single() as DocBlock.Paragraph).spans
-        assertEquals("https://strudel.cc/technical-manual/alignment/", spans.single { it.href != null }.href)
-        assertEquals("combining (aka alignment) in Cosic.", spans.joinToString("") { it.text })
+        assertEquals("https://example.org/technical-manual/alignment/", spans.single { it.href != null }.href)
+        assertEquals("combining (aka alignment) here.", spans.joinToString("") { it.text })
     }
 }
