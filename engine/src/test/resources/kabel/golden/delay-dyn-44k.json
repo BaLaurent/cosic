@@ -1,0 +1,71 @@
+{
+ "id": "delay-dyn-44k",
+ "sampleRate": 44100,
+ "frames": 13952,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.3,
+ "end": 0.31,
+ "duration": 0.3,
+ "release": null,
+ "fxRelease": null,
+ "note": "A3",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "impulse(4).ad(0.001, 0.05).mul(sine(sFreq)).add(x => x.delay(0.2).mul(0.6)).add(x => x.delay(zaw(0.5).range(0.01, 0.03)).mul(0.5)).out()",
+ "workletInputs": [],
+ "sFreqText": "220",
+ "codeAfterSubstitution": "impulse(4).ad(0.001, 0.05).mul(sine(220)).add(x => x.delay(0.2).mul(0.6)).add(x => x.delay(zaw(0.5).range(0.01, 0.03)).mul(0.5)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(4,0); /* impulse */\nr[5] = nodes[1].update(time,r[1],0.001,0.05,0,0.05); /* adsr */\nr[7] = nodes[2].update(220,0,0); /* sine */\nr[8] = r[5] * r[7];\nr[10] = nodes[3].update(r[13],0.2); /* delay */\nr[12] = r[10] * 0.6;\nr[13] = r[8] + r[12];\nr[15] = nodes[4].update(0.5); /* zaw */\nr[18] = ((r[15] + 1) * 0.5) * (0.03 - 0.01) + 0.01;\nr[19] = nodes[5].update(r[22],r[18]); /* delay */\nr[21] = r[19] * 0.5;\nr[22] = r[13] + r[21];\no[0] = o[0] + r[22]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[22]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "ImpulseOsc",
+  "ADSRNode",
+  "SineOsc",
+  "Delay",
+  "ZawOsc",
+  "Delay",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   4
+  ],
+  [
+   "r[1]",
+   0.001,
+   0.05,
+   0,
+   0.05
+  ],
+  [
+   220
+  ],
+  [
+   "r[13]",
+   0.2
+  ],
+  [
+   0.5
+  ],
+  [
+   "r[22]",
+   "r[18]"
+  ],
+  [
+   "r[22]",
+   0
+  ],
+  [
+   "r[22]",
+   1
+  ]
+ ],
+ "registers": 28,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.9977269172668457,
+ "rms": 0.2756874769277745,
+ "comment": null
+}

@@ -1,0 +1,72 @@
+{
+ "id": "slide-slew",
+ "sampleRate": 48000,
+ "frames": 12288,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.24,
+ "end": 0.25,
+ "duration": 0.24,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "impulse(8).seq(220, 330, 440, 550).slide(4).sine().mul(0.3).add(pulse(200).slew(4000, 4000).mul(0.2)).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "impulse(8).seq(220, 330, 440, 550).slide(4).sine().mul(0.3).add(pulse(200).slew(4000, 4000).mul(0.2)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(8,0); /* impulse */\nr[6] = nodes[1].update(r[1],220,330,440,550); /* seq */\nr[8] = nodes[2].update(r[6],4); /* slide */\nr[9] = nodes[3].update(r[8],0,0); /* sine */\nr[11] = r[9] * 0.3;\nr[13] = nodes[4].update(200,0.5); /* pulse */\nr[16] = nodes[5].update(r[13],4000,4000); /* slew */\nr[18] = r[16] * 0.2;\nr[19] = r[11] + r[18];\no[0] = o[0] + r[19]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[19]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "ImpulseOsc",
+  "Sequence",
+  "Slide",
+  "SineOsc",
+  "PulseOsc",
+  "Slew",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   8
+  ],
+  [
+   "r[1]",
+   220,
+   330,
+   440,
+   550
+  ],
+  [
+   "r[6]",
+   4
+  ],
+  [
+   "r[8]"
+  ],
+  [
+   200
+  ],
+  [
+   "r[13]",
+   4000,
+   4000
+  ],
+  [
+   "r[19]",
+   0
+  ],
+  [
+   "r[19]",
+   1
+  ]
+ ],
+ "registers": 25,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.4999999403953552,
+ "rms": 0.28292659123473685,
+ "comment": "Slide and Slew"
+}

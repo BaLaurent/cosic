@@ -1,0 +1,49 @@
+{
+ "id": "midi-consts",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "midigate().add(midivel()).add(sine(220)).mul(0.2).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "midigate().add(midivel()).add(sine(220)).mul(0.2).out()",
+ "compiledSrc": "r[0] = nodes[0].update(-1); /* midigate */\nr[1] = nodes[1].update(-1); /* midivel */\nr[2] = r[0] + r[1];\nr[4] = nodes[2].update(220,0,0); /* sine */\nr[5] = r[2] + r[4];\nr[7] = r[5] * 0.2;\no[0] = o[0] + r[7]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[7]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "MidiGate",
+  "MidiVel",
+  "SineOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [],
+  [],
+  [
+   220
+  ],
+  [
+   "r[7]",
+   0
+  ],
+  [
+   "r[7]",
+   1
+  ]
+ ],
+ "registers": 13,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.20000000298023224,
+ "rms": 0.1386015766651102,
+ "comment": "MidiGate and MidiVel (no midi input in the worklet: constant 0)"
+}

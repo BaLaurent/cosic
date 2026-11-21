@@ -1,0 +1,75 @@
+{
+ "id": "delay-id",
+ "sampleRate": 48000,
+ "frames": 11392,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.22,
+ "end": 0.23,
+ "duration": 0.22,
+ "release": null,
+ "fxRelease": null,
+ "note": "A3",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "impulse(8).ad(0.001, 0.03).mul(sine(sFreq)).add(x => x.delay(0.1, \"a\").mul(0.5)).add(x => x.delay(0.1, \"a\").mul(0.3)).add(x => x.delay(0.05, \"b\").mul(0.2)).out()",
+ "workletInputs": [],
+ "sFreqText": "220",
+ "codeAfterSubstitution": "impulse(8).ad(0.001, 0.03).mul(sine(220)).add(x => x.delay(0.1, \"a\").mul(0.5)).add(x => x.delay(0.1, \"a\").mul(0.3)).add(x => x.delay(0.05, \"b\").mul(0.2)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(8,0); /* impulse */\nr[5] = nodes[1].update(time,r[1],0.001,0.03,0,0.03); /* adsr */\nr[7] = nodes[2].update(220,0,0); /* sine */\nr[8] = r[5] * r[7];\nr[11] = nodes[3].update(r[14],0.1); /* delay */\nr[13] = r[11] * 0.5;\nr[14] = r[8] + r[13];\nr[17] = nodes[4].update(r[20],0.1); /* delay */\nr[19] = r[17] * 0.3;\nr[20] = r[14] + r[19];\nr[23] = nodes[5].update(r[26],0.05); /* delay */\nr[25] = r[23] * 0.2;\nr[26] = r[20] + r[25];\no[0] = o[0] + r[26]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[26]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "ImpulseOsc",
+  "ADSRNode",
+  "SineOsc",
+  "Delay",
+  "Delay",
+  "Delay",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   8
+  ],
+  [
+   "r[1]",
+   0.001,
+   0.03,
+   0,
+   0.03
+  ],
+  [
+   220
+  ],
+  [
+   "r[14]",
+   0.1,
+   "\"a\""
+  ],
+  [
+   "r[20]",
+   0.1,
+   "\"a\""
+  ],
+  [
+   "r[26]",
+   0.05,
+   "\"b\""
+  ],
+  [
+   "r[26]",
+   0
+  ],
+  [
+   "r[26]",
+   1
+  ]
+ ],
+ "registers": 32,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 1.1346114873886108,
+ "rms": 0.28438043405440255,
+ "comment": "optional third delay input (delay id) shared by two delays: second one clones the first delay line"
+}

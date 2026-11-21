@@ -61,6 +61,9 @@ private val REST_NAMES = setOf("-", "~", "_")
 internal class SoundResolver(private val sampleRate: Int, val library: SoundLibrary, private val drums: DrumKit = DrumKit(sampleRate)) {
     private val sourceCount = AtomicLong()
 
+    /** The programs of the events' `K(...)` and `worklet(...)` controls: made and compiled here, off the audio thread's render path, like the sources. */
+    val kabel = cosic.kabel.KabelFactory(sampleRate)
+
     /**
      * The sound of an event's controls, which lasts [durationSec] seconds at the tempo [cps]. A `note` that is not a note name, and a bank whose keys are no notes,
      * throw [cosic.pattern.CosicError] (`not a note: "x"`).

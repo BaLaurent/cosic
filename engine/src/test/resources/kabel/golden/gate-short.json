@@ -1,0 +1,57 @@
+{
+ "id": "gate-short",
+ "sampleRate": 48000,
+ "frames": 1792,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.001,
+ "end": 0.031,
+ "duration": 0.001,
+ "release": 0.03,
+ "fxRelease": null,
+ "note": "E4",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "saw(sFreq).mul(sGate.adsr(0.001, 0.05, 0.5, 0.05)).out()",
+ "workletInputs": [],
+ "sFreqText": "329.6275569128699",
+ "codeAfterSubstitution": "saw(329.6275569128699).mul(cc('strudel-gate-4242').adsr(0.001, 0.05, 0.5, 0.05)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(329.6275569128699); /* saw */\nr[3] = nodes[1].update(\"strudel-gate-4242\"); /* cc */\nr[8] = nodes[2].update(time,r[3],0.001,0.05,0.5,0.05); /* adsr */\nr[9] = r[1] * r[8];\no[0] = o[0] + r[9]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[9]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SawOsc",
+  "CC",
+  "ADSRNode",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   329.6275569128699
+  ],
+  [
+   "\"strudel-gate-4242\""
+  ],
+  [
+   "r[3]",
+   0.001,
+   0.05,
+   0.5,
+   0.05
+  ],
+  [
+   "r[9]",
+   0
+  ],
+  [
+   "r[9]",
+   1
+  ]
+ ],
+ "registers": 15,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.9812570214271545,
+ "rms": 0.39157989625018025,
+ "comment": "duration 1 ms: gate stays 1 for the first block (currentTime 0 is not > gateEnd) and is switched off at the second block"
+}

@@ -1,0 +1,104 @@
+{
+ "id": "ex0-h9",
+ "sampleRate": 48000,
+ "frames": 8832,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.16666666666666666,
+ "end": 0.17666666666666667,
+ "duration": 0.16666666666666666,
+ "release": null,
+ "fxRelease": null,
+ "note": "Bb4",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "saw(saw(sFreq / pat[0]).mul(8).add(sFreq).lag(pat[1])).mul(0.3).mul(sGate.adsr(0, 0.15, 0.5, pat[2])).lpf(sGate.adsr(0, 0.2, 0.3, 0.2).mul(1).add(0)).add(x => x.delay(pat[3]).mul(0.7)).add(x => x.delay(pat[4]).mul(0.77)).mul(0.7).add(x => x.delay(0.13).mul(0.7)).out()",
+ "workletInputs": [
+  16,
+  0.1,
+  1,
+  0.2,
+  0.013
+ ],
+ "sFreqText": "466.1637615180899",
+ "codeAfterSubstitution": "saw(saw(466.1637615180899 / 16).mul(8).add(466.1637615180899).lag(0.1)).mul(0.3).mul(cc('strudel-gate-4242').adsr(0, 0.15, 0.5, 1)).lpf(cc('strudel-gate-4242').adsr(0, 0.2, 0.3, 0.2).mul(1).add(0)).add(x => x.delay(0.2).mul(0.7)).add(x => x.delay(0.013).mul(0.77)).mul(0.7).add(x => x.delay(0.13).mul(0.7)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(29.13523509488062); /* saw */\nr[3] = r[1] * 8;\nr[5] = r[3] + 466.1637615180899;\nr[7] = nodes[1].update(r[5],0.1); /* lag */\nr[8] = nodes[2].update(r[7]); /* saw */\nr[10] = r[8] * 0.3;\nr[12] = nodes[3].update(\"strudel-gate-4242\"); /* cc */\nr[17] = nodes[4].update(time,r[12],0,0.15,0.5,1); /* adsr */\nr[18] = r[10] * r[17];\nr[20] = nodes[5].update(\"strudel-gate-4242\"); /* cc */\nr[25] = nodes[6].update(time,r[20],0,0.2,0.3,0.2); /* adsr */\nr[27] = r[25] * 1;\nr[29] = r[27] + 0;\nr[30] = nodes[7].update(r[18],r[29],0); /* filter */\nr[32] = nodes[8].update(r[35],0.2); /* delay */\nr[34] = r[32] * 0.7;\nr[35] = r[30] + r[34];\nr[37] = nodes[9].update(r[40],0.013); /* delay */\nr[39] = r[37] * 0.77;\nr[40] = r[35] + r[39];\nr[42] = r[40] * 0.7;\nr[44] = nodes[10].update(r[47],0.13); /* delay */\nr[46] = r[44] * 0.7;\nr[47] = r[42] + r[46];\no[0] = o[0] + r[47]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[47]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SawOsc",
+  "Lag",
+  "SawOsc",
+  "CC",
+  "ADSRNode",
+  "CC",
+  "ADSRNode",
+  "Filter",
+  "Delay",
+  "Delay",
+  "Delay",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   29.13523509488062
+  ],
+  [
+   "r[5]",
+   0.1
+  ],
+  [
+   "r[7]"
+  ],
+  [
+   "\"strudel-gate-4242\""
+  ],
+  [
+   "r[12]",
+   0,
+   0.15,
+   0.5,
+   1
+  ],
+  [
+   "\"strudel-gate-4242\""
+  ],
+  [
+   "r[20]",
+   0,
+   0.2,
+   0.3,
+   0.2
+  ],
+  [
+   "r[18]",
+   "r[29]"
+  ],
+  [
+   "r[35]",
+   0.2
+  ],
+  [
+   "r[40]",
+   0.013
+  ],
+  [
+   "r[47]",
+   0.13
+  ],
+  [
+   "r[47]",
+   0
+  ],
+  [
+   "r[47]",
+   1
+  ]
+ ],
+ "registers": 53,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.4851815104484558,
+ "rms": 0.18082745781280204,
+ "comment": "snapshot example 0, a later hap"
+}

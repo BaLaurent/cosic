@@ -1,0 +1,56 @@
+{
+ "id": "logic-hold",
+ "sampleRate": 48000,
+ "frames": 10368,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.2,
+ "end": 0.21000000000000002,
+ "duration": 0.2,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "noise().hold(impulse(10)).range(200, 800).sine().mul(0.3).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "noise().hold(impulse(10)).range(200, 800).sine().mul(0.3).out()",
+ "compiledSrc": "r[0] = nodes[0].update(1); /* noise */\nr[2] = nodes[1].update(10,0); /* impulse */\nr[3] = nodes[2].update(r[0],r[2]); /* hold */\nr[6] = ((r[3] + 1) * 0.5) * (800 - 200) + 200;\nr[7] = nodes[3].update(r[6],0,0); /* sine */\nr[9] = r[7] * 0.3;\no[0] = o[0] + r[9]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[9]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "NoiseOsc",
+  "ImpulseOsc",
+  "Hold",
+  "SineOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [],
+  [
+   10
+  ],
+  [
+   "r[0]",
+   "r[2]"
+  ],
+  [
+   "r[6]"
+  ],
+  [
+   "r[9]",
+   0
+  ],
+  [
+   "r[9]",
+   1
+  ]
+ ],
+ "registers": 15,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.30000001192092896,
+ "rms": 0.20954371590101215,
+ "comment": null
+}

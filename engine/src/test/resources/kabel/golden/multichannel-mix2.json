@@ -1,0 +1,53 @@
+{
+ "id": "multichannel-mix2",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "sine([220, 330, 440]).mix(2).mul(0.2).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "sine([220, 330, 440]).mix(2).mul(0.2).out()",
+ "compiledSrc": "r[1] = nodes[0].update(220,0,0); /* sine */\nr[3] = r[1] * 1;\nr[5] = nodes[1].update(330,0,0); /* sine */\nr[7] = r[5] * 0.7071067811865476;\nr[9] = nodes[2].update(440,0,0); /* sine */\nr[11] = r[9] * 6.123233995736766e-17;\nr[12] = r[3] + r[7] + r[11];\nr[14] = r[12] * 0.2;\no[0] = o[0] + r[14]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\nr[18] = r[1] * 0;\nr[20] = r[5] * 0.7071067811865475;\nr[22] = r[9] * 1;\nr[23] = r[18] + r[20] + r[22];\nr[25] = r[23] * 0.2;\no[1] = o[1] + r[25]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   220
+  ],
+  [
+   330
+  ],
+  [
+   440
+  ],
+  [
+   "r[14]",
+   0
+  ],
+  [
+   "r[25]",
+   1
+  ]
+ ],
+ "registers": 29,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.3336605131626129,
+ "rms": 0.1704593277320609,
+ "comment": null
+}

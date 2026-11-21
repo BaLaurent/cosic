@@ -1,0 +1,1584 @@
+[
+ {
+  "id": "n-num",
+  "code": "n(3).out()"
+ },
+ {
+  "id": "n-float-mul",
+  "code": "n(0.5).mul(2).out()"
+ },
+ {
+  "id": "n-string",
+  "code": "n(\"abc\").out()",
+  "note": "string constants are inlined with double quotes, no escaping"
+ },
+ {
+  "id": "n-string-quote",
+  "code": "n('a\"b').out()",
+  "note": "embedded double quote is not escaped: the compiled line is invalid JS"
+ },
+ {
+  "id": "n-object-passthrough",
+  "code": "n(sine(1)).mul(2).out()",
+  "note": "n(node) returns the node unchanged"
+ },
+ {
+  "id": "const-undefined",
+  "code": "sine(undefined).out()",
+  "note": "parseInput(undefined): logs \"invalid input type\" and returns the number 0, a non-node input"
+ },
+ {
+  "id": "const-nan",
+  "code": "sine(NaN).out()"
+ },
+ {
+  "id": "const-true",
+  "code": "sine(true).out()"
+ },
+ {
+  "id": "const-null",
+  "code": "sine(null).out()",
+  "note": "typeof null === \"object\": passes parseInput as a node, topoSort dereferences null.ins"
+ },
+ {
+  "id": "const-infinity",
+  "code": "sine(Infinity).out()"
+ },
+ {
+  "id": "const-neg-infinity",
+  "code": "sine(-Infinity).out()"
+ },
+ {
+  "id": "num-format-misc",
+  "code": "add(1e21, 1e-7, 123456789012345680000, 0.1 + 0.2, 5e-324, 1.7976931348623157e308, 1 / 3, 100, 1e300).out()",
+  "note": "number-to-string of constants in the compiled src"
+ },
+ {
+  "id": "num-negzero",
+  "code": "add(sine(1), -0).out()",
+  "note": "-0 inlines as 0"
+ },
+ {
+  "id": "num-negative-ops",
+  "code": "add(1, -2).sub(-3).mul(-4).div(-5).mod(-6).out()",
+  "note": "negative constants after binary operators"
+ },
+ {
+  "id": "time-fn",
+  "code": "time().mul(2).out()"
+ },
+ {
+  "id": "time-method",
+  "code": "sine(1).mul(time()).out()"
+ },
+ {
+  "id": "time-no-out",
+  "code": "time().mul(2)",
+  "note": "no out() call"
+ },
+ {
+  "id": "raw-example",
+  "code": "sine(4).range(.5,1).raw(\"(time*110%1*2-1)*$input\").out()",
+  "note": "raw emits `let $input = ..;\\nconst r[N] = (..)`: invalid JS (const on an element)"
+ },
+ {
+  "id": "bytebeat-example",
+  "code": "time().mul(8000).bytebeat(\"(t>>10^t>>11)%5*((t>>14&3^t>>15&1)+1)*t%99\").out()",
+  "note": "compile emits `let t = ..; const r[N] = ..` (invalid) "
+ },
+ {
+  "id": "floatbeat-example",
+  "code": "time().mul(8000).floatbeat(\"Math.sin(t / 10)\").out()",
+  "note": "floatbeat creates a Node of type \"bytebeat\" (lib.js:82): the bytebeat compile function runs, not the floatbeat one"
+ },
+ {
+  "id": "bytebeat-fn",
+  "code": "bytebeat(time(), \"t & 255\").out()"
+ },
+ {
+  "id": "raw-fn",
+  "code": "raw(sine(1), \"$input * 2\").out()"
+ },
+ {
+  "id": "thru",
+  "code": "thru(sine(220)).mul(.5).out()"
+ },
+ {
+  "id": "node-unknown-type",
+  "code": "node(\"bar\").withIns(sine(220)).out()",
+  "note": "unregistered node type: console.warn + fallback to thru, vars[0] is the input"
+ },
+ {
+  "id": "node-unknown-noins",
+  "code": "node(\"bar\").out()",
+  "note": "fallback thru with no inputs: `r[N] = undefined;`"
+ },
+ {
+  "id": "src-read",
+  "code": "src(1).mul(.5).out()",
+  "note": "src reads the source register of channel 1 (feedback)"
+ },
+ {
+  "id": "src-default",
+  "code": "src().out()"
+ },
+ {
+  "id": "output-explicit",
+  "code": "output(sine(220), 1)",
+  "note": "output() registers an Output node but nothing reaches exit when .out() is not used"
+ },
+ {
+  "id": "output-then-out",
+  "code": "sine(220).output(1).out()"
+ },
+ {
+  "id": "exit-fn",
+  "code": "exit(sine(220).mul(.5)).out()",
+  "note": "exit node has no compile function: no line emitted for it"
+ },
+ {
+  "id": "empty-program",
+  "code": "",
+  "note": "empty code"
+ },
+ {
+  "id": "no-out-call",
+  "code": "sine(220).mul(.5)",
+  "note": "never calls out(): exit with no inputs, src is empty"
+ },
+ {
+  "id": "only-const-out",
+  "code": "n(1).out()"
+ },
+ {
+  "id": "syntax-error",
+  "code": "sine(220.out()",
+  "note": "SyntaxError from Function()"
+ },
+ {
+  "id": "unknown-identifier",
+  "code": "foo(1).out()",
+  "note": "ReferenceError"
+ },
+ {
+  "id": "unknown-method",
+  "code": "sine(1).foo().out()",
+  "note": "TypeError"
+ },
+ {
+  "id": "lcgnoise-ref",
+  "code": "lcgnoise().out()",
+  "note": "registered node type \"lcgnoise\" is exported as `rng`: no global `lcgnoise` function (lib.js docs use it)"
+ },
+ {
+  "id": "lcgnoise-method",
+  "code": "sine(1).lcgnoise().out()",
+  "note": "but the prototype method is named lcgnoise"
+ },
+ {
+  "id": "rng-method",
+  "code": "sine(1).rng().out()",
+  "note": "and there is no .rng() method"
+ },
+ {
+  "id": "scope-probe",
+  "code": "add(n(typeof getNode === \"function\" ? 1 : 0), n(typeof poly === \"function\" ? 2 : 0), n(typeof scope === \"function\" ? 4 : 0), n(typeof module === \"function\" ? 8 : 0), n(typeof register === \"function\" ? 16 : 0)).out()",
+  "note": "which identifiers the evaluate scope holds (core+lib+compiler exports)"
+ },
+ {
+  "id": "scope-fn",
+  "code": "scope(sine(1), \"a\").out()",
+  "note": "lib.js scope() calls getNode, which lib.js does not import"
+ },
+ {
+  "id": "scope-method",
+  "code": "sine(1).scope(\"a\").out()"
+ },
+ {
+  "id": "ex0-template",
+  "code": "saw(saw(466.1637615180899 / 2).mul(8).add(466.1637615180899).lag(0)).mul(0.3).mul(cc('strudel-gate-0').adsr(0, 0.15, 0.5, 0.1)).lpf(cc('strudel-gate-0').adsr(0, 0.2, 0.3, 0.2).mul(1).add(0)).add(x => x.delay(0.3).mul(0.7)).add(x => x.delay(0.03).mul(0.77)).mul(0.7).add(x => x.delay(0.13).mul(0.7)).out()",
+  "note": "snapshot example 0 substituted"
+ },
+ {
+  "id": "ex1-template",
+  "code": "(() => {\n    const att = 0;\n    const dec = 0.05;\n    let f = n(207.65234878997256);\n    const mod = sine(f).mul(0.1).add(1.5);\n    saw(f.mul(mod)).mul(cc('strudel-gate-0').ad(att, dec)).add(x => x.delay(0.4).mul(0.3)).out()\n})()",
+  "note": "snapshot example 1 substituted (IIFE)"
+ },
+ {
+  "id": "osc-saw",
+  "code": "saw(220).out()"
+ },
+ {
+  "id": "osc-saw-nofreq",
+  "code": "saw().out()"
+ },
+ {
+  "id": "osc-saw-method",
+  "code": "n(220).saw().out()"
+ },
+ {
+  "id": "osc-zaw",
+  "code": "zaw(220).out()"
+ },
+ {
+  "id": "osc-sine",
+  "code": "sine(220).out()"
+ },
+ {
+  "id": "osc-sine-3",
+  "code": "sine(220, impulse(2), .25).out()"
+ },
+ {
+  "id": "osc-sine-method",
+  "code": "n(220).sine().out()"
+ },
+ {
+  "id": "osc-tri",
+  "code": "tri(220).out()"
+ },
+ {
+  "id": "osc-pulse",
+  "code": "pulse(220, .3).out()"
+ },
+ {
+  "id": "osc-pulse-default",
+  "code": "pulse(220).out()"
+ },
+ {
+  "id": "osc-impulse",
+  "code": "impulse(10, .5).out()"
+ },
+ {
+  "id": "osc-noise",
+  "code": "noise().out()"
+ },
+ {
+  "id": "osc-noise-0",
+  "code": "noise(0).out()"
+ },
+ {
+  "id": "osc-noise-trig",
+  "code": "noise(impulse(10)).out()"
+ },
+ {
+  "id": "osc-rng",
+  "code": "rng().out()"
+ },
+ {
+  "id": "osc-rng-args",
+  "code": "rng(impulse(10), impulse(1)).out()"
+ },
+ {
+  "id": "osc-pink",
+  "code": "pink().out()"
+ },
+ {
+  "id": "osc-brown",
+  "code": "brown().out()"
+ },
+ {
+  "id": "osc-dust",
+  "code": "dust(100).out()"
+ },
+ {
+  "id": "osc-dust-noargs",
+  "code": "dust().out()"
+ },
+ {
+  "id": "osc-clock",
+  "code": "clock(120).out()"
+ },
+ {
+  "id": "osc-clock-noargs",
+  "code": "clock().out()"
+ },
+ {
+  "id": "osc-clockdiv",
+  "code": "clock(120).clockdiv(4).out()"
+ },
+ {
+  "id": "osc-clockdiv-fn",
+  "code": "clockdiv(clock(120), 2).out()"
+ },
+ {
+  "id": "osc-clockdiv-nodiv",
+  "code": "clock(120).clockdiv().out()"
+ },
+ {
+  "id": "osc-midifreq",
+  "code": "midifreq().sine().out()"
+ },
+ {
+  "id": "osc-midifreq-ch",
+  "code": "midifreq(3).sine().out()"
+ },
+ {
+  "id": "osc-midigate",
+  "code": "midigate().mul(sine(220)).out()"
+ },
+ {
+  "id": "osc-midivel",
+  "code": "midivel(2).out()"
+ },
+ {
+  "id": "osc-midicc",
+  "code": "midicc(74).out()"
+ },
+ {
+  "id": "osc-midicc-3",
+  "code": "midicc(74, 1, 5).out()",
+  "note": "third input (initValue) is not passed to update but stays in the ugen inputs? compile uses only [ccnumber, channel]"
+ },
+ {
+  "id": "osc-cc-str",
+  "code": "cc(\"foo\").out()"
+ },
+ {
+  "id": "osc-cc-val",
+  "code": "cc(\"foo\", .5).out()"
+ },
+ {
+  "id": "osc-cc-gate",
+  "code": "cc('strudel-gate-0').out()"
+ },
+ {
+  "id": "osc-cc-num",
+  "code": "cc(5).out()",
+  "note": "compiles; GenericProcessor.onmessage throws TypeError ((5)?.includes is not a function)"
+ },
+ {
+  "id": "osc-cc-noargs",
+  "code": "cc().out()"
+ },
+ {
+  "id": "osc-audioin",
+  "code": "audioin().mul(.5).out()"
+ },
+ {
+  "id": "mouse-x",
+  "code": "mouseX.range(100, 800).sine().out()"
+ },
+ {
+  "id": "mouse-y",
+  "code": "mouseY.range(800, 100).sine().out()"
+ },
+ {
+  "id": "mouse-x-call",
+  "code": "mouseX().out()",
+  "note": "mouseX is a Node object, not a function"
+ },
+ {
+  "id": "mouse-xy",
+  "code": "add(mouseX, mouseY).out()"
+ },
+ {
+  "id": "env-adsr",
+  "code": "cc('strudel-gate-0').adsr(.01, .1, .5, .2).out()"
+ },
+ {
+  "id": "env-adsr-defaults",
+  "code": "cc('strudel-gate-0').adsr().out()"
+ },
+ {
+  "id": "env-adsr-fn",
+  "code": "adsr(cc('strudel-gate-0'), 0, .1, .5, .2).out()"
+ },
+ {
+  "id": "env-adsr-noargs",
+  "code": "adsr().out()"
+ },
+ {
+  "id": "env-ar",
+  "code": "cc('strudel-gate-0').ar(.01, .2).out()"
+ },
+ {
+  "id": "env-ar-fn",
+  "code": "ar(cc('strudel-gate-0'), .01, .2).out()"
+ },
+ {
+  "id": "env-ar-noargs",
+  "code": "ar().out()",
+  "note": "module with no arguments: gate default 0 (a number) has no .adsr"
+ },
+ {
+  "id": "env-ar-array",
+  "code": "ar([cc('strudel-gate-0'), impulse(1)], .01, .2).out()",
+  "note": "module with an array argument: parseInput(array).asModuleInput is undefined -> arg becomes undefined"
+ },
+ {
+  "id": "env-ar-func",
+  "code": "ar(x => x, .01, .2).out()",
+  "note": "module with a function argument: parseInput throws"
+ },
+ {
+  "id": "env-ad",
+  "code": "cc('strudel-gate-0').ad(.01, .2).out()"
+ },
+ {
+  "id": "env-ad-noargs",
+  "code": "ad().out()"
+ },
+ {
+  "id": "env-ad-array",
+  "code": "ad([cc('strudel-gate-0'), impulse(1)], .01, .2).out()"
+ },
+ {
+  "id": "env-ad-func",
+  "code": "ad(x => x, .01, .2).out()"
+ },
+ {
+  "id": "env-perc",
+  "code": "impulse(2).perc(.1).out()"
+ },
+ {
+  "id": "env-perc-noargs",
+  "code": "perc().out()"
+ },
+ {
+  "id": "env-perc-array",
+  "code": "perc([impulse(2), impulse(3)], .1).out()"
+ },
+ {
+  "id": "env-perc-func",
+  "code": "perc(x => x, .1).out()"
+ },
+ {
+  "id": "fx-lag",
+  "code": "impulse(2).seq(220, 330).lag(.4).out()"
+ },
+ {
+  "id": "fx-lag-def",
+  "code": "sine(1).lag().out()"
+ },
+ {
+  "id": "fx-slide",
+  "code": "impulse(2).seq(220, 330).slide(4).out()"
+ },
+ {
+  "id": "fx-slew",
+  "code": "pulse(800).slew(4000, 4000).out()"
+ },
+ {
+  "id": "fx-slew-def",
+  "code": "pulse(800).slew().out()"
+ },
+ {
+  "id": "fx-filter",
+  "code": "saw(55).filter(.5, .2).out()"
+ },
+ {
+  "id": "fx-lpf",
+  "code": "saw(55).lpf(.5, .2).out()"
+ },
+ {
+  "id": "fx-lpf-fn",
+  "code": "lpf(saw(55), sine(1).range(.4, .8)).out()"
+ },
+ {
+  "id": "fx-lpf-noargs",
+  "code": "lpf().out()",
+  "note": "module around filter with no args: filter() with no inputs"
+ },
+ {
+  "id": "fx-lpf-array",
+  "code": "lpf([saw(55), saw(110)], .5).out()"
+ },
+ {
+  "id": "fx-lpf-func",
+  "code": "lpf(x => x, .5).out()"
+ },
+ {
+  "id": "fx-hpf",
+  "code": "saw(110).hpf(.5).out()"
+ },
+ {
+  "id": "fx-hpf-reso",
+  "code": "saw(110).hpf(.5, .2).out()"
+ },
+ {
+  "id": "fx-hpf-fn",
+  "code": "hpf(saw(110), sine(1).range(0, .9)).out()"
+ },
+ {
+  "id": "fx-hpf-array",
+  "code": "hpf([saw(110), saw(220)], .5).out()"
+ },
+ {
+  "id": "fx-hpf-func",
+  "code": "hpf(x => x, .5).out()"
+ },
+ {
+  "id": "fx-hpf-noargs",
+  "code": "hpf().out()"
+ },
+ {
+  "id": "fx-bpf",
+  "code": "saw(110).bpf(.5, .2).out()"
+ },
+ {
+  "id": "fx-bpf-def",
+  "code": "saw(110).bpf().out()"
+ },
+ {
+  "id": "fx-fold",
+  "code": "sine(55).fold(sine(.5).range(.2, 4)).out()"
+ },
+ {
+  "id": "fx-distort",
+  "code": "sine(110).distort(.5).out()"
+ },
+ {
+  "id": "fx-distort-def",
+  "code": "sine(110).distort().out()"
+ },
+ {
+  "id": "fx-clip",
+  "code": "sine(110).clip(-.5, .5).out()"
+ },
+ {
+  "id": "fx-clip-def",
+  "code": "sine(110).clip().out()"
+ },
+ {
+  "id": "fx-trig",
+  "code": "pulse(2).trig().out()"
+ },
+ {
+  "id": "fx-trig-args",
+  "code": "sine(2).trig(-.2, .2).out()"
+ },
+ {
+  "id": "fx-hold",
+  "code": "noise().hold(impulse(2)).out()"
+ },
+ {
+  "id": "fx-hold-fn",
+  "code": "hold(noise(), impulse(2)).out()"
+ },
+ {
+  "id": "fx-seq",
+  "code": "impulse(2).seq(220, 330, 440, 550).out()"
+ },
+ {
+  "id": "fx-seq-fn",
+  "code": "seq(impulse(2), 1, 2, 3).out()"
+ },
+ {
+  "id": "fx-seq-nosteps",
+  "code": "impulse(2).seq().out()"
+ },
+ {
+  "id": "fx-seq-array",
+  "code": "impulse(2).seq([1, 2, 3]).out()",
+  "note": "array argument expands into 3 seq nodes"
+ },
+ {
+  "id": "fx-seq-notrig",
+  "code": "seq().out()"
+ },
+ {
+  "id": "fx-delay",
+  "code": "sine(220).delay(.1).out()"
+ },
+ {
+  "id": "fx-delay-id",
+  "code": "sine(220).delay(.1, \"a\").out()",
+  "note": "third input is the delay id; the compiled call has only 2 args, the ugen inputs keep the third"
+ },
+ {
+  "id": "fx-delay-2id",
+  "code": "sine(220).delay(.1, \"a\").add(sine(330).delay(.2, \"a\")).out()"
+ },
+ {
+  "id": "fx-delay-dyn",
+  "code": "sine(220).delay(sine(.5).range(.01, .03)).out()"
+ },
+ {
+  "id": "fx-delay-noargs",
+  "code": "delay().out()"
+ },
+ {
+  "id": "fx-pick",
+  "code": "sine(.25).range(0, 2).round().pick(...sine([220, 330, 440]).ins).out()",
+  "note": "spread of a poly .ins"
+ },
+ {
+  "id": "fx-pick-fn",
+  "code": "pick(n(1), sine(220), sine(330)).out()"
+ },
+ {
+  "id": "fx-remap",
+  "code": "sine(440).remap(-1, 1, 0, 1).out()"
+ },
+ {
+  "id": "fx-remap-def",
+  "code": "sine(440).remap().out()"
+ },
+ {
+  "id": "fx-qf",
+  "code": "pink().qf(2, 500, 10, 1).out()"
+ },
+ {
+  "id": "fx-qf-def",
+  "code": "pink().qf().out()"
+ },
+ {
+  "id": "fx-qlpf",
+  "code": "pink().qlpf(500, 10).out()"
+ },
+ {
+  "id": "fx-qlpf-def",
+  "code": "pink().qlpf(500).out()",
+  "note": "q default 10"
+ },
+ {
+  "id": "fx-qhpf",
+  "code": "pink().qhpf(500, 10).out()"
+ },
+ {
+  "id": "fx-qbpf",
+  "code": "pink().qbpf(500, 10).out()"
+ },
+ {
+  "id": "fx-qnf",
+  "code": "pink().qnf(500, 10).out()"
+ },
+ {
+  "id": "fx-qapf",
+  "code": "pink().qapf(500, 10).out()",
+  "note": "qapf is qf type 3 = notch"
+ },
+ {
+  "id": "math-log",
+  "code": "sine(1).log().out()"
+ },
+ {
+  "id": "math-exp",
+  "code": "sine(1).exp().out()"
+ },
+ {
+  "id": "math-sin",
+  "code": "sine(1).sin().out()"
+ },
+ {
+  "id": "math-cos",
+  "code": "sine(1).cos().out()"
+ },
+ {
+  "id": "math-tan",
+  "code": "sine(1).tan().out()"
+ },
+ {
+  "id": "math-acos",
+  "code": "sine(1).acos().out()"
+ },
+ {
+  "id": "math-asin",
+  "code": "sine(1).asin().out()"
+ },
+ {
+  "id": "math-atan",
+  "code": "sine(1).atan().out()"
+ },
+ {
+  "id": "math-abs",
+  "code": "sine(1).abs().out()"
+ },
+ {
+  "id": "math-round",
+  "code": "sine(1).round().out()"
+ },
+ {
+  "id": "math-floor",
+  "code": "sine(1).floor().out()"
+ },
+ {
+  "id": "math-ceil",
+  "code": "sine(1).ceil().out()"
+ },
+ {
+  "id": "math-sign",
+  "code": "sine(1).sign().out()"
+ },
+ {
+  "id": "math-midinote",
+  "code": "sine(1).midinote().out()"
+ },
+ {
+  "id": "math-log-fn",
+  "code": "log(n(10)).out()"
+ },
+ {
+  "id": "math-unary-noargs",
+  "code": "abs().out()"
+ },
+ {
+  "id": "math-pow",
+  "code": "sine(1).pow(2).out()"
+ },
+ {
+  "id": "math-pow-const",
+  "code": "n(2).pow(3).out()"
+ },
+ {
+  "id": "math-pow-neg-exp",
+  "code": "n(2).pow(-2).out()"
+ },
+ {
+  "id": "math-pow-neg-base",
+  "code": "n(-2).pow(2).out()",
+  "note": "`-2 ** 2` is a SyntaxError in JS"
+ },
+ {
+  "id": "math-pow-neg-base-frac",
+  "code": "n(-1).pow(.5).out()"
+ },
+ {
+  "id": "math-pow-neg-both",
+  "code": "n(-2).pow(-2).out()"
+ },
+ {
+  "id": "math-pow-def",
+  "code": "sine(1).pow().out()",
+  "note": "power default 1"
+ },
+ {
+  "id": "math-pow-noargs",
+  "code": "pow().out()"
+ },
+ {
+  "id": "math-mod",
+  "code": "sine(1).mod(.3).out()"
+ },
+ {
+  "id": "math-mod-neg",
+  "code": "n(3).mod(-2).out()"
+ },
+ {
+  "id": "math-mod-noargs",
+  "code": "mod().out()"
+ },
+ {
+  "id": "math-div",
+  "code": "sine(1).div(3).out()"
+ },
+ {
+  "id": "math-div-3",
+  "code": "div(10, 2, 5).out()"
+ },
+ {
+  "id": "math-sub",
+  "code": "sine(1).sub(.5).out()"
+ },
+ {
+  "id": "math-sub-3",
+  "code": "sub(10, 2, 5).out()"
+ },
+ {
+  "id": "math-mul",
+  "code": "sine(1).mul(.5).out()"
+ },
+ {
+  "id": "math-mul-3",
+  "code": "mul(2, 3, sine(1)).out()"
+ },
+ {
+  "id": "math-mul-noargs",
+  "code": "mul().out()",
+  "note": "no ins: `|| 0`"
+ },
+ {
+  "id": "math-add",
+  "code": "sine(1).add(.5).out()"
+ },
+ {
+  "id": "math-add-3",
+  "code": "add(sine(1), 2, 3).out()"
+ },
+ {
+  "id": "math-add-noargs",
+  "code": "add().out()"
+ },
+ {
+  "id": "math-div-noargs",
+  "code": "div().out()"
+ },
+ {
+  "id": "math-sub-noargs",
+  "code": "sub().out()"
+ },
+ {
+  "id": "math-clamp",
+  "code": "sine(1).clamp(-.5, .5).out()"
+ },
+ {
+  "id": "math-clamp-def",
+  "code": "sine(1).clamp().out()"
+ },
+ {
+  "id": "math-clamp-swapped",
+  "code": "sine(1).clamp(.5, -.5).out()"
+ },
+ {
+  "id": "math-min",
+  "code": "min(sine(1), saw(2)).out()"
+ },
+ {
+  "id": "math-min-3",
+  "code": "min(sine(1), saw(2), n(.2)).out()"
+ },
+ {
+  "id": "math-min-1",
+  "code": "min(sine(1)).out()"
+ },
+ {
+  "id": "math-min-noargs",
+  "code": "min().out()",
+  "note": "vars.reduce on an empty array: TypeError at compile"
+ },
+ {
+  "id": "math-max",
+  "code": "max(sine(1), saw(2)).out()"
+ },
+ {
+  "id": "math-max-3",
+  "code": "max(sine(1), saw(2), n(.2)).out()"
+ },
+ {
+  "id": "math-max-noargs",
+  "code": "max().out()"
+ },
+ {
+  "id": "math-argmin",
+  "code": "argmin(saw(1), saw(3), saw(5)).out()"
+ },
+ {
+  "id": "math-argmin-1",
+  "code": "argmin(saw(1)).out()"
+ },
+ {
+  "id": "math-argmin-noargs",
+  "code": "argmin().out()"
+ },
+ {
+  "id": "math-argmax",
+  "code": "argmax(saw(1), saw(3), saw(5)).out()"
+ },
+ {
+  "id": "math-argmax-2",
+  "code": "argmax(saw(1), n(.5)).out()"
+ },
+ {
+  "id": "math-argmax-noargs",
+  "code": "argmax().out()"
+ },
+ {
+  "id": "math-midinote-const",
+  "code": "n(69).midinote().out()"
+ },
+ {
+  "id": "logic-greater",
+  "code": "greater(sine(1), 0).out()"
+ },
+ {
+  "id": "logic-gt",
+  "code": "gt(sine(1), .2).out()"
+ },
+ {
+  "id": "logic-lower",
+  "code": "lower(sine(1), 0).out()"
+ },
+ {
+  "id": "logic-lt",
+  "code": "sine(1).lt(.2).out()"
+ },
+ {
+  "id": "logic-gt-def",
+  "code": "greater().out()"
+ },
+ {
+  "id": "logic-xor",
+  "code": "xor(gt(sine(1), 0), gt(sine(2), 0)).out()"
+ },
+ {
+  "id": "logic-and",
+  "code": "and(gt(sine(1), 0), gt(sine(2), 0)).out()"
+ },
+ {
+  "id": "logic-or",
+  "code": "or(gt(sine(1), 0), gt(sine(2), 0)).out()"
+ },
+ {
+  "id": "logic-not",
+  "code": "not(greater(sine(1), 0)).out()",
+  "note": "JS boolean === 0 is false: always 0"
+ },
+ {
+  "id": "logic-not-num",
+  "code": "not(sine(1)).out()"
+ },
+ {
+  "id": "logic-bool",
+  "code": "bool(greater(sine(1), 0)).out()",
+  "note": "boolean === 0 is false: always 1"
+ },
+ {
+  "id": "logic-bool-num",
+  "code": "bool(sine(1)).out()"
+ },
+ {
+  "id": "logic-ifelse",
+  "code": "ifelse(greater(sine(1), 0), 10, 20).out()",
+  "note": "boolean === 1 is false: always picks b (20)"
+ },
+ {
+  "id": "logic-ifelse-num",
+  "code": "ifelse(pulse(1), sine(220), sine(330)).out()"
+ },
+ {
+  "id": "logic-ifelse-def",
+  "code": "ifelse().out()"
+ },
+ {
+  "id": "range-basic",
+  "code": "sine(.5).range(.25, 1).out()"
+ },
+ {
+  "id": "range-curve2",
+  "code": "sine(.5).range(.25, 1, 2).out()"
+ },
+ {
+  "id": "range-curve1",
+  "code": "sine(.5).range(.25, 1, 1).out()",
+  "note": "curve === 1 skips pow"
+ },
+ {
+  "id": "range-curve-half",
+  "code": "sine(.5).range(100, 600, .5).out()"
+ },
+ {
+  "id": "range-neg",
+  "code": "sine(.5).range(-1, 1).out()"
+ },
+ {
+  "id": "range-fn",
+  "code": "range(sine(.5), 200, 800).out()"
+ },
+ {
+  "id": "range-noargs",
+  "code": "range().out()"
+ },
+ {
+  "id": "range-mod-curve",
+  "code": "sine(.5).range(sine(1), 2, 3).out()"
+ },
+ {
+  "id": "rangex",
+  "code": "sine(1).rangex(100, 2000).out()"
+ },
+ {
+  "id": "rangex-poly",
+  "code": "sine([1, 3]).rangex(100, 2000).out()"
+ },
+ {
+  "id": "rangex-array",
+  "code": "rangex([sine(1), sine(2)], 100, 2000).out()"
+ },
+ {
+  "id": "rangex-func",
+  "code": "rangex(x => x, 100, 2000).out()"
+ },
+ {
+  "id": "rangex-noargs",
+  "code": "rangex().out()"
+ },
+ {
+  "id": "bipolar",
+  "code": "sine(1).unipolar().bipolar().out()"
+ },
+ {
+  "id": "bipolar-fn",
+  "code": "bipolar(sine(1)).out()"
+ },
+ {
+  "id": "bipolar-noargs",
+  "code": "bipolar().out()",
+  "note": "n(undefined) constant: value undefined"
+ },
+ {
+  "id": "bipolar-array",
+  "code": "bipolar([sine(1), sine(2)]).out()"
+ },
+ {
+  "id": "bipolar-func",
+  "code": "bipolar(x => x).out()"
+ },
+ {
+  "id": "bipolar-num",
+  "code": "bipolar(.5).out()"
+ },
+ {
+  "id": "unipolar",
+  "code": "sine(1).unipolar().out()"
+ },
+ {
+  "id": "unipolar-noargs",
+  "code": "unipolar().out()"
+ },
+ {
+  "id": "unipolar-array",
+  "code": "unipolar([sine(1), sine(2)]).out()"
+ },
+ {
+  "id": "unipolar-func",
+  "code": "unipolar(x => x).out()"
+ },
+ {
+  "id": "lfnoise",
+  "code": "lfnoise(4).range(200, 800).sine().out()"
+ },
+ {
+  "id": "lfnoise-noargs",
+  "code": "lfnoise().out()"
+ },
+ {
+  "id": "lfnoise-array",
+  "code": "lfnoise([4, 5]).out()"
+ },
+ {
+  "id": "lfnoise-func",
+  "code": "lfnoise(x => x).out()"
+ },
+ {
+  "id": "pan",
+  "code": "sine(220).pan(sine(.25)).out()",
+  "note": "pan returns a poly through a module (asModuleOutput on a poly)"
+ },
+ {
+  "id": "pan-const",
+  "code": "sine(220).pan(0).out()"
+ },
+ {
+  "id": "pan-noargs",
+  "code": "pan().out()"
+ },
+ {
+  "id": "pan-nopos",
+  "code": "sine(220).pan().out()"
+ },
+ {
+  "id": "pan-array",
+  "code": "pan([sine(220), sine(330)], 0).out()"
+ },
+ {
+  "id": "pan-func",
+  "code": "pan(x => x, 0).out()"
+ },
+ {
+  "id": "pi-const",
+  "code": "PI.mul(2).out()"
+ },
+ {
+  "id": "pi-arg",
+  "code": "sine(1).mul(PI).out()"
+ },
+ {
+  "id": "pi-n",
+  "code": "n(PI).out()"
+ },
+ {
+  "id": "poly-sine",
+  "code": "sine([220, 330, 440]).out()"
+ },
+ {
+  "id": "poly-sine-single",
+  "code": "sine([220]).out()",
+  "note": "array of length 1 is unwrapped"
+ },
+ {
+  "id": "poly-mul-single",
+  "code": "mul([3], 2).out()"
+ },
+ {
+  "id": "poly-empty-arg",
+  "code": "sine([]).out()",
+  "note": "empty array: zero-input poly node passed as an input"
+ },
+ {
+  "id": "poly-sine-out0",
+  "code": "sine([220, 330, 440]).out(0)"
+ },
+ {
+  "id": "poly-sine-out1",
+  "code": "sine([220, 330, 440]).out(1)"
+ },
+ {
+  "id": "poly-sine-out01",
+  "code": "sine([220, 330, 440]).out([0, 1])"
+ },
+ {
+  "id": "poly-sine-out23",
+  "code": "sine([220, 330, 440]).out([2, 3])"
+ },
+ {
+  "id": "poly-sine-out-1ch",
+  "code": "sine([220, 330]).out([1])",
+  "note": "array of length 1 is unwrapped"
+ },
+ {
+  "id": "mono-out0",
+  "code": "sine(220).out(0)"
+ },
+ {
+  "id": "mono-out1",
+  "code": "sine(220).out(1)"
+ },
+ {
+  "id": "mono-out01",
+  "code": "sine(220).out([0, 1])"
+ },
+ {
+  "id": "mono-out23",
+  "code": "sine(220).out([2, 3])"
+ },
+ {
+  "id": "mono-out-high",
+  "code": "sine(220).out(20)",
+  "note": "channel beyond the 16 output registers"
+ },
+ {
+  "id": "mono-out-twice",
+  "code": "sine(220).out(0).out(1)"
+ },
+ {
+  "id": "mono-out-two-nodes",
+  "code": "sine(220).out(0); saw(110).out(1)"
+ },
+ {
+  "id": "mono-out-undefined",
+  "code": "sine(220).out(undefined)",
+  "note": "channels default [0,1] applies for undefined"
+ },
+ {
+  "id": "mono-out-func",
+  "code": "sine(220).out(x => x)"
+ },
+ {
+  "id": "poly-out-flat",
+  "code": "mul([1, 2, 3], 1).out()"
+ },
+ {
+  "id": "poly-mul-mix2",
+  "code": "mul([1, 2, 3], 1).mix(2).out()"
+ },
+ {
+  "id": "poly-mix1",
+  "code": "sine([220, 330, 440]).mix().out()"
+ },
+ {
+  "id": "poly-mix1-explicit",
+  "code": "sine([220, 330, 440]).mix(1).out()"
+ },
+ {
+  "id": "poly-mix2",
+  "code": "sine([220, 330, 440]).mix(2).out()"
+ },
+ {
+  "id": "poly-mix2-two",
+  "code": "sine([220, 330]).mix(2).out()"
+ },
+ {
+  "id": "poly-mix2-one",
+  "code": "sine(220).fork(1).mix(2).out()"
+ },
+ {
+  "id": "poly-mix3",
+  "code": "sine([220, 330, 440]).mix(3).out()",
+  "note": "mix(3) falls back to 2 with a console.warn"
+ },
+ {
+  "id": "poly-mix-mono",
+  "code": "sine(220).mix(2).out()",
+  "note": "mix on a non-poly returns it unchanged"
+ },
+ {
+  "id": "mix-fn-noargs",
+  "code": "mix().out()",
+  "note": "mix() with no arguments: input undefined -> TypeError"
+ },
+ {
+  "id": "mix-empty-poly1",
+  "code": "sine(220).fork(0).mix(1).out()",
+  "note": "poly with zero inputs mixed to 1 channel: `r[N] = ();`"
+ },
+ {
+  "id": "mix-empty-poly2",
+  "code": "sine(220).fork(0).mix(2).out()",
+  "note": "poly with zero inputs mixed to 2 channels: add() of nothing"
+ },
+ {
+  "id": "mix-nested",
+  "code": "mix(sine([220, 330, 440]).mix(2).mul([.1, .2]), 2).out()"
+ },
+ {
+  "id": "mix-then-pan",
+  "code": "sine([220, 330, 440]).mix().pan(0).out()"
+ },
+ {
+  "id": "mix-poly-mul-poly",
+  "code": "sine([220, 330]).mul([.1, .2, .3]).out()",
+  "note": "expansion to the longest poly, shorter ones wrap"
+ },
+ {
+  "id": "poly-expand-two-args",
+  "code": "add(sine([220, 330]), saw([1, 2, 3])).out()"
+ },
+ {
+  "id": "poly-fork2",
+  "code": "zaw(100).fork(2).mul([.1, .2]).out()"
+ },
+ {
+  "id": "poly-fork-default",
+  "code": "zaw(100).fork().mul(.5).out()",
+  "note": "fork() = poly of 1 clone (poly node in the graph, no expansion)"
+ },
+ {
+  "id": "poly-fork3-lpf",
+  "code": "zaw(100).fork(3).lpf([.2, .4, .6]).mix(2).out()"
+ },
+ {
+  "id": "poly-fn",
+  "code": "poly(sine(220), sine(330)).mix(2).out()"
+ },
+ {
+  "id": "poly-fn-1",
+  "code": "poly(sine(220)).out()"
+ },
+ {
+  "id": "poly-fn-0",
+  "code": "poly().out()"
+ },
+ {
+  "id": "poly-n-array",
+  "code": "n([110, 220, 330]).out()",
+  "note": "n(array) calls the free identifier poly of graph.js"
+ },
+ {
+  "id": "poly-n-array-1",
+  "code": "n([110]).out()"
+ },
+ {
+  "id": "poly-n-array-map",
+  "code": "n([110, 220, 330]).map(freq => freq.mul([1, 1.007]).saw().mix()).mix(2).mul(.5).out()",
+  "note": "doc example of map"
+ },
+ {
+  "id": "poly-n-array-add",
+  "code": "n([0, 3, 7, 10]).add(60).midinote().sine().mix(2).out()"
+ },
+ {
+  "id": "poly-b-array",
+  "code": "B([1, 2]).out()"
+ },
+ {
+  "id": "poly-underscore-array",
+  "code": "_([1, 2]).out()"
+ },
+ {
+  "id": "poly-b-num",
+  "code": "B(3).out()"
+ },
+ {
+  "id": "map-nonpoly",
+  "code": "sine(220).map(x => x.mul(.5)).out()",
+  "note": "map on a non-poly applies fn to the node itself"
+ },
+ {
+  "id": "map-poly",
+  "code": "sine([220, 330]).map(x => x.mul(.5)).out()",
+  "note": "map on a poly calls the free identifier poly"
+ },
+ {
+  "id": "map-poly-lib",
+  "code": "poly(sine(220), sine(330)).map(x => x.mul(.5)).out()"
+ },
+ {
+  "id": "channel-poly",
+  "code": "sine([220, 330, 440]).channel(1).out()"
+ },
+ {
+  "id": "channel-wrap",
+  "code": "sine([220, 330, 440]).channel(4).out()",
+  "note": "4 % 3 = 1"
+ },
+ {
+  "id": "channel-mono",
+  "code": "sine(220).channel(2).out()"
+ },
+ {
+  "id": "split-poly",
+  "code": "sine([220, 330, 550]).split(chs => add(...chs)).out()"
+ },
+ {
+  "id": "split-mono",
+  "code": "sine(220).split(chs => chs[0].mul(.5)).out()"
+ },
+ {
+  "id": "split-nofn",
+  "code": "sine(220).split().out()"
+ },
+ {
+  "id": "select-delay",
+  "code": "sine(220).mul(impulse(1).ad(.001, .2)).add(x => x.delay(.2).mul(.8)).select(\"delay\").out()"
+ },
+ {
+  "id": "select-missing",
+  "code": "sine(220).select(\"delay\").out()",
+  "note": "select returns undefined"
+ },
+ {
+  "id": "select-self-type",
+  "code": "sine(220).mul(2).select(\"sine\").out()"
+ },
+ {
+  "id": "over",
+  "code": "sine(220).over(x => x.mul(.5)).out()"
+ },
+ {
+  "id": "apply",
+  "code": "impulse(4).apply(imp => imp.seq(110, 220, 330, 440).sine().mul(imp.ad(.1, .1))).out()"
+ },
+ {
+  "id": "apply2",
+  "code": "clock(10).seq(51, 52, 0, 53).apply2(hold).midinote().sine().out()"
+ },
+ {
+  "id": "clone",
+  "code": "sine(220).clone().out()"
+ },
+ {
+  "id": "clone-shared",
+  "code": "const a = sine(220); a.clone().add(a).out()",
+  "note": "clone is a different node with the same ins: two ugens"
+ },
+ {
+  "id": "dfs-identity",
+  "code": "sine(220).dfs(x => x).out()"
+ },
+ {
+  "id": "debug-passthrough",
+  "code": "sine(220).debug().out()",
+  "note": "debug logs the Node to console.log"
+ },
+ {
+  "id": "diamond",
+  "code": "const s = sine(1); s.add(s).out()",
+  "note": "a node used twice is visited once"
+ },
+ {
+  "id": "diamond-3",
+  "code": "const s = sine(1); const t = s.mul(2); add(t, t, s, s.mul(3)).out()"
+ },
+ {
+  "id": "shared-const",
+  "code": "const c = n(5); add(c, c, mul(c, 2)).out()",
+  "note": "n constants are inlined, not registers"
+ },
+ {
+  "id": "const-id-equality",
+  "code": "add(n(5), n(5)).out()",
+  "note": "two n nodes: separate nodes, both inlined"
+ },
+ {
+  "id": "fb-delay",
+  "code": "sine(220).add(x => x.delay(.2).mul(.5)).out()"
+ },
+ {
+  "id": "fb-delay-ex0",
+  "code": "saw(220).add(x => x.delay(.3).mul(.7)).add(x => x.delay(.03).mul(.77)).mul(.7).add(x => x.delay(.13).mul(.7)).out()"
+ },
+ {
+  "id": "fb-self",
+  "code": "sine(220).add(x => x).out()",
+  "note": "self-referencing feedback function: node feeds itself"
+ },
+ {
+  "id": "fb-self-mul",
+  "code": "sine(220).mul(x => x).out()"
+ },
+ {
+  "id": "fb-poly-inside",
+  "code": "sine(220).add(x => x.delay([.1, .2]).mul(.5)).out()",
+  "note": "poly inside the feedback function: the peek expands the add"
+ },
+ {
+  "id": "fb-poly-outside",
+  "code": "sine([220, 330]).add(x => x.delay(.1).mul(.5)).out()"
+ },
+ {
+  "id": "fb-poly-both",
+  "code": "sine([220, 330]).add(x => x.delay([.1, .2, .3]).mul(.5)).mix(2).out()"
+ },
+ {
+  "id": "fb-feedback-method",
+  "code": "sine(220).feedback(x => x.delay(.1).mul(.5)).out()"
+ },
+ {
+  "id": "fb-feedback-fn",
+  "code": "feedback(x => x.delay(.2).mul(.5)).out()",
+  "note": "feedback(fn) = add(fn): a bare loop"
+ },
+ {
+  "id": "fb-lag",
+  "code": "impulse(2).add(x => x.lag(.1).mul(.5)).out()"
+ },
+ {
+  "id": "fb-nested",
+  "code": "sine(220).add(x => x.delay(.1).add(y => y.delay(.05).mul(.3)).mul(.5)).out()"
+ },
+ {
+  "id": "fb-fn-returns-number",
+  "code": "sine(220).add(x => 0.5).out()",
+  "note": "function returns a number"
+ },
+ {
+  "id": "fb-src",
+  "code": "sine(220).add(src(0).mul(.3)).out()",
+  "note": "src-based feedback through the output register"
+ },
+ {
+  "id": "fb-fn-in-mul-chain",
+  "code": "saw(110).mul(x => x.mul(.5)).out()"
+ },
+ {
+  "id": "fb-fn-first-arg",
+  "code": "add(x => x.delay(.1), sine(220)).out()"
+ },
+ {
+  "id": "fb-fn-no-node-module",
+  "code": "ad(x => x, .1, .1).out()"
+ },
+ {
+  "id": "register-user",
+  "code": "const kick = register(\"kickA\", gate => gate.adsr(0, .11, 0, .11).mul(sine(100))); impulse(2).kickA().out()",
+  "note": "register sets the prototype method"
+ },
+ {
+  "id": "register-user-fn",
+  "code": "const kick = register(\"kickB\", (g, f = 100) => g.adsr(0, .1, 0, .1).mul(sine(f))); kick(impulse(2), 60).out()"
+ },
+ {
+  "id": "register-user-poly",
+  "code": "register(\"dub\", x => x.mul([1, 2])); sine(220).dub().out()"
+ },
+ {
+  "id": "register-bypass",
+  "code": "register(\"byp\", x => x.mul(.5)); sine(220)._byp().out()",
+  "note": "the _name bypass returns the node itself"
+ },
+ {
+  "id": "module-user",
+  "code": "const m = module(\"modA\", (a, b) => a.add(b)); m(sine(1), 2).out()"
+ },
+ {
+  "id": "module-user-method",
+  "code": "module(\"modB\", (a, b) => a.mul(b)); sine(1).modB(3).out()"
+ },
+ {
+  "id": "module-user-func-arg",
+  "code": "const m = module(\"modC\", (a, b) => a.add(b)); m(x => x, 2).out()"
+ },
+ {
+  "id": "module-user-array-arg",
+  "code": "const m = module(\"modD\", (a, b) => a.add(b)); m([sine(1), sine(2)], 2).out()"
+ },
+ {
+  "id": "module-user-noargs",
+  "code": "const m = module(\"modE\", () => sine(220)); m().out()"
+ },
+ {
+  "id": "module-user-poly-out",
+  "code": "const m = module(\"modF\", a => a.mul([.1, .2])); m(sine(220)).out()"
+ },
+ {
+  "id": "module-nested",
+  "code": "sine(220).hpf(.5).pan(0).out()"
+ },
+ {
+  "id": "module-shared-input",
+  "code": "const s = sine(1); s.hpf(.5).add(s.hpf(.3)).out()"
+ },
+ {
+  "id": "chain-3000",
+  "code": "let x = sine(1); for (let i = 0; i < 3000; i++) x = x.add(1); x.out()",
+  "note": "long chain: topoSort is recursive"
+ },
+ {
+  "id": "chain-100000",
+  "code": "let x = sine(1); for (let i = 0; i < 100000; i++) x = x.add(1); x.out()",
+  "note": "recursion depth far beyond the V8 limit: RangeError expected"
+ },
+ {
+  "id": "wide-add",
+  "code": "add(...Array.from({ length: 200 }, (_, i) => sine(i + 1))).out()"
+ },
+ {
+  "id": "many-outputs",
+  "code": "sine(220).out(0); sine(330).out(1); sine(440).out(2); sine(550).out(3)"
+ },
+ {
+  "id": "ugen-order",
+  "code": "saw(110).lpf(sine(1).range(.2, 1)).add(noise().mul(.1)).mul(impulse(2).ad(.01, .1)).out()",
+  "note": "ugen index numbering follows topo order"
+ },
+ {
+  "id": "sgate-twice",
+  "code": "cc('strudel-gate-0').add(cc('strudel-gate-0')).mul(.25).out()",
+  "note": "two gate ccs: two CC ugens"
+ },
+ {
+  "id": "string-input-ugen",
+  "code": "sine(\"abc\").out()",
+  "note": "string input to a ugen: inlined quoted"
+ },
+ {
+  "id": "string-input-math",
+  "code": "add(\"a\", 1).out()"
+ },
+ {
+  "id": "return-early",
+  "code": "sine(220).out(); return; saw(110).out()"
+ },
+ {
+  "id": "const-let-semantics",
+  "code": "let f = n(220); const modu = sine(f).mul(.1).add(1.5); saw(f.mul(modu)).out()"
+ },
+ {
+  "id": "redeclare-scope-const",
+  "code": "let f = n(220); const mod = sine(f).mul(.1).add(1.5); saw(f.mul(mod)).out()",
+  "note": "top-level let/const of a name that is an evaluate scope parameter (here lib `mod`) is a SyntaxError: the program is a function body whose parameters are the scope keys"
+ },
+ {
+  "id": "redeclare-scope-var",
+  "code": "var mod = sine(220); mod.out()",
+  "note": "var may redeclare a parameter"
+ },
+ {
+  "id": "redeclare-scope-let-n",
+  "code": "let n = 3; sine(n).out()"
+ },
+ {
+  "id": "redeclare-scope-inner",
+  "code": "(() => { const mod = sine(2); sine(220).mul(mod).out() })()",
+  "note": "inside a function the same name is fine (ex1 template relies on this)"
+ },
+ {
+  "id": "redeclare-scope-assign",
+  "code": "sine = 5; saw(220).out()",
+  "note": "assigning to a scope parameter is allowed (sloppy function)"
+ },
+ {
+  "id": "lib-registerUgen",
+  "code": "typeof registerUgen === \"function\" ? sine(220).out() : saw(220).out()"
+ }
+]

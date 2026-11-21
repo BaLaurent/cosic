@@ -1,0 +1,81 @@
+{
+ "id": "logic-nodes",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": "A3",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "sine(sFreq).mul(add(and(gt(sine(3), 0), lt(sine(5), 0.5)), or(gt(sine(2), 0), gt(sine(9), 0)), xor(gt(sine(4), 0), gt(sine(6), 0)), ifelse(gt(sine(1), 0), 0.1, 0.2), not(gt(sine(1), 0)), bool(gt(sine(1), 0))).mul(0.1)).out()",
+ "workletInputs": [],
+ "sFreqText": "220",
+ "codeAfterSubstitution": "sine(220).mul(add(and(gt(sine(3), 0), lt(sine(5), 0.5)), or(gt(sine(2), 0), gt(sine(9), 0)), xor(gt(sine(4), 0), gt(sine(6), 0)), ifelse(gt(sine(1), 0), 0.1, 0.2), not(gt(sine(1), 0)), bool(gt(sine(1), 0))).mul(0.1)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(220,0,0); /* sine */\nr[3] = nodes[1].update(3,0,0); /* sine */\nr[5] = r[3] > 0;\nr[7] = nodes[2].update(5,0,0); /* sine */\nr[9] = r[7] < 0.5;\nr[10] = r[5] && r[9] ? 1 : 0;\nr[12] = nodes[3].update(2,0,0); /* sine */\nr[14] = r[12] > 0;\nr[16] = nodes[4].update(9,0,0); /* sine */\nr[18] = r[16] > 0;\nr[19] = r[14] || r[18] ? 1 : 0;\nr[21] = nodes[5].update(4,0,0); /* sine */\nr[23] = r[21] > 0;\nr[25] = nodes[6].update(6,0,0); /* sine */\nr[27] = r[25] > 0;\nr[28] = r[23] != r[27] ? 1 : 0;\nr[30] = nodes[7].update(1,0,0); /* sine */\nr[32] = r[30] > 0;\nr[35] = (r[32] === 1 ? 0.1 : 0.2);\nr[37] = nodes[8].update(1,0,0); /* sine */\nr[39] = r[37] > 0;\nr[40] = (r[39] === 0 ? 1 : 0);\nr[42] = nodes[9].update(1,0,0); /* sine */\nr[44] = r[42] > 0;\nr[45] = (r[44] === 0 ? 0 : 1);\nr[46] = r[10] + r[19] + r[28] + r[35] + r[40] + r[45];\nr[48] = r[46] * 0.1;\nr[49] = r[1] * r[48];\no[0] = o[0] + r[49]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[49]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   220
+  ],
+  [
+   3
+  ],
+  [
+   5
+  ],
+  [
+   2
+  ],
+  [
+   9
+  ],
+  [
+   4
+  ],
+  [
+   6
+  ],
+  [
+   1
+  ],
+  [
+   1
+  ],
+  [
+   1
+  ],
+  [
+   "r[49]",
+   0
+  ],
+  [
+   "r[49]",
+   1
+  ]
+ ],
+ "registers": 55,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.41999998688697815,
+ "rms": 0.21694540579490987,
+ "comment": "JS booleans from greater/lower: ifelse always picks b, not() is 0, bool() is 1 (spec quirk 8)"
+}

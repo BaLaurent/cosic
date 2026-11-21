@@ -1,0 +1,58 @@
+{
+ "id": "lcg-reset",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "rng(1, impulse(20)).mul(0.3).add(rng(impulse(200))).mul(0.5).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "rng(1, impulse(20)).mul(0.3).add(rng(impulse(200))).mul(0.5).out()",
+ "compiledSrc": "r[2] = nodes[0].update(20,0); /* impulse */\nr[3] = nodes[1].update(1,r[2]); /* lcgnoise */\nr[5] = r[3] * 0.3;\nr[7] = nodes[2].update(200,0); /* impulse */\nr[8] = nodes[3].update(r[7],0); /* lcgnoise */\nr[9] = r[5] + r[8];\nr[11] = r[9] * 0.5;\no[0] = o[0] + r[11]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[11]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "ImpulseOsc",
+  "LcgNoise",
+  "ImpulseOsc",
+  "LcgNoise",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   20
+  ],
+  [
+   1,
+   "r[2]"
+  ],
+  [
+   200
+  ],
+  [
+   "r[7]"
+  ],
+  [
+   "r[11]",
+   0
+  ],
+  [
+   "r[11]",
+   1
+  ]
+ ],
+ "registers": 17,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.6477810144424438,
+ "rms": 0.31545948974873306,
+ "comment": "LcgNoise next/reset inputs"
+}

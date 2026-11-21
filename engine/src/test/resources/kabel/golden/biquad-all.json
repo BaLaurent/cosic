@@ -1,0 +1,104 @@
+{
+ "id": "biquad-all",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "pink().qf(impulse(40).seq(0,1,2,3,4,5,6,7), tri(4).rangex(200, 4000), 4, 2).add(saw(220).qbpf(800, 5)).add(saw(220).qnf(220, 3)).add(saw(220).qapf(440, 2)).mul(0.4).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "pink().qf(impulse(40).seq(0,1,2,3,4,5,6,7), tri(4).rangex(200, 4000), 4, 2).add(saw(220).qbpf(800, 5)).add(saw(220).qnf(220, 3)).add(saw(220).qapf(440, 2)).mul(0.4).out()",
+ "compiledSrc": "r[0] = nodes[0].update(); /* pink */\nr[2] = nodes[1].update(40,0); /* impulse */\nr[11] = nodes[2].update(r[2],0,1,2,3,4,5,6,7); /* seq */\nr[13] = nodes[3].update(4); /* tri */\nr[15] = r[13] + 1;\nr[17] = r[15] / 2;\nr[19] = Math.log(4000);\nr[21] = Math.log(200);\nr[22] = r[19] - r[21];\nr[23] = r[17] * r[22];\nr[24] = r[23] + r[21];\nr[25] = Math.exp(r[24]);\nr[28] = nodes[4].update(r[0],r[11],r[25],4,2); /* qf */\nr[30] = nodes[5].update(220); /* saw */\nr[34] = nodes[6].update(r[30],2,800,5); /* qf */\nr[35] = r[28] + r[34];\nr[37] = nodes[7].update(220); /* saw */\nr[41] = nodes[8].update(r[37],3,220,3); /* qf */\nr[42] = r[35] + r[41];\nr[44] = nodes[9].update(220); /* saw */\nr[48] = nodes[10].update(r[44],3,440,2); /* qf */\nr[49] = r[42] + r[48];\nr[51] = r[49] * 0.4;\no[0] = o[0] + r[51]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[51]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "PinkNoise",
+  "ImpulseOsc",
+  "Sequence",
+  "TriOsc",
+  "BiquadFilter",
+  "SawOsc",
+  "BiquadFilter",
+  "SawOsc",
+  "BiquadFilter",
+  "SawOsc",
+  "BiquadFilter",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [],
+  [
+   40
+  ],
+  [
+   "r[2]",
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  [
+   4
+  ],
+  [
+   "r[0]",
+   "r[11]",
+   "r[25]",
+   4,
+   2
+  ],
+  [
+   220
+  ],
+  [
+   "r[30]",
+   2,
+   800,
+   5
+  ],
+  [
+   220
+  ],
+  [
+   "r[37]",
+   3,
+   220,
+   3
+  ],
+  [
+   220
+  ],
+  [
+   "r[44]",
+   3,
+   440,
+   2
+  ],
+  [
+   "r[51]",
+   0
+  ],
+  [
+   "r[51]",
+   1
+  ]
+ ],
+ "registers": 57,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.9189294576644897,
+ "rms": 0.24152706440018945,
+ "comment": "qf types 0-7 stepped by a sequencer, qbpf/qnf/qapf (qapf is a notch)"
+}

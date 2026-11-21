@@ -1,0 +1,65 @@
+{
+ "id": "fold-dist",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "sine(110).fold(sine(0.5).range(0.2, 4)).distort(0.5).clip(-0.5, 0.5).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "sine(110).fold(sine(0.5).range(0.2, 4)).distort(0.5).clip(-0.5, 0.5).out()",
+ "compiledSrc": "r[1] = nodes[0].update(110,0,0); /* sine */\nr[3] = nodes[1].update(0.5,0,0); /* sine */\nr[6] = ((r[3] + 1) * 0.5) * (4 - 0.2) + 0.2;\nr[7] = nodes[2].update(r[1],r[6]); /* fold */\nr[9] = nodes[3].update(r[7],0.5); /* distort */\nr[12] = nodes[4].update(r[9],-0.5,0.5); /* clip */\no[0] = o[0] + r[12]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[12]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SineOsc",
+  "SineOsc",
+  "Fold",
+  "Distort",
+  "Clip",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   110
+  ],
+  [
+   0.5
+  ],
+  [
+   "r[1]",
+   "r[6]"
+  ],
+  [
+   "r[7]",
+   0.5
+  ],
+  [
+   "r[9]",
+   -0.5,
+   0.5
+  ],
+  [
+   "r[12]",
+   0
+  ],
+  [
+   "r[12]",
+   1
+  ]
+ ],
+ "registers": 18,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.5,
+ "rms": 0.46480143296760296,
+ "comment": null
+}

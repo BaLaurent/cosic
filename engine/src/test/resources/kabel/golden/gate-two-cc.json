@@ -1,0 +1,49 @@
+{
+ "id": "gate-two-cc",
+ "sampleRate": 48000,
+ "frames": 1920,
+ "block": 128,
+ "start": 0.004,
+ "gateEnd": 0.014,
+ "end": 0.034,
+ "duration": 0.01,
+ "release": 0.02,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "sGate.add(sGate).mul(0.25).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "cc('strudel-gate-4242').add(cc('strudel-gate-4242')).mul(0.25).out()",
+ "compiledSrc": "r[1] = nodes[0].update(\"strudel-gate-4242\"); /* cc */\nr[3] = nodes[1].update(\"strudel-gate-4242\"); /* cc */\nr[4] = r[1] + r[3];\nr[6] = r[4] * 0.25;\no[0] = o[0] + r[6]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[6]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "CC",
+  "CC",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   "\"strudel-gate-4242\""
+  ],
+  [
+   "\"strudel-gate-4242\""
+  ],
+  [
+   "r[6]",
+   0
+  ],
+  [
+   "r[6]",
+   1
+  ]
+ ],
+ "registers": 12,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.5,
+ "rms": 0.30956959368344517,
+ "comment": "two gate ccs: only the last is switched off"
+}

@@ -76,6 +76,7 @@ internal class StageGroup(
     sampleRate: Int,
     vocoders: GrowablePool<PhaseVocoder> = GrowablePool(VOCODER_LIMIT, 0) { PhaseVocoder() },
 ) {
+    val kabel = KabelStage()
     val stretch = StretchStage(sampleRate, vocoders)
     val transient = TransientStage(sampleRate)
     val gain = GainStage(sampleRate)
@@ -95,7 +96,7 @@ internal class StageGroup(
     val reverb = InChainReverb(sampleRate)
 
     private val stages: Array<ChainStage> = arrayOf(
-        stretch, transient, gain, lowpass, highpass, bandpass, vowel, coarse, crush, shape, distort, tremolo, compressor, pan, phaser,
+        kabel, stretch, transient, gain, lowpass, highpass, bandpass, vowel, coarse, crush, shape, distort, tremolo, compressor, pan, phaser,
         delay, reverb,
     )
     private val active = BooleanArray(stages.size)

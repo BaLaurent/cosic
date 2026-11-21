@@ -1,0 +1,73 @@
+{
+ "id": "perc-adsr-chain",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": "D4",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "impulse(10).perc(0.05).mul(sine(sFreq)).add(sGate.adsr(0.002, 0.05, 0.4, 0.05).mul(saw(sFreq)).mul(0.5)).mul(0.3).out()",
+ "workletInputs": [],
+ "sFreqText": "293.6647679174076",
+ "codeAfterSubstitution": "impulse(10).perc(0.05).mul(sine(293.6647679174076)).add(cc('strudel-gate-4242').adsr(0.002, 0.05, 0.4, 0.05).mul(saw(293.6647679174076)).mul(0.5)).mul(0.3).out()",
+ "compiledSrc": "r[1] = nodes[0].update(10,0); /* impulse */\nr[6] = nodes[1].update(time,r[1],0,0,1,0.05); /* adsr */\nr[8] = nodes[2].update(293.6647679174076,0,0); /* sine */\nr[9] = r[6] * r[8];\nr[11] = nodes[3].update(\"strudel-gate-4242\"); /* cc */\nr[16] = nodes[4].update(time,r[11],0.002,0.05,0.4,0.05); /* adsr */\nr[18] = nodes[5].update(293.6647679174076); /* saw */\nr[19] = r[16] * r[18];\nr[21] = r[19] * 0.5;\nr[22] = r[9] + r[21];\nr[24] = r[22] * 0.3;\no[0] = o[0] + r[24]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[24]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "ImpulseOsc",
+  "ADSRNode",
+  "SineOsc",
+  "CC",
+  "ADSRNode",
+  "SawOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   10
+  ],
+  [
+   "r[1]",
+   0,
+   0,
+   1,
+   0.05
+  ],
+  [
+   293.6647679174076
+  ],
+  [
+   "\"strudel-gate-4242\""
+  ],
+  [
+   "r[11]",
+   0.002,
+   0.05,
+   0.4,
+   0.05
+  ],
+  [
+   293.6647679174076
+  ],
+  [
+   "r[24]",
+   0
+  ],
+  [
+   "r[24]",
+   1
+  ]
+ ],
+ "registers": 30,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.38803204894065857,
+ "rms": 0.1297943946522684,
+ "comment": "perc module + adsr with gate"
+}

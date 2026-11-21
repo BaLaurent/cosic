@@ -1,0 +1,67 @@
+{
+ "id": "feedback-fn",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": "A3",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "impulse(8).ad(0.001, 0.02).mul(sine(sFreq)).feedback(x => x.delay(0.05).mul(0.5)).add(feedback(x => x.delay(0.07).mul(0.4))).out()",
+ "workletInputs": [],
+ "sFreqText": "220",
+ "codeAfterSubstitution": "impulse(8).ad(0.001, 0.02).mul(sine(220)).feedback(x => x.delay(0.05).mul(0.5)).add(feedback(x => x.delay(0.07).mul(0.4))).out()",
+ "compiledSrc": "r[1] = nodes[0].update(8,0); /* impulse */\nr[5] = nodes[1].update(time,r[1],0.001,0.02,0,0.02); /* adsr */\nr[7] = nodes[2].update(220,0,0); /* sine */\nr[8] = r[5] * r[7];\nr[10] = nodes[3].update(r[13],0.05); /* delay */\nr[12] = r[10] * 0.5;\nr[13] = r[8] + r[12];\nr[15] = nodes[4].update(r[18],0.07); /* delay */\nr[17] = r[15] * 0.4;\nr[18] = r[17];\nr[19] = r[13] + r[18];\no[0] = o[0] + r[19]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[19]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "ImpulseOsc",
+  "ADSRNode",
+  "SineOsc",
+  "Delay",
+  "Delay",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   8
+  ],
+  [
+   "r[1]",
+   0.001,
+   0.02,
+   0,
+   0.02
+  ],
+  [
+   220
+  ],
+  [
+   "r[13]",
+   0.05
+  ],
+  [
+   "r[18]",
+   0.07
+  ],
+  [
+   "r[19]",
+   0
+  ],
+  [
+   "r[19]",
+   1
+  ]
+ ],
+ "registers": 25,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.9948505163192749,
+ "rms": 0.22581878195324398,
+ "comment": "legacy feedback()"
+}

@@ -1,0 +1,86 @@
+{
+ "id": "logic-trig-arg",
+ "sampleRate": 48000,
+ "frames": 10368,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.2,
+ "end": 0.21000000000000002,
+ "duration": 0.2,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "pulse(3, .5).trig().ar(0.01, 0.1).mul(sine(330)).add(argmax(saw(1), saw(3), saw(5)).mul(0.1)).add(argmin(saw(1), saw(3), saw(5)).mul(0.1)).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "pulse(3, .5).trig().ar(0.01, 0.1).mul(sine(330)).add(argmax(saw(1), saw(3), saw(5)).mul(0.1)).add(argmin(saw(1), saw(3), saw(5)).mul(0.1)).out()",
+ "compiledSrc": "r[2] = nodes[0].update(3,0.5); /* pulse */\nr[3] = nodes[1].update(r[2],-1,1); /* trig */\nr[8] = nodes[2].update(time,r[3],0.01,0,1,0.1); /* adsr */\nr[10] = nodes[3].update(330,0,0); /* sine */\nr[11] = r[8] * r[10];\nr[13] = nodes[4].update(1); /* saw */\nr[15] = nodes[5].update(3); /* saw */\nr[17] = nodes[6].update(5); /* saw */\nr[18] = (([r[13], 0][0] > [r[15], 1][0] ? [r[13], 0] : [r[15], 1])[0] > [r[17], 2][0] ? ([r[13], 0][0] > [r[15], 1][0] ? [r[13], 0] : [r[15], 1]) : [r[17], 2])[1];\nr[20] = r[18] * 0.1;\nr[21] = r[11] + r[20];\nr[23] = nodes[7].update(1); /* saw */\nr[25] = nodes[8].update(3); /* saw */\nr[27] = nodes[9].update(5); /* saw */\nr[28] = (([r[23], 0][0] < [r[25], 1][0] ? [r[23], 0] : [r[25], 1])[0] < [r[27], 2][0] ? ([r[23], 0][0] < [r[25], 1][0] ? [r[23], 0] : [r[25], 1]) : [r[27], 2])[1];\nr[30] = r[28] * 0.1;\nr[31] = r[21] + r[30];\no[0] = o[0] + r[31]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[31]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "PulseOsc",
+  "Trig",
+  "ADSRNode",
+  "SineOsc",
+  "SawOsc",
+  "SawOsc",
+  "SawOsc",
+  "SawOsc",
+  "SawOsc",
+  "SawOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   3,
+   0.5
+  ],
+  [
+   "r[2]"
+  ],
+  [
+   "r[3]",
+   0.01,
+   0,
+   1,
+   0.1
+  ],
+  [
+   330
+  ],
+  [
+   1
+  ],
+  [
+   3
+  ],
+  [
+   5
+  ],
+  [
+   1
+  ],
+  [
+   3
+  ],
+  [
+   5
+  ],
+  [
+   "r[31]",
+   0
+  ],
+  [
+   "r[31]",
+   1
+  ]
+ ],
+ "registers": 37,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 1.1860079765319824,
+ "rms": 0.3265188829628548,
+ "comment": null
+}

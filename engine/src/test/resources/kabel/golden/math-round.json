@@ -1,0 +1,65 @@
+{
+ "id": "math-round",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": "A3",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "add(saw(3).mul(4).round().mul(0.05), saw(5).mul(3).floor().mul(0.05), saw(7).mul(3).ceil().mul(0.05), sine(9).sign().mul(0.1), sine(11).abs().mul(0.05), n(3).div(7).add(1).sub(0.5).mod(0.3).mul(0.2)).add(sine(sFreq).mul(0.1)).out()",
+ "workletInputs": [],
+ "sFreqText": "220",
+ "codeAfterSubstitution": "add(saw(3).mul(4).round().mul(0.05), saw(5).mul(3).floor().mul(0.05), saw(7).mul(3).ceil().mul(0.05), sine(9).sign().mul(0.1), sine(11).abs().mul(0.05), n(3).div(7).add(1).sub(0.5).mod(0.3).mul(0.2)).add(sine(220).mul(0.1)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(3); /* saw */\nr[3] = r[1] * 4;\nr[4] = Math.round(r[3]);\nr[6] = r[4] * 0.05;\nr[8] = nodes[1].update(5); /* saw */\nr[10] = r[8] * 3;\nr[11] = Math.floor(r[10]);\nr[13] = r[11] * 0.05;\nr[15] = nodes[2].update(7); /* saw */\nr[17] = r[15] * 3;\nr[18] = Math.ceil(r[17]);\nr[20] = r[18] * 0.05;\nr[22] = nodes[3].update(9,0,0); /* sine */\nr[23] = Math.sign(r[22]);\nr[25] = r[23] * 0.1;\nr[27] = nodes[4].update(11,0,0); /* sine */\nr[28] = Math.abs(r[27]);\nr[30] = r[28] * 0.05;\nr[33] = 3 / 7;\nr[35] = r[33] + 1;\nr[37] = r[35] - 0.5;\nr[39] = r[37]%0.3;\nr[41] = r[39] * 0.2;\nr[42] = r[6] + r[13] + r[20] + r[25] + r[30] + r[41];\nr[44] = nodes[5].update(220,0,0); /* sine */\nr[46] = r[44] * 0.1;\nr[47] = r[42] + r[46];\no[0] = o[0] + r[47]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[47]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SawOsc",
+  "SawOsc",
+  "SawOsc",
+  "SineOsc",
+  "SineOsc",
+  "SineOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   3
+  ],
+  [
+   5
+  ],
+  [
+   7
+  ],
+  [
+   9
+  ],
+  [
+   11
+  ],
+  [
+   220
+  ],
+  [
+   "r[47]",
+   0
+  ],
+  [
+   "r[47]",
+   1
+  ]
+ ],
+ "registers": 53,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.45191270112991333,
+ "rms": 0.18534393016053108,
+ "comment": "round floor ceil sign abs div sub mod"
+}

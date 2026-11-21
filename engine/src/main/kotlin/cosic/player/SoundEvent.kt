@@ -9,6 +9,7 @@ import cosic.audio.ParamSet
 import cosic.audio.STRING_KEYS
 import cosic.audio.VoiceParams
 import cosic.audio.VoiceSource
+import cosic.audio.sources.asSourceControls
 import cosic.pattern.ControlMap
 import cosic.pattern.Undefined
 import cosic.pattern.jsStringToNumber
@@ -31,25 +32,37 @@ internal class SoundEvent(val startFrame: Long, val voice: VoiceParams)
  * as a list of one. `note`, `freq` and `octave` are not parameters: the sound that plays the event reads them from the control map, as superdough's sources do
  * (a `note` that is a name and no note is an error of the sound lookup, see [SoundResolver]). A `gain` that is not a number counts as 1 (`nanFallback(gain, 1)`). Controls that
  * were not set stay NaN, so the voice applies its own defaults.
+ *
+ * With a [kabel] factory, every chain whose controls hold a `workletSrc` (`K(...)`, `worklet(...)`) gets the program that runs it, made in the order superdough
+ * sends them to the worklets (the `FX(...)` elements, then the event) and with the frequency `sFreq` stands for always that of the event. A program that does not
+ * compile is a [cosic.pattern.CosicError], the event's own error.
  */
-internal fun voiceParams(controls: ControlMap, source: VoiceSource, durationSec: Double, cps: Double, cycle: Double): VoiceParams {
-    val main = paramSetOf(controls)
+internal fun voiceParams(
+    controls: ControlMap,
+    source: VoiceSource,
+    durationSec: Double,
+    cps: Double,
+    cycle: Double,
+    kabel: cosic.kabel.KabelFactory? = null,
+): VoiceParams {
     val fxElements = (controls["FX"] as? List<*>)?.filterIsInstance<Map<*, *>>().orEmpty()
     if (fxElements.size > MAX_FX) logger("only the first $MAX_FX FX(...) elements are used, ${fxElements.size - MAX_FX} dropped", "warning", null)
     val fx = ArrayList<ParamSet>(fxElements.size.coerceAtMost(MAX_FX))
     val mods = ArrayList<ModSpec>()
+    val eventControls = if (kabel != null) controls.asSourceControls() else null
     for (i in 0 until fxElements.size.coerceAtMost(MAX_FX)) {
         @Suppress("UNCHECKED_CAST")
         val element = fxElements[i] as Map<String, Any?>
-        fx.add(paramSetOf(element))
+        fx.add(paramSetOf(element, kabel?.create(element["workletSrc"], element["workletInputs"], eventControls!!)))
         addModulators(element, i.toString(), mods)
     }
+    val main = paramSetOf(controls, kabel?.create(controls["workletSrc"], controls["workletInputs"], eventControls!!))
     addModulators(controls, "main", mods)
     return VoiceParams(source, durationSec, cps, cycle, main, fx, mods)
 }
 
-/** [ParamSet] of one control map; see [voiceParams]. */
-internal fun paramSetOf(controls: Map<String, Any?>): ParamSet {
+/** [ParamSet] of one control map, with the kabelsalat program [kabel] of its chain when it has one; see [voiceParams]. */
+internal fun paramSetOf(controls: Map<String, Any?>, kabel: cosic.kabel.KabelInstance? = null): ParamSet {
     val values = DoubleArray(Param.COUNT) { Double.NaN }
     var strings: HashMap<String, String>? = null
     var lists: HashMap<String, DoubleArray>? = null
@@ -92,7 +105,7 @@ internal fun paramSetOf(controls: Map<String, Any?>): ParamSet {
     // gain = applyGainCurve(nanFallback(gain, 1)): a gain that is no number is 1, not the default 0.8
     val rawGain = controls["gain"]
     if (rawGain != null && rawGain !== Undefined && values[Param.gain.ordinal].isNaN()) values[Param.gain.ordinal] = 1.0
-    return ParamSet(values, strings ?: emptyMap(), lists ?: emptyMap())
+    return ParamSet(values, strings ?: emptyMap(), lists ?: emptyMap(), kabel)
 }
 
 /**

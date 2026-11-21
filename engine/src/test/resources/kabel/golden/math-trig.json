@@ -1,0 +1,69 @@
+{
+ "id": "math-trig",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": "A3",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "add(sine(3).sin().mul(0.1), saw(5).cos().mul(0.1), sine(7).tan().clamp(-1, 1).mul(0.05), saw(5).clamp(-0.9, 0.9).asin().mul(0.05), sine(2).acos().mul(0.03), saw(3).atan().mul(0.1)).add(sine(sFreq).mul(0.1)).out()",
+ "workletInputs": [],
+ "sFreqText": "220",
+ "codeAfterSubstitution": "add(sine(3).sin().mul(0.1), saw(5).cos().mul(0.1), sine(7).tan().clamp(-1, 1).mul(0.05), saw(5).clamp(-0.9, 0.9).asin().mul(0.05), sine(2).acos().mul(0.03), saw(3).atan().mul(0.1)).add(sine(220).mul(0.1)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(3,0,0); /* sine */\nr[2] = Math.sin(r[1]);\nr[4] = r[2] * 0.1;\nr[6] = nodes[1].update(5); /* saw */\nr[7] = Math.cos(r[6]);\nr[9] = r[7] * 0.1;\nr[11] = nodes[2].update(7,0,0); /* sine */\nr[12] = Math.tan(r[11]);\nr[15] = Math.min(Math.max(r[12], Math.min(-1, 1)), Math.max(-1, 1));\nr[17] = r[15] * 0.05;\nr[19] = nodes[3].update(5); /* saw */\nr[22] = Math.min(Math.max(r[19], Math.min(-0.9, 0.9)), Math.max(-0.9, 0.9));\nr[23] = Math.asin(r[22]);\nr[25] = r[23] * 0.05;\nr[27] = nodes[4].update(2,0,0); /* sine */\nr[28] = Math.acos(r[27]);\nr[30] = r[28] * 0.03;\nr[32] = nodes[5].update(3); /* saw */\nr[33] = Math.atan(r[32]);\nr[35] = r[33] * 0.1;\nr[36] = r[4] + r[9] + r[17] + r[25] + r[30] + r[35];\nr[38] = nodes[6].update(220,0,0); /* sine */\nr[40] = r[38] * 0.1;\nr[41] = r[36] + r[40];\no[0] = o[0] + r[41]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[41]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SineOsc",
+  "SawOsc",
+  "SineOsc",
+  "SawOsc",
+  "SineOsc",
+  "SawOsc",
+  "SineOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   3
+  ],
+  [
+   5
+  ],
+  [
+   7
+  ],
+  [
+   5
+  ],
+  [
+   2
+  ],
+  [
+   3
+  ],
+  [
+   220
+  ],
+  [
+   "r[41]",
+   0
+  ],
+  [
+   "r[41]",
+   1
+  ]
+ ],
+ "registers": 47,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.3319927155971527,
+ "rms": 0.19754798640171298,
+ "comment": "sin cos tan asin acos atan; acos(sine) is NaN-free because sine is within [-1,1]"
+}

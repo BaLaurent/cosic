@@ -232,6 +232,7 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
     @Synchronized
     fun resetSession() {
         session = ReplSession(host)
+        sounds.kabel.reset()
         prebaked = false
         host.cps = DEFAULT_CPS
     }

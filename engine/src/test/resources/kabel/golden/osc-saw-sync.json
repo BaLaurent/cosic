@@ -1,0 +1,65 @@
+{
+ "id": "osc-saw-sync",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": "A3",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "sine(220, impulse(30), 0.25).add(saw(sFreq)).add(sine(sFreq, 0, sine(5))).mul(0.2).out()",
+ "workletInputs": [],
+ "sFreqText": "220",
+ "codeAfterSubstitution": "sine(220, impulse(30), 0.25).add(saw(220)).add(sine(220, 0, sine(5))).mul(0.2).out()",
+ "compiledSrc": "r[2] = nodes[0].update(30,0); /* impulse */\nr[4] = nodes[1].update(220,r[2],0.25); /* sine */\nr[6] = nodes[2].update(220); /* saw */\nr[7] = r[4] + r[6];\nr[11] = nodes[3].update(5,0,0); /* sine */\nr[12] = nodes[4].update(220,0,r[11]); /* sine */\nr[13] = r[7] + r[12];\nr[15] = r[13] * 0.2;\no[0] = o[0] + r[15]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[15]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "ImpulseOsc",
+  "SineOsc",
+  "SawOsc",
+  "SineOsc",
+  "SineOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   30
+  ],
+  [
+   220,
+   "r[2]",
+   0.25
+  ],
+  [
+   220
+  ],
+  [
+   5
+  ],
+  [
+   220,
+   0,
+   "r[11]"
+  ],
+  [
+   "r[15]",
+   0
+  ],
+  [
+   "r[15]",
+   1
+  ]
+ ],
+ "registers": 21,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.5927510261535645,
+ "rms": 0.25697183402341595,
+ "comment": "sine sync + phase inputs, saw anti-aliasing at a high note"
+}

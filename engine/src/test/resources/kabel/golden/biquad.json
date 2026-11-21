@@ -1,0 +1,67 @@
+{
+ "id": "biquad",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "saw(110).qlpf(sine(2).rangex(200, 4000), 5).add(saw(110).qhpf(500, 2)).mul(0.2).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "saw(110).qlpf(sine(2).rangex(200, 4000), 5).add(saw(110).qhpf(500, 2)).mul(0.2).out()",
+ "compiledSrc": "r[1] = nodes[0].update(110); /* saw */\nr[4] = nodes[1].update(2,0,0); /* sine */\nr[6] = r[4] + 1;\nr[8] = r[6] / 2;\nr[10] = Math.log(4000);\nr[12] = Math.log(200);\nr[13] = r[10] - r[12];\nr[14] = r[8] * r[13];\nr[15] = r[14] + r[12];\nr[16] = Math.exp(r[15]);\nr[18] = nodes[2].update(r[1],0,r[16],5); /* qf */\nr[20] = nodes[3].update(110); /* saw */\nr[24] = nodes[4].update(r[20],1,500,2); /* qf */\nr[25] = r[18] + r[24];\nr[27] = r[25] * 0.2;\no[0] = o[0] + r[27]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[27]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SawOsc",
+  "SineOsc",
+  "BiquadFilter",
+  "SawOsc",
+  "BiquadFilter",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   110
+  ],
+  [
+   2
+  ],
+  [
+   "r[1]",
+   0,
+   "r[16]",
+   5
+  ],
+  [
+   110
+  ],
+  [
+   "r[20]",
+   1,
+   500,
+   2
+  ],
+  [
+   "r[27]",
+   0
+  ],
+  [
+   "r[27]",
+   1
+  ]
+ ],
+ "registers": 33,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.3489954173564911,
+ "rms": 0.13184855729988199,
+ "comment": null
+}

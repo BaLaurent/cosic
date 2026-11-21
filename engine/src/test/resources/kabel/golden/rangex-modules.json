@@ -1,0 +1,78 @@
+{
+ "id": "rangex-modules",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": "A3",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "sine(5).rangex(100, 2000).sine().mul(0.2).add(lfnoise(10).bipolar().mul(0.05)).add(sine(2).unipolar().mul(sine(sFreq)).mul(0.1)).add(saw(sFreq).hpf(0.5).mul(0.1)).out()",
+ "workletInputs": [],
+ "sFreqText": "220",
+ "codeAfterSubstitution": "sine(5).rangex(100, 2000).sine().mul(0.2).add(lfnoise(10).bipolar().mul(0.05)).add(sine(2).unipolar().mul(sine(220)).mul(0.1)).add(saw(220).hpf(0.5).mul(0.1)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(5,0,0); /* sine */\nr[3] = r[1] + 1;\nr[5] = r[3] / 2;\nr[7] = Math.log(2000);\nr[9] = Math.log(100);\nr[10] = r[7] - r[9];\nr[11] = r[5] * r[10];\nr[12] = r[11] + r[9];\nr[13] = Math.exp(r[12]);\nr[14] = nodes[1].update(r[13],0,0); /* sine */\nr[16] = r[14] * 0.2;\nr[17] = nodes[2].update(1); /* noise */\nr[19] = nodes[3].update(10,0); /* impulse */\nr[20] = nodes[4].update(r[17],r[19]); /* hold */\nr[22] = r[20] * 2;\nr[24] = r[22] - 1;\nr[26] = r[24] * 0.05;\nr[27] = r[16] + r[26];\nr[29] = nodes[5].update(2,0,0); /* sine */\nr[31] = r[29] + 1;\nr[33] = r[31] / 2;\nr[35] = nodes[6].update(220,0,0); /* sine */\nr[36] = r[33] * r[35];\nr[38] = r[36] * 0.1;\nr[39] = r[27] + r[38];\nr[41] = nodes[7].update(220); /* saw */\nr[44] = nodes[8].update(r[41],0.5,0); /* filter */\nr[45] = r[41] - r[44];\nr[47] = r[45] * 0.1;\nr[48] = r[39] + r[47];\no[0] = o[0] + r[48]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[48]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SineOsc",
+  "SineOsc",
+  "NoiseOsc",
+  "ImpulseOsc",
+  "Hold",
+  "SineOsc",
+  "SineOsc",
+  "SawOsc",
+  "Filter",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   5
+  ],
+  [
+   "r[13]"
+  ],
+  [],
+  [
+   10
+  ],
+  [
+   "r[17]",
+   "r[19]"
+  ],
+  [
+   2
+  ],
+  [
+   220
+  ],
+  [
+   220
+  ],
+  [
+   "r[41]",
+   0.5,
+   0
+  ],
+  [
+   "r[48]",
+   0
+  ],
+  [
+   "r[48]",
+   1
+  ]
+ ],
+ "registers": 54,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.4126836955547333,
+ "rms": 0.15879026010440522,
+ "comment": "rangex/lfnoise/bipolar/unipolar/hpf modules"
+}

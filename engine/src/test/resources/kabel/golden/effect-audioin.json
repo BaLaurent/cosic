@@ -1,0 +1,55 @@
+{
+ "id": "effect-audioin",
+ "sampleRate": 48000,
+ "frames": 10368,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.2,
+ "end": 0.21000000000000002,
+ "duration": 0.2,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "audioin().mul(sGate.adsr(0.001, 0.3, 0, 0.2)).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "audioin().mul(cc('strudel-gate-4242').adsr(0.001, 0.3, 0, 0.2)).out()",
+ "compiledSrc": "r[0] = nodes[0].update(input); /* audioin */\nr[2] = nodes[1].update(\"strudel-gate-4242\"); /* cc */\nr[7] = nodes[2].update(time,r[2],0.001,0.3,0,0.2); /* adsr */\nr[8] = r[0] * r[7];\no[0] = o[0] + r[8]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[8]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "AudioIn",
+  "CC",
+  "ADSRNode",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [],
+  [
+   "\"strudel-gate-4242\""
+  ],
+  [
+   "r[2]",
+   0.001,
+   0.3,
+   0,
+   0.2
+  ],
+  [
+   "r[8]",
+   0
+  ],
+  [
+   "r[8]",
+   1
+  ]
+ ],
+ "registers": 14,
+ "rngSeed": 1,
+ "input": "ramp",
+ "peak": 0.49822917580604553,
+ "rms": 0.19389225799383342,
+ "comment": "input ramp: ((blk*128+i)%100)/100-0.5 on channel 0 of input 0"
+}

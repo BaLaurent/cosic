@@ -1,0 +1,82 @@
+{
+ "id": "pick-remap-clip",
+ "sampleRate": 48000,
+ "frames": 10368,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.2,
+ "end": 0.21000000000000002,
+ "duration": 0.2,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "saw(8).range(0, 2).floor().pick(sine(220), saw(220), pulse(220)).add(sine(4).remap(-1, 1, 0, 2).mul(0.1)).clip(-0.5, 0.5).mul(0.3).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "saw(8).range(0, 2).floor().pick(sine(220), saw(220), pulse(220)).add(sine(4).remap(-1, 1, 0, 2).mul(0.1)).clip(-0.5, 0.5).mul(0.3).out()",
+ "compiledSrc": "r[1] = nodes[0].update(8); /* saw */\nr[4] = ((r[1] + 1) * 0.5) * (2 - 0) + 0;\nr[5] = Math.floor(r[4]);\nr[7] = nodes[1].update(220,0,0); /* sine */\nr[9] = nodes[2].update(220); /* saw */\nr[11] = nodes[3].update(220,0.5); /* pulse */\nr[12] = nodes[4].update(r[5],r[7],r[9],r[11]); /* pick */\nr[14] = nodes[5].update(4,0,0); /* sine */\nr[19] = nodes[6].update(r[14],-1,1,0,2); /* remap */\nr[21] = r[19] * 0.1;\nr[22] = r[12] + r[21];\nr[25] = nodes[7].update(r[22],-0.5,0.5); /* clip */\nr[27] = r[25] * 0.3;\no[0] = o[0] + r[27]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[27]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SawOsc",
+  "SineOsc",
+  "SawOsc",
+  "PulseOsc",
+  "Pick",
+  "SineOsc",
+  "Remap",
+  "Clip",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   8
+  ],
+  [
+   220
+  ],
+  [
+   220
+  ],
+  [
+   220
+  ],
+  [
+   "r[5]",
+   "r[7]",
+   "r[9]",
+   "r[11]"
+  ],
+  [
+   4
+  ],
+  [
+   "r[14]",
+   -1,
+   1,
+   0,
+   2
+  ],
+  [
+   "r[22]",
+   -0.5,
+   0.5
+  ],
+  [
+   "r[27]",
+   0
+  ],
+  [
+   "r[27]",
+   1
+  ]
+ ],
+ "registers": 33,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.15000000596046448,
+ "rms": 0.125588560693044,
+ "comment": "Pick, Remap, Clip"
+}

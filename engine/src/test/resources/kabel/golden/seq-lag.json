@@ -1,0 +1,62 @@
+{
+ "id": "seq-lag",
+ "sampleRate": 48000,
+ "frames": 12800,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.25,
+ "end": 0.26,
+ "duration": 0.25,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "impulse(8).seq(220, 330, 440, 550).lag(0.1).sine().mul(0.3).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "impulse(8).seq(220, 330, 440, 550).lag(0.1).sine().mul(0.3).out()",
+ "compiledSrc": "r[1] = nodes[0].update(8,0); /* impulse */\nr[6] = nodes[1].update(r[1],220,330,440,550); /* seq */\nr[8] = nodes[2].update(r[6],0.1); /* lag */\nr[9] = nodes[3].update(r[8],0,0); /* sine */\nr[11] = r[9] * 0.3;\no[0] = o[0] + r[11]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[11]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "ImpulseOsc",
+  "Sequence",
+  "Lag",
+  "SineOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   8
+  ],
+  [
+   "r[1]",
+   220,
+   330,
+   440,
+   550
+  ],
+  [
+   "r[6]",
+   0.1
+  ],
+  [
+   "r[8]"
+  ],
+  [
+   "r[11]",
+   0
+  ],
+  [
+   "r[11]",
+   1
+  ]
+ ],
+ "registers": 17,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.30000001192092896,
+ "rms": 0.2093712604357916,
+ "comment": null
+}

@@ -142,4 +142,49 @@ class RenderAllocationTest {
     private companion object {
         const val ATTEMPTS = 6
     }
+
+    /**
+     * Kabelsalat programs, the generic processor as the first stage of a chain: a source with an envelope, a filter and feedback delays; an effect on the sound of the event (biquad,
+     * noise, a parameter that follows a lfo); programs that are `FX(...)` elements ahead of the main chain. Instances are made (and their rings allocated) before the measured part;
+     * rendering them must not allocate. The loop that runs a program is compiled by the JIT late and may deoptimize once on a branch it had not seen (a few dozen bytes, once), so the
+     * warm-up runs until it has seen them all.
+     */
+    private fun kabelVoices(): List<VoiceParams> = listOf(
+        kabelVp(
+            0.4, "saw(sFreq).mul(sGate.adsr(0.01, 0.1, 0.5, 0.1)).lpf(0.4).add(x => x.delay(0.1).mul(0.5)).add(x => x.delay(n(0.01).mul(2)).mul(0.2)).out()",
+            emptyList(), "note" to 50.0, "room" to 0.2,
+        ),
+        kabelVp(
+            0.3, "audioin().qlpf(sine(2).rangex(200, 4000), 5).add(noise().mul(0.05)).add(pink().mul(0.02)).add(brown().mul(0.01)).add(rng().mul(0.01)).mul(0.5).out()",
+            emptyList(), "note" to 60.0, "pan" to 0.3, "cutoff" to 3000.0,
+        ),
+        kabelVp(
+            0.3, "audioin().mul(0.5).out()", emptyList(), "note" to 55.0,
+            "FX" to listOf(mapOf("workletSrc" to "audioin().mul(0.7).clip(-0.5, 0.5).out()", "workletInputs" to emptyList<Any?>())),
+        ),
+        kabelVp(
+            0.3, "impulse(8).seq(220, 330, 440).lag(0.05).sine().mul(sGate.ar(0.01, 0.1)).add(dust(40).mul(0.1)).mul(0.5).out([0, 1])",
+            emptyList(), "note" to 62.0, "delay" to 0.3, "delaytime" to 0.1,
+        ),
+    )
+
+    @Test
+    fun kabelsalatVoicesDoNotAllocate() {
+        val mixer = Mixer(SR)
+        val out = FloatArray(512)
+
+        fun workload(voices: List<VoiceParams>) {
+            for (i in voices.indices) mixer.startVoice(voices[i])
+            for (block in 0 until 120) mixer.render(out, 256)
+            mixer.stopAll(5)
+            mixer.render(out, 256)
+        }
+
+        repeat(30) { workload(kabelVoices()) }
+        val measured = kabelVoices()
+        val before = threads.currentThreadAllocatedBytes
+        workload(measured)
+        val allocated = threads.currentThreadAllocatedBytes - before
+        assertEquals(0L, allocated, "rendering allocated $allocated bytes")
+    }
 }

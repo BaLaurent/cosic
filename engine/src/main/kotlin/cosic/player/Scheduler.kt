@@ -162,6 +162,8 @@ internal fun lookAhead(
             val lookup = sounds.resolve(controls, hapSeconds(controls, whole.end - whole.begin, cps), cps)
             if (lookup is SoundLookup.Unknown) warnings.add(unknownSoundWarning(lookup.key))
             if (lookup is SoundLookup.Loading) loading++
+            // a K(...) program is compiled here, off the audio thread, and a program that does not compile rejects this evaluation (a CosicError)
+            if (lookup is SoundLookup.Ready || lookup === SoundLookup.Loading) sounds.kabel.warm(controls)
         }
         begin += CHUNK
     }
@@ -397,7 +399,7 @@ internal class Scheduler(
             is SoundLookup.Ready -> {
                 val cycle = checkNotNull(hap.whole).begin.toDouble()
                 // an event with `stretch` starts early by the vocoder's latency (superdough.mjs:468-473); its highlight stays where it is heard
-                val voice = voiceParams(controls, lookup.source, seconds, tempo, cycle)
+                val voice = voiceParams(controls, lookup.source, seconds, tempo, cycle, sounds.kabel)
                 // the tap of the analyser the voice feeds is made here, so that the audio thread, which adds to it, never has to
                 voice.main.str("analyze")?.let { scopes?.prepare(it) }
                 events.add(SoundEvent(start - stretchLeadFrames(controls), voice))

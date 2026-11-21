@@ -1,0 +1,61 @@
+{
+ "id": "math-minmax",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": "A3",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "add(min(sine(3), saw(5)).mul(0.2), max(sine(7), saw(4), n(0.1)).mul(0.1), n(2).exp().mul(0.01), n(10).log().mul(0.02), n(3).midinote().mul(0.0001)).add(sine(sFreq).mul(0.1)).out()",
+ "workletInputs": [],
+ "sFreqText": "220",
+ "codeAfterSubstitution": "add(min(sine(3), saw(5)).mul(0.2), max(sine(7), saw(4), n(0.1)).mul(0.1), n(2).exp().mul(0.01), n(10).log().mul(0.02), n(3).midinote().mul(0.0001)).add(sine(220).mul(0.1)).out()",
+ "compiledSrc": "r[1] = nodes[0].update(3,0,0); /* sine */\nr[3] = nodes[1].update(5); /* saw */\nr[4] = Math.min(r[1], r[3]);\nr[6] = r[4] * 0.2;\nr[8] = nodes[2].update(7,0,0); /* sine */\nr[10] = nodes[3].update(4); /* saw */\nr[12] = Math.max(Math.max(r[8], r[10]), 0.1);\nr[14] = r[12] * 0.1;\nr[16] = Math.exp(2);\nr[18] = r[16] * 0.01;\nr[20] = Math.log(10);\nr[22] = r[20] * 0.02;\nr[24] = (2 ** ((3 - 69) / 12) * 440);\nr[26] = r[24] * 0.0001;\nr[27] = r[6] + r[14] + r[18] + r[22] + r[26];\nr[29] = nodes[4].update(220,0,0); /* sine */\nr[31] = r[29] * 0.1;\nr[32] = r[27] + r[31];\no[0] = o[0] + r[32]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[32]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SineOsc",
+  "SawOsc",
+  "SineOsc",
+  "SawOsc",
+  "SineOsc",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   3
+  ],
+  [
+   5
+  ],
+  [
+   7
+  ],
+  [
+   4
+  ],
+  [
+   220
+  ],
+  [
+   "r[32]",
+   0
+  ],
+  [
+   "r[32]",
+   1
+  ]
+ ],
+ "registers": 38,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.4536948502063751,
+ "rms": 0.23808544753301142,
+ "comment": "min/max with 2 and 3 inputs, exp, log, midinote"
+}

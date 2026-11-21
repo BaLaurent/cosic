@@ -1,0 +1,55 @@
+{
+ "id": "filter-reso",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": "A2",
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "saw(sFreq).lpf(sine(2).range(0.1, 0.8), 0.9).mul(0.3).out()",
+ "workletInputs": [],
+ "sFreqText": "110",
+ "codeAfterSubstitution": "saw(110).lpf(sine(2).range(0.1, 0.8), 0.9).mul(0.3).out()",
+ "compiledSrc": "r[1] = nodes[0].update(110); /* saw */\nr[3] = nodes[1].update(2,0,0); /* sine */\nr[6] = ((r[3] + 1) * 0.5) * (0.8 - 0.1) + 0.1;\nr[8] = nodes[2].update(r[1],r[6],0.9); /* filter */\nr[10] = r[8] * 0.3;\no[0] = o[0] + r[10]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\no[1] = o[1] + r[10]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "SawOsc",
+  "SineOsc",
+  "Filter",
+  "Output",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   110
+  ],
+  [
+   2
+  ],
+  [
+   "r[1]",
+   "r[6]",
+   0.9
+  ],
+  [
+   "r[10]",
+   0
+  ],
+  [
+   "r[10]",
+   1
+  ]
+ ],
+ "registers": 16,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 2.3219332695007324,
+ "rms": 0.9606120557032357,
+ "comment": "Filter with resonance input"
+}

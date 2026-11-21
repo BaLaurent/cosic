@@ -1,0 +1,49 @@
+{
+ "id": "multichannel-fork",
+ "sampleRate": 48000,
+ "frames": 6528,
+ "block": 128,
+ "start": 0,
+ "gateEnd": 0.12,
+ "end": 0.13,
+ "duration": 0.12,
+ "release": null,
+ "fxRelease": null,
+ "note": null,
+ "freq": null,
+ "octave": null,
+ "chainId": 4242,
+ "workletSrc": "zaw(100).fork(2).mul([0.1, 0.2]).out()",
+ "workletInputs": [],
+ "sFreqText": "65.40639132514966",
+ "codeAfterSubstitution": "zaw(100).fork(2).mul([0.1, 0.2]).out()",
+ "compiledSrc": "r[1] = nodes[0].update(100); /* zaw */\nr[3] = r[1] * 0.1;\no[0] = o[0] + r[3]; /* + output 0 */\ns[0] = o[0]; /* write source 0 */\nr[6] = nodes[2].update(100); /* zaw */\nr[8] = r[6] * 0.2;\no[1] = o[1] + r[8]; /* + output 1 */\ns[1] = o[1]; /* write source 1 */",
+ "ugenTypes": [
+  "ZawOsc",
+  "Output",
+  "ZawOsc",
+  "Output"
+ ],
+ "ugenInputs": [
+  [
+   100
+  ],
+  [
+   "r[3]",
+   0
+  ],
+  [
+   100
+  ],
+  [
+   "r[8]",
+   1
+  ]
+ ],
+ "registers": 12,
+ "rngSeed": 1,
+ "input": "none",
+ "peak": 0.20000000298023224,
+ "rms": 0.08984550385541565,
+ "comment": null
+}

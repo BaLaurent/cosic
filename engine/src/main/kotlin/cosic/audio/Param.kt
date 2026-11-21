@@ -185,6 +185,8 @@ internal class ParamSet(
     val values: DoubleArray = DoubleArray(Param.COUNT) { Double.NaN },
     val strings: Map<String, String> = emptyMap(),
     val lists: Map<String, DoubleArray> = emptyMap(),
+    /** The kabelsalat program of this chain (the `workletSrc` of the controls), made by [cosic.kabel.KabelFactory]; null when the chain has none. */
+    val kabel: cosic.kabel.KabelInstance? = null,
 ) {
     operator fun get(p: Param): Double = values[p.ordinal]
 
