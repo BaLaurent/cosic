@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="mqtt_password_title">MQTT password</string>
-    <string name="mqtt_password_message">The broker at %2$s asks for the password of %1$s.</string>
-    <string name="mqtt_password_label">Password</string>
-    <string name="mqtt_password_connect">Connect</string>
-</resources>

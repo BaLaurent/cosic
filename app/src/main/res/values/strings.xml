@@ -152,4 +152,90 @@
 
     <!-- Credits -->
     <string name="credits_title">Credits &amp; licenses</string>
+
+    <!-- 4.5 -->
+    <!-- MIDI devices (Task 4.5) -->
+    <string name="midi_devices_title">MIDI devices</string>
+    <string name="midi_not_supported">This phone has no MIDI support.</string>
+    <string name="midi_outputs_title">Outputs</string>
+    <string name="midi_inputs_title">Inputs</string>
+    <string name="midi_no_outputs">No MIDI output. Connect a keyboard or synth over USB, or add a Bluetooth device below.</string>
+    <string name="midi_no_inputs">No MIDI input.</string>
+    <string name="midi_bluetooth_title">Bluetooth</string>
+    <string name="midi_scan_bluetooth">Scan Bluetooth</string>
+    <string name="midi_stop_scan">Stop scanning</string>
+    <string name="midi_scanning">Looking for Bluetooth MIDI devices…</string>
+    <string name="midi_scan_none">No Bluetooth MIDI device found yet.</string>
+    <string name="midi_connect">Connect</string>
+    <string name="midi_connecting">Connecting…</string>
+    <string name="midi_connected">Connected</string>
+    <string name="midi_connect_failed">Could not connect to %1$s.</string>
+    <string name="midi_bluetooth_permission">Allow nearby devices to look for Bluetooth MIDI devices.</string>
+    <string name="midi_bluetooth_permission_denied">Bluetooth permission was denied. USB MIDI keeps working.</string>
+    <string name="midi_bluetooth_off">Bluetooth is off. Turn it on to look for devices.</string>
+    <string name="midi_bluetooth_unavailable">This phone has no Bluetooth LE.</string>
+    <string name="midi_close">Close</string>
+    <string name="settings_midi_devices">MIDI devices</string>
+    <string name="settings_midi_devices_summary">USB and Bluetooth ports used by midi(), midin() and midikeys()</string>
+
+    <!-- 4.10 -->
+    <string name="mqtt_password_title">MQTT password</string>
+    <string name="mqtt_password_message">The broker at %2$s asks for the password of %1$s.</string>
+    <string name="mqtt_password_label">Password</string>
+    <string name="mqtt_password_connect">Connect</string>
+
+    <!-- 4.13 -->
+    <string name="export_menu_item">Export audio</string>
+    <string name="export_title">Export audio</string>
+    <string name="export_file_name">File name</string>
+    <string name="export_start_cycle">Start cycle</string>
+    <string name="export_end_cycle">End cycle</string>
+    <string name="export_range_invalid">The end cycle must be a number after the start cycle.</string>
+    <string name="export_sample_rate">Sample rate</string>
+    <string name="export_rate_hz">%1$d Hz</string>
+    <string name="export_action">Export</string>
+    <string name="export_cancel">Cancel</string>
+    <string name="export_close">Close</string>
+    <string name="export_progress">Rendering… %1$d%%</string>
+    <string name="export_done">Exported %1$.1f seconds of audio.</string>
+    <string name="export_failed">Export failed: %1$s</string>
+
+    <!-- 4.3 -->
+    <!-- Content descriptions of the inline visuals (the picture of what plays) -->
+    <string name="visual_pianoroll">Piano roll</string>
+    <string name="visual_punchcard">Punch card</string>
+    <string name="visual_spiral">Spiral</string>
+    <string name="visual_scope">Scope</string>
+    <string name="visual_pitchwheel">Pitch wheel</string>
+    <string name="visual_spectrum">Spectrum</string>
+    <!-- The output widget: the lines the program printed -->
+    <string name="visual_print">Printed output</string>
+    <string name="visual_print_empty">Nothing printed yet</string>
+
+    <!-- 4.6 -->
+    <string name="osc_title">OSC output</string>
+    <string name="osc_summary">Where .osc() sends notes: a SuperDirt or any OSC receiver, over UDP.</string>
+    <string name="osc_host">Host</string>
+    <string name="osc_port">Port</string>
+    <string name="osc_port_invalid">A port is a number from 1 to 65535</string>
+    <string name="osc_route_all">Send all sound to OSC</string>
+    <string name="osc_route_all_summary">Every event goes to OSC and nothing plays on this device.</string>
+    <string name="osc_route_all_warning">All events are routed to OSC, audio is silenced!</string>
+
+    <!-- 4.8 -->
+    <!-- Autocomplete and documentation cards -->
+    <string name="autocomplete_suggestions">Suggestions</string>
+    <string name="autocomplete_pick">Insert %1$s</string>
+    <string name="autocomplete_info">Documentation of %1$s</string>
+    <string name="doc_card_close">Close documentation</string>
+    <string name="doc_card_synonyms">Synonyms: %1$s</string>
+    <string name="doc_card_parameters">Parameters</string>
+    <string name="doc_card_examples">Examples</string>
+    <string name="doc_card_insert">Insert</string>
+    <string name="doc_card_insert_example">Insert example</string>
+    <string name="doc_at_cursor_none">Nothing documented at the cursor</string>
+
+    <!-- Console -->
+    <string name="console_title">Console</string>
+    <string name="console_empty">Nothing has been logged yet.</string>
 </resources>
