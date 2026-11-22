@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.octopusman.cosic.R
+import com.octopusman.cosic.audio.BankSummary
 import com.octopusman.cosic.ui.tagged
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,11 +44,31 @@ internal const val MAX_CHIPS = 8
  * quarter of a megabyte of JSON and has the engine list its names), null until it is there.
  */
 @Composable
-internal fun rememberCompleter(): Completer? {
+internal fun rememberCompleter(banks: () -> List<BankSummary>): Completer? {
+    val currentBanks by rememberUpdatedState(banks)
     val completer by produceState<Completer?>(null) {
-        value = withContext(Dispatchers.Default) { Completer(DocJson.cards) { cosic.script.isDefined(it) } }
+        value = withContext(Dispatchers.Default) {
+            Completer(DocJson.cards, AppVocabulary { currentBanks() }, { cosic.script.isPatternMethod(it) }) { cosic.script.isDefined(it) }
+        }
     }
     return completer
+}
+
+/** The words of the library the arguments of `s`, `bank`, `scale`, `note` and `vowel` are made of; [banks] is read when a word is asked for, so it follows the sounds as they load. */
+internal class AppVocabulary(private val banks: () -> List<BankSummary>) : Vocabulary {
+    override fun words(kind: ArgKind): List<String> = when (kind) {
+        ArgKind.SOUND -> (banks().map { it.name } + cosic.CosicEngine.SYNTHS + cosic.CosicEngine.DRUMS).distinct()
+        ArgKind.BANK -> kits(cosic.CosicEngine.DRUM_MACHINES, banks()).map { it.name }
+        ArgKind.SCALE -> cosic.script.scaleModes()
+        ArgKind.NOTE -> NOTE_NAMES
+        ArgKind.VOWEL -> listOf("a", "e", "i", "o", "u")
+    }
+
+    private companion object {
+        val NOTE_NAMES: List<String> = listOf("c", "d", "e", "f", "g", "a", "b").flatMap { letter ->
+            listOf("", "#", "b").flatMap { accidental -> (2..5).map { octave -> "$letter$accidental$octave" } }
+        }
+    }
 }
 
 /**
@@ -82,7 +104,7 @@ private fun SuggestionChip(suggestion: Suggestion, onPick: (Suggestion) -> Unit,
                     .tagged("autocomplete_${suggestion.label}", pickLabel)
                     .padding(start = 12.dp, top = 6.dp, bottom = 6.dp, end = 6.dp),
             )
-            if (onInfo != null) {
+            if (onInfo != null && suggestion.card != null) {
                 Icon(
                     imageVector = Icons.Outlined.Info,
                     contentDescription = infoLabel,

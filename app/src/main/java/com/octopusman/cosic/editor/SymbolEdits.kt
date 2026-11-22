@@ -8,16 +8,16 @@ import com.octopusman.cosic.reference.InsertText
 private val CLOSING = mapOf("\"" to "\"", "(" to ")", "[" to "]", "{" to "}", "<" to ">")
 
 /**
- * This value after the symbol bar inserted [symbol]. An opening symbol also adds its closing
- * partner: the cursor goes between the two, or the two wrap the selection and the cursor lands after
- * them. Any other symbol replaces the selection.
+ * This value after the symbol bar inserted [symbol]. Without a selection the symbol is inserted alone (the closing one is typed
+ * when it is wanted). With a selection an opening symbol wraps it with its closing partner and the cursor lands after them;
+ * any other symbol replaces the selection.
  */
 fun TextFieldValue.withSymbol(symbol: String): TextFieldValue {
     val start = selection.min
     val end = selection.max
-    val closing = CLOSING[symbol]
+    val closing = if (start == end) null else CLOSING[symbol]
     val inserted = if (closing == null) symbol else symbol + text.substring(start, end) + closing
-    val cursor = if (closing == null || start == end) start + symbol.length else start + inserted.length
+    val cursor = if (closing == null) start + symbol.length else start + inserted.length
     return TextFieldValue(text.replaceRange(start, end, inserted), TextRange(cursor))
 }
 

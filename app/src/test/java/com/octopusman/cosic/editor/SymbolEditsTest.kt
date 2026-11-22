@@ -26,12 +26,14 @@ class SymbolEditsTest {
     }
 
     @Test
-    fun everyOpeningSymbolInsertsItsPairWithTheCursorBetween() {
-        assertEquals(at("s\"\"", 2), at("s", 1).withSymbol("\""))
-        assertEquals(at("s()", 2), at("s", 1).withSymbol("("))
-        assertEquals(at("s[]", 2), at("s", 1).withSymbol("["))
-        assertEquals(at("s{}", 2), at("s", 1).withSymbol("{"))
-        assertEquals(at("s<>", 2), at("s", 1).withSymbol("<"))
+    fun openingSymbolsAreInsertedAloneWithoutASelection() {
+        for (symbol in listOf("\"", "(", "[", "{", "<")) assertEquals(at("s$symbol", 2), at("s", 1).withSymbol(symbol))
+    }
+
+    @Test
+    fun openingSymbolsWrapASelectionWithTheirPair() {
+        assertEquals(at("s(ab)", 5), selected("sab", 1, 3).withSymbol("("))
+        assertEquals(at("\"ab\"", 4), selected("ab", 0, 2).withSymbol("\""))
     }
 
     @Test

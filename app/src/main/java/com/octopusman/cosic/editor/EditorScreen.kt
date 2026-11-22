@@ -244,7 +244,8 @@ fun EditorScreen(
     val visualHost = rememberVisualHost(session = vm.visuals, cycleAt = { vm.nowCycle() }, isPlaying = { vm.isEnginePlaying() })
 
     // What can be typed instead of the word at the cursor, and the card of a function.
-    val completer = rememberCompleter()
+    val banksNow by vm.banks.collectAsStateWithLifecycle()
+    val completer = rememberCompleter { banksNow }
     val suggestions = remember(vm.textValue, completer, autocompleteOn) {
         if (autocompleteOn && completer != null && vm.textValue.selection.collapsed) {
             completer.suggest(vm.textValue.text, vm.textValue.selection.start)
@@ -330,7 +331,7 @@ fun EditorScreen(
                                     val edit = found.apply(vm.textValue.text, pick)
                                     vm.onTextChange(TextFieldValue(edit.text, TextRange(edit.caret)))
                                 },
-                                onInfo = if (docsOn) ({ pick -> docCard = pick.card }) else null,
+                                onInfo = if (docsOn) ({ pick -> pick.card?.let { docCard = it } }) else null,
                             )
                         }
                         SymbolBar(

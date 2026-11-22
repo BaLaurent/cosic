@@ -37,6 +37,9 @@ public fun scaleModes(): List<String> = Tonal.scaleModeNames()
  */
 public fun isDefined(name: String): Boolean = world.defines(name)
 
+/** Whether [name] is a method of patterns (`pat.fast(2)`): the only names that can follow a dot. */
+public fun isPatternMethod(name: String): Boolean = world.isMethod(name)
+
 private val world: World by lazy { World.read() }
 
 /**

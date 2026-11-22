@@ -49,10 +49,10 @@ class CompleterTest {
 
     @Test
     fun aSynonymHasTheCardOfItsFunctionUnderItsOwnName() {
-        val density = Completer(fixture).completions.single { it.label == "density" }.card
+        val density = Completer(fixture).completions.single { it.label == "density" }.card!!
         assertEquals("density", density.name)
         assertEquals(listOf("fast"), density.synonyms)
-        val fast = Completer(fixture).completions.single { it.label == "fast" }.card
+        val fast = Completer(fixture).completions.single { it.label == "fast" }.card!!
         assertEquals(listOf("density"), fast.synonyms)
     }
 
@@ -208,5 +208,81 @@ class CompleterTest {
         for ((position, result) in expected.withIndex()) {
             assertEquals(labels[result.jsonArray[0].jsonPrimitive.int], ranked[position].label)
         }
+    }
+}
+
+/** The autocomplete knows where the cursor is: the words of a string argument, the methods after a dot, nothing in a comment. */
+class CompleterContextTest {
+    private fun card(name: String, vararg params: String) = DocEntry(name, params = params.map { DocParam(it) })
+
+    private val vocabulary = object : Vocabulary {
+        override fun words(kind: ArgKind): List<String> = when (kind) {
+            ArgKind.SOUND -> listOf("bd", "sd", "hh", "RolandTR909_bd")
+            ArgKind.BANK -> listOf("RolandTR909", "cosic808")
+            ArgKind.SCALE -> listOf("major", "minor:pentatonic")
+            ArgKind.NOTE -> listOf("c3", "e3", "g3")
+            ArgKind.VOWEL -> listOf("a", "e")
+        }
+    }
+
+    private val completer = Completer(
+        listOf(card("s", "sound"), card("sound", "sound"), card("bank", "bank"), card("scale", "scale"), card("note"), card("fast", "factor"), card("stack"), card("vowel", "vowel")),
+        vocabulary = vocabulary,
+        isMethod = { it != "stack" },
+    )
+
+    private fun labels(code: String): List<String>? {
+        val caret = code.indexOf('|')
+        val text = code.replace("|", "")
+        return completer.suggest(text, caret)?.suggestions?.map { it.label }
+    }
+
+    @Test
+    fun aSoundArgumentGetsTheSounds() {
+        assertContains(labels("s(\"b|\")").orEmpty(), "bd")
+        assertContains(labels("\$: s(\"bd |\")").orEmpty(), "sd")
+        assertContains(labels("x.sound(\"hh*2 s|\")").orEmpty(), "sd")
+    }
+
+    @Test
+    fun aBankArgumentGetsTheBanksNotTheSounds() {
+        assertEquals(listOf("cosic808"), labels("s(\"bd\").bank(\"cos|\")"))
+    }
+
+    @Test
+    fun aScaleGetsNotesBeforeTheColonAndScalesAfterIt() {
+        assertEquals(listOf("minor:pentatonic"), labels("n(\"0\").scale(\"C:minor:p|\")")?.filter { it.startsWith("minor") })
+        assertContains(labels("n(\"0\").scale(\"c|\")").orEmpty(), "c3")
+    }
+
+    @Test
+    fun theIndexAfterASampleNameIsNotAWord() {
+        assertNull(labels("s(\"bd:|\")"))
+    }
+
+    @Test
+    fun aStringOfAFunctionWithoutAListGetsNothing() {
+        assertNull(labels("s(\"bd\").fast(\"2 f|\")"))
+        assertNull(labels("\"bd s|\""))
+    }
+
+    @Test
+    fun theSecondArgumentIsNotTheFirst() {
+        assertNull(labels("s(\"bd\", \"s|\")"))
+    }
+
+    @Test
+    fun afterADotOnlyMethodsAreOffered() {
+        assertContains(labels("s(\"bd\").fa|").orEmpty(), "fast")
+        assertEquals(emptyList(), labels("s(\"bd\").sta|")?.filter { it == "stack" })
+        assertContains(labels("sta|").orEmpty(), "stack")
+    }
+
+    @Test
+    fun aQuoteInACommentOrAnotherStringDoesNotOpenAString() {
+        assertContains(labels("// s(\"x\n fa|").orEmpty(), "fast")
+        assertNull(labels("// a comment fa|"))
+        assertContains(labels("note(\"c3 // not a comment\").fa|").orEmpty(), "fast")
+        assertContains(labels("s(\"it's\").fa|").orEmpty(), "fast")
     }
 }
