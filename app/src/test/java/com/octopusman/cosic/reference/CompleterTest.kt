@@ -286,3 +286,41 @@ class CompleterContextTest {
         assertContains(labels("s(\"it's\").fa|").orEmpty(), "fast")
     }
 }
+
+/** The documentation's parameter types order the names: a function wanted, a number wanted. */
+class CompleterExpectationTest {
+    private fun card(name: String, type: String) = DocEntry(name, params = listOf(DocParam("p", listOf(type))))
+
+    private val completer = Completer(
+        listOf(card("jux", "function"), card("lpf", "number"), card("sine", "Pattern"), card("saw", "Pattern"), card("stack", "Pattern"), card("sometimes", "number"), card("rev", "Pattern"), card("segment", "Pattern")),
+        isMethod = { it != "stack" && it != "sine" && it != "saw" },
+    )
+
+    private fun labels(code: String): List<String> {
+        val caret = code.indexOf('|')
+        return completer.suggest(code.replace("|", ""), caret)!!.suggestions.map { it.label }
+    }
+
+    @Test
+    fun aFunctionArgumentGetsTheMethodsFirst() {
+        val list = labels("x.jux(s|)")
+        assertTrue(list.indexOf("segment") < list.indexOf("stack"), "$list")
+        assertTrue(list.indexOf("sometimes") < list.indexOf("sine"), "$list")
+    }
+
+    @Test
+    fun aNumberArgumentGetsTheSignalsFirst() {
+        val list = labels("x.lpf(s|)")
+        assertEquals(listOf("saw", "sine"), list.take(2).sorted())
+    }
+
+    @Test
+    fun theSecondArgumentAndOtherParametersAreOtherPlaces() {
+        // `jux` has one parameter: the second argument expects nothing, so the order is the matcher's
+        val plain = labels("x.jux(1, s|)")
+        assertEquals(completer.rank("s").map { it.label }.filter { it != "stack" && it != "sine" && it != "saw" }.toSet() + setOf("stack", "sine", "saw"), plain.toSet())
+        assertEquals(Expectation.FUNCTION, expectationOf(card("jux", "function"), 0))
+        assertEquals(Expectation.NUMBER, expectationOf(card("lpf", "number"), 0))
+        assertEquals(null, expectationOf(card("stack", "Pattern"), 0))
+    }
+}

@@ -11,7 +11,7 @@ internal interface Vocabulary {
 /** Where the cursor is in a program, as far as the autocomplete needs it. */
 internal sealed interface CursorContext {
     /** In code: [afterDot] when the word is a method (`.fa|`), which only a method of patterns can be. */
-    data class Code(val afterDot: Boolean) : CursorContext
+    data class Code(val afterDot: Boolean, val call: String? = null, val argIndex: Int = 0) : CursorContext
 
     /** Inside a string: the argument number [argIndex] of the call [call] (null when the string is not the argument of a call). */
     data class Text(val call: String?, val argIndex: Int) : CursorContext
@@ -22,15 +22,18 @@ internal sealed interface CursorContext {
 
 private fun Char.isIdentifierChar() = isLetterOrDigit() || this == '_' || this == '$'
 
+/** One open bracket of the program being read: [call] is the function it calls when it is a `(` after a name, [argIndex] the argument being written. */
+private class Frame(val call: String?, var argIndex: Int)
+
 /**
  * The context of the cursor at [caret] in [text]: found by reading the program from its start, so that quotes, escapes and comments are
- * told from code the way JavaScript tells them (a string may have the other quotes, or a `//`, inside).
+ * told from code the way JavaScript tells them (a string may have the other quotes, or a `//`, inside), with the calls the cursor is inside of.
  */
 internal fun contextAt(text: String, caret: Int): CursorContext {
     val end = caret.coerceIn(0, text.length)
     var i = 0
     var quote = 0.toChar()
-    var stringStart = -1
+    val frames = ArrayList<Frame>()
     while (i < end) {
         val c = text[i]
         if (quote != 0.toChar()) {
@@ -41,7 +44,18 @@ internal fun contextAt(text: String, caret: Int): CursorContext {
             }
         } else if (c == '"' || c == '\'' || c == '`') {
             quote = c
-            stringStart = i
+        } else if (c == '(') {
+            var nameEnd = i
+            while (nameEnd > 0 && text[nameEnd - 1].isWhitespace()) nameEnd--
+            var nameStart = nameEnd
+            while (nameStart > 0 && text[nameStart - 1].isIdentifierChar()) nameStart--
+            frames.add(Frame(text.substring(nameStart, nameEnd).ifEmpty { null }, 0))
+        } else if (c == '[' || c == '{') {
+            frames.add(Frame(null, 0))
+        } else if (c == ')' || c == ']' || c == '}') {
+            if (frames.isNotEmpty()) frames.removeAt(frames.size - 1)
+        } else if (c == ',') {
+            frames.lastOrNull()?.let { it.argIndex++ }
         } else if (c == '/' && i + 1 < text.length && text[i + 1] == '/') {
             val lineEnd = text.indexOf('\n', i).let { if (it < 0) text.length else it }
             if (lineEnd >= end) return CursorContext.Comment
@@ -53,38 +67,11 @@ internal fun contextAt(text: String, caret: Int): CursorContext {
         }
         i++
     }
-    if (quote != 0.toChar()) return callOfString(text, stringStart)
+    val frame = frames.lastOrNull()
+    if (quote != 0.toChar()) return CursorContext.Text(frame?.call, frame?.argIndex ?: 0)
     var start = end
     while (start > 0 && text[start - 1].isIdentifierChar()) start--
-    return CursorContext.Code(afterDot = start > 0 && text[start - 1] == '.')
-}
-
-/** The call whose argument is the string that opens at [stringStart], and which argument it is. */
-private fun callOfString(text: String, stringStart: Int): CursorContext.Text {
-    var j = stringStart - 1
-    while (j >= 0 && text[j].isWhitespace()) j--
-    if (j < 0) return CursorContext.Text(null, 0)
-    var argIndex = 0
-    if (text[j] == ',') {
-        // count the commas of this call's arguments back to its opening parenthesis
-        var depth = 0
-        while (j >= 0) {
-            when (text[j]) {
-                ')', ']', '}' -> depth++
-                '(', '[', '{' -> if (depth == 0) break else depth--
-                ',' -> if (depth == 0) argIndex++
-            }
-            j--
-        }
-        if (j < 0 || text[j] != '(') return CursorContext.Text(null, argIndex)
-    } else if (text[j] != '(') {
-        return CursorContext.Text(null, 0)
-    }
-    var nameEnd = j
-    while (nameEnd > 0 && text[nameEnd - 1].isWhitespace()) nameEnd--
-    var nameStart = nameEnd
-    while (nameStart > 0 && text[nameStart - 1].isIdentifierChar()) nameStart--
-    return CursorContext.Text(text.substring(nameStart, nameEnd).ifEmpty { null }, argIndex)
+    return CursorContext.Code(afterDot = start > 0 && text[start - 1] == '.', call = frame?.call, argIndex = frame?.argIndex ?: 0)
 }
 
 /**
@@ -102,3 +89,19 @@ internal fun argKindOf(card: DocEntry?, call: String, argIndex: Int): ArgKind? {
         else -> null
     }
 }
+
+/** What a place in a call's arguments asks for, by the types the documentation gives the parameter: a function to apply, or a number (a signal can stand for it). */
+internal enum class Expectation { FUNCTION, NUMBER }
+
+/** What the argument [argIndex] of [card] expects, from the types of its parameter; null when it takes a pattern or anything else. */
+internal fun expectationOf(card: DocEntry?, argIndex: Int): Expectation? {
+    val types = card?.params?.getOrNull(argIndex)?.types?.map { it.lowercase() }?.takeIf { it.isNotEmpty() } ?: return null
+    return when {
+        "function" in types && types.all { it == "function" || it == "array.<function()>" } -> Expectation.FUNCTION
+        types.all { it == "number" || it == "integer" || it == "fraction" } -> Expectation.NUMBER
+        else -> null
+    }
+}
+
+/** The names of the signals a number can be given instead (`.lpf(sine.range(200, 2000))`). */
+internal val SIGNAL_NAMES: Set<String> = setOf("sine", "cosine", "saw", "isaw", "tri", "square", "rand", "perlin", "irand", "brand", "sine2", "cosine2", "saw2", "tri2", "square2", "rand2", "berlin", "mousex", "mousey")

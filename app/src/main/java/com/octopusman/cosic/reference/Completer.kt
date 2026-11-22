@@ -70,9 +70,25 @@ internal class Completer(
         var from = to
         while (from > earliest && isWordCharacter(text[from - 1])) from--
         if (from == to && !explicit) return null
-        val afterDot = (context as CursorContext.Code).afterDot
+        val code = context as CursorContext.Code
         val ranked = rank(text.substring(from, to))
-        return Suggestions(from, to, (if (afterDot) ranked.filter { isMethod(it.label) } else ranked).take(MAX_OPTIONS))
+        val fitting = if (code.afterDot) ranked.filter { isMethod(it.label) } else ranked
+        return Suggestions(from, to, fittingFirst(fitting, code).take(MAX_OPTIONS))
+    }
+
+    /**
+     * [list] with the names that fit what the argument being written expects first, each group in its order: a function to apply (`every(2, |)`, `jux(|)`) wants the
+     * functions that can transform a pattern, a number (`.lpf(|)`) wants the signals. Nothing is left out: only ordered.
+     */
+    private fun fittingFirst(list: List<Suggestion>, code: CursorContext.Code): List<Suggestion> {
+        val call = code.call ?: return list
+        val wanted: (String) -> Boolean = when (expectationOf(byName[call], code.argIndex)) {
+            Expectation.FUNCTION -> isMethod
+            Expectation.NUMBER -> { name -> name in SIGNAL_NAMES }
+            null -> return list
+        }
+        val (fits, others) = list.partition { wanted(it.label) }
+        return fits + others
     }
 
     /**
