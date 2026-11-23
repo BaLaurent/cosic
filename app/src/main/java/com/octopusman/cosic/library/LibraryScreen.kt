@@ -323,10 +323,12 @@ private fun LessonRow(lesson: Lesson, step: Int?, onOpen: () -> Unit, onRestart:
                 .testTag("lesson_${lesson.id}"),
         )
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, offset = DpOffset(16.dp, 0.dp)) {
+            val restart = stringResource(R.string.library_restart_lesson)
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.library_restart_lesson)) },
+                text = { Text(restart) },
                 onClick = { menuOpen = false; onRestart() },
-                modifier = Modifier.testTag("lesson_restart"),
+                // The menu is a window of its own, where only a content description reaches UI automation.
+                modifier = Modifier.tagged("lesson_restart", restart),
             )
         }
     }

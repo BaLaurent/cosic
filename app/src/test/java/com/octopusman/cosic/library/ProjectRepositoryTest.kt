@@ -3,6 +3,7 @@ package com.octopusman.cosic.library
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -83,7 +84,8 @@ class ProjectRepositoryTest {
         assertEquals(p, r.load(p.id))
         assertEquals(LessonProgress("01-welcome", 2), r.load(p.id)?.lesson)
         File(d, "old.json").writeText("""{"id":"old","name":"o","code":"c","createdAt":1,"updatedAt":1}""")
-        assertNull(r.load("old")?.lesson)
+        val old = assertNotNull(r.load("old"))
+        assertNull(old.lesson)
     }
 
     @Test fun startLessonResumesAndRestartResets() {
