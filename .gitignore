@@ -11,3 +11,5 @@ tools/samplepack/.cache/
 .omp/
 .superpowers/
 tools/strudel-ref/strudel
+docs/parity/
+docs/superpowers/
