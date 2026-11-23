@@ -9,7 +9,8 @@ import kotlin.test.assertEquals
  * documents and tests may use it. What the engine ships (`src/main/resources`: the reference cards, the tonal tables, the soundfont list) is part of the app, and
  * so are the Android resources, assets and manifest of the app module, so they are all scanned here. The reference text is Strudel's own JSDoc, which
  * `tools/reference/build-reference.mjs` rewords where it names the product, and which fails when it cannot. The address of the sample servers in the code is an
- * address, not a word of the app, and is not looked at.
+ * address, not a word of the app, and is not looked at. The license notices (`assets/licenses.txt`) are the exception: Cosic is a port of Strudel under the AGPL,
+ * and its copyright and license notices must name the work it derives from and its authors.
  */
 class ProductNameTest {
     private val engineResources: File = listOf("src/main/resources", "engine/src/main/resources").map(::File).first { it.isDirectory }
@@ -34,8 +35,10 @@ class ProductNameTest {
     @Test
     fun noResourceAssetOrManifestOfTheAppNamesTheProduct() {
         val main = appMain ?: return
-        // the hosts of the links the app opens (`<data android:host="...">` of the intent filter) are addresses, not names shown to anyone
-        val hits = listOf("res", "assets", "AndroidManifest.xml").flatMap { mentions(main, File(main, it)) }.filterNot { it.contains("android:host=") }
+        // the hosts of the links the app opens (`<data android:host="...">` of the intent filter) are addresses, not names shown to anyone;
+        // the license notices must credit the work Cosic derives from
+        val hits = listOf("res", "assets", "AndroidManifest.xml").flatMap { mentions(main, File(main, it)) }
+            .filterNot { it.contains("android:host=") || it.startsWith("assets${File.separator}licenses.txt:") }
         assertEquals(emptyList(), hits, "the app's resources name the product")
     }
 }

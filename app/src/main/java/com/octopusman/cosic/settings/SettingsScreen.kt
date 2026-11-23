@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Schedule
@@ -35,11 +36,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
@@ -60,7 +63,9 @@ import com.octopusman.cosic.monetization.UnavailableReason
 import com.octopusman.cosic.osc.OscSettings
 import com.octopusman.cosic.osc.OscSettingsSection
 import com.octopusman.cosic.ui.BackTopBar
+import com.octopusman.cosic.ui.PRIVACY_POLICY_URL
 import com.octopusman.cosic.ui.findActivity
+import com.octopusman.cosic.ui.openLink
 import com.octopusman.cosic.ui.tagged
 import cosic.io.Prebake
 
@@ -76,10 +81,11 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onOpenCredits: () -> Unit,
 ) {
-    val activity = LocalContext.current.findActivity()
+    val context = LocalContext.current
+    val activity = context.findActivity()
     val purchase by entitlements.purchaseState.collectAsStateWithLifecycle()
     val privacyOptionsRequired by ads.privacyOptionsRequired.collectAsStateWithLifecycle()
-    var showMidiSheet by remember { mutableStateOf(false) }
+    var showMidiSheet by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(topBar = { BackTopBar(stringResource(R.string.settings_title), onBack) }) { padding ->
         Column(Modifier.padding(padding).verticalScroll(rememberScrollState())) {
@@ -151,6 +157,13 @@ fun SettingsScreen(
             )
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            SettingsRow(
+                headline = stringResource(R.string.settings_privacy_policy),
+                icon = Icons.Filled.Policy,
+                modifier = Modifier
+                    .clickable { context.openLink(PRIVACY_POLICY_URL) }
+                    .tagged("privacy_policy", stringResource(R.string.settings_privacy_policy)),
+            )
             SettingsRow(
                 headline = stringResource(R.string.settings_credits),
                 icon = Icons.Filled.Description,
@@ -244,7 +257,7 @@ private fun PrebakeEditor(settings: EditorSettings) {
                 autoCorrectEnabled = false,
                 keyboardType = KeyboardType.Ascii,
             ),
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp).tagged("prebake_editor", title),
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp).testTag("prebake_editor"),
         )
         TextButton(
             onClick = {

@@ -1,15 +1,28 @@
 # Cosic: Privacy Policy
 
-Last updated: 2026-11-19
+Last updated: 2026-11-23
 
 Cosic is a live-coding music app for Android. This policy describes what data the app handles and who processes it.
 
 ## What is stored on your device
 
 - Cosic has no accounts, no sign-in and no server run by the developer. The developer receives no data from the app.
-- Your projects (the code you write), your settings and the list of sample folders you imported are stored on your device. If you have Android's device backup enabled, Android may include this app data in your Google backup; that backup is handled by Google, not by the developer, and you can turn it off in the Android system settings.
+- Your projects (the code you write), your settings and the list of sample folders you imported are stored on your device. If you have Android's device backup enabled, Android may include this app data in your Google backup. The purchase state and the MQTT passwords you saved are never included in the backup. The backup is handled by Google, not by the developer, and you can turn it off in the Android system settings.
 - Sample folders that you import are read locally to play their sounds. Their files are never uploaded.
 - Whether you bought "Remove ads" is remembered on the device, so that the app keeps working offline.
+
+## Network requests
+
+Cosic contacts the servers below directly, without going through any server of the developer. Each request reveals your device's IP address, the user agent `Cosic/<version> (Android)` and the address of the file requested. No identifier of you or of your device is sent. The files fetched stay in the app's cache on the device.
+
+- `strudel.b-cdn.net`: the sample library of the Strudel project. The default sound lists are read at start, and each sound file the first time it plays.
+- `raw.githubusercontent.com`: GitHub. Sample maps and sample files that a program names with `github:` or `bubo:`.
+- `shabda.ndre.gr`: Shabda. Sounds and speech that a program asks for with `shabda:` or `shabda/speech`.
+- `felixroos.github.io`: the General MIDI instrument sounds (`gm_*`).
+- `pidxdsxphlhzjnzmifth.supabase.co`: the Supabase database of strudel.cc. It is contacted only when you import an old-style strudel.cc short link: the short code is sent, and the code it stands for comes back.
+- Any address that your own code names (for example `samples('https://…')`) or that you configure in Settings (the OSC host, the MQTT broker).
+
+Speech output uses the text-to-speech engine of your device, which may process the text with its provider depending on the engine chosen in the Android settings.
 
 ## Advertising
 
@@ -39,4 +52,4 @@ If this policy changes, the new version is published at the same address with a 
 
 ## Contact
 
-Questions about this policy: [developer contact email, to be filled in before publishing]
+Questions about this policy: laurent@baazcool.fr

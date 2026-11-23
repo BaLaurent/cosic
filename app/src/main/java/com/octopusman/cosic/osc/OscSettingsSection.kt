@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
@@ -50,7 +51,7 @@ fun OscSettingsSection(settings: OscSettings, modifier: Modifier = Modifier) {
             },
             label = { Text(stringResource(R.string.osc_host)) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().tagged("osc_host", stringResource(R.string.osc_host)),
+            modifier = Modifier.fillMaxWidth().testTag("osc_host"),
         )
         OutlinedTextField(
             value = port,
@@ -63,7 +64,7 @@ fun OscSettingsSection(settings: OscSettings, modifier: Modifier = Modifier) {
             supportingText = if (portValid) null else ({ Text(stringResource(R.string.osc_port_invalid)) }),
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth().tagged("osc_port", stringResource(R.string.osc_port)),
+            modifier = Modifier.fillMaxWidth().testTag("osc_port"),
         )
         ListItem(
             headlineContent = { Text(routeLabel) },
