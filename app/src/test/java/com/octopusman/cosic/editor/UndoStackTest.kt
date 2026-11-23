@@ -204,6 +204,21 @@ class UndoStackTest {
     }
 
     @Test
+    fun twoRunsWithinTheCoalescingWindowAreTwoSteps() {
+        // two quick "move line" taps: same text length, 20 ms apart, each one run of the lines row
+        clock = 0
+        stack.beginRun(value("a\nb\nc"))
+        stack.endRun(value("b\na\nc"))
+        clock = 20
+        stack.beginRun(value("b\na\nc"))
+        stack.endRun(value("b\nc\na"))
+
+        assertEquals("b\na\nc", stack.undo(value("b\nc\na"))?.text)
+        assertEquals("a\nb\nc", stack.undo(value("b\na\nc"))?.text)
+        assertFalse(stack.canUndo)
+    }
+
+    @Test
     fun undoDuringARunEndsIt() {
         stack.beginRun(value("a"))
         edit("a", "ab", atMs = 10)

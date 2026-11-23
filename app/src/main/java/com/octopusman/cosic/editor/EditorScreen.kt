@@ -152,6 +152,7 @@ fun EditorScreen(
     val focusRequester = remember { FocusRequester() }
     var renaming by remember { mutableStateOf(false) }
     var codeFocused by remember { mutableStateOf(false) }
+    var keyRow by rememberSaveable { mutableStateOf(KeyRow.SYMBOLS) }
     val playing = vm.playing
 
     val autocompleteOn by env.settings.autocomplete.collectAsStateWithLifecycle()
@@ -334,14 +335,31 @@ fun EditorScreen(
                                 onInfo = if (docsOn) ({ pick -> pick.card?.let { docCard = it } }) else null,
                             )
                         }
-                        SymbolBar(
-                            canUndo = vm.canUndo,
-                            canRedo = vm.canRedo,
-                            onUndo = vm::undo,
-                            onRedo = vm::redo,
-                            onSymbol = vm::insertSymbol,
-                            modifier = Modifier.navigationBarsPadding().imePadding(),
-                        )
+                        val barModifier = Modifier.navigationBarsPadding().imePadding()
+                        when (keyRow) {
+                            KeyRow.SYMBOLS -> SymbolBar(
+                                canUndo = vm.canUndo,
+                                canRedo = vm.canRedo,
+                                onUndo = vm::undo,
+                                onRedo = vm::redo,
+                                onSymbol = vm::insertSymbol,
+                                onEditRow = { keyRow = KeyRow.EDIT },
+                                modifier = barModifier,
+                            )
+                            KeyRow.EDIT -> EditBar(
+                                onEdit = vm::applyEdit,
+                                onSymbols = { keyRow = KeyRow.SYMBOLS },
+                                onLines = { keyRow = KeyRow.LINES },
+                                modifier = barModifier,
+                            )
+                            KeyRow.LINES -> LineBar(
+                                onEdit = vm::applyEdit,
+                                canUndo = vm.canUndo,
+                                onUndo = vm::undo,
+                                onBack = { keyRow = KeyRow.EDIT },
+                                modifier = barModifier,
+                            )
+                        }
                     } else {
                         Spacer(Modifier.navigationBarsPadding().imePadding())
                     }

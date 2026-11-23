@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +35,7 @@ private val SYMBOLS = listOf(
 )
 
 /**
- * A scrolling row of undo, redo, tab and code symbols. Put it right above the keyboard: [modifier]
+ * A scrolling row of a switch to the edit keys, undo, redo, tab and code symbols. Put it right above the keyboard: [modifier]
  * should carry the window insets padding.
  */
 @Composable
@@ -44,6 +45,7 @@ fun SymbolBar(
     onUndo: () -> Unit,
     onRedo: () -> Unit,
     onSymbol: (String) -> Unit,
+    onEditRow: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(color = MaterialTheme.colorScheme.surface, modifier = modifier) {
@@ -51,6 +53,9 @@ fun SymbolBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 4.dp),
         ) {
+            IconButton(onClick = onEditRow, modifier = Modifier.tagged("mode_edit", stringResource(R.string.editor_mode_edit))) {
+                Icon(Icons.Filled.Edit, contentDescription = null)
+            }
             IconButton(onClick = onUndo, enabled = canUndo, modifier = Modifier.tagged("undo", stringResource(R.string.editor_undo))) {
                 Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null)
             }

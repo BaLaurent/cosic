@@ -248,6 +248,23 @@ class EditorViewModel(
     fun insertEntry(entry: InsertText) = onTextChange(textValue.withEntry(entry))
 
     /**
+     * Applies an action of the edit or lines row. A move only changes the selection; a change of the text is one step of the undo
+     * history of its own, however close in time it is to the edit before it.
+     */
+    fun applyEdit(transform: (TextFieldValue) -> TextFieldValue) {
+        val before = textValue
+        val after = transform(before)
+        if (after.text == before.text) {
+            textValue = after
+            return
+        }
+        undoStack.beginRun(before)
+        onTextChange(after)
+        undoStack.endRun(after)
+        refreshHistory()
+    }
+
+    /**
      * Moves the cursor to the next (or, for a negative [direction], the previous) `$` label, as Alt-W and Alt-Q do in the web editor. A move is no edit; a text without a
      * label stays as it is.
      */
