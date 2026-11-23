@@ -1,0 +1,95 @@
+// Transforming patterns
+// Functions can rework a whole
+// pattern: .rev() plays it backwards,
+// and .every(4, rev) does that every
+// fourth cycle only.
+//
+// Try: every(2, rev).
+
+setcpm(30)
+$: n("0 1 2 3 4 5 6 7")
+  .scale("C:major")
+  .s("triangle")
+  .every(4, rev)
+// ---
+// Your own changes
+// x => x.fast(2) is a small function:
+// take the pattern x, play it twice
+// as fast. every() and others take
+// one.
+//
+// Try: x => x.add(note(12)), an
+// octave up; x => x.slow(2).
+
+setcpm(30)
+$: n("0 1 2 3 4 5 6 7")
+  .scale("C:major")
+  .s("triangle")
+  .every(3, x => x.fast(2))
+// ---
+// Chance
+// .sometimes(f) changes some events
+// at random; rarely and often do it
+// less or more. .degradeBy(0.3)
+// drops 30% of the events.
+//
+// Try: often instead of sometimes,
+// degradeBy(0.6).
+
+setcpm(30)
+$: s("hh*16").gain(0.5)
+  .degradeBy(0.3)
+$: s("bd sd bd sd")
+  .sometimes(x => x.speed(2))
+// ---
+// Echoes of a pattern
+// .off(0.125, f) plays a copy of the
+// pattern a little later, changed by
+// f: here 7 half steps up, a fifth.
+//
+// Try: 0.25 instead of 0.125, and 12
+// instead of 7.
+
+setcpm(30)
+$: note("c3 eb3 g3 bb3")
+  .s("triangle")
+  .off(0.125, x => x.add(note(7)))
+// ---
+// Left and right
+// .jux(rev) plays the pattern in the
+// left ear and a changed copy in the
+// right. Use headphones!
+//
+// Try: .jux(x => x.fast(2)), or
+// .pan("0 1") to move a sound.
+
+setcpm(30)
+$: s("bd sd [~ bd] sd, hh*8")
+  .jux(rev)
+// ---
+// Naming patterns
+// let gives a pattern a name, to use
+// it in several layers.
+//
+// Try: add a layer that plays the
+// melody an octave lower:
+// melody.add(note(-12))
+
+setcpm(30)
+let melody = note("c4 eb4 g4 bb4")
+$: melody.s("triangle")
+$: melody.s("sawtooth").lpf(600)
+  .slow(2).gain(0.5)
+// ---
+// Parts of a song
+// arrange([4, a], [4, b]) plays a
+// for 4 cycles, then b for 4, then
+// starts over.
+//
+// Try: change the counts, or add a
+// third part.
+
+setcpm(30)
+let verse = s("bd sd")
+let chorus = s("bd*2 sd, hh*8")
+$: arrange([4, verse], [4, chorus])

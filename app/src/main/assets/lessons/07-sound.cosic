@@ -1,0 +1,85 @@
+// Shaping the sound
+// Functions after the pattern change
+// how it sounds. .gain() is volume:
+// 0 is silent, 1 is full.
+//
+// Try: balance the two layers with
+// their gain numbers.
+
+setcpm(30)
+$: s("bd*2 sd").gain(1)
+$: s("hh*8").gain(0.4)
+// ---
+// Filters
+// .lpf() lets only the low part of a
+// sound through: a low number is
+// dark, a high one bright. .hpf()
+// does the opposite.
+//
+// Try: lpf 300, then 3000. Add
+// .lpq(10): the filter whistles.
+
+setcpm(30)
+$: note("c2 c3 c2 eb3")
+  .s("sawtooth")
+  .lpf(800)
+// ---
+// Sliders
+// slider(value, min, max) puts a
+// slider in the code. Drag it while
+// the music plays: you hear it at
+// once, and the number follows.
+//
+// Try: play, then drag both sliders.
+
+setcpm(30)
+$: note("c2 c3 c2 eb3")
+  .s("sawtooth")
+  .lpf(slider(800, 100, 4000))
+  .gain(slider(0.7, 0, 1))
+// ---
+// Space
+// .room() adds reverb, the sound of a
+// hall. .delay() adds echoes: how far
+// apart with .delaytime(), how many
+// with .delayfeedback().
+//
+// Try: room from 0 to 1; delay from
+// 0 to 0.8.
+
+setcpm(30)
+$: s("~ cp").room(0.6)
+$: note("<c4 eb4 g4 bb4>")
+  .s("triangle")
+  .delay(0.5)
+  .delaytime(0.25)
+  .delayfeedback(0.5)
+// ---
+// Short and long notes
+// .attack() is how long a note takes
+// to start, .release() how long it
+// fades. Small numbers pluck, big
+// ones swell.
+//
+// Try: attack 0.3, release 1.
+
+setcpm(30)
+$: note("c3 g3 eb3 bb3")
+  .s("sawtooth").lpf(1200)
+  .attack(0.01)
+  .release(0.1)
+// ---
+// Crunch
+// .shape() saturates, .crush() makes
+// it lo-fi (16 is clean, 4 harsh),
+// .vowel() makes it talk: a e i o u.
+//
+// Try: crush 4, shape 0.8, and
+// vowel("<a o>").
+
+setcpm(30)
+$: s("bd*2 [~ bd] sd ~")
+  .shape(0.3)
+  .crush(8)
+$: note("c2 eb2").s("sawtooth")
+  .vowel("a")

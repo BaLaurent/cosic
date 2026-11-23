@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -23,8 +24,10 @@ import com.octopusman.cosic.audio.SoundsStatus
 import com.octopusman.cosic.audio.playPreview
 import com.octopusman.cosic.export.ExportWorker
 import com.octopusman.cosic.input.InputSwitches
+import com.octopusman.cosic.library.Lesson
 import com.octopusman.cosic.library.Project
 import com.octopusman.cosic.library.ProjectRepository
+import com.octopusman.cosic.library.loadLesson
 import com.octopusman.cosic.reference.InsertText
 import com.octopusman.cosic.settings.EditorSettings
 import com.octopusman.cosic.settings.ProgramEditorSettings
@@ -89,6 +92,7 @@ private class PendingSave(val version: Long, val project: Project)
 class EditorViewModel(
     projectId: String,
     private val projects: ProjectRepository,
+    lessonById: (String) -> Lesson?,
     private val engine: CosicEngine,
     private val audioOutput: AudioOutput,
     private val sampleRepository: SampleRepository,
@@ -114,6 +118,16 @@ class EditorViewModel(
         private set
 
     var textValue by mutableStateOf(TextFieldValue(loaded?.code.orEmpty()))
+        private set
+
+    /** The bundled lesson this project follows; null for an ordinary project, or when its lesson is no longer in the app (it then edits like any project). */
+    private val lesson: Lesson? = loaded?.lesson?.let { lessonById(it.id) }
+
+    /** How many steps the lesson has; 0 when this is no lesson project (the screen shows no lesson bar). */
+    val lessonStepCount: Int = lesson?.steps?.size ?: 0
+
+    /** The step of the lesson the code comes from, from 0. */
+    var lessonStep by mutableIntStateOf(if (lesson == null) 0 else (loaded?.lesson?.step ?: 0).coerceIn(0, lesson.steps.lastIndex))
         private set
 
     var evalStatus by mutableStateOf<EvalStatus>(EvalStatus.Idle)
@@ -278,6 +292,16 @@ class EditorViewModel(
         onTextChange(after)
         undoStack.endRun(after)
         refreshHistory()
+    }
+
+    /** Shows step [index] of the lesson: its code replaces the text as one step of the undo history (undo brings the user's code back), and while music plays it is evaluated at once. */
+    fun goToLessonStep(index: Int) {
+        val steps = lesson?.steps ?: return
+        if (index !in steps.indices || index == lessonStep) return
+        lessonStep = index
+        applyEdit { TextFieldValue(steps[index], TextRange(0)) }
+        markEdited() // the step is saved even when the text did not change
+        if (playing) evaluateAndPlay()
     }
 
     /**
@@ -562,7 +586,8 @@ class EditorViewModel(
 
     private fun capture(): PendingSave? {
         val base = loaded ?: return null
-        val project = base.copy(name = name, code = textValue.text, updatedAt = System.currentTimeMillis())
+        val lessonProgress = base.lesson?.let { progress -> if (lesson == null) progress else progress.copy(step = lessonStep) }
+        val project = base.copy(name = name, code = textValue.text, updatedAt = System.currentTimeMillis(), lesson = lessonProgress)
         return PendingSave(editVersion, project)
     }
 
@@ -583,6 +608,7 @@ class EditorViewModel(
                 EditorViewModel(
                     projectId = projectId,
                     projects = app.projects,
+                    lessonById = { id -> loadLesson(app.assets, id) },
                     engine = app.engine,
                     audioOutput = app.audioOutput,
                     sampleRepository = app.sampleRepository,

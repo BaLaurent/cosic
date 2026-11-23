@@ -7,6 +7,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+/** Which bundled lesson a project follows ([id]: the lesson's file name without `.cosic`) and the step it is at, from 0. */
+@Serializable
+data class LessonProgress(val id: String, val step: Int)
+
 @Serializable
 data class Project(
     val id: String,
@@ -14,6 +18,7 @@ data class Project(
     val code: String,
     val createdAt: Long,
     val updatedAt: Long,
+    val lesson: LessonProgress? = null,
 )
 
 const val NEW_PROJECT_CODE = "// New sketch\nsetcpm(30)\n\$: s(\"bd ~ sd ~\")\n"
@@ -73,15 +78,33 @@ class ProjectRepository(
     }
 
     @Synchronized
-    fun create(name: String? = null, code: String = NEW_PROJECT_CODE): Project {
+    fun create(name: String? = null, code: String = NEW_PROJECT_CODE, lesson: LessonProgress? = null): Project {
         val t = now()
         val project = Project(
             UUID.randomUUID().toString(),
-            name ?: newName(list().size + 1),
-            code, t, t,
+            name ?: newName(list().count { it.lesson == null } + 1),
+            code, t, t, lesson,
         )
         save(project)
         return project
+    }
+
+    /** The project that follows the lesson [lessonId] (the most recently updated one), or null when the lesson was not started. */
+    @Synchronized
+    fun lessonProject(lessonId: String): Project? = list().firstOrNull { it.lesson?.id == lessonId }
+
+    /** The project of the lesson [lessonId]: the one already started, else a new one named [name], at step 0, holding [firstStep]. */
+    @Synchronized
+    fun startLesson(lessonId: String, name: String, firstStep: String): Project =
+        lessonProject(lessonId) ?: create(name, firstStep, LessonProgress(lessonId, 0))
+
+    /** Puts the lesson [lessonId] back at step 0 with [firstStep] as its code (in a new project when it was not started) and returns its project. */
+    @Synchronized
+    fun restartLesson(lessonId: String, name: String, firstStep: String): Project {
+        val existing = lessonProject(lessonId) ?: return create(name, firstStep, LessonProgress(lessonId, 0))
+        val reset = existing.copy(code = firstStep, lesson = LessonProgress(lessonId, 0), updatedAt = now())
+        save(reset)
+        return reset
     }
 
     /** Renames the project; false when there is no (readable) project with that id. */

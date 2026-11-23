@@ -1,0 +1,68 @@
+// Finding sounds and functions
+// The ♫ button at the top opens the
+// Sounds panel: drum machines,
+// synths, instruments and more.
+// Tap a sound to hear it, even while
+// your music plays.
+//
+// Try: open Sounds, pick a sound you
+// like, and write its name in place
+// of cp below. Update.
+
+$: s("bd*2 sd")
+$: s("~ cp ~ cp")
+// ---
+// Drum machines
+// A drum machine is a set of drums
+// with the usual names. bank() picks
+// one: bd, sd, hh then come from it.
+//
+// Try: in Sounds, open Drum machines
+// and swap RolandTR909 for another,
+// like RolandTR808 or LinnDrum.
+// Update.
+
+$: s("bd hh sd hh")
+  .bank("RolandTR909")
+// ---
+// The reference
+// The book button at the top opens
+// the Reference: every function,
+// what it does, and examples. Search
+// by name, then Insert the call or a
+// whole example into your code.
+//
+// Try: search for jux and read about
+// it. Then add .jux(rev) at the end
+// of the hh line. Update.
+
+$: s("bd sd")
+$: s("hh*8").gain(0.5)
+// ---
+// Suggestions and docs
+// While you type a name, suggestions
+// show above the keyboard: tap one to
+// complete it, or its (i) to read
+// about it. The ⋮ menu at the top,
+// then Docs at cursor, explains the
+// function under the cursor.
+//
+// Try: on a new line after triangle,
+// type .ro and pick room. Then give
+// it a number: .room(0.5)
+
+$: s("bd ~ sd ~")
+$: note("c3 eb3 g3 bb3")
+  .s("triangle")
+// ---
+// The console
+// ⋮ then Console shows what the code
+// prints, and its warnings. .log()
+// prints every event of a pattern.
+//
+// Try: open the Console, play, and
+// watch the notes go by.
+//
+// Lesson 4: cycles and tempo.
+
+$: note("c3 e3 g3").s("piano").log()

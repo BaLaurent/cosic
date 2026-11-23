@@ -1,0 +1,67 @@
+// Notes and scales
+// note() plays pitches: a letter from
+// a to g, maybe # or b for sharp or
+// flat, and an octave: c3, eb4, f#2.
+// A higher number is a higher octave.
+//
+// Try: change the notes. Then swap
+// triangle for sawtooth, square or
+// sine: the four basic synths.
+
+setcpm(30)
+$: note("c3 e3 g3 c4")
+  .s("triangle")
+// ---
+// Notes as numbers
+// note() takes numbers too: 60 is
+// c4, 61 is a half step higher, 72
+// is an octave higher.
+//
+// Try: write a tune with numbers.
+
+setcpm(30)
+$: note("60 62 64 67")
+  .s("triangle")
+// ---
+// Scales
+// With n() and .scale(), numbers are
+// steps of a scale: 0 is the root, 1
+// the next note of the scale, and so
+// on. No note can be wrong.
+//
+// Try: C:major, D:dorian, E:phrygian.
+// The Reference lists every scale.
+
+setcpm(30)
+$: n("0 2 4 <3 5> 4 2 0 ~")
+  .scale("C:minor")
+  .s("triangle")
+// ---
+// Sampled instruments
+// Recorded instruments play notes
+// too: piano, and the gm_ sounds of
+// the Sounds panel's Instruments.
+//
+// Try: swap piano for gm_epiano1 or
+// gm_acoustic_bass. Change C3 into
+// C2 or C4 to move the octave.
+
+setcpm(30)
+$: n("0 [2 4] <7 6> 4")
+  .scale("C3:minor")
+  .s("piano")
+// ---
+// Chords
+// Notes joined by commas in [ ] make
+// a chord; < > plays one chord per
+// cycle.
+//
+// Try: add chords, like [bb2,d3,f3]
+// and [g2,b2,d3]. Change one note
+// and hear the color change.
+
+setcpm(30)
+$: note("<[c3,eb3,g3] [ab2,c3,eb3]>")
+  .s("piano")
+$: note("<c2 ab1>").s("sawtooth")
+  .lpf(500)

@@ -76,4 +76,33 @@ class ProjectRepositoryTest {
         assertTrue(r.rename(p.id, "b"))
         assertEquals(false, r.rename("nope", "b"))
     }
+
+    @Test fun lessonProgressRoundTripsAndOldFilesLoad() {
+        val d = tmp(); val r = repo(d)
+        val p = r.create("L", "x", LessonProgress("01-welcome", 2))
+        assertEquals(p, r.load(p.id))
+        assertEquals(LessonProgress("01-welcome", 2), r.load(p.id)?.lesson)
+        File(d, "old.json").writeText("""{"id":"old","name":"o","code":"c","createdAt":1,"updatedAt":1}""")
+        assertNull(r.load("old")?.lesson)
+    }
+
+    @Test fun startLessonResumesAndRestartResets() {
+        val r = repo(tmp())
+        val first = r.startLesson("01-welcome", "Welcome", "s1")
+        assertEquals(first.id, r.startLesson("01-welcome", "Welcome", "s1").id)
+        r.save(first.copy(code = "mine", lesson = LessonProgress("01-welcome", 3)))
+        val resumed = r.startLesson("01-welcome", "Welcome", "s1")
+        assertEquals("mine", resumed.code)
+        assertEquals(3, resumed.lesson?.step)
+        val reset = r.restartLesson("01-welcome", "Welcome", "s1")
+        assertEquals(first.id, reset.id)
+        assertEquals("s1", reset.code)
+        assertEquals(0, reset.lesson?.step)
+    }
+
+    @Test fun sketchNumbersIgnoreLessons() {
+        val r = repo(tmp())
+        r.startLesson("01-welcome", "Welcome", "s1")
+        assertEquals("Sketch 1", r.create().name)
+    }
 }

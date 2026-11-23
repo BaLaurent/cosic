@@ -22,6 +22,7 @@ class LibraryViewModel(
     /** How many unreadable project files were set aside and not recovered yet. */
     val damaged: StateFlow<Int> = projects.damaged
     val examples: List<Example> = loadExamples(assets)
+    val lessons: List<Lesson> = loadLessons(assets)
 
     /** Creates a sketch with the default code and returns its id; null when the project cannot be written (storage full). */
     suspend fun createProject(): String? = withContext(Dispatchers.IO) { writing { projects.create().id } }
@@ -29,6 +30,14 @@ class LibraryViewModel(
     /** Creates a project named after the [example]'s title, holding its code, and returns its id; null when it cannot be written. */
     suspend fun createFromExample(example: Example): String? =
         withContext(Dispatchers.IO) { writing { projects.create(example.title, example.code).id } }
+
+    /** Opens the lesson's project (made at step 0 the first time) and returns its id; null when it cannot be written. */
+    suspend fun openLesson(lesson: Lesson): String? =
+        withContext(Dispatchers.IO) { writing { projects.startLesson(lesson.id, lesson.title, lesson.steps.first()).id } }
+
+    /** Puts the lesson back at its first step and returns its project's id; null when it cannot be written. */
+    suspend fun restartLesson(lesson: Lesson): String? =
+        withContext(Dispatchers.IO) { writing { projects.restartLesson(lesson.id, lesson.title, lesson.steps.first()).id } }
 
     /** Renames the project; false when it is gone or the change cannot be written. */
     suspend fun rename(id: String, name: String): Boolean =

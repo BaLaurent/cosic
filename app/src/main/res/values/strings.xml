@@ -22,11 +22,24 @@
     <string name="library_new_project">New project</string>
     <string name="library_projects">Projects</string>
     <string name="library_examples">Examples</string>
-    <string name="library_empty">No projects yet. Tap + to start a sketch, or open an example below.</string>
+    <string name="library_empty">No projects yet. Tap + to start a sketch, or begin with a lesson below.</string>
     <string name="library_project_options">Project options</string>
     <string name="library_open_example">Open example: %1$s</string>
     <string name="library_delete_title">Delete project?</string>
     <string name="library_delete_message">“%1$s” will be deleted. This can\'t be undone.</string>
+    <string name="library_lessons">Lessons</string>
+    <string name="library_open_lesson">Open lesson</string>
+    <string name="library_lesson_options">Lesson options</string>
+    <string name="library_restart_lesson">Start over</string>
+    <string name="library_restart_title">Start the lesson over?</string>
+    <string name="library_restart_message">Your code in “%1$s” goes back to the first step. This can\'t be undone.</string>
+    <plurals name="library_lesson_steps">
+        <item quantity="one">%1$d step</item>
+        <item quantity="other">%1$d steps</item>
+    </plurals>
+    <string name="lesson_step">Step %1$d of %2$d</string>
+    <string name="lesson_previous">Previous</string>
+    <string name="lesson_next">Next</string>
     <string name="time_just_now">Just now</string>
     <string name="time_minutes_ago">%1$d min ago</string>
     <string name="time_hours_ago">%1$d h ago</string>

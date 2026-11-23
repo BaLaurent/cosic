@@ -495,6 +495,11 @@ fun EditorScreen(
                     parseColor = ::parseCssColor,
                 )
             }
+
+            // A lesson's steps, at the bottom of the screen; not while a keyboard is up, which leaves little room.
+            if (vm.lessonStepCount > 0 && !WindowInsets.isImeVisible) {
+                LessonBar(step = vm.lessonStep, count = vm.lessonStepCount, onStep = vm::goToLessonStep)
+            }
         }
     }
 

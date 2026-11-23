@@ -1,0 +1,85 @@
+// Editing with your fingers
+// Tap the code to type. Above the
+// keyboard, the symbol keys put
+// " ( ) [ ] < > ~ * and more one tap
+// away. Slide the row for the rest.
+// A symbol key with text selected
+// wraps it: ( makes (text).
+//
+// Try: put the cursor after hh and
+// type *4 with the symbol keys, to
+// get "bd sd hh*4". Then play.
+
+$: s("bd sd hh")
+// ---
+// Moving the cursor
+// The pencil at the left of the
+// symbol keys opens the edit keys:
+//  ‹ ›  one character: hold to
+//       repeat, or slide on the key
+//  « »  one word
+//  { }  back to the symbol keys
+//
+// Try: put the cursor at the start
+// of the last line, tap » until it
+// is right after the first sd, and
+// type :2 for another snare: sd:2
+
+$: s("bd sd bd sd")
+// ---
+// Growing a selection
+// Sel+ selects more at each tap: the
+// word, the text in quotes, the
+// quotes too, the whole call, the
+// line, everything. Sel− goes back.
+//
+// Try: put the cursor in sawtooth,
+// tap Sel+ and type square. Then put
+// it in 400, tap Sel+ and type 1200.
+// Update to hear both changes.
+
+$: note("c2 c3")
+  .s("sawtooth")
+  .lpf(400)
+// ---
+// Line keys
+// The ⋮ of the edit keys opens the
+// line keys: duplicate, // comment,
+// move up, move down, delete, undo.
+//
+// Try: put the cursor on the hh line
+// and tap //: the line turns into a
+// comment. Update: hh is gone. Tap
+// // again to bring it back.
+// Then duplicate a line, change the
+// copy, and Update.
+
+$: s("bd*2 sd")
+$: s("hh*4")
+// ---
+// Muting a layer
+// Put _ in front of $: and the layer
+// goes quiet: _$: The hh layer below
+// is muted that way.
+//
+// Try: delete the _ of the hh layer
+// and Update. Then mute the cp layer
+// with the _ of the symbol keys.
+
+$: s("bd*2 sd")
+$: s("~ cp")
+_$: s("hh*4")
+// ---
+// Undo and a real keyboard
+// Undo and redo are on the symbol
+// keys, undo on the line keys too.
+//
+// With a hardware keyboard:
+// Ctrl+Enter plays or updates,
+// Ctrl+. stops, Ctrl+Z undoes.
+//
+// Try: change anything, then undo.
+// Lesson 3 is about finding sounds
+// and functions.
+
+$: s("bd ~ sd bd")

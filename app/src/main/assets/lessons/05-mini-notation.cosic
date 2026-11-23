@@ -1,0 +1,80 @@
+// Mini-notation
+// Inside the quotes is a small
+// language of its own.
+// x*n plays x n times in its step.
+// x/n plays it once every n cycles.
+//
+// Try: change hh*8 into hh*16 or
+// hh*6, and cp/2 into cp/4.
+
+setcpm(30)
+$: s("bd*2 sd")
+$: s("hh*8").gain(0.5)
+$: s("~ cp/2")
+// ---
+// Brackets
+// [ ] squeezes several steps into
+// one: in "bd [sd sd]" the second
+// half is split in two again.
+//
+// Try: write rhythms of your own,
+// with brackets inside brackets.
+
+setcpm(30)
+$: s("bd [~ bd] sd [~ sd]")
+$: s("hh*8").gain(0.5)
+// ---
+// Angle brackets
+// < > plays one of its items per
+// cycle, in turn: "<c e g>" plays c,
+// then e, then g, then c again.
+//
+// Try: add a note to the bass. Put
+// <sd cp> in place of a snare.
+
+setcpm(30)
+$: s("bd sd bd sd")
+$: note("<c2 eb2 f2 g2>")
+  .s("sawtooth").lpf(600)
+// ---
+// Commas
+// A comma plays things at the same
+// time: "bd*2, hh*4" is two rhythms
+// in one string. Between notes, a
+// comma makes a chord: [c3,e3,g3]
+//
+// Try: change the notes of the
+// chords, or add a fourth to each.
+
+setcpm(30)
+$: s("bd*2 sd, hh*4")
+$: note("<[c3,e3,g3] [a2,c3,e3]>")
+  .s("piano")
+// ---
+// Repeat, stretch, maybe
+// x!3 repeats a step: "bd!3 sd" is
+// "bd bd bd sd".
+// x@3 makes a step 3 times longer.
+// x? plays only half of the time.
+//
+// Try: change @3 into @2, and add ?
+// to more steps.
+
+setcpm(30)
+$: s("bd!3 sd")
+$: note("c3@3 eb3 g3@2 f3")
+  .s("triangle")
+$: s("hh*8?").gain(0.5)
+// ---
+// Euclidean rhythms
+// bd(3,8) spreads 3 hits as evenly
+// as it can over 8 steps: rhythms
+// heard in music all over the world.
+//
+// Try: (5,8), (3,7), (7,16). A third
+// number turns the rhythm: (3,8,2)
+
+setcpm(30)
+$: s("bd(3,8)")
+$: s("hh(5,8)").gain(0.5)
+$: s("~ sd")

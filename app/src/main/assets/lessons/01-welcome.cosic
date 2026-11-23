@@ -1,0 +1,69 @@
+// Welcome to live coding
+// Live coding: you write code that
+// makes music, and change it while
+// it plays. The code is the
+// instrument.
+//
+// Lines that start with // are
+// comments: notes for you, they make
+// no sound.
+//
+// Try: tap ▶ Play at the top, then
+// ■ Stop. Then tap Next, at the
+// bottom, for step 2.
+
+$: s("bd sd")
+// ---
+// Change it while it plays
+// Try: tap ▶ Play. While it plays,
+// change sd into hh. The Play button
+// is now ⟳ Update: tap it.
+// The music changes on the beat,
+// without stopping.
+//
+// More sounds to try: cp, rim, lt.
+
+$: s("bd sd")
+// ---
+// The status line
+// While music plays, the line under
+// the title shows the tempo and the
+// cycle: 30 cpm · cycle 12.
+//
+// A cycle is the loop a pattern
+// repeats. Here bd and sd share one
+// cycle: each gets half of it.
+//
+// Try: write "bd sd hh" and Update.
+// Three sounds share the cycle, so
+// each one is shorter.
+
+$: s("bd sd")
+// ---
+// Mistakes are fine
+// Try: play, then delete the last "
+// of the line below and Update.
+// The status line turns red and says
+// where the problem is. Tap it to
+// select the faulty code.
+// The music keeps playing what worked
+// last: a mistake never stops a set.
+// Put the " back and Update.
+
+$: s("bd sd hh sd")
+// ---
+// Layers
+// Each line that starts with $: is a
+// layer. Layers play together.
+// ~ is a rest: nothing plays there.
+//
+// Try: add a layer of your own:
+// $: s("hh hh hh hh")
+// and Update.
+//
+// Lesson 1 is done. In the Library,
+// lesson 2 shows how to edit code
+// quickly with your fingers.
+
+$: s("bd sd")
+$: s("~ cp")

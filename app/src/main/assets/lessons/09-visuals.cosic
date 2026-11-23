@@ -1,0 +1,64 @@
+// Seeing the music
+// While music plays, the steps that
+// sound light up in the code. If they
+// don't, turn on Highlight playing
+// steps in Settings.
+//
+// Try: play and follow the lights.
+// Edit while it plays: the lights
+// follow your edits.
+
+setcpm(30)
+$: s("bd [~ bd] sd ~, hh*8")
+$: note("<c3 eb3> g3").s("piano")
+// ---
+// Piano roll
+// ._pianoroll() draws the notes under
+// the line that makes them: time goes
+// left to right, pitch goes up.
+//
+// Try: change the notes and Update.
+
+setcpm(30)
+$: n("0 2 4 <6 7> 4 2")
+  .scale("C:minor")
+  .s("triangle")
+  ._pianoroll()
+// ---
+// More pictures
+// ._punchcard() draws each event as a
+// block; ._scope() draws the sound
+// wave itself.
+//
+// Try: move ._scope() to the drums.
+
+setcpm(30)
+$: s("bd*2 sd, hh*8")._punchcard()
+$: note("c2 c3").s("sawtooth")
+  .lpf(800)._scope()
+// ---
+// Colors
+// .color() sets the color of a
+// layer's lights and pictures.
+//
+// Try: orange, cyan, magenta, lime.
+
+setcpm(30)
+$: s("bd*2 sd")
+  .color("orange")._punchcard()
+$: s("hh*8").gain(0.5)
+  .color("cyan")._punchcard()
+// ---
+// Behind the code
+// Without the _, .pianoroll() draws
+// behind the whole editor instead of
+// under one line.
+//
+// Try: .punchcard() or .spiral()
+// instead.
+
+setcpm(30)
+$: n("0 2 4 <6 7> 4 2")
+  .scale("C:minor")
+  .s("triangle")
+  .pianoroll()

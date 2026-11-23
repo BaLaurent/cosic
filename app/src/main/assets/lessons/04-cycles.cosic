@@ -1,0 +1,63 @@
+// Cycles and tempo
+// Music here happens in cycles:
+// loops of equal length. The words
+// in quotes split one cycle into
+// equal steps.
+//
+// Try: play, then add or remove
+// words. One word fills the whole
+// cycle; eight words make eighths.
+
+setcpm(30)
+$: s("bd sd bd sd")
+// ---
+// Tempo
+// setcpm sets how many cycles play
+// in a minute. 30 cycles of 4 beats
+// make 120 beats per minute.
+//
+// Try: change 30 into 35, then into
+// 20, and Update each time.
+
+setcpm(30)
+$: s("bd sd bd sd")
+$: s("hh hh hh hh hh hh hh hh")
+  .gain(0.5)
+// ---
+// Rests
+// ~ is a step where nothing plays.
+//
+// Try: move the cp to another step,
+// add a second cp, or put a ~ in
+// place of a bd.
+
+setcpm(30)
+$: s("bd ~ bd ~")
+$: s("~ ~ cp ~")
+// ---
+// Steps of different sizes
+// Each layer splits the cycle on its
+// own: 3 steps against 4 make a
+// rhythm that pulls.
+//
+// Try: change how many words a line
+// has (2, 5, 7...) and listen to how
+// the layers meet.
+
+setcpm(30)
+$: s("bd bd bd bd")
+$: s("cp cp cp").gain(0.6)
+// ---
+// Faster and slower
+// .fast(2) plays the whole pattern
+// twice in a cycle; .slow(2) spreads
+// it over two cycles.
+//
+// Try: 1.5, 3, 0.5 instead of 2.
+// Lesson 5: mini-notation, the small
+// language inside the quotes.
+
+setcpm(30)
+$: s("bd sd").fast(2)
+$: note("c3 e3 g3 b3")
+  .s("piano").slow(2)

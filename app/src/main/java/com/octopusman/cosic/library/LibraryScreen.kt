@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.LibraryMusic
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -37,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -75,6 +77,15 @@ fun LibraryScreen(
     // Only the id is kept, so the dialogs survive a rotation and always show the project's latest name.
     var renaming by rememberSaveable { mutableStateOf<String?>(null) }
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
+    var restarting by rememberSaveable { mutableStateOf<String?>(null) }
+    // A project of a lesson shows in the Lessons section, not under Projects; one whose lesson the app no longer has is an ordinary project.
+    val lessonIds = remember(viewModel.lessons) { viewModel.lessons.mapTo(HashSet()) { it.id } }
+    val ownProjects = projects.filter { it.lesson?.id !in lessonIds }
+    // Most recent project first, so distinctBy keeps the one the lesson opens.
+    val lessonSteps: Map<String, Int> = projects
+        .mapNotNull { p -> p.lesson?.takeIf { it.id in lessonIds } }
+        .distinctBy { it.id }
+        .associate { it.id to it.step }
     // The ages ("5 min ago") move on while the screen stays open.
     val now by produceState(System.currentTimeMillis()) {
         while (true) {
@@ -137,7 +148,7 @@ fun LibraryScreen(
                     )
                 }
             }
-            if (projects.isEmpty()) {
+            if (ownProjects.isEmpty()) {
                 item(key = "projects-empty") {
                     Text(
                         text = stringResource(R.string.library_empty),
@@ -147,7 +158,7 @@ fun LibraryScreen(
                     )
                 }
             }
-            items(projects, key = { it.id }) { project ->
+            items(ownProjects, key = { it.id }) { project ->
                 ProjectRow(
                     project = project,
                     now = now,
@@ -156,6 +167,20 @@ fun LibraryScreen(
                     onDuplicate = { scope.launch { if (!viewModel.duplicate(project.id)) context.toast(R.string.library_save_failed) } },
                     onShare = { context.shareText(project.code) },
                     onDelete = { deleting = project.id },
+                )
+            }
+            item(key = "lessons-header") { SectionHeader(stringResource(R.string.library_lessons)) }
+            items(viewModel.lessons, key = { "lesson-${it.id}" }) { lesson ->
+                LessonRow(
+                    lesson = lesson,
+                    step = lessonSteps[lesson.id],
+                    onOpen = {
+                        scope.launch {
+                            val id = viewModel.openLesson(lesson)
+                            if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
+                        }
+                    },
+                    onRestart = { restarting = lesson.id },
                 )
             }
             item(key = "examples-header") { SectionHeader(stringResource(R.string.library_examples)) }
@@ -197,6 +222,21 @@ fun LibraryScreen(
                 deleting = null
             },
             onDismiss = { deleting = null },
+        )
+    }
+    viewModel.lessons.firstOrNull { it.id == restarting }?.let { lesson ->
+        ConfirmDialog(
+            title = stringResource(R.string.library_restart_title),
+            message = stringResource(R.string.library_restart_message, lesson.title),
+            confirmLabel = stringResource(R.string.library_restart_lesson),
+            onConfirm = {
+                scope.launch {
+                    val id = viewModel.restartLesson(lesson)
+                    if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
+                }
+                restarting = null
+            },
+            onDismiss = { restarting = null },
         )
     }
 }
@@ -248,6 +288,46 @@ private fun ProjectRow(
             DropdownMenuItem(text = { Text(stringResource(R.string.action_duplicate)) }, onClick = { menuOpen = false; onDuplicate() })
             DropdownMenuItem(text = { Text(stringResource(R.string.action_share)) }, onClick = { menuOpen = false; onShare() })
             DropdownMenuItem(text = { Text(stringResource(R.string.action_delete)) }, onClick = { menuOpen = false; onDelete() })
+        }
+    }
+}
+
+/** Tapping opens the lesson at the step the user left; once started, a long press offers to start it over. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun LessonRow(lesson: Lesson, step: Int?, onOpen: () -> Unit, onRestart: () -> Unit) {
+    var menuOpen by remember { mutableStateOf(false) }
+    val count = lesson.steps.size
+
+    Box {
+        ListItem(
+            headlineContent = { Text(lesson.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            leadingContent = { Icon(Icons.Filled.School, contentDescription = null) },
+            supportingContent = {
+                Text(
+                    if (step == null) {
+                        pluralStringResource(R.plurals.library_lesson_steps, count, count)
+                    } else {
+                        stringResource(R.string.lesson_step, minOf(step, lesson.steps.lastIndex) + 1, count)
+                    },
+                )
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            modifier = Modifier
+                .combinedClickable(
+                    onClick = onOpen,
+                    onClickLabel = stringResource(R.string.library_open_lesson),
+                    onLongClick = if (step != null) ({ menuOpen = true }) else null,
+                    onLongClickLabel = stringResource(R.string.library_lesson_options),
+                )
+                .testTag("lesson_${lesson.id}"),
+        )
+        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, offset = DpOffset(16.dp, 0.dp)) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.library_restart_lesson)) },
+                onClick = { menuOpen = false; onRestart() },
+                modifier = Modifier.testTag("lesson_restart"),
+            )
         }
     }
 }

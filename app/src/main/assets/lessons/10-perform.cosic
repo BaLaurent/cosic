@@ -1,0 +1,67 @@
+// Playing live and sharing
+// A live set grows and shrinks one
+// layer at a time. Here every layer
+// is muted with _$: but the kick.
+//
+// Try: play, then unmute one layer
+// at a time, with an Update each
+// time. Then mute them one by one.
+
+setcpm(31)
+$: s("bd*4")
+_$: s("~ cp").room(0.3)
+_$: s("hh*8").gain(0.4)
+_$: note("<c2 c2 ab1 bb1>")
+  .s("sawtooth").lpf(500)
+_$: n("<0 2 4 7>*4")
+  .scale("C4:minor").s("piano")
+// ---
+// Recording your track
+// ⋮ then Export audio saves the music
+// as a WAV file: pick the first and
+// the last cycle, and where it goes.
+//
+// Try: export 8 cycles of this.
+
+setcpm(31)
+$: arrange([4, s("bd*4")],
+  [4, s("bd*4, hh*8")])
+$: note("<c2 ab1>").s("sawtooth")
+  .lpf(500)
+// ---
+// Sharing
+// ⋮ then Share sends the code as text
+// to another app. Copy web link makes
+// a link that plays it in a web
+// browser; Import shared link opens
+// such a link from the clipboard.
+//
+// Try: share this code with a friend.
+
+setcpm(31)
+$: s("bd*2 [~ bd] sd ~, hh*8")
+// ---
+// MIDI
+// .midi() sends notes to a synth or a
+// keyboard, over USB or Bluetooth.
+// ⋮ then MIDI devices lists them.
+//
+// Try, with a device connected:
+// uncomment the last line, Update.
+
+setcpm(31)
+$: note("c3 eb3 g3 bb3").s("piano")
+// $: note("c3 eb3 g3 bb3").midi()
+// ---
+// Keep going
+// You know the basics. The Examples
+// of the Library are songs to pull
+// apart, and the Reference has every
+// function with examples. Tap + in
+// the Library to start a project of
+// your own. Have fun!
+
+setcpm(31)
+$: s("bd*2 [~ bd] sd ~, hh*8")
+$: note("<c2 ab1 bb1 g1>")
+  .s("sawtooth").lpf(600)
