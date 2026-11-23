@@ -51,10 +51,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -315,17 +320,7 @@ fun EditorScreen(
         modifier = Modifier.onPreviewKeyEvent { handleShortcut(it, vm) }.trackPointer(vm.inputs),
         topBar = {
             TopAppBar(
-                title = {
-                    // a name that is too long for the bar scrolls, on one line, instead of ending in an ellipsis
-                    Text(
-                        text = vm.name,
-                        maxLines = 1,
-                        modifier = Modifier
-                            .clickable(onClickLabel = stringResource(R.string.editor_rename_project)) { renaming = true }
-                            .tagged("project_name", vm.name)
-                            .basicMarquee(),
-                    )
-                },
+                title = { ProjectTitle(vm.name) { renaming = true } },
                 navigationIcon = { BackButton(leave) },
                 actions = {
                     PlayButton(playing = playing, onClick = vm::evaluateAndPlay)
@@ -530,6 +525,42 @@ fun EditorScreen(
     if (showMidi) MidiDevicesSheet(env.midi, onDismiss = { showMidi = false })
     // asks for the password of an MQTT broker when a program that publishes to one is evaluated; nothing is shown otherwise
     MqttPasswordDialog(env.mqttPrompt)
+}
+
+/**
+ * The project name in the top bar. A name too long for the bar scrolls, on one line, instead of ending in an ellipsis;
+ * the scroll stops after a few turns, so while it is clipped the trailing edge fades out to show there is more.
+ */
+@Composable
+private fun ProjectTitle(name: String, onRename: () -> Unit) {
+    var boxWidth by remember { mutableIntStateOf(0) }
+    var textWidth by remember(name) { mutableIntStateOf(0) }
+    val clipped = textWidth > boxWidth
+    val fadePx = with(LocalDensity.current) { 28.dp.toPx() }
+    Box(
+        Modifier
+            .onSizeChanged { boxWidth = it.width }
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .drawWithContent {
+                drawContent()
+                if (clipped) {
+                    drawRect(
+                        brush = Brush.horizontalGradient(listOf(Color.Black, Color.Transparent), startX = size.width - fadePx, endX = size.width),
+                        blendMode = BlendMode.DstIn,
+                    )
+                }
+            },
+    ) {
+        Text(
+            text = name,
+            maxLines = 1,
+            onTextLayout = { textWidth = it.size.width },
+            modifier = Modifier
+                .clickable(onClickLabel = stringResource(R.string.editor_rename_project), onClick = onRename)
+                .tagged("project_name", name)
+                .basicMarquee(),
+        )
+    }
 }
 
 @Composable
