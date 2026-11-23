@@ -359,7 +359,12 @@ fun EditorScreen(
             // right above it, and the names that fit the word at the cursor above that; while the panel's search
             // is typed in, only room for the keyboard is kept.
             // The banner stays composed (collapsed and paused) so it is not reloaded on every edit.
-            Column {
+            // The inset is applied once here (and consumed), whether or not the banner or the keyboard is there.
+            Column(Modifier.navigationBarsPadding()) {
+                // A lesson's steps stay on top of the key rows, keyboard or not.
+                if (vm.lessonStepCount > 0) {
+                    LessonBar(step = vm.lessonStep, count = vm.lessonStepCount, onStep = vm::goToLessonStep)
+                }
                 if (WindowInsets.isImeVisible) {
                     if (codeFocused) {
                         suggestions?.takeIf { it.suggestions.isNotEmpty() }?.let { found ->
@@ -494,11 +499,6 @@ fun EditorScreen(
                     modifier = Modifier.fillMaxWidth().height(minOf(CONSOLE_HEIGHT, contentHeight * CONSOLE_SHARE)),
                     parseColor = ::parseCssColor,
                 )
-            }
-
-            // A lesson's steps, at the bottom of the screen; not while a keyboard is up, which leaves little room.
-            if (vm.lessonStepCount > 0 && !WindowInsets.isImeVisible) {
-                LessonBar(step = vm.lessonStep, count = vm.lessonStepCount, onStep = vm::goToLessonStep)
             }
         }
     }
