@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cosic — Google Play phone screenshots</title>
+<!--
+  Phone screenshots, 1080 x 1920 (9:16). One .shot per image; render.sh exports each as out/shot-NN.png.
+  Open the page in a browser to see them stacked; open it with #s1 … #s7 to see a single one.
+  Rules followed (Play Console help 9866151): real in-app captures, no device frames, a short tagline that
+  fills well under 20% of the image, no price/ranking/call-to-action words, no time-sensitive text.
+-->
+<style>
+  :root {
+    --ink: #0B1F1A;
+    --mint-a: #8DF5D2; --mint-b: #27AE9A;
+    --amber-a: #F6D587; --amber-b: #E58F5C;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #333; font-family: "Adwaita Sans", "Inter", "Liberation Sans", sans-serif; }
+
+  .shot {
+    position: relative; width: 1080px; height: 1920px; overflow: hidden;
+    margin: 0 auto 40px;
+    background: linear-gradient(160deg, var(--a), var(--b));
+  }
+  .mint  { --a: var(--mint-a);  --b: var(--mint-b); }
+  .amber { --a: var(--amber-a); --b: var(--amber-b); }
+
+  /* The ring of eight steps from the app icon, large and cropped by the corner: a background element kept to the edge. */
+  .ring { position: absolute; right: -330px; top: -330px; width: 760px; height: 760px; opacity: .16; }
+
+  .tagline {
+    position: absolute; left: 70px; right: 70px; top: 62px; height: 190px;
+    display: flex; align-items: center;
+    color: var(--ink); font-weight: 800; font-size: 74px; line-height: 1.06; letter-spacing: -1.2px;
+  }
+
+  .card {
+    position: absolute; left: 100px; top: 290px; width: 880px; height: 1564px;
+    border-radius: 46px; overflow: hidden;
+    box-shadow: 0 30px 70px rgba(5, 30, 25, .38), 0 6px 18px rgba(5, 30, 25, .25);
+  }
+  .card img { display: block; width: 100%; height: 100%; }
+
+  /* Single-shot view for the exporter. */
+  body.single .shot { display: none; margin: 0; }
+  body.single .shot:target { display: block; }
+</style>
+</head>
+<body>
+<script>if (location.hash) document.body.className = 'single';</script>
+
+<template id="ring">
+  <svg class="ring" viewBox="0 0 108 108" aria-hidden="true">
+    <g fill="#0B1F1A">
+      <circle cx="54" cy="26" r="6"/><circle cx="73.8" cy="34.2" r="4"/><circle cx="82" cy="54" r="4"/>
+      <circle cx="73.8" cy="73.8" r="6"/><circle cx="54" cy="82" r="4"/><circle cx="34.2" cy="73.8" r="4"/>
+      <circle cx="26" cy="54" r="6"/><circle cx="34.2" cy="34.2" r="4"/>
+    </g>
+  </svg>
+</template>
+
+<section class="shot mint" id="s1">
+  <div class="tagline">Live-code music<br>on your phone</div>
+  <div class="card"><img src="raw/01-editor-playing.png" alt="The Night drive sketch playing, with the steps that sound outlined in the code and a piano roll under the melody."></div>
+</section>
+
+<section class="shot amber" id="s2">
+  <div class="tagline">Edit precisely,<br>even with a thumb</div>
+  <div class="card"><img src="raw/02-touch-editing.png" alt="A whole .gain(0.6) call selected with the Sel+ key of the edit row."></div>
+</section>
+
+<section class="shot mint" id="s3">
+  <div class="tagline">Learn music coding<br>one step at a time</div>
+  <div class="card"><img src="raw/03-lesson-piano-roll.png" alt="Step 2 of the Visuals lesson: a piano roll drawn under the code, with Previous and Next buttons."></div>
+</section>
+
+<section class="shot amber" id="s4">
+  <div class="tagline">Documentation and<br>autocomplete built in</div>
+  <div class="card"><img src="raw/04-reference.png" alt="The reference panel showing the lpf function with Insert buttons, and suggestions above the edit row."></div>
+</section>
+
+<section class="shot mint" id="s5">
+  <div class="tagline">Drum machines, synths<br>and instruments</div>
+  <div class="card"><img src="raw/05-sounds.png" alt="The Sounds panel listing drum machines, each with the sound names it plays."></div>
+</section>
+
+<section class="shot amber" id="s6">
+  <div class="tagline">Watch the sound<br>take shape</div>
+  <div class="card"><img src="raw/06-scope.png" alt="The Acid line sketch playing with an oscilloscope drawn under the sawtooth line."></div>
+</section>
+
+<section class="shot mint" id="s7">
+  <div class="tagline">Your sketches and<br>lessons in one place</div>
+  <div class="card"><img src="raw/07-library.png" alt="The library: three saved projects above the list of lessons."></div>
+</section>
+
+<script>
+  const ring = document.getElementById('ring');
+  document.querySelectorAll('.shot').forEach(s => s.prepend(ring.content.cloneNode(true)));
+</script>
+</body>
+</html>
