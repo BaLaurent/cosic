@@ -18,10 +18,23 @@ data class Project(
 
 const val NEW_PROJECT_CODE = "// New sketch\nsetcpm(30)\n\$: s(\"bd ~ sd ~\")\n"
 
-class ProjectRepository(private val dir: File, private val now: () -> Long) {
+/**
+ * The projects, one JSON file each in [dir]. A name for a new project and for a recovered one comes from [newName] / [recoveredName] (they take a number
+ * from 1), so that the app can have them in its resources.
+ */
+class ProjectRepository(
+    private val dir: File,
+    private val now: () -> Long,
+    private val newName: (Int) -> String,
+    private val recoveredName: (Int) -> String,
+) {
     private val json = Json { ignoreUnknownKeys = true }
     private val state = MutableStateFlow<List<Project>>(emptyList())
     val projects: StateFlow<List<Project>> = state
+    private val damagedState = MutableStateFlow(0)
+
+    /** How many unreadable project files were set aside (renamed `.json.corrupt`) and not recovered yet. */
+    val damaged: StateFlow<Int> = damagedState
 
     init {
         dir.mkdirs()
@@ -60,17 +73,19 @@ class ProjectRepository(private val dir: File, private val now: () -> Long) {
         val t = now()
         val project = Project(
             UUID.randomUUID().toString(),
-            name ?: "Sketch ${list().size + 1}",
+            name ?: newName(list().size + 1),
             code, t, t,
         )
         save(project)
         return project
     }
 
+    /** Renames the project; false when there is no (readable) project with that id. */
     @Synchronized
-    fun rename(id: String, name: String) {
-        val p = load(id) ?: return
+    fun rename(id: String, name: String): Boolean {
+        val p = load(id) ?: return false
         save(p.copy(name = name, updatedAt = now()))
+        return true
     }
 
     @Synchronized
@@ -88,6 +103,23 @@ class ProjectRepository(private val dir: File, private val now: () -> Long) {
         refresh()
     }
 
+    /**
+     * Makes a new project of the text of every set-aside file (oldest first, named by [recoveredName]) and removes the file. Returns how many there were;
+     * an [java.io.IOException] from saving a project goes to the caller, the files not yet done stay.
+     */
+    @Synchronized
+    fun recoverDamaged(): Int {
+        val files = damagedFiles().sortedBy { it.lastModified() }
+        files.forEachIndexed { i, file ->
+            create(recoveredName(i + 1), file.readText())
+            file.delete()
+        }
+        refresh()
+        return files.size
+    }
+
+    private fun damagedFiles(): List<File> = (dir.listFiles { f -> f.name.endsWith(".json.corrupt") } ?: emptyArray()).toList()
+
     private fun fileOf(id: String) = File(dir, "$id.json")
 
     private fun refresh(): List<Project> {
@@ -95,6 +127,7 @@ class ProjectRepository(private val dir: File, private val now: () -> Long) {
             .mapNotNull { load(it.name.removeSuffix(".json")) }
             .sortedByDescending { it.updatedAt }
         state.value = all
+        damagedState.value = damagedFiles().size
         return all
     }
 }

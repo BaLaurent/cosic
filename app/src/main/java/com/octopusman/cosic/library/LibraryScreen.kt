@@ -29,6 +29,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,8 +51,10 @@ import com.octopusman.cosic.ui.ConfirmDialog
 import com.octopusman.cosic.ui.RenameDialog
 import com.octopusman.cosic.ui.shareText
 import com.octopusman.cosic.ui.tagged
+import com.octopusman.cosic.ui.toast
 import java.text.DateFormat
 import java.util.Date
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /** The home screen: the user's projects, the bundled examples, and the way to Settings and to removing ads. */
@@ -65,12 +69,19 @@ fun LibraryScreen(
     onOpenSettings: () -> Unit,
 ) {
     val projects by viewModel.projectList.collectAsStateWithLifecycle()
+    val damaged by viewModel.damaged.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     // Only the id is kept, so the dialogs survive a rotation and always show the project's latest name.
     var renaming by rememberSaveable { mutableStateOf<String?>(null) }
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
-    val now = remember(projects) { System.currentTimeMillis() }
+    // The ages ("5 min ago") move on while the screen stays open.
+    val now by produceState(System.currentTimeMillis()) {
+        while (true) {
+            delay(60_000)
+            value = System.currentTimeMillis()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -91,7 +102,12 @@ fun LibraryScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { scope.launch { onOpenProject(viewModel.createProject()) } },
+                onClick = {
+                    scope.launch {
+                        val id = viewModel.createProject()
+                        if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
+                    }
+                },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.tagged("new_project", stringResource(R.string.library_new_project)),
@@ -107,6 +123,20 @@ fun LibraryScreen(
             modifier = Modifier.padding(padding).fillMaxSize(),
         ) {
             item(key = "projects-header") { SectionHeader(stringResource(R.string.library_projects)) }
+            if (damaged > 0) {
+                item(key = "projects-damaged") {
+                    ListItem(
+                        headlineContent = { Text(pluralStringResource(R.plurals.library_damaged, damaged, damaged)) },
+                        trailingContent = {
+                            TextButton(
+                                onClick = { scope.launch { if (!viewModel.recoverDamaged()) context.toast(R.string.library_save_failed) } },
+                                modifier = Modifier.tagged("recover_damaged", stringResource(R.string.library_recover)),
+                            ) { Text(stringResource(R.string.library_recover)) }
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    )
+                }
+            }
             if (projects.isEmpty()) {
                 item(key = "projects-empty") {
                     Text(
@@ -123,7 +153,7 @@ fun LibraryScreen(
                     now = now,
                     onOpen = { onOpenProject(project.id) },
                     onRename = { renaming = project.id },
-                    onDuplicate = { viewModel.duplicate(project.id) },
+                    onDuplicate = { scope.launch { if (!viewModel.duplicate(project.id)) context.toast(R.string.library_save_failed) } },
                     onShare = { context.shareText(project.code) },
                     onDelete = { deleting = project.id },
                 )
@@ -135,7 +165,12 @@ fun LibraryScreen(
                     leadingContent = { Icon(Icons.Filled.LibraryMusic, contentDescription = null) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     modifier = Modifier
-                        .clickable { scope.launch { onOpenProject(viewModel.createFromExample(example)) } }
+                        .clickable {
+                            scope.launch {
+                                val id = viewModel.createFromExample(example)
+                                if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
+                            }
+                        }
                         .tagged("example_${example.number}", stringResource(R.string.library_open_example, example.title)),
                 )
             }
@@ -146,7 +181,7 @@ fun LibraryScreen(
         RenameDialog(
             initial = project.name,
             onConfirm = {
-                viewModel.rename(project.id, it)
+                scope.launch { if (!viewModel.rename(project.id, it)) context.toast(R.string.library_save_failed) }
                 renaming = null
             },
             onDismiss = { renaming = null },

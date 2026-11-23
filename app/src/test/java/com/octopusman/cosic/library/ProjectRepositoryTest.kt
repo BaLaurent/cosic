@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 
 class ProjectRepositoryTest {
     private var clock = 1000L
-    private fun repo(dir: File) = ProjectRepository(dir) { clock++ }
+    private fun repo(dir: File) = ProjectRepository(dir, { clock++ }, { "Sketch $it" }, { "Recovered $it" })
     private fun tmp() = kotlin.io.path.createTempDirectory("cosic").toFile()
 
     @Test fun createDefaultsAndLoad() {
@@ -55,5 +55,25 @@ class ProjectRepositoryTest {
         r.delete(p.id)
         assertNull(r.load(p.id))
         assertEquals(1, r.list().size)
+    }
+
+    @Test fun damagedFilesAreCountedAndRecovered() {
+        val d = tmp(); val r = repo(d)
+        File(d, "x.json").writeText("broken")
+        r.list()
+        assertEquals(1, r.damaged.value)
+        assertEquals(1, r.recoverDamaged())
+        val recovered = r.list().single()
+        assertEquals("Recovered 1", recovered.name)
+        assertEquals("broken", recovered.code)
+        assertEquals(0, r.damaged.value)
+        assertTrue(d.listFiles()!!.none { it.name.endsWith(".corrupt") })
+    }
+
+    @Test fun renameOfUnknownIdIsFalse() {
+        val r = repo(tmp())
+        val p = r.create("a", "x")
+        assertTrue(r.rename(p.id, "b"))
+        assertEquals(false, r.rename("nope", "b"))
     }
 }

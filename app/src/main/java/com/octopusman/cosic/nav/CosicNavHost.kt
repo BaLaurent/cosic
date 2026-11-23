@@ -18,6 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.octopusman.cosic.BuildConfig
 import com.octopusman.cosic.CosicApp
 import com.octopusman.cosic.R
 import com.octopusman.cosic.editor.EditorScreen
@@ -48,8 +49,8 @@ fun CosicNavHost(app: CosicApp, modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
         startDestination = Library,
-        // Lets UI automation find controls by their test tag.
-        modifier = modifier.semantics { testTagsAsResourceId = true },
+        // Lets UI automation find controls by their test tag; in debug builds only.
+        modifier = if (BuildConfig.DEBUG) modifier.semantics { testTagsAsResourceId = true } else modifier,
     ) {
         composable<Library> {
             val adsRemoved by app.entitlements.adsRemoved.collectAsStateWithLifecycle()
@@ -101,8 +102,8 @@ fun CosicNavHost(app: CosicApp, modifier: Modifier = Modifier) {
 private suspend fun importShared(app: CosicApp, navController: NavController, context: Context, text: String) {
     when (val result = app.importer.import(text)) {
         is ImportResult.Created -> navController.navigate(Editor(result.projectId)) {
-            // the editor that is open goes: its project is saved and its music stops when its screen is left
-            popUpTo<Editor> { inclusive = true }
+            // every screen above the Library goes (the editor that is open and Settings): the project is saved and the music stops when its screen is left
+            popUpTo<Library>()
             launchSingleTop = true
         }
         ImportResult.NotALink -> context.toast(R.string.import_not_a_link)

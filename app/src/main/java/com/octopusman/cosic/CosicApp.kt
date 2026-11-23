@@ -45,6 +45,12 @@ private val Context.cosicPrefs: DataStore<Preferences> by preferencesDataStore(
     corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
 )
 
+/** The purchase state, kept apart from the settings: it is the one file that the backup rules leave out (see `data_extraction_rules.xml`). */
+private val Context.entitlementPrefs: DataStore<Preferences> by preferencesDataStore(
+    name = "entitlement_prefs",
+    corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+)
+
 /** Application object and manual dependency container: every singleton is created on first use. */
 class CosicApp : Application() {
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -53,7 +59,14 @@ class CosicApp : Application() {
     lateinit var sampleRepository: SampleRepository
         private set
 
-    val projects by lazy { ProjectRepository(File(filesDir, "projects"), System::currentTimeMillis) }
+    val projects by lazy {
+        ProjectRepository(
+            File(filesDir, "projects"),
+            System::currentTimeMillis,
+            newName = { n -> getString(R.string.project_default_name, n) },
+            recoveredName = { n -> getString(R.string.project_recovered_name, n) },
+        )
+    }
 
     /** The settings of the code editor (highlight, flash, autocomplete, documentation, the prebake script). */
     val editorSettings by lazy { EditorSettings(cosicPrefs, appScope) }
@@ -112,7 +125,7 @@ class CosicApp : Application() {
         EditorEnvironment(editorSettings, programSettings, oscSettings.routeAll, midi, mqtt.prompt, sampleRepository)
     }
 
-    val entitlements by lazy { EntitlementRepository(this, cosicPrefs, appScope) }
+    val entitlements by lazy { EntitlementRepository(this, entitlementPrefs, appScope) }
     val ads by lazy { AdsController(this, entitlements.adsRemoved, appScope) }
 
     /** Imports the pattern of a shared link or of pasted code as a project, the way the intents and the editor's menu do. */

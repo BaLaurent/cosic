@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.octopusman.cosic.CosicApp
+import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -17,25 +18,38 @@ class LibraryViewModel(
     assets: AssetManager,
 ) : ViewModel() {
     val projectList: StateFlow<List<Project>> = projects.projects
+
+    /** How many unreadable project files were set aside and not recovered yet. */
+    val damaged: StateFlow<Int> = projects.damaged
     val examples: List<Example> = loadExamples(assets)
 
-    /** Creates a sketch with the default code and returns its id. */
-    suspend fun createProject(): String = withContext(Dispatchers.IO) { projects.create().id }
+    /** Creates a sketch with the default code and returns its id; null when the project cannot be written (storage full). */
+    suspend fun createProject(): String? = withContext(Dispatchers.IO) { writing { projects.create().id } }
 
-    /** Creates a project named after the [example]'s title, holding its code, and returns its id. */
-    suspend fun createFromExample(example: Example): String =
-        withContext(Dispatchers.IO) { projects.create(example.title, example.code).id }
+    /** Creates a project named after the [example]'s title, holding its code, and returns its id; null when it cannot be written. */
+    suspend fun createFromExample(example: Example): String? =
+        withContext(Dispatchers.IO) { writing { projects.create(example.title, example.code).id } }
 
-    fun rename(id: String, name: String) {
-        viewModelScope.launch(Dispatchers.IO) { projects.rename(id, name) }
-    }
+    /** Renames the project; false when it is gone or the change cannot be written. */
+    suspend fun rename(id: String, name: String): Boolean =
+        withContext(Dispatchers.IO) { writing { projects.rename(id, name) } ?: false }
 
-    fun duplicate(id: String) {
-        viewModelScope.launch(Dispatchers.IO) { projects.duplicate(id) }
-    }
+    /** Copies the project; false when it is gone or the copy cannot be written. */
+    suspend fun duplicate(id: String): Boolean =
+        withContext(Dispatchers.IO) { writing { projects.duplicate(id) } != null }
+
+    /** Makes projects of the set-aside files; false when one cannot be written. */
+    suspend fun recoverDamaged(): Boolean =
+        withContext(Dispatchers.IO) { writing { projects.recoverDamaged() } != null }
 
     fun delete(id: String) {
         viewModelScope.launch(Dispatchers.IO) { projects.delete(id) }
+    }
+
+    private inline fun <T> writing(block: () -> T): T? = try {
+        block()
+    } catch (e: IOException) {
+        null
     }
 
     companion object {
