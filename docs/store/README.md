@@ -1,6 +1,6 @@
 # Google Play listing assets
 
-Source of the images uploaded in Play Console → Main store listing → Graphics.
+Listing text: `listing.md` (English and French). Source of the images uploaded in Play Console → Main store listing → Graphics.
 Rules checked against https://support.google.com/googleplay/android-developer/answer/9866151.
 
 | File (`out/`) | Size | Play slot |
