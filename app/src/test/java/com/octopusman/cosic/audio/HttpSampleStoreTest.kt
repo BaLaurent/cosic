@@ -284,7 +284,7 @@ class HttpSampleStoreTest {
 
     @Test
     fun theUrlOfAMapIsNormalizedLikeABrowserDoesIt() {
-        server.reply("/a", "ok")
+        server.reply("/", "ok")
 
         assertEquals("ok", store().fetchText(server.url("/a b/c#d.json")))
         assertEquals("/a%20b/c%23d.json", server.requests.single().path)
