@@ -9,7 +9,7 @@ Rules checked against https://support.google.com/googleplay/android-developer/an
 | `feature-graphic.png` | 1024 × 500 | Feature graphic |
 | `shot-01.png` … `shot-07.png` | 1080 × 1920 (9:16) | Phone screenshots (2–8 allowed; 4+ at ≥1080 px make the app eligible for large-format recommendations) |
 
-All are 24-bit PNG without alpha, well under 8 MB.
+Screenshots and feature graphic are 24-bit PNG without alpha; the icon is a 32-bit PNG (RGBA, full-bleed square) as its spec asks. All well under their size limits.
 
 ## How they are made
 
