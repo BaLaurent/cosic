@@ -26,7 +26,8 @@ android {
     buildToolsVersion = "36.1.0"
 
     defaultConfig {
-        applicationId = "com.octopusman.cosic"
+        // the Play package name (permanent once uploaded); the code namespace stays com.octopusman.cosic
+        applicationId = "com.octopusman388.cosic"
         minSdk = 26
         targetSdk = 36
         versionCode = providers.gradleProperty("cosic.versionCode").get().toInt()

@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 
 /**
  * Evaluates a program with a pianoroll and a scope, drives the visuals and takes pictures: the bitmaps the canvas drew (`4.3-bitmaps-*.png`) and a screenshot of the
- * test activity (`4.3-screen.png`), both in the app's external files directory (`adb pull /sdcard/Android/data/com.octopusman.cosic/files/visual43`).
+ * test activity (`4.3-screen.png`), both in the app's external files directory (`adb pull /sdcard/Android/data/com.octopusman388.cosic/files/visual43`).
  */
 @RunWith(AndroidJUnit4::class)
 class VisualsScreenshotTest {
