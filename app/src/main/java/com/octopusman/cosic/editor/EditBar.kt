@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.sp
 import com.octopusman.cosic.R
 import com.octopusman.cosic.ui.tagged
 import kotlin.math.abs
-import kotlinx.coroutines.withTimeoutOrNull
 
 private val KEY_HEIGHT = 48.dp
 private val TRACKPAD_STEP = 16.dp
