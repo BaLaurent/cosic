@@ -19,11 +19,13 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -65,6 +67,8 @@ fun ExportSheet(worker: ExportWorker, code: String, defaultName: String, onDismi
     val context = LocalContext.current
     val state by worker.state.collectAsState()
     val exporting = state is ExportState.Running
+    // the sheet state keeps the first lambda it is given, so it reads the live value through this
+    val keepOpen by rememberUpdatedState(exporting)
 
     var name by rememberSaveable { mutableStateOf(defaultName) }
     var startText by rememberSaveable { mutableStateOf("0") }
@@ -84,7 +88,8 @@ fun ExportSheet(worker: ExportWorker, code: String, defaultName: String, onDismi
         onDismissRequest = { if (!exporting) dismiss() },
         sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true,
-            confirmValueChange = { !exporting },
+            // a running export cannot be swiped away; showing the sheet again (after a rotation, mid-export) must still be allowed
+            confirmValueChange = { it != SheetValue.Hidden || !keepOpen },
         ),
         modifier = Modifier.tagged("export_sheet", stringResource(R.string.export_title)),
     ) {

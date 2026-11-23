@@ -60,7 +60,11 @@ class ProjectRepository(
     fun save(project: Project) {
         dir.mkdirs()
         val tmp = File(dir, "${project.id}.json.tmp")
-        tmp.writeText(json.encodeToString(Project.serializer(), project))
+        // on disk before the rename: otherwise a power loss can keep the rename and lose the bytes, leaving an empty project
+        java.io.FileOutputStream(tmp).use { out ->
+            out.write(json.encodeToString(Project.serializer(), project).toByteArray(Charsets.UTF_8))
+            out.fd.sync()
+        }
         if (!tmp.renameTo(fileOf(project.id))) {
             tmp.delete()
             throw java.io.IOException("Could not save project ${project.id}")
