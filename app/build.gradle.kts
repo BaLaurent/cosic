@@ -29,8 +29,8 @@ android {
         applicationId = "com.octopusman.cosic"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = providers.gradleProperty("cosic.versionCode").get().toInt()
+        versionName = providers.gradleProperty("cosic.versionName").get()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -91,8 +91,19 @@ val verifyMonetizationConfig = tasks.register("verifyMonetizationConfig") {
     }
 }
 
+// A Play bundle must be signed and carry real ad ids; assembleRelease stays usable with test ids for emulator tours.
+val verifyReleaseBundle = tasks.register("verifyReleaseBundle") {
+    val unsigned = !keystoreFile.exists()
+    val testIds = monetizationKeys.any { monetization.getProperty(it).orEmpty().startsWith("ca-app-pub-3940256099942544") }
+    doLast {
+        if (unsigned) throw GradleException("bundleRelease needs keystore.properties (storeFile, storePassword, keyAlias, keyPassword) at the project root")
+        if (testIds) throw GradleException("monetization.properties holds Google's test ad ids; put the real AdMob ids before building a Play bundle")
+    }
+}
+
 tasks.configureEach {
     if (name in setOf("preReleaseBuild", "assembleRelease", "bundleRelease")) dependsOn(verifyMonetizationConfig)
+    if (name == "bundleRelease") dependsOn(verifyReleaseBundle)
 }
 
 dependencies {

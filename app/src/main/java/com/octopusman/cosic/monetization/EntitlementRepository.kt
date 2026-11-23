@@ -7,8 +7,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import com.octopusman.cosic.BuildConfig
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,7 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import java.io.IOException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -43,15 +46,28 @@ class EntitlementRepository(
     private val refreshLock = Mutex()
     private var offer: Offer? = null
 
-    // Read synchronously: the first value of [adsRemoved] must already be right, so that a paying
-    // user never starts the consent flow or the ads SDK, even while the store is still being asked.
-    private val persisted = runBlocking { prefs.data.first() }
-    private val entitled = MutableStateFlow(persisted[ADS_REMOVED_CACHED] ?: false)
-    private val simulated = MutableStateFlow(persisted[DEBUG_SIMULATE_ADS_REMOVED] ?: false)
+    // Assume "no ads" until the stored value is known (read on IO below): no consent flow or ad
+    // can start for a paying user, and nothing waits for the disk on the main thread.
+    private val entitled = MutableStateFlow(true)
+    private val simulated = MutableStateFlow(false)
+    private val loaded = CompletableDeferred<Unit>()
     private val _purchaseState = MutableStateFlow<PurchaseUiState>(PurchaseUiState.Loading)
 
     val adsRemoved: StateFlow<Boolean> = combine(entitled, simulated, ::effectiveAdsRemoved)
         .stateIn(scope, SharingStarted.Eagerly, effectiveAdsRemoved(entitled.value, simulated.value))
+
+    init {
+        scope.launch(Dispatchers.IO) {
+            val stored = try {
+                prefs.data.first()
+            } catch (e: IOException) {
+                emptyPreferences()
+            }
+            entitled.value = stored[ADS_REMOVED_CACHED] ?: false
+            simulated.value = stored[DEBUG_SIMULATE_ADS_REMOVED] ?: false
+            loaded.complete(Unit)
+        }
+    }
 
     val purchaseState: StateFlow<PurchaseUiState> = _purchaseState.asStateFlow()
 
@@ -69,12 +85,13 @@ class EntitlementRepository(
     }
 
     fun launchPurchase(activity: Activity) {
-        val offer = offer ?: return
+        val offer = offer ?: return unavailable(UnavailableReason.PRODUCT_MISSING)
         _purchaseState.value = PurchaseUiState.Loading
         billing.launch(activity, offer)
     }
 
     private suspend fun sync() {
+        loaded.await()
         if (!billing.connect()) return unavailable(UnavailableReason.STORE_UNREACHABLE)
         val purchases = billing.queryOwned() ?: return unavailable(UnavailableReason.PURCHASES_UNREADABLE)
 

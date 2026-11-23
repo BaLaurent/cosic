@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The purchase state is re-read from Google Play, and the MQTT passwords are encrypted with a key that never leaves the device: neither belongs in a backup. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="datastore/entitlement_prefs.preferences_pb" />
+        <exclude domain="sharedpref" path="mqtt_credentials.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="datastore/entitlement_prefs.preferences_pb" />
+        <exclude domain="sharedpref" path="mqtt_credentials.xml" />
+    </device-transfer>
+</data-extraction-rules>

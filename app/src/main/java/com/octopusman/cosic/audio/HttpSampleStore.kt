@@ -227,7 +227,7 @@ internal class HttpSampleStore internal constructor(
     /** First stage, on a decoding thread: a document is decoded, a file of the disk cache too, anything else is downloaded first. */
     private fun loadFile(url: String, future: CompletableFuture<SampleData>) {
         if (url.startsWith("content:")) {
-            future.complete(decoder(openContent(url).use { it.readBytes() }, url))
+            future.complete(decoder(openContent(url).use { readLimited(it, config.maxFileBytes, -1) }, url))
             return
         }
         val target = normalizeUrl(url)
