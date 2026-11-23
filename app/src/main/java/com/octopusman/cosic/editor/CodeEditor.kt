@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -43,9 +43,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
-import com.octopusman.cosic.R
 import com.octopusman.cosic.ui.CosicColors
-import com.octopusman.cosic.ui.tagged
 import cosic.script.TokenKind
 import cosic.script.TokenSpan
 import cosic.script.tokenize
@@ -135,7 +133,7 @@ internal fun CodeEditor(
                         .fieldSlot()
                         .fillMaxWidth()
                         .heightIn(min = with(density) { viewport.height.toDp() })
-                        .tagged("code_editor", stringResource(R.string.editor_code)),
+                        .testTag("code_editor"),
                     textStyle = TextStyle(
                         color = MaterialTheme.colorScheme.onBackground,
                         fontFamily = fontFamily ?: FontFamily.Monospace,

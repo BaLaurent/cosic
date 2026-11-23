@@ -2,10 +2,13 @@ package com.octopusman.cosic.reference
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -81,7 +84,7 @@ internal fun AutocompleteRow(suggestions: List<Suggestion>, onPick: (Suggestion)
     val shown = remember(suggestions) { suggestions.take(MAX_CHIPS) }
     LazyRow(
         modifier = modifier.tagged("autocomplete_row", stringResource(R.string.autocomplete_suggestions)),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 0.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -102,19 +105,25 @@ private fun SuggestionChip(suggestion: Suggestion, onPick: (Suggestion) -> Unit,
                 modifier = Modifier
                     .clickable(onClickLabel = pickLabel) { onPick(suggestion) }
                     .tagged("autocomplete_${suggestion.label}", pickLabel)
-                    .padding(start = 12.dp, top = 6.dp, bottom = 6.dp, end = 6.dp),
+                    .heightIn(min = 48.dp)
+                    .wrapContentHeight(Alignment.CenterVertically)
+                    .padding(start = 12.dp, end = 6.dp),
             )
             if (onInfo != null && suggestion.card != null) {
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = infoLabel,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
+                        .size(48.dp)
                         .clickable(onClickLabel = infoLabel) { onInfo(suggestion) }
-                        .tagged("autocomplete_info_${suggestion.label}", infoLabel)
-                        .padding(start = 4.dp, end = 10.dp, top = 6.dp, bottom = 6.dp)
-                        .size(18.dp),
-                )
+                        .tagged("autocomplete_info_${suggestion.label}", infoLabel),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
             } else {
                 Spacer(Modifier.size(6.dp))
             }

@@ -35,8 +35,11 @@ internal data class SliderSlot(val id: String)
 
 private data object FieldSlot
 
-/** The colour the flash of an evaluation puts behind the code (`rgba(255,255,255,.4)` of Strudel's flash). */
-private val FLASH_COLOR = Color.White.copy(alpha = 0.4f)
+/**
+ * The colour the flash of an evaluation puts behind the code. Strudel's flash is `rgba(255,255,255,.4)`; this one is fainter so that every token colour
+ * keeps its contrast while it shows (a comment fell to 1.02:1 at 0.4).
+ */
+private val FLASH_COLOR = Color.White.copy(alpha = 0.10f)
 
 /** What the editor's layout knows about the field it laid out. */
 internal class EditorGeometry {

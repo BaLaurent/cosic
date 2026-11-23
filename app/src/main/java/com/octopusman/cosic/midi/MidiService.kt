@@ -12,6 +12,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.util.Log
+import com.octopusman.cosic.R
 import cosic.CosicEngine
 import cosic.FrameClock
 import cosic.MidiSink
@@ -151,7 +152,8 @@ class MidiService(context: Context) : MidiSink, MidiInputSource {
             val ports = info.ports
             MidiDeviceDescription(
                 info.id,
-                midiDeviceName(info.properties.getString(MidiDeviceInfo.PROPERTY_NAME), info.properties.getString(MidiDeviceInfo.PROPERTY_PRODUCT), info.id),
+                midiDeviceName(info.properties.getString(MidiDeviceInfo.PROPERTY_NAME), info.properties.getString(MidiDeviceInfo.PROPERTY_PRODUCT))
+                    ?: appContext.getString(R.string.midi_device_fallback, info.id),
                 ports.filter { it.type == MidiDeviceInfo.PortInfo.TYPE_INPUT }.map { it.portNumber },
                 ports.filter { it.type == MidiDeviceInfo.PortInfo.TYPE_OUTPUT }.map { it.portNumber },
             )

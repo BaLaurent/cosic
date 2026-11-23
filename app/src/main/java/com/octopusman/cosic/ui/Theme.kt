@@ -44,7 +44,7 @@ private val CosicColorScheme = darkColorScheme(
     onError = Color(0xFF2D0A0A),
     errorContainer = Color(0xFF5C1F1F),
     onErrorContainer = Color(0xFFFFD9D9),
-    outline = Color(0xFF5A6273),
+    outline = Color(0xFF6E7688),
     outlineVariant = Color(0xFF2E3441),
     scrim = Color.Black,
 )
@@ -58,7 +58,7 @@ fun CosicTheme(content: @Composable () -> Unit) {
 object CosicColors {
     val Warning = Amber
 
-    val Comment = Color(0xFF6B7280)
+    val Comment = Color(0xFF8B93A1)
     val Mini = Amber
     val Number = Color(0xFF7CC5FF)
     val Call = Color(0xFFC792EA)

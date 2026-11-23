@@ -27,9 +27,9 @@ internal class MidiPortLists(val outputs: List<MidiPortRef>, val inputs: List<Mi
     }
 }
 
-/** The name a device is listed by: its name, else its product, else a number. */
-internal fun midiDeviceName(name: String?, product: String?, id: Int): String =
-    name?.takeIf { it.isNotBlank() } ?: product?.takeIf { it.isNotBlank() } ?: "MIDI device $id"
+/** The name a device is listed by: its name, else its product, else null (the service then numbers it). */
+internal fun midiDeviceName(name: String?, product: String?): String? =
+    name?.takeIf { it.isNotBlank() } ?: product?.takeIf { it.isNotBlank() }
 
 /**
  * Splits [bytes] into pieces of at most [max] bytes, for a port that takes no more in one call (`MidiReceiver.getMaxMessageSize()`): a long

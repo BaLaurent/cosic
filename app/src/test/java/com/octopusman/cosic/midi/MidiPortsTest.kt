@@ -3,6 +3,7 @@ package com.octopusman.cosic.midi
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertSame
 
 class MidiPortsTest {
@@ -34,11 +35,11 @@ class MidiPortsTest {
     }
 
     @Test
-    fun theNameOfADeviceFallsBackToItsProductAndThenANumber() {
-        assertEquals("Keys", midiDeviceName("Keys", "Product", 4))
-        assertEquals("Product", midiDeviceName(null, "Product", 4))
-        assertEquals("Product", midiDeviceName("  ", "Product", 4))
-        assertEquals("MIDI device 4", midiDeviceName(null, null, 4))
+    fun theNameOfADeviceFallsBackToItsProductAndThenToNothing() {
+        assertEquals("Keys", midiDeviceName("Keys", "Product"))
+        assertEquals("Product", midiDeviceName(null, "Product"))
+        assertEquals("Product", midiDeviceName("  ", "Product"))
+        assertNull(midiDeviceName(null, null))
     }
 
     @Test

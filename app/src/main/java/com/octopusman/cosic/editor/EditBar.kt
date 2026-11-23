@@ -8,7 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Undo
@@ -39,6 +40,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -82,10 +84,10 @@ fun EditBar(
         BarKey("jump_left", stringResource(R.string.editor_jump_left), onClick = { onEdit { it.jumpToken(-1) } }) { Text("«", fontSize = 24.sp) }
         BarKey("jump_right", stringResource(R.string.editor_jump_right), onClick = { onEdit { it.jumpToken(1) } }) { Text("»", fontSize = 24.sp) }
         BarKey("select_expand", stringResource(R.string.editor_select_expand), onClick = { onEdit { ladder.expand(it) } }) {
-            Text(stringResource(R.string.editor_select_expand_label), fontSize = 13.sp)
+            KeyLabel(stringResource(R.string.editor_select_expand_label))
         }
         BarKey("select_shrink", stringResource(R.string.editor_select_shrink), onClick = { onEdit { ladder.shrink(it) } }) {
-            Text(stringResource(R.string.editor_select_shrink_label), fontSize = 13.sp)
+            KeyLabel(stringResource(R.string.editor_select_shrink_label))
         }
         BarKey("lines_menu", stringResource(R.string.editor_lines_menu), onClick = onLines) { Icon(Icons.Filled.MoreVert, contentDescription = null) }
     }
@@ -124,9 +126,20 @@ fun LineBar(
 private fun KeyRowSurface(modifier: Modifier, keys: @Composable RowScope.() -> Unit) {
     Surface(color = MaterialTheme.colorScheme.surface, modifier = modifier) {
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp), content = keys)
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), content = keys)
         }
     }
+}
+
+/** The label of a key that has no room to spare: one line, shrunk (down to 8 sp) until it fits, so a longer translation never overflows. */
+@Composable
+private fun KeyLabel(text: String) {
+    BasicText(
+        text = text,
+        style = TextStyle(color = LocalContentColor.current),
+        maxLines = 1,
+        autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 13.sp),
+    )
 }
 
 @Composable

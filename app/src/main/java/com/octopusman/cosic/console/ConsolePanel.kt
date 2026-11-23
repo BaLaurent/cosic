@@ -32,6 +32,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.octopusman.cosic.R
 import com.octopusman.cosic.ui.CosicColors
+import com.octopusman.cosic.ui.readableOn
 import com.octopusman.cosic.ui.tagged
 import cosic.io.ConsoleLog
 import cosic.io.LogEntry
@@ -94,7 +95,7 @@ private fun ConsoleLine(entry: LogEntry, parseColor: (String) -> Color?) {
         else -> colors.onSurface
     }
     val tint = entry.color?.let(parseColor)
-    val textColor = tint ?: base
+    val textColor = tint?.readableOn(if (inverted) colors.onSurface else colors.surface) ?: base
     val linkColor = if (inverted) colors.primaryContainer else colors.primary
     val text = remember(entry, textColor, linkColor) { lineText(entry, textColor, linkColor) }
     Text(
