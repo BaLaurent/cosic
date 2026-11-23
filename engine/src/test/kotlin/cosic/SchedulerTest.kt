@@ -334,13 +334,13 @@ class SchedulerTest {
     }
 
     @Test
-    fun aSampleThatIsStillLoadingIsSkippedWithoutAWarning() {
+    fun aSampleThatIsStillLoadingIsSkippedAndWarnedAboutOnce() {
         val library = FakeLibrary(banks = mapOf("kit" to TestBank(1)))
         val scheduler = scheduler("""s("kit*4")""", library)
         scheduler.play(0)
         scheduler.schedule(CYCLE)
         assertEquals(emptyList(), scheduler.drain())
-        assertEquals(emptyList(), scheduler.warnings)
+        assertEquals(listOf("[webaudio] skip hap: still loading"), scheduler.warnings)
         assertTrue(library.requested.isNotEmpty(), "it was asked for, which makes the library start decoding")
     }
 

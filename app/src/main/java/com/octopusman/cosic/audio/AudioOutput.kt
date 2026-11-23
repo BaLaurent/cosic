@@ -1,6 +1,9 @@
 package com.octopusman.cosic.audio
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioFormat
@@ -10,6 +13,7 @@ import android.media.AudioTrack
 import android.os.Process
 import android.os.SystemClock
 import android.util.Log
+import androidx.core.content.ContextCompat
 import cosic.CosicEngine
 
 private const val TAG = "CosicAudio"
@@ -35,7 +39,8 @@ class AudioOutput(private val engine: CosicEngine, context: Context) {
     /** The live track and the engine frame that was rendered first into it. */
     private class Session(val track: AudioTrack, val engineFrameAtStart: Long)
 
-    private val audioManager = context.applicationContext.getSystemService(AudioManager::class.java)
+    private val appContext = context.applicationContext
+    private val audioManager = appContext.getSystemService(AudioManager::class.java)
 
     // The audio thread's registration and its session, guarded by [lock]. The thread deregisters
     // itself under the same lock as it decides to end, so ensureRunning() either keeps it alive or
@@ -75,6 +80,13 @@ class AudioOutput(private val engine: CosicEngine, context: Context) {
                 if (lost && synchronized(lock) { thread === self }) engine.stop()
             }
             .build()
+        val noisy = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                // A thread that already ended must not stop an engine that a newer one is playing.
+                if (synchronized(lock) { thread === self }) engine.stop()
+            }
+        }
+        var noisyRegistered = false
         var track: AudioTrack? = null
         try {
             if (audioManager.requestAudioFocus(focus) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
@@ -82,9 +94,13 @@ class AudioOutput(private val engine: CosicEngine, context: Context) {
                 engine.stop()
                 return
             }
+            // Unplugging headphones (or dropping a Bluetooth sink) must not move the music to the speaker: stop, as when the focus is lost.
+            ContextCompat.registerReceiver(appContext, noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), ContextCompat.RECEIVER_NOT_EXPORTED)
+            noisyRegistered = true
             track = openTrack() ?: return
             pump(track)
         } finally {
+            if (noisyRegistered) appContext.unregisterReceiver(noisy)
             leave(force = true)
             track?.release()
             audioManager.abandonAudioFocusRequest(focus)

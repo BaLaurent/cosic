@@ -21,13 +21,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,7 +34,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.octopusman.cosic.R
 import com.octopusman.cosic.ui.tagged
-import cosic.SoundLibrary
 
 /** The sample rates the export offers; the second is the default of Strudel's Export tab. */
 internal val EXPORT_SAMPLE_RATES = listOf(44_100, 48_000)
@@ -57,33 +54,34 @@ internal fun parseCycleRange(start: String, end: String): Pair<Double, Double>? 
 
 /**
  * The export of the program as a WAV file, as a sheet (Strudel's Export tab): the file name, the first and the last cycle (the last one is not rendered; they
- * default to 0 and 4) and the sample rate. Export asks for the place of the file with the system's document picker and then renders in [ExportWorker], showing how
- * far it is with a Cancel button; what plays in the editor is not touched. [code] is the program as it is in the editor now, [defaultName] the name the file
- * has when the field is empty (the project's), and [library] the sounds of the app.
+ * default to 0 and 4) and the sample rate. Export asks for the place of the file with the system's document picker and then renders in [worker], showing how
+ * far it is with a Cancel button; what plays in the editor is not touched. [code] is the program as it is in the editor now and [defaultName] the name the file
+ * has when the field is empty (the project's). The [worker] is the editor's, not the sheet's: an export that is running goes on, and the sheet shows it again, when the screen is rotated
+ * (the fields keep what was typed in them too); closing the sheet forgets the result of the last export.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExportSheet(code: String, defaultName: String, library: SoundLibrary, onDismiss: () -> Unit) {
+fun ExportSheet(worker: ExportWorker, code: String, defaultName: String, onDismiss: () -> Unit) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val worker = remember(library) { ExportWorker(scope, library) }
-    DisposableEffect(worker) { onDispose { worker.close() } }
     val state by worker.state.collectAsState()
     val exporting = state is ExportState.Running
 
-    var name by remember { mutableStateOf(defaultName) }
-    var startText by remember { mutableStateOf("0") }
-    var endText by remember { mutableStateOf("4") }
-    var sampleRate by remember { mutableIntStateOf(DEFAULT_EXPORT_SAMPLE_RATE) }
+    var name by rememberSaveable { mutableStateOf(defaultName) }
+    var startText by rememberSaveable { mutableStateOf("0") }
+    var endText by rememberSaveable { mutableStateOf("4") }
+    var sampleRate by rememberSaveable { mutableIntStateOf(DEFAULT_EXPORT_SAMPLE_RATE) }
     val range = parseCycleRange(startText, endText)
+    // the worker outlives the sheet, so the result of the last export is forgotten when the sheet is closed and the next one opens clean
+    val dismiss = { worker.reset(); onDismiss() }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("audio/wav")) { uri ->
         val (from, to) = range ?: return@rememberLauncherForActivityResult
-        if (uri != null) worker.start(context.contentResolver, uri, code, from, to, sampleRate)
+        // the application's resolver: the export goes on in the worker after this activity is gone, and must not keep it alive
+        if (uri != null) worker.start(context.applicationContext.contentResolver, uri, code, from, to, sampleRate)
     }
 
     ModalBottomSheet(
-        onDismissRequest = { if (!exporting) onDismiss() },
+        onDismissRequest = { if (!exporting) dismiss() },
         sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true,
             confirmValueChange = { !exporting },
@@ -160,7 +158,7 @@ fun ExportSheet(code: String, defaultName: String, library: SoundLibrary, onDism
                         Text(stringResource(R.string.export_cancel))
                     }
                 } else {
-                    OutlinedButton(onClick = onDismiss, modifier = Modifier.tagged("export_close", stringResource(R.string.export_close))) {
+                    OutlinedButton(onClick = dismiss, modifier = Modifier.tagged("export_close", stringResource(R.string.export_close))) {
                         Text(stringResource(R.string.export_close))
                     }
                     Button(

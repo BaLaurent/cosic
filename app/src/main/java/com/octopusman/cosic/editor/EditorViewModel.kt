@@ -21,6 +21,7 @@ import com.octopusman.cosic.audio.BankSummary
 import com.octopusman.cosic.audio.SampleRepository
 import com.octopusman.cosic.audio.SoundsStatus
 import com.octopusman.cosic.audio.playPreview
+import com.octopusman.cosic.export.ExportWorker
 import com.octopusman.cosic.input.InputSwitches
 import com.octopusman.cosic.library.Project
 import com.octopusman.cosic.library.ProjectRepository
@@ -32,6 +33,7 @@ import cosic.EngineSnapshot
 import cosic.EvalReport
 import cosic.HighlightEvent
 import cosic.ProgramInfo
+import cosic.SoundLibrary
 import cosic.SourceRange
 import cosic.io.ConsoleLog
 import cosic.io.InputState
@@ -39,6 +41,7 @@ import cosic.io.ShareLink
 import cosic.io.SliderCodec
 import cosic.script.tokenize
 import cosic.visual.VisualSession
+import java.io.File
 import java.io.IOException
 import kotlin.math.floor
 import kotlinx.coroutines.Dispatchers
@@ -81,7 +84,7 @@ private class PendingSave(val version: Long, val project: Project)
  * last edit, and at once when the editor is left or stopped.
  *
  * Besides the text it holds what the last evaluated program says about itself ([program], [visuals], [sliders]), what sounds right now
- * ([activeHighlights], [nowCycle]) and the switches of the phone's inputs that follow what the program reads ([inputSwitches]).
+ * ([activeHighlights], [nowCycle]), the switches of the phone's inputs that follow what the program reads ([inputSwitches]) and the export of the program to a WAV file ([export]).
  */
 class EditorViewModel(
     projectId: String,
@@ -92,13 +95,15 @@ class EditorViewModel(
     private val settings: EditorSettings,
     programSettings: ProgramEditorSettings,
     private val inputSwitches: InputSwitches,
+    exportLibrary: SoundLibrary,
+    exportTempDir: File,
 ) : ViewModel() {
     private val loaded: Project? = projects.load(projectId)
     private val undoStack = UndoStack(SystemClock::uptimeMillis)
 
     init {
-        // The tempo a program sets lasts from one evaluation to the next; a different project starts at the default.
-        engine.resetSession()
+        // What a program asks of the editor (`fontSize()`, `fontFamily()`) lasts until another program changes it; a different project starts with the defaults. The engine's session
+        // is reset by the first evaluation instead (see [sessionReset]).
         programSettings.reset()
     }
 
@@ -161,6 +166,11 @@ class EditorViewModel(
     /** The prebake script the engine runs before a session's first program, null when there is none. */
     val prebake: String? get() = engine.prebake
 
+    /**
+     * The export of the program to a WAV file. It lives here and not in the sheet that shows it, so that a rotation does not stop it; leaving the editor for good does ([onCleared]).
+     */
+    val export = ExportWorker(viewModelScope, exportLibrary, exportTempDir)
+
     /** The title the program's comments declare (`// @title ...`), null when it has none. */
     val title: String?
         get() = (program?.metadata?.get("title") as? String)?.trim()?.takeIf { it.isNotEmpty() }
@@ -174,6 +184,12 @@ class EditorViewModel(
     private var evalJob: Job? = null
     private var playRequestedAt = 0L
     private var playRequestedFrames = 0L
+
+    // The engine keeps what the programs set (the tempo, what they labelled) from one evaluation to the next, and a different project starts afresh: the first evaluation of this
+    // editor resets that session, on its IO thread. Resetting takes the engine's lock, which an evaluation in progress holds, and the main thread must not wait for it. Volatile:
+    // an evaluation that stop() cancelled can still be running when the next one starts.
+    @Volatile
+    private var sessionReset = false
 
     // Where the places a program speaks of are now, in the text being edited: every edit since the text was evaluated moves them. [highlightMapper] follows the program that plays
     // (the steps that sound), [errorMapper] the text of the last evaluation that failed (the error's range), and [evalMapper] the evaluation in progress, whose program they are
@@ -348,7 +364,14 @@ class EditorViewModel(
             // withContext rethrows cancellation instead of returning when stop() cancelled this
             // job meanwhile, so a late result is discarded and never reaches play(). Evaluating can wait
             // for the network (samples() and the default sounds), which is what the IO threads are for.
-            val (report, swap) = withContext(Dispatchers.IO) { engine.evaluate(code) to handoverOf(engine.snapshot) }
+            // The first evaluation of this editor also resets the engine's session first (see [sessionReset]).
+            val (report, swap) = withContext(Dispatchers.IO) {
+                if (!sessionReset) {
+                    engine.resetSession()
+                    sessionReset = true
+                }
+                engine.evaluate(code) to handoverOf(engine.snapshot)
+            }
             when (report) {
                 is EvalReport.Ok -> {
                     previousMapper = if (replacing) highlightMapper else null
@@ -489,6 +512,7 @@ class EditorViewModel(
     }
 
     override fun onCleared() {
+        export.close()
         saveNow()
         if (playing) engine.stop()
         inputSwitches.releaseAll()
@@ -529,6 +553,8 @@ class EditorViewModel(
         }
     }
 
+    // Writes on the calling thread on purpose: when the editor is left or stopped, the code must be on disk before the process can be killed once the activity has stopped (onStop),
+    // and the file is a few KB.
     private fun saveNow() {
         saveJob?.cancel()
         capture()?.let(::write)
@@ -568,6 +594,8 @@ class EditorViewModel(
                         midiIn = app.midi::setListening,
                         releaseKeys = app.keyTracker::releaseAll,
                     ),
+                    exportLibrary = app.editorEnvironment.library,
+                    exportTempDir = app.cacheDir,
                 )
             }
         }

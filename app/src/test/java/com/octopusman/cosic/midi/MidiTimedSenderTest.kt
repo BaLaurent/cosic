@@ -105,6 +105,24 @@ class MidiTimedSenderTest {
     }
 
     @Test
+    fun aDeliveryThatThrowsLosesItsMessageAndTheSenderGoesOn() {
+        val log = CopyOnWriteArrayList<Delivered>()
+        val latch = CountDownLatch(1)
+        val sender = MidiTimedSender<String>(
+            deliver = { port, bytes ->
+                if (bytes[0].toInt() == 1) throw IllegalStateException("the port is closed")
+                log.add(Delivered(port, bytes[0].toInt(), System.nanoTime()))
+                latch.countDown()
+            },
+        )
+        val now = System.nanoTime()
+        sender.send("p", byteArrayOf(1), now)
+        sender.send("p", byteArrayOf(2), now + ms(20))
+        assertTrue(latch.await(2, TimeUnit.SECONDS), "the message after the failing one was not delivered")
+        assertEquals(listOf(2), log.map { it.value })
+    }
+
+    @Test
     fun theThreadComesBackAfterItsIdleExit() {
         // the thread is not killed by a quiet period: a message sent much later still goes out
         val log = CopyOnWriteArrayList<Delivered>()

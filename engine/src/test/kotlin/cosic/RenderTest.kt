@@ -172,6 +172,54 @@ class RenderTest {
         assertEquals("foo is not defined", assertFailsWith<IllegalStateException> { OfflineRenderer.render("foo(1)", 0.0, 1.0) }.message)
     }
 
+    @Test
+    fun renderWavWritesTheBytesOfWriteWavOfTheCollectedExport() {
+        val code = """note("c e g").s("sawtooth")"""
+        val collected = OfflineRenderer.render(code, 0.0, 2.0, 48_000)
+        val expected = ByteArrayOutputStream().also { OfflineRenderer.writeWav(it, collected, 48_000) }.toByteArray()
+
+        val file = File(tmp, "streamed.wav")
+        val frames = OfflineRenderer.renderWav(file, code, 0.0, 2.0, 48_000)
+
+        assertContentEquals(expected, file.readBytes(), "the samples of the collected export, under the header that was written last, once the length was known")
+        assertEquals(collected.size / 2L, frames, "the cycles and the release tail")
+        val info = AudioSystem.getAudioFileFormat(file)
+        assertEquals(frames, info.frameLength.toLong(), "a WAV reader finds the length the header was patched with")
+        assertEquals(2, info.format.channels)
+        assertEquals(16, info.format.sampleSizeInBits)
+        assertEquals(48_000f, info.format.sampleRate)
+    }
+
+    @Test
+    fun renderWavReportsItsProgressAndCanBeCancelled() {
+        val seen = ArrayList<Double>()
+        OfflineRenderer.renderWav(File(tmp, "progress.wav"), """s("bd")""", 0.0, 1.0, 48_000, emptyLibrary(), progress = { seen.add(it) })
+        assertEquals(1.0, seen.last())
+        assertTrue(seen.zipWithNext().all { (a, b) -> b >= a }, "progress only grows")
+        assertFailsWith<java.util.concurrent.CancellationException> {
+            OfflineRenderer.renderWav(File(tmp, "cancelled.wav"), """s("bd")""", 0.0, 1.0, 48_000, emptyLibrary(), cancelled = { true })
+        }
+    }
+
+    @Test
+    fun renderWavRejectsBadCyclesAndCodeWithErrorsLikeTheCollectedExport() {
+        val file = File(tmp, "rejected.wav")
+        assertFailsWith<IllegalArgumentException> { OfflineRenderer.renderWav(file, """s("bd")""", 2.0, 1.0) }
+        assertFailsWith<IllegalArgumentException> { OfflineRenderer.renderWav(file, """s("bd")""", -1.0, 1.0) }
+        assertEquals("foo is not defined", assertFailsWith<IllegalStateException> { OfflineRenderer.renderWav(file, "foo(1)", 0.0, 1.0) }.message)
+    }
+
+    @Test
+    fun renderWavRefusesARangeWhoseSamplesWouldOverflowTheSizesOfTheFormat() {
+        val file = File(tmp, "too-long.wav")
+        // 250 cycles of 100 seconds are 1.2 billion frames: 4.8 GB of samples, where the 32-bit sizes of a WAV file stop at 4.29 GB
+        val error = assertFailsWith<IllegalArgumentException> {
+            OfflineRenderer.renderWav(file, "setcps(0.01)\n\$: note(\"c\").s(\"sawtooth\")", 0.0, 250.0, 48_000)
+        }
+        assertEquals("250.0 cycles are too long for a WAV file", error.message)
+        assertEquals(44L, file.length(), "refused before anything was rendered: only the place of the header was written")
+    }
+
     // -------------------------------------------------------------------------------- WAV
 
     @Test

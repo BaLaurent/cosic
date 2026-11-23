@@ -24,8 +24,8 @@ private const val MAX_QUEUED = 8192
  * Messages with the same time keep the order they were queued in. Nothing is dropped when the program stops: the messages that are queued
  * go out when they are due, which is what a browser does with the messages it has handed to its MIDI port (a note off is not lost).
  *
- * [deliver] runs on the sender's thread and must not throw (a failing port is the service's business). [onThreadStart] runs on that thread
- * when it starts, for its priority.
+ * [deliver] runs on the sender's thread; one that throws loses only its message, the sender goes on (a failing port is the service's business).
+ * [onThreadStart] runs on that thread when it starts, for its priority.
  */
 internal class MidiTimedSender<P>(
     private val deliver: (port: P, bytes: ByteArray) -> Unit,
@@ -102,7 +102,11 @@ internal class MidiTimedSender<P>(
             }
             if (item != null) {
                 idleSince = nanoTime()
-                deliver(item.port, item.bytes)
+                try {
+                    deliver(item.port, item.bytes)
+                } catch (e: RuntimeException) {
+                    // the message is lost, the sender goes on
+                }
             }
         }
     }

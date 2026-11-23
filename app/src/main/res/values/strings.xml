@@ -255,4 +255,19 @@
     <!-- Console -->
     <string name="console_title">Console</string>
     <string name="console_empty">Nothing has been logged yet.</string>
+
+    <!-- Links, notices, release remediation -->
+    <string name="link_no_app">No app on this device can open this link.</string>
+    <string name="settings_privacy_policy">Privacy policy</string>
+    <string name="credits_source">Source code (GNU AGPL v3)</string>
+    <string name="midi_device_fallback">MIDI device %1$d</string>
+    <string name="library_save_failed">Could not save the project. Check that the storage is not full.</string>
+    <string name="project_default_name">Sketch %1$d</string>
+    <string name="project_recovered_name">Recovered project %1$d</string>
+    <plurals name="library_damaged">
+        <item quantity="one">%1$d damaged project was set aside.</item>
+        <item quantity="other">%1$d damaged projects were set aside.</item>
+    </plurals>
+    <string name="library_recover">Recover</string>
+    <string name="project_unreadable">This project could not be opened.</string>
 </resources>

@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import cosic.SoundLibrary
 import cosic.render.OfflineRenderer
+import java.io.File
 import java.io.IOException
 import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -32,13 +33,19 @@ sealed interface ExportState {
 }
 
 private const val FAILED_PREFIX = "Export failed: "
+private const val TEMP_PREFIX = "export-"
+private const val TEMP_SUFFIX = ".wav"
 
 /**
  * Renders the program of the editor to a 16-bit stereo WAV file (Strudel's Export tab): cycles [startCycle] to [endCycle] at [sampleRate], with
  * [OfflineRenderer], which makes an engine of its own, so what is playing in the editor is untouched. It shares the [library] of the app, so the sounds that
- * are loaded for the editor are not loaded twice. The work runs on [Dispatchers.Default] in [scope]; [state] says how far it is.
+ * are loaded for the editor are not loaded twice. The work runs on [Dispatchers.Default] in [scope] (the editor's ViewModel, so an export goes on when the screen is rotated); [state] says how far it is.
+ *
+ * The render is written to a temporary file in [tempDir] (the cache folder of the app) as it is made and copied to the document the user chose when it is complete, so an export takes the same
+ * little memory however long it is, and only that much disk space for a while (11 MB a minute at 48 kHz). The temporary file is deleted however the export ends; the ones a process that was
+ * killed in the middle of an export left behind are deleted when the next export starts.
  */
-class ExportWorker(private val scope: CoroutineScope, private val library: SoundLibrary) {
+class ExportWorker(private val scope: CoroutineScope, private val library: SoundLibrary, private val tempDir: File) {
     private val mutableState = MutableStateFlow<ExportState>(ExportState.Idle)
     private val cancelRequested = AtomicBoolean(false)
     private var job: Job? = null
@@ -49,8 +56,8 @@ class ExportWorker(private val scope: CoroutineScope, private val library: Sound
     val running: Boolean get() = mutableState.value is ExportState.Running
 
     /**
-     * Renders [code] and writes the file to [output], a document the user chose; it is deleted again when the export fails or is cancelled. Does nothing while another
-     * export is running.
+     * Renders [code] to a temporary file and copies it to [output], a document the user chose; the document is deleted again when the export fails or is cancelled. Does nothing while
+     * another export is running.
      */
     fun start(
         resolver: ContentResolver,
@@ -64,24 +71,30 @@ class ExportWorker(private val scope: CoroutineScope, private val library: Sound
         cancelRequested.set(false)
         mutableState.value = ExportState.Running(0f)
         job = scope.launch(Dispatchers.Default) {
+            // what an export left behind when the process was killed in the middle of it
+            tempDir.listFiles { f -> f.name.startsWith(TEMP_PREFIX) && f.name.endsWith(TEMP_SUFFIX) }?.forEach { it.delete() }
+            val temp = File(tempDir, "$TEMP_PREFIX${System.nanoTime()}$TEMP_SUFFIX")
             try {
-                val samples = runInterruptible {
-                    OfflineRenderer.render(
-                        code, startCycle, endCycle, sampleRate, library,
+                val frames = runInterruptible {
+                    OfflineRenderer.renderWav(
+                        temp, code, startCycle, endCycle, sampleRate, library,
                         progress = { mutableState.value = ExportState.Running(it.toFloat().coerceIn(0f, 1f)) },
                         cancelled = { cancelRequested.get() },
                     )
                 }
                 if (cancelRequested.get()) throw CancellationException("export cancelled")
+                mutableState.value = ExportState.Running(1f)
                 val stream = resolver.openOutputStream(output, "wt") ?: throw IOException("cannot write to the chosen file")
-                stream.use { OfflineRenderer.writeWav(it, samples, sampleRate) }
-                mutableState.value = ExportState.Done(samples.size / 2.0 / sampleRate)
+                stream.use { out -> temp.inputStream().use { it.copyTo(out) } }
+                mutableState.value = ExportState.Done(frames.toDouble() / sampleRate)
             } catch (e: CancellationException) {
                 discard(resolver, output)
                 mutableState.value = ExportState.Idle
             } catch (e: Exception) {
                 discard(resolver, output)
                 mutableState.value = ExportState.Failed((e.message ?: e.toString()).removePrefix(FAILED_PREFIX))
+            } finally {
+                temp.delete()
             }
         }
     }

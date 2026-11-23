@@ -214,10 +214,16 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
      * Parses and runs [code], and if that works, makes it the program from the next scheduling chunk on. The program
      * is also played through for the next two cycles without making a sound, so that errors in what it would play are
      * reported here, and the samples it needs start loading. A failure changes nothing.
+     *
+     * The wait for the library to install the default sounds (15 seconds at most) is not under the engine's lock, which [resetSession] and [soundsLoading] need as well: only
+     * the evaluation itself is, so those never wait for the library.
      */
-    @Synchronized
-    fun evaluate(code: String): EvalReport = try {
+    fun evaluate(code: String): EvalReport {
         library.awaitReady(LIBRARY_READY_MILLIS) // the sounds a program names must be registered when its first events are looked up
+        return synchronized(this) { evaluateLocked(code) }
+    }
+
+    private fun evaluateLocked(code: String): EvalReport = try {
         onBigStack {
             runPrebake()
             effects.beginEvaluation()
@@ -244,7 +250,8 @@ class CosicEngine internal constructor(val sampleRate: Int, private val library:
 
     /**
      * Forgets what the programs so far set, the tempo and what they labelled, as when another project is opened: the next
-     * program starts in a new session at the default tempo.
+     * program starts in a new session at the default tempo. It takes the engine's lock, so it waits for an evaluation that is running (its program, not the wait
+     * for the library): call it from a thread that may wait, not from the main thread.
      */
     @Synchronized
     fun resetSession() {

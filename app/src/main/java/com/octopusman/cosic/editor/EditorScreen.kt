@@ -2,6 +2,7 @@ package com.octopusman.cosic.editor
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -140,18 +141,36 @@ fun EditorScreen(
     onOpenSettings: () -> Unit,
     onImportText: (String) -> Unit,
 ) {
+    val context = LocalContext.current
     if (vm.missing) {
-        LaunchedEffect(Unit) { onBack() }
+        // the project is gone, or its file could not be read: say so, and go back to where the screen was opened from
+        LaunchedEffect(Unit) {
+            context.toast(R.string.project_unreadable)
+            onBack()
+        }
         return
     }
 
-    val context = LocalContext.current
     val activity = context.findActivity()
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
     var renaming by remember { mutableStateOf(false) }
-    var codeFocused by remember { mutableStateOf(false) }
+    var codeFocused by rememberSaveable { mutableStateOf(false) }
+    // With nothing focused, the first key of a hardware keyboard gives the focus to the first focusable node, the back button of the top bar, and a Space after it clicks it (Compose's
+    // `clickable` takes Space for Enter): the keyboard then leaves the project. So the code takes the focus when the screen opens with a hardware keyboard, and gets back the focus it
+    // had when the screen is made again (a rotation, a change of font size). A phone with no keyboard opens a project with the code unfocused: no soft keyboard pops up.
+    val hardwareKeyboard = LocalConfiguration.current.let {
+        it.keyboard == Configuration.KEYBOARD_QWERTY && it.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO
+    }
+    // read once, before a focus callback has set [codeFocused] again
+    val focusCodeOnEntry = remember { codeFocused || hardwareKeyboard }
+    LaunchedEffect(Unit) {
+        if (focusCodeOnEntry) {
+            withFrameNanos { }
+            focusRequester.requestFocus()
+        }
+    }
     var keyRow by rememberSaveable { mutableStateOf(KeyRow.SYMBOLS) }
     val playing = vm.playing
 
@@ -161,8 +180,17 @@ fun EditorScreen(
     val fontSize by env.programSettings.fontSizeSp.collectAsStateWithLifecycle()
     val fontFamily by env.programSettings.fontFamily.collectAsStateWithLifecycle()
 
-    // The sheets and the console that the overflow menu opens.
+    // The sheets and the console that the overflow menu opens. The card of a function is kept by its name, which a rotation keeps, and looked up again; closing it forgets both.
+    var docCardName by rememberSaveable { mutableStateOf<String?>(null) }
     var docCard by remember { mutableStateOf<DocEntry?>(null) }
+    LaunchedEffect(docCardName) {
+        // the first call reads the documentation (a quarter of a megabyte of JSON)
+        docCard = docCardName?.let { name -> withContext(Dispatchers.Default) { DocJson.index.lookup(name) } }
+    }
+    fun closeDocCard() {
+        docCardName = null
+        docCard = null
+    }
     var showConsole by rememberSaveable { mutableStateOf(false) }
     var showExport by rememberSaveable { mutableStateOf(false) }
     var showMidi by rememberSaveable { mutableStateOf(false) }
@@ -200,6 +228,14 @@ fun EditorScreen(
             withFrameNanos { }
             focusRequester.requestFocus()
         }
+    }
+
+    // Back closes what was opened on top of the editor before it leaves: the panel first, then the console. These are registered after the handler of [leave] above, so they come first;
+    // the back arrow of the top bar still leaves at once.
+    BackHandler(enabled = showConsole) { showConsole = false }
+    BackHandler(enabled = panelTab != null) {
+        if (codeFocused) refocusCode = true
+        panelTab = null
     }
 
     // A button of the top bar closes the panel when it shows that button's tab, and switches to that
@@ -260,7 +296,7 @@ fun EditorScreen(
         scope.launch {
             // the first call reads the documentation (a quarter of a megabyte of JSON)
             val card = withContext(Dispatchers.Default) { DocJson.index.cardAtCursor(code.text, code.selection.start) }
-            if (card != null) docCard = card else context.toast(R.string.doc_at_cursor_none)
+            if (card != null) docCardName = card.name else context.toast(R.string.doc_at_cursor_none)
         }
     }
 
@@ -280,13 +316,14 @@ fun EditorScreen(
         topBar = {
             TopAppBar(
                 title = {
+                    // a name that is too long for the bar scrolls, on one line, instead of ending in an ellipsis
                     Text(
                         text = vm.name,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .clickable(onClickLabel = stringResource(R.string.editor_rename_project)) { renaming = true }
-                            .tagged("project_name", vm.name),
+                            .tagged("project_name", vm.name)
+                            .basicMarquee(),
                     )
                 },
                 navigationIcon = { BackButton(leave) },
@@ -332,7 +369,7 @@ fun EditorScreen(
                                     val edit = found.apply(vm.textValue.text, pick)
                                     vm.onTextChange(TextFieldValue(edit.text, TextRange(edit.caret)))
                                 },
-                                onInfo = if (docsOn) ({ pick -> pick.card?.let { docCard = it } }) else null,
+                                onInfo = if (docsOn) ({ pick -> pick.card?.let { docCardName = it.name } }) else null,
                             )
                         }
                         val barModifier = Modifier.navigationBarsPadding().imePadding()
@@ -477,13 +514,13 @@ fun EditorScreen(
             card = card,
             onInsertExample = {
                 vm.insertSnippet(it)
-                docCard = null
+                closeDocCard()
             },
-            onDismiss = { docCard = null },
+            onDismiss = ::closeDocCard,
         )
     }
     if (showExport) {
-        ExportSheet(code = vm.textValue.text, defaultName = vm.title ?: vm.name, library = env.library, onDismiss = { showExport = false })
+        ExportSheet(worker = vm.export, code = vm.textValue.text, defaultName = vm.title ?: vm.name, onDismiss = { showExport = false })
     }
     if (showMidi) MidiDevicesSheet(env.midi, onDismiss = { showMidi = false })
     // asks for the password of an MQTT broker when a program that publishes to one is evaluated; nothing is shown otherwise

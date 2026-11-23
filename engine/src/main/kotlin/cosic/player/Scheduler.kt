@@ -48,6 +48,9 @@ private fun unknownSoundWarning(key: String) = "sound $key not found! Is it load
 /** What Strudel says when a sample cannot be loaded (sampler.mjs:317, `[sampler] could not load "bd:0"`), with what went wrong. */
 private fun failedSampleWarning(lookup: SoundLookup.Failed) = "[sampler] could not load \"${lookup.sound}\": ${lookup.reason}"
 
+/** What Strudel says when an event's sample is still being fetched or decoded when it is due (superdough.mjs:603); the event is skipped. */
+private const val STILL_LOADING_WARNING = "[webaudio] skip hap: still loading"
+
 /** What to tell the user about an exception thrown while a pattern was queried. */
 internal fun errorMessage(error: Throwable): String = error.message ?: error.toString()
 
@@ -434,7 +437,8 @@ internal class Scheduler(
             }
             is SoundLookup.Unknown -> warningLog.add(unknownSoundWarning(lookup.key))
             is SoundLookup.Failed -> warningLog.add(failedSampleWarning(lookup))
-            SoundLookup.Loading, SoundLookup.Silent -> Unit
+            SoundLookup.Loading -> warningLog.add(STILL_LOADING_WARNING)
+            SoundLookup.Silent -> Unit
         }
     }
 
