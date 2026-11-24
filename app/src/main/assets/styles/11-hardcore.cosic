@@ -1,0 +1,53 @@
+// Hardcore (gabber)
+// 190 BPM. The kick is the
+// instrument: a sine wave that falls
+// fast in pitch, pushed through heavy
+// distortion so it rings like a note.
+// It plays the bass line (A, A, F,
+// G). On top, offbeat hats and a rave
+// stab in a 3-3-2 rhythm.
+setcpm(190 / 4)
+
+// The distorted kick, tuned to each
+// chord root, on every beat
+$: note("<a1 a1 f1 g1>")
+  .s("sine")
+  .struct("x*4")
+  .penv(36)
+  .pdecay(0.05)
+  .decay(0.25)
+  .sustain(0)
+  .distort(3)
+  .gain(0.17)
+
+$: s("[~ hh]*4").bank("cosic909").gain(0.17)
+$: s("~ sd ~ sd")
+  .bank("cosic909")
+  .distort(0.5)
+  .gain(0.25)
+  .mask("<0 0 1 1 1 1 1 1>")
+
+// The rave stab: Am | Am | F | G,
+// with a quick pitch slide at the
+// start of each note
+$: note(`<[a4,c5,e5]
+          [a4,c5,e5]
+          [f4,a4,c5]
+          [g4,b4,d5]>`)
+  .struct("x ~ ~ x ~ ~ x ~")
+  .s("supersaw")
+  .penv(7)
+  .pdecay(0.08)
+  .decay(0.15)
+  .sustain(0)
+  .lpf(5000)
+  .gain(0.3)
+  .mask("<0 0 0 0 1 1 1 1>")
+
+// Before the stab comes in: a snare
+// roll, getting faster, on the fourth
+// cycle
+$: s("sd*2 sd*4 sd*8 sd*16")
+  .bank("cosic909")
+  .gain(saw.range(0.1, 0.3))
+  .mask("<0 0 0 1 0 0 0 0>")

@@ -1,0 +1,71 @@
+// Trance
+// 138 BPM. Four-on-the-floor kick, a
+// rolling 16th-note bass in the gaps
+// between kicks, big detuned
+// "supersaw" chords and a lead hook
+// that returns over every chord. The
+// track builds: layers enter one by
+// one and a riser sweeps up in the
+// last two cycles.
+setcpm(138 / 4)
+
+$: s("bd*4")
+  .bank("cosic909")
+  .gain(0.55)
+  .duckorbit(2)
+  .duckattack(0.2)
+  .duckdepth(0.8)
+$: s("[~ oh]*4")
+  .bank("cosic909")
+  .gain(0.22)
+  .mask("<0 0 1 1 1 1 1 1>")
+$: s("~ cp ~ cp")
+  .bank("cosic909")
+  .gain(0.33)
+  .mask("<0 0 0 0 1 1 1 1>")
+
+// Rolling bass: three 16ths after
+// every kick. Am | F | C | G
+$: note("<a2 f2 c3 g2>")
+  .struct("~ x x x ~ x x x ~ x x x ~ x x x")
+  .s("sawtooth")
+  .lpf(500)
+  .decay(0.1)
+  .sustain(0.3)
+  .orbit(2)
+  .gain(1)
+
+// The chords: a supersaw is many
+// detuned saws playing together
+$: note(`<[a3,c4,e4]
+          [f3,a3,c4]
+          [c4,e4,g4]
+          [g3,b3,d4]>`)
+  .s("supersaw")
+  .lpf(sine.range(800, 4500).slow(8))
+  .attack(0.1)
+  .gain(0.32)
+  .mask("<0 0 1 1 1 1 1 1>")
+
+// The hook: the same eight notes over
+// each chord, so the harmony
+// recolours it
+$: note("e5 ~ [e5 g5] ~ a5 ~ g5 e5")
+  .s("supersaw")
+  .lpf(5000)
+  .decay(0.2)
+  .sustain(0.3)
+  // the default delay time is a
+  // dotted 8th, in time with the
+  // tempo
+  .delay(0.4)
+  .room(0.3)
+  .gain(0.55)
+  .mask("<0 0 0 0 1 1 1 1>")
+
+// Riser: white noise whose high-pass
+// filter sweeps up over two cycles
+$: s("white")
+  .hpf(saw.range(400, 9000).slow(2))
+  .gain(0.28)
+  .mask("<0 0 0 0 0 0 1 1>")

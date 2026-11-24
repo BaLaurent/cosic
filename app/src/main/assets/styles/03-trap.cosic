@@ -1,0 +1,57 @@
+// Trap
+// 140 BPM written in half time: it
+// feels like 70, the snare falls on
+// beat 3. Four ingredients: a booming
+// 808 that follows the kick, a sparse
+// clap, hi-hats in fast 16ths with
+// rolls, and a dark bell on top.
+setcpm(140 / 4)
+
+// The kick is syncopated: 16 steps
+// per cycle, steps 1, 4, 11 and 15
+$: s("bd ~ ~ bd ~ ~ ~ ~ ~ ~ bd ~ ~ ~ bd ~")
+  .bank("cosic808")
+  .gain(0.28)
+
+// Clap on beat 3 (half time)
+$: s("~ ~ cp ~")
+  .bank("cosic808")
+  .room(0.3)
+  .gain(0.4)
+
+// Hats: four 16ths per beat, with a
+// roll (more hits, faster) on the
+// last beat
+$: s("hh*4 hh*4 <hh*4 hh*6> <hh*8 [hh*3 hh*6]>")
+  .bank("cosic808")
+  // each hit gets a random volume
+  .gain(rand.range(0.1, 0.25))
+  .pan(rand)
+
+// The 808: a long sine on the kick's
+// rhythm. C minor: i | i | iii | iv
+$: note("<c2 c2 eb2 f2>")
+  .s("sine")
+  .struct("x ~ ~ x ~ ~ ~ ~ ~ ~ x ~ ~ ~ x ~")
+  .penv(7)
+  // a short pitch drop gives the
+  // click at the start
+  .pdecay(0.04)
+  .decay(0.6)
+  .sustain(0)
+  // distortion makes the bass audible
+  // on a phone speaker
+  .distort(0.3)
+  .gain(1)
+
+// A dark bell: C minor pentatonic
+$: note(`<[c5 ~ eb5 ~ g5 ~ eb5 ~]
+          [bb4 ~ g4 ~ eb5 ~ ~ ~]>`)
+  .s("sine")
+  .fm(2)
+  .fmh(3.5)
+  .decay(0.7)
+  .sustain(0)
+  .delay(0.3)
+  .room(0.4)
+  .gain(0.5)

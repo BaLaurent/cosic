@@ -22,6 +22,7 @@ class LibraryViewModel(
     /** How many unreadable project files were set aside and not recovered yet. */
     val damaged: StateFlow<Int> = projects.damaged
     val examples: List<Example> = loadExamples(assets)
+    val styles: List<Example> = loadStyles(assets)
     val lessons: List<Lesson> = loadLessons(assets)
 
     /** Creates a sketch with the default code and returns its id; null when the project cannot be written (storage full). */

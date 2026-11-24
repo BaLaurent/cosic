@@ -1,0 +1,53 @@
+// Ambient
+// About 60 BPM and no drums. Long
+// notes, slow filters and a lot of
+// reverb: the music is texture, not
+// rhythm. One chord lasts two cycles.
+// cycles per minute = BPM / 4
+setcpm(60 / 4)
+
+// A drone on the tonic (D) and a soft
+// pad: Dm9 | G6 | Cmaj9 | Am7
+$: note("d2")
+  .s("sine")
+  .attack(1)
+  .release(2)
+  .gain(0.6)
+
+$: note(`<[d3,a3,e4,f4]
+          [g3,d4,a4,b4]
+          [c3,g3,d4,e4]
+          [a2,e3,a3,c4]>/2`)
+  .s("sawtooth")
+  // the filter opens and closes over
+  // 16 cycles
+  .lpf(sine.range(400, 1400).slow(16))
+  .attack(2)
+  .release(3)
+  .room(0.9)
+  .size(0.9)
+  .gain(0.2)
+
+// Sparse bell notes in D dorian; they
+// only come in after the first four
+// cycles
+$: note(`<[~ a5 ~ ~ f5 ~ ~ ~]
+          [~ ~ e5 ~ ~ ~ a5 ~]>`)
+  .s("sine")
+  .fm(3)
+  // an FM modulator at 3.5 times the
+  // pitch gives a bell timbre
+  .fmh(3.5)
+  .decay(1.5)
+  .sustain(0)
+  .delay(0.5)
+  .delayfeedback(0.6)
+  .room(0.8)
+  .gain(0.4)
+  .mask("<0 0 0 0 1 1 1 1>")
+
+// Wind: filtered noise
+$: s("pink")
+  .hpf(300)
+  .lpf(sine.range(500, 2500).slow(11))
+  .gain(0.5)

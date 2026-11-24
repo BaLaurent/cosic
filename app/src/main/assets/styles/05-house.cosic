@@ -1,0 +1,70 @@
+// House
+// 124 BPM, four-on-the-floor. The
+// kick hits every beat, the clap sits
+// on 2 and 4, the open hat on the
+// off-beats. The bass plays between
+// the kicks, and chord stabs in a
+// 3-3-2 rhythm carry the harmony.
+// Layers come in over 8 cycles.
+setcpm(124 / 4)
+
+// Kick on every beat. duckorbit makes
+// everything on orbit 2 (the bass)
+// dip on each hit.
+$: s("bd*4")
+  .bank("cosic909")
+  .gain(0.45)
+  .duckorbit(2)
+  .duckattack(0.2)
+  .duckdepth(0.8)
+
+$: s("~ cp ~ cp")
+  .bank("cosic909")
+  .room(0.2)
+  .gain(0.4)
+  .mask("<0 0 1 1 1 1 1 1>")
+$: s("[~ oh]*4")
+  .bank("cosic909")
+  .gain(0.22)
+  .mask("<0 0 1 1 1 1 1 1>")
+$: s("hh*16")
+  .bank("cosic909")
+  .gain("[0.09 0.05 0.13 0.05]*4")
+  .mask("<0 0 0 0 1 1 1 1>")
+
+// Bass: the root on the off-beat
+// 8ths, in the gaps between kicks
+$: note("<c2 f2 ab2 bb2>")
+  .struct("~ x ~ x ~ x ~ x")
+  .s("sawtooth")
+  .lpf(500)
+  .decay(0.15)
+  .sustain(0.2)
+  .orbit(2)
+  .gain(1.25)
+  .mask("<0 0 0 0 1 1 1 1>")
+
+// Stabs: Cm7 | Fm7 | Abmaj7 | Bb7.
+// The notes move as little as
+// possible between chords.
+$: note(`<[c4,eb4,g4,bb4]
+          [c4,eb4,f4,ab4]
+          [c4,eb4,g4,ab4]
+          [bb3,d4,f4,ab4]>`)
+  // 3 + 3 + 2 eighth notes
+  .struct("x ~ ~ x ~ ~ x ~")
+  .s("sawtooth")
+  .lpf(2200)
+  .decay(0.18)
+  .sustain(0)
+  .room(0.3)
+  .gain(0.36)
+  .mask("<0 0 0 0 1 1 1 1>")
+
+// Fill in the last cycle: a snare
+// roll that gets twice as fast four
+// times
+$: s("sd*2 sd*4 sd*8 sd*16")
+  .bank("cosic909")
+  .gain(saw.range(0.1, 0.3))
+  .mask("<0 0 0 0 0 0 0 1>")

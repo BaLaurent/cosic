@@ -183,21 +183,19 @@ fun LibraryScreen(
                     onRestart = { restarting = lesson.id },
                 )
             }
+            val openSketch: (Example) -> Unit = { sketch ->
+                scope.launch {
+                    val id = viewModel.createFromExample(sketch)
+                    if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
+                }
+            }
             item(key = "examples-header") { SectionHeader(stringResource(R.string.library_examples)) }
             items(viewModel.examples, key = { "example-${it.number}" }) { example ->
-                ListItem(
-                    headlineContent = { Text(example.title) },
-                    leadingContent = { Icon(Icons.Filled.LibraryMusic, contentDescription = null) },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    modifier = Modifier
-                        .clickable {
-                            scope.launch {
-                                val id = viewModel.createFromExample(example)
-                                if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
-                            }
-                        }
-                        .tagged("example_${example.number}", stringResource(R.string.library_open_example, example.title)),
-                )
+                SketchRow(example, "example_${example.number}", openSketch)
+            }
+            item(key = "styles-header") { SectionHeader(stringResource(R.string.library_styles)) }
+            items(viewModel.styles, key = { "style-${it.number}" }) { style ->
+                SketchRow(style, "style_${style.number}", openSketch)
             }
         }
     }
@@ -239,6 +237,19 @@ fun LibraryScreen(
             onDismiss = { restarting = null },
         )
     }
+}
+
+/** A bundled sketch; tapping makes a project of it and opens it. */
+@Composable
+private fun SketchRow(sketch: Example, tag: String, onOpen: (Example) -> Unit) {
+    ListItem(
+        headlineContent = { Text(sketch.title) },
+        leadingContent = { Icon(Icons.Filled.LibraryMusic, contentDescription = null) },
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        modifier = Modifier
+            .clickable { onOpen(sketch) }
+            .tagged(tag, stringResource(R.string.library_open_example, sketch.title)),
+    )
 }
 
 @Composable

@@ -19,7 +19,7 @@ It is built for a phone: the keyboard has a row of keys made for code, and a sec
 
 LEARN BY DOING
 - Ten interactive lessons, step by step, each one a small program you play and change: cycles, mini-notation, notes and scales, sound, transformations, visuals, performing live.
-- Six examples to open, play and take apart.
+- Six short examples and eleven complete tracks, one per music style (lo-fi, chiptune, house, trance, hardbass, hardcore, drum and bass and more), to open, play and take apart.
 - Your own sketches are saved on the device.
 
 WRITE ON A TOUCHSCREEN
@@ -66,7 +66,7 @@ Elle est pensée pour le téléphone : le clavier propose une rangée de touches
 
 APPRENDRE EN FAISANT
 - Dix leçons interactives pas à pas, chacune est un petit programme que vous jouez et modifiez : cycles, mini-notation, notes et gammes, son, transformations, visuels, jeu en direct.
-- Six exemples à ouvrir, écouter et décortiquer.
+- Six courts exemples et onze morceaux complets, un par style de musique (lo-fi, chiptune, house, trance, hardbass, hardcore, drum and bass et d'autres), à ouvrir, écouter et décortiquer.
 - Vos propres esquisses sont enregistrées sur l'appareil.
 
 ÉCRIRE SUR UN ÉCRAN TACTILE

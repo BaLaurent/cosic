@@ -1,0 +1,62 @@
+// Synthwave
+// About 100 BPM. The sound of 80s
+// film scores: a steady beat with a
+// big snare, a driving bass in 8th
+// notes, warm pads and a singing
+// lead.
+setcpm(100 / 4)
+
+// Fm | Db | Ab | Eb  (i - VI - III -
+// VII), one chord per cycle
+$: note(`<[f3,ab3,c4]
+          [db3,f3,ab3]
+          [ab3,c4,eb4]
+          [eb3,g3,bb3]>`)
+  .s("sawtooth")
+  .lpf(900)
+  .attack(0.2)
+  .release(0.6)
+  .room(0.5)
+  .gain(0.25)
+
+// Bass: 8th notes on the root,
+// jumping up an octave every other
+// note
+$: note("<f2 db2 ab2 eb2>")
+  .struct("x*8")
+  .add(note("0 12 0 12 0 12 0 12"))
+  .s("sawtooth")
+  .lpf(sine.range(300, 900).slow(8))
+  .decay(0.12)
+  .sustain(0.3)
+  .gain(1)
+
+// Drums: kick on 1 and 3, a snare
+// with a lot of reverb on 2 and 4
+$: s("bd ~ bd ~").gain(0.5)
+$: s("~ sd ~ sd")
+  .room(0.6)
+  .size(0.7)
+  .gain(0.45)
+$: s("hh*8").gain(0.17)
+// Every fourth cycle, a tom fill
+// leads into the next chord
+$: s("~ ~ ~ [lt mt ht ht]")
+  .gain(0.4)
+  .mask("<0 0 0 1>")
+
+// The lead, from the fifth cycle on.
+// Each bar holds chord tones; eb6 is
+// the highest note, once. The last
+// bar ends on db5, one step above c5
+// where it restarts.
+$: note(`<[c5@2 eb5 f5]
+          [f5@2 ab5 f5]
+          [ab5@2 c6 eb6]
+          [g5@2 f5 db5]>`)
+  .s("supersaw")
+  .lpf(3500)
+  .delay(0.35)
+  .room(0.5)
+  .gain(0.6)
+  .mask("<0 0 0 0 1 1 1 1>")

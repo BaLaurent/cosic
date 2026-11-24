@@ -137,4 +137,5 @@ dependencies {
 // ExamplesEvaluateTest reads these files from disk, so Gradle must rerun the unit tests when they change.
 tasks.withType<Test>().configureEach {
     inputs.dir("src/main/assets/examples")
+    inputs.dir("src/main/assets/styles")
 }

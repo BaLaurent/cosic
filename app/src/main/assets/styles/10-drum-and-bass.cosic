@@ -1,0 +1,51 @@
+// Drum and bass
+// 174 BPM. The beat is "two-step": a
+// kick on 1 and on the 'and' of 3, a
+// snare on 2 and 4, light ghost
+// snares in between. A slow, heavy
+// "reese" bass moves in whole notes
+// under it, so the track feels half
+// as fast as the drums.
+setcpm(174 / 4)
+
+// 16 steps per cycle. Kick on steps 1
+// and 11, snare on steps 5 and 13.
+$: s("bd ~ ~ ~ ~ ~ ~ ~ ~ ~ bd ~ ~ ~ ~ ~")
+  .bank("cosic909")
+  .gain(0.65)
+  .mask("<0 0 1 1 1 1 1 1>")
+$: s("~ ~ ~ ~ sd ~ ~ ~ ~ ~ ~ ~ sd ~ ~ ~")
+  .bank("cosic909")
+  .gain(0.55)
+  .mask("<0 0 1 1 1 1 1 1>")
+$: s("~ ~ ~ ~ ~ ~ sd ~ ~ sd ~ ~ ~ ~ ~ sd")
+  .bank("cosic909")
+  .gain(0.13)
+  .mask("<0 0 1 1 1 1 1 1>")
+$: s("hh*8")
+  .bank("cosic909")
+  .gain("[0.13 0.07]*4")
+
+// Reese bass: two sawtooth waves a
+// hair out of tune beat against each
+// other while a filter moves. Fm | Fm
+// | Db | Eb.
+$: stack(
+    note("<f2 f2 db2 eb2>").s("sawtooth"),
+    note("<f2 f2 db2 eb2>").add(note(0.15)).s("sawtooth")
+  )
+  .lpf(sine.range(300, 1200).slow(2))
+  .distort(0.3)
+  .gain(0.38)
+  .mask("<0 0 1 1 1 1 1 1>")
+
+// A pad on top: Fm | Db | Eb | Fm
+$: note(`<[f3,ab3,c4,eb4]
+          [db3,f3,ab3,c4]
+          [eb3,g3,bb3,d4]
+          [f3,ab3,c4,eb4]>`)
+  .s("triangle")
+  .attack(0.3)
+  .release(1)
+  .room(0.6)
+  .gain(0.16)
