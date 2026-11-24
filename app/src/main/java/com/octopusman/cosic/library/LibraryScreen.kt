@@ -1,9 +1,11 @@
 package com.octopusman.cosic.library
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -23,7 +25,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -59,7 +63,14 @@ import java.util.Date
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** The home screen: the user's projects, the bundled examples, and the way to Settings and to removing ads. */
+/** The three parts of the home screen, one tab each. */
+private enum class LibraryTab(@StringRes val label: Int) {
+    Projects(R.string.library_projects),
+    Lessons(R.string.library_lessons),
+    Examples(R.string.library_tab_examples),
+}
+
+/** The home screen: the user's projects, the lessons, the bundled examples and styles, and the way to Settings and to removing ads. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
@@ -78,6 +89,7 @@ fun LibraryScreen(
     var renaming by rememberSaveable { mutableStateOf<String?>(null) }
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
     var restarting by rememberSaveable { mutableStateOf<String?>(null) }
+    var tab by rememberSaveable { mutableStateOf(LibraryTab.Projects) }
     // A project of a lesson shows in the Lessons section, not under Projects; one whose lesson the app no longer has is an ordinary project.
     val lessonIds = remember(viewModel.lessons) { viewModel.lessons.mapTo(HashSet()) { it.id } }
     val ownProjects = projects.filter { it.lesson?.id !in lessonIds }
@@ -96,34 +108,49 @@ fun LibraryScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
-                actions = {
-                    if (!adsRemoved) {
-                        TextButton(
-                            onClick = onRemoveAds,
-                            modifier = Modifier.tagged("remove_ads", stringResource(R.string.library_remove_ads)),
-                        ) { Text(stringResource(R.string.library_remove_ads)) }
+            Column {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.app_name)) },
+                    actions = {
+                        if (!adsRemoved) {
+                            TextButton(
+                                onClick = onRemoveAds,
+                                modifier = Modifier.tagged("remove_ads", stringResource(R.string.library_remove_ads)),
+                            ) { Text(stringResource(R.string.library_remove_ads)) }
+                        }
+                        IconButton(onClick = onOpenSettings, modifier = Modifier.tagged("settings", stringResource(R.string.action_settings))) {
+                            Icon(Icons.Filled.Settings, contentDescription = null)
+                        }
+                    },
+                )
+                PrimaryTabRow(selectedTabIndex = tab.ordinal) {
+                    for (entry in LibraryTab.entries) {
+                        Tab(
+                            selected = tab == entry,
+                            onClick = { tab = entry },
+                            text = { Text(stringResource(entry.label)) },
+                            modifier = Modifier.testTag("tab_${entry.name.lowercase()}"),
+                        )
                     }
-                    IconButton(onClick = onOpenSettings, modifier = Modifier.tagged("settings", stringResource(R.string.action_settings))) {
-                        Icon(Icons.Filled.Settings, contentDescription = null)
-                    }
-                },
-            )
+                }
+            }
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    scope.launch {
-                        val id = viewModel.createProject()
-                        if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
-                    }
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.tagged("new_project", stringResource(R.string.library_new_project)),
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = null)
+            // New projects belong to the Projects tab; the other tabs open their own sketches.
+            if (tab == LibraryTab.Projects) {
+                FloatingActionButton(
+                    onClick = {
+                        scope.launch {
+                            val id = viewModel.createProject()
+                            if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.tagged("new_project", stringResource(R.string.library_new_project)),
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = null)
+                }
             }
         },
         bottomBar = { AdBannerBar(ads) },
@@ -133,69 +160,73 @@ fun LibraryScreen(
             contentPadding = PaddingValues(bottom = 88.dp),
             modifier = Modifier.padding(padding).fillMaxSize(),
         ) {
-            item(key = "projects-header") { SectionHeader(stringResource(R.string.library_projects)) }
-            if (damaged > 0) {
-                item(key = "projects-damaged") {
-                    ListItem(
-                        headlineContent = { Text(pluralStringResource(R.plurals.library_damaged, damaged, damaged)) },
-                        trailingContent = {
-                            TextButton(
-                                onClick = { scope.launch { if (!viewModel.recoverDamaged()) context.toast(R.string.library_save_failed) } },
-                                modifier = Modifier.tagged("recover_damaged", stringResource(R.string.library_recover)),
-                            ) { Text(stringResource(R.string.library_recover)) }
+            when (tab) {
+                LibraryTab.Projects -> {
+                    if (damaged > 0) {
+                        item(key = "projects-damaged") {
+                            ListItem(
+                                headlineContent = { Text(pluralStringResource(R.plurals.library_damaged, damaged, damaged)) },
+                                trailingContent = {
+                                    TextButton(
+                                        onClick = { scope.launch { if (!viewModel.recoverDamaged()) context.toast(R.string.library_save_failed) } },
+                                        modifier = Modifier.tagged("recover_damaged", stringResource(R.string.library_recover)),
+                                    ) { Text(stringResource(R.string.library_recover)) }
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            )
+                        }
+                    }
+                    if (ownProjects.isEmpty()) {
+                        item(key = "projects-empty") {
+                            Text(
+                                text = stringResource(R.string.library_empty),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                            )
+                        }
+                    }
+                    items(ownProjects, key = { it.id }) { project ->
+                        ProjectRow(
+                            project = project,
+                            now = now,
+                            onOpen = { onOpenProject(project.id) },
+                            onRename = { renaming = project.id },
+                            onDuplicate = { scope.launch { if (!viewModel.duplicate(project.id)) context.toast(R.string.library_save_failed) } },
+                            onShare = { context.shareText(project.code) },
+                            onDelete = { deleting = project.id },
+                        )
+                    }
+                }
+                LibraryTab.Lessons -> items(viewModel.lessons, key = { "lesson-${it.id}" }) { lesson ->
+                    LessonRow(
+                        lesson = lesson,
+                        step = lessonSteps[lesson.id],
+                        onOpen = {
+                            scope.launch {
+                                val id = viewModel.openLesson(lesson)
+                                if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
+                            }
                         },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        onRestart = { restarting = lesson.id },
                     )
                 }
-            }
-            if (ownProjects.isEmpty()) {
-                item(key = "projects-empty") {
-                    Text(
-                        text = stringResource(R.string.library_empty),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    )
-                }
-            }
-            items(ownProjects, key = { it.id }) { project ->
-                ProjectRow(
-                    project = project,
-                    now = now,
-                    onOpen = { onOpenProject(project.id) },
-                    onRename = { renaming = project.id },
-                    onDuplicate = { scope.launch { if (!viewModel.duplicate(project.id)) context.toast(R.string.library_save_failed) } },
-                    onShare = { context.shareText(project.code) },
-                    onDelete = { deleting = project.id },
-                )
-            }
-            item(key = "lessons-header") { SectionHeader(stringResource(R.string.library_lessons)) }
-            items(viewModel.lessons, key = { "lesson-${it.id}" }) { lesson ->
-                LessonRow(
-                    lesson = lesson,
-                    step = lessonSteps[lesson.id],
-                    onOpen = {
+                LibraryTab.Examples -> {
+                    val openSketch: (Example) -> Unit = { sketch ->
                         scope.launch {
-                            val id = viewModel.openLesson(lesson)
+                            val id = viewModel.createFromExample(sketch)
                             if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
                         }
-                    },
-                    onRestart = { restarting = lesson.id },
-                )
-            }
-            val openSketch: (Example) -> Unit = { sketch ->
-                scope.launch {
-                    val id = viewModel.createFromExample(sketch)
-                    if (id != null) onOpenProject(id) else context.toast(R.string.library_save_failed)
+                    }
+                    item(key = "styles-header") { SectionHeader(stringResource(R.string.library_styles)) }
+                    items(viewModel.styles, key = { "style-${it.number}" }) { style ->
+                        SketchRow(style, "style_${style.number}", openSketch)
+                    }
+                    item(key = "examples-header") { SectionHeader(stringResource(R.string.library_examples)) }
+                    items(viewModel.examples, key = { "example-${it.number}" }) { example ->
+                        SketchRow(example, "example_${example.number}", openSketch)
+                    }
                 }
-            }
-            item(key = "examples-header") { SectionHeader(stringResource(R.string.library_examples)) }
-            items(viewModel.examples, key = { "example-${it.number}" }) { example ->
-                SketchRow(example, "example_${example.number}", openSketch)
-            }
-            item(key = "styles-header") { SectionHeader(stringResource(R.string.library_styles)) }
-            items(viewModel.styles, key = { "style-${it.number}" }) { style ->
-                SketchRow(style, "style_${style.number}", openSketch)
             }
         }
     }

@@ -23,7 +23,8 @@
     <string name="library_projects">Projects</string>
     <string name="library_examples">Examples</string>
     <string name="library_styles">Music styles</string>
-    <string name="library_empty">No projects yet. Tap + to start a sketch, or begin with a lesson below.</string>
+    <string name="library_tab_examples">Explore</string>
+    <string name="library_empty">No projects yet. Tap + to start a sketch, or open the Lessons tab to learn step by step.</string>
     <string name="library_project_options">Project options</string>
     <string name="library_open_example">Open example: %1$s</string>
     <string name="library_delete_title">Delete project?</string>
