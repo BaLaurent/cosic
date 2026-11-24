@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.LibraryMusic
@@ -90,6 +91,8 @@ fun LibraryScreen(
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
     var restarting by rememberSaveable { mutableStateOf<String?>(null) }
     var tab by rememberSaveable { mutableStateOf(LibraryTab.Projects) }
+    // One scroll position per tab, so switching tabs never lands halfway down another list.
+    val listStates = LibraryTab.entries.associateWith { rememberLazyListState() }
     // A project of a lesson shows in the Lessons section, not under Projects; one whose lesson the app no longer has is an ordinary project.
     val lessonIds = remember(viewModel.lessons) { viewModel.lessons.mapTo(HashSet()) { it.id } }
     val ownProjects = projects.filter { it.lesson?.id !in lessonIds }
@@ -158,6 +161,7 @@ fun LibraryScreen(
         LazyColumn(
             // Room for the floating button, so it never hides the last row.
             contentPadding = PaddingValues(bottom = 88.dp),
+            state = listStates.getValue(tab),
             modifier = Modifier.padding(padding).fillMaxSize(),
         ) {
             when (tab) {
